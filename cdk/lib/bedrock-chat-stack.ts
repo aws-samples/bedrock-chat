@@ -14,13 +14,11 @@ import { Database } from "./constructs/database";
 import { Frontend } from "./constructs/frontend";
 import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
-import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
@@ -34,11 +32,8 @@ export interface BedrockChatStackProps extends StackProps {
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[];
   readonly autoJoinUserGroups: string[];
-  readonly rdsSchedules: CronScheduleProps;
   readonly enableMistral: boolean;
   readonly enableKB: boolean;
-  readonly embeddingContainerVcpu: number;
-  readonly embeddingContainerMemory: number;
   readonly selfSignUpEnabled: boolean;
   readonly enableIpV6: boolean;
   readonly natgatewayCount: number;
@@ -50,13 +45,6 @@ export class BedrockChatStack extends cdk.Stack {
     super(scope, id, {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
       ...props,
-    });
-
-    const vpc = new ec2.Vpc(this, "VPC", {
-      natGateways: props.natgatewayCount,
-    });
-    vpc.publicSubnets.forEach((subnet) => {
-      (subnet.node.defaultChild as ec2.CfnSubnet).mapPublicIpOnLaunch = false;
     });
 
     const idp = identityProvider(props.identityProviders);
@@ -166,7 +154,6 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const backendApi = new Api(this, "BackendApi", {
-      vpc,
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,
@@ -183,7 +170,6 @@ export class BedrockChatStack extends cdk.Stack {
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {
       accessLogBucket,
-      vpc,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       websocketSessionTable: database.websocketSessionTable,
@@ -217,16 +203,12 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const embedding = new Embedding(this, "Embedding", {
-      vpc,
       bedrockRegion: props.bedrockRegion,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       documentBucket: props.documentBucket,
-      embeddingContainerVcpu: props.embeddingContainerVcpu,
-      embeddingContainerMemory: props.embeddingContainerMemory,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
     });
-    props.documentBucket.grantRead(embedding.container.taskDefinition.taskRole);
 
     // WebAcl for published API
     const webAclForPublishedApi = new WebAclForPublishedApi(
@@ -249,34 +231,6 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "PublishedApiWebAclArn", {
       value: webAclForPublishedApi.webAclArn,
       exportName: "PublishedApiWebAclArn",
-    });
-    new CfnOutput(this, "VpcId", {
-      value: vpc.vpcId,
-      exportName: "BedrockClaudeChatVpcId",
-    });
-    new CfnOutput(this, "AvailabilityZone0", {
-      value: vpc.availabilityZones[0],
-      exportName: "BedrockClaudeChatAvailabilityZone0",
-    });
-    new CfnOutput(this, "AvailabilityZone1", {
-      value: vpc.availabilityZones[1],
-      exportName: "BedrockClaudeChatAvailabilityZone1",
-    });
-    new CfnOutput(this, "PublicSubnetId0", {
-      value: vpc.publicSubnets[0].subnetId,
-      exportName: "BedrockClaudeChatPublicSubnetId0",
-    });
-    new CfnOutput(this, "PublicSubnetId1", {
-      value: vpc.publicSubnets[1].subnetId,
-      exportName: "BedrockClaudeChatPublicSubnetId1",
-    });
-    new CfnOutput(this, "PrivateSubnetId0", {
-      value: vpc.privateSubnets[0].subnetId,
-      exportName: "BedrockClaudeChatPrivateSubnetId0",
-    });
-    new CfnOutput(this, "PrivateSubnetId1", {
-      value: vpc.privateSubnets[1].subnetId,
-      exportName: "BedrockClaudeChatPrivateSubnetId1",
     });
     new CfnOutput(this, "ConversationTableName", {
       value: database.table.tableName,

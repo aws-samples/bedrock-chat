@@ -17,12 +17,16 @@ describe("Bedrock Chat Stack Test", () => {
 
     const domainPrefix = "test-domain";
 
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(app, "BedrockRegionResourcesStack", {
-      env: {
-        region: "us-east-1",
-      },
-      crossRegionReferences: true,
-    })
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
 
     const hasGoogleProviderStack = new BedrockChatStack(
       app,
@@ -52,8 +56,6 @@ describe("Bedrock Chat Stack Test", () => {
         enableMistral: false,
         enableKB: false,
         selfSignUpEnabled: true,
-        embeddingContainerVcpu: 1024,
-        embeddingContainerMemory: 2048,
         natgatewayCount: 2,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -88,12 +90,16 @@ describe("Bedrock Chat Stack Test", () => {
     const app = new cdk.App();
     const domainPrefix = "test-domain";
 
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(app, "BedrockRegionResourcesStack", {
-      env: {
-        region: "us-east-1",
-      },
-      crossRegionReferences: true,
-    })
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
 
     const hasOidcProviderStack = new BedrockChatStack(
       app,
@@ -124,8 +130,6 @@ describe("Bedrock Chat Stack Test", () => {
         enableMistral: false,
         enableKB: false,
         selfSignUpEnabled: true,
-        embeddingContainerVcpu: 1024,
-        embeddingContainerMemory: 2048,
         natgatewayCount: 2,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -159,12 +163,16 @@ describe("Bedrock Chat Stack Test", () => {
     // Security check
     cdk.Aspects.of(app).add(new AwsPrototypingChecks());
 
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(app, "BedrockRegionResourcesStack", {
-      env: {
-        region: "us-east-1",
-      },
-      crossRegionReferences: true,
-    })
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
 
     const stack = new BedrockChatStack(app, "MyTestStack", {
       env: {
@@ -186,8 +194,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableMistral: false,
       enableKB: false,
       selfSignUpEnabled: true,
-      embeddingContainerVcpu: 1024,
-      embeddingContainerMemory: 2048,
       natgatewayCount: 2,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -208,12 +214,16 @@ describe("Scheduler Test", () => {
   test("has schedules", () => {
     const app = new cdk.App();
 
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(app, "BedrockRegionResourcesStack", {
-      env: {
-        region: "us-east-1",
-      },
-      crossRegionReferences: true,
-    })
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
 
     const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
       env: {
@@ -247,8 +257,6 @@ describe("Scheduler Test", () => {
       enableMistral: false,
       enableKB: false,
       selfSignUpEnabled: true,
-      embeddingContainerVcpu: 1024,
-      embeddingContainerMemory: 2048,
       natgatewayCount: 2,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -265,12 +273,16 @@ describe("Scheduler Test", () => {
   test("has'nt schedules", () => {
     const app = new cdk.App();
 
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(app, "BedrockRegionResourcesStack", {
-      env: {
-        region: "us-east-1",
-      },
-      crossRegionReferences: true,
-    })
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
 
     const defaultStack = new BedrockChatStack(app, "DefaultStack", {
       env: {
@@ -292,8 +304,6 @@ describe("Scheduler Test", () => {
       enableMistral: false,
       enableKB: false,
       selfSignUpEnabled: true,
-      embeddingContainerVcpu: 1024,
-      embeddingContainerMemory: 2048,
       natgatewayCount: 2,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -412,23 +422,19 @@ describe("Bedrock Knowledge Base Stack", () => {
         ? Number(knowledgeBase.overlap_percentage.N)
         : undefined;
 
-    const stack = new BedrockCustomBotStack(
-      app,
-      "BedrockCustomBotStackStack",
-      {
-        ownerUserId,
-        botId,
-        embeddingsModel,
-        bedrockClaudeChatDocumentBucketName:
-          BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME,
-        chunkingStrategy,
-        existingS3Urls,
-        maxTokens,
-        instruction,
-        analyzer,
-        overlapPercentage,
-      }
-    );
+    const stack = new BedrockCustomBotStack(app, "BedrockCustomBotStackStack", {
+      ownerUserId,
+      botId,
+      embeddingsModel,
+      bedrockClaudeChatDocumentBucketName:
+        BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME,
+      chunkingStrategy,
+      existingS3Urls,
+      maxTokens,
+      instruction,
+      analyzer,
+      overlapPercentage,
+    });
 
     return Template.fromStack(stack);
   };

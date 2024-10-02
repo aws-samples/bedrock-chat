@@ -16,13 +16,11 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
-import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { excludeDockerImage } from "../constants/docker";
 
 export interface WebSocketProps {
-  readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -77,11 +75,6 @@ export class WebSocket extends Construct {
         resources: ["*"],
       })
     );
-    handlerRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaVPCAccessExecutionRole"
-      )
-    );
     largePayloadSupportBucket.grantRead(handlerRole);
     props.websocketSessionTable.grantReadWriteData(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
@@ -96,8 +89,6 @@ export class WebSocket extends Construct {
           exclude: [...excludeDockerImage],
         }
       ),
-      vpc: props.vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {

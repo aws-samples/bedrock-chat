@@ -20,13 +20,11 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { IBucket } from "aws-cdk-lib/aws-s3";
-import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import { UsageAnalysis } from "./usage-analysis";
 import { excludeDockerImage } from "../constants/docker";
 
 export interface ApiProps {
-  readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
@@ -70,11 +68,6 @@ export class Api extends Construct {
         actions: ["bedrock:*"],
         resources: ["*"],
       })
-    );
-    handlerRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaVPCAccessExecutionRole"
-      )
     );
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
@@ -182,8 +175,6 @@ export class Api extends Construct {
           exclude: [...excludeDockerImage],
         }
       ),
-      vpc: props.vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 1024,
       timeout: Duration.minutes(15),
       environment: {

@@ -1,16 +1,12 @@
 import { Construct } from "constructs";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
-import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
+import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnPipe } from "aws-cdk-lib/aws-pipes";
-import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as cdk from "aws-cdk-lib";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import { excludeDockerImage } from "../constants/docker";
 import {
@@ -19,144 +15,37 @@ import {
   IFunction,
 } from "aws-cdk-lib/aws-lambda";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
-import { SociIndexBuild } from "deploy-time-build";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import * as tasks from "aws-cdk-lib/aws-stepfunctions-tasks";
+import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 
 export interface EmbeddingProps {
-  readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
-  readonly embeddingContainerVcpu: number;
-  readonly embeddingContainerMemory: number;
   readonly bedrockCustomBotProject: codebuild.IProject;
 }
 
 export class Embedding extends Construct {
-  readonly taskSecurityGroup: ec2.ISecurityGroup;
-  readonly container: ecs.ContainerDefinition;
   readonly removalHandler: IFunction;
-  private _cluster: ecs.Cluster;
   private _updateSyncStatusHandler: IFunction;
   private _fetchStackOutputHandler: IFunction;
   private _StoreKnowledgeBaseIdHandler: IFunction;
   private _StoreGuardrailArnHandler: IFunction;
-  private _taskDefinition: ecs.FargateTaskDefinition;
   private _pipeRole: iam.Role;
   private _stateMachine: sfn.StateMachine;
-  private _taskSecurityGroup: ec2.ISecurityGroup;
-  private _container: ecs.ContainerDefinition;
   private _removalHandler: IFunction;
 
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
-    this.setupCluster(props)
-      .setupEcsTaskDefinition(props)
-      .createEcsContainer(props)
-      .setupStateMachineHandlers(props)
+    this.setupStateMachineHandlers(props)
       .setupStateMachine(props)
       .setupEventBridgePipe(props)
       .setupRemovalHandler(props);
-    this.outputValues();
 
-    this.taskSecurityGroup = this._taskSecurityGroup;
-    this.container = this._container;
     this.removalHandler = this._removalHandler;
-  }
-
-  private setupCluster(props: EmbeddingProps): this {
-    this._cluster = new ecs.Cluster(this, "Cluster", {
-      vpc: props.vpc,
-      containerInsights: true,
-    });
-    return this;
-  }
-
-  private setupEcsTaskDefinition(props: EmbeddingProps): this {
-    if (!this._cluster) {
-      throw new Error(
-        "Cluster must be initialized before setting up the task definition"
-      );
-    }
-
-    this._taskSecurityGroup = new ec2.SecurityGroup(this, "TaskSecurityGroup", {
-      vpc: props.vpc,
-      allowAllOutbound: true,
-    });
-
-    this._taskDefinition = new ecs.FargateTaskDefinition(
-      this,
-      "TaskDefinition",
-      {
-        cpu: props.embeddingContainerVcpu,
-        memoryLimitMiB: props.embeddingContainerMemory,
-        ephemeralStorageGiB: 100,
-        runtimePlatform: {
-          cpuArchitecture: ecs.CpuArchitecture.X86_64,
-          operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
-        },
-      }
-    );
-    this._taskDefinition.addToTaskRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["bedrock:*"],
-        resources: ["*"],
-      })
-    );
-    this._taskDefinition.addToTaskRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["sts:AssumeRole"],
-        resources: [props.tableAccessRole.roleArn],
-      })
-    );
-    return this;
-  }
-
-  private createEcsContainer(props: EmbeddingProps): this {
-    if (!this._taskDefinition) {
-      throw new Error(
-        "Task definition must be set up before creating the container"
-      );
-    }
-
-    const taskLogGroup = new logs.LogGroup(this, "TaskLogGroup", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      retention: logs.RetentionDays.ONE_WEEK,
-    });
-
-    const asset = new DockerImageAsset(this, "Image", {
-      directory: path.join(__dirname, "../../../backend"),
-      file: "embedding/Dockerfile",
-      platform: Platform.LINUX_AMD64,
-      exclude: [...excludeDockerImage],
-    });
-    SociIndexBuild.fromDockerImageAsset(this, "Index", asset);
-
-    this._container = this._taskDefinition.addContainer("Container", {
-      image: ecs.AssetImage.fromDockerImageAsset(asset),
-      logging: ecs.LogDriver.awsLogs({
-        streamPrefix: "embed-task",
-        logGroup: taskLogGroup,
-      }),
-      environment: {
-        BEDROCK_REGION: props.bedrockRegion,
-        ACCOUNT: Stack.of(this).account,
-        REGION: Stack.of(this).region,
-        TABLE_NAME: props.database.tableName,
-        TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
-        DOCUMENT_BUCKET: props.documentBucket.bucketName,
-      },
-    });
-    taskLogGroup.grantWrite(this._container.taskDefinition.executionRole!);
-    this._container.taskDefinition.executionRole?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AmazonECSTaskExecutionRolePolicy"
-      )
-    );
-    return this;
   }
 
   private setupStateMachineHandlers(props: EmbeddingProps): this {
@@ -175,11 +64,6 @@ export class Embedding extends Construct {
         actions: ["bedrock:*"],
         resources: ["*"],
       })
-    );
-    handlerRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaVPCAccessExecutionRole"
-      )
     );
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
@@ -299,12 +183,6 @@ export class Embedding extends Construct {
   }
 
   private setupStateMachine(props: EmbeddingProps): this {
-    if (!this._container) {
-      throw new Error(
-        "Container must be created before setting up the state machine"
-      );
-    }
-
     const extractFirstElement = new sfn.Pass(this, "ExtractFirstElement", {
       parameters: {
         "dynamodb.$": "$[0].dynamodb",
@@ -316,34 +194,6 @@ export class Embedding extends Construct {
         "eventSourceARN.$": "$[0].eventSourceARN",
       },
       resultPath: "$",
-    });
-
-    const ecsTask = new tasks.EcsRunTask(this, "RunEcsTask", {
-      integrationPattern: sfn.IntegrationPattern.RUN_JOB,
-      cluster: this._cluster,
-      taskDefinition: this._taskDefinition,
-      launchTarget: new tasks.EcsFargateLaunchTarget(),
-      containerOverrides: [
-        {
-          containerDefinition: this._container,
-          // We use environment variables to pass the event data to the ecs task
-          // instead of command because JsonPath is not supported on command
-          environment: [
-            {
-              name: "EVENT",
-              // Note that DynamoDB stream batch size is 1
-              value: sfn.JsonPath.stringAt(
-                "States.JsonToString($[0].dynamodb.Keys)"
-              ),
-            },
-          ],
-        },
-      ],
-      assignPublicIp: false,
-      securityGroups: [this._taskSecurityGroup],
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-      },
     });
 
     const startCustomBotBuild = new tasks.CodeBuildStartBuild(
@@ -558,19 +408,14 @@ export class Embedding extends Construct {
       startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
     );
 
-    const definition = new sfn.Choice(this, "CheckKnowledgeBaseExists")
-      .when(
-        sfn.Condition.isPresent("$[0].dynamodb.NewImage.BedrockKnowledgeBase"),
-        extractFirstElement
-          .next(updateSyncStatusRunning)
-          .next(startCustomBotBuild)
-          .next(fetchStackOutput)
-          .next(storeKnowledgeBaseId)
-          .next(storeGuardrailArn)
-          .next(mapIngestionJobs)
-          .next(updateSyncStatusSucceeded)
-      )
-      .otherwise(ecsTask);
+    const definition = extractFirstElement
+      .next(updateSyncStatusRunning)
+      .next(startCustomBotBuild)
+      .next(fetchStackOutput)
+      .next(storeKnowledgeBaseId)
+      .next(storeGuardrailArn)
+      .next(mapIngestionJobs)
+      .next(updateSyncStatusSucceeded);
 
     this._stateMachine = new sfn.StateMachine(this, "StateMachine", {
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
@@ -655,11 +500,6 @@ export class Embedding extends Construct {
     const removeHandlerRole = new iam.Role(this, "RemovalHandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
-    removeHandlerRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaVPCAccessExecutionRole"
-      )
-    );
     removeHandlerRole.addToPolicy(
       // Assume the table access role for row-level access control.
       new iam.PolicyStatement({
@@ -705,8 +545,6 @@ export class Embedding extends Construct {
           exclude: [...excludeDockerImage],
         }
       ),
-      vpc: props.vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       timeout: Duration.minutes(1),
       environment: {
         ACCOUNT: Stack.of(this).account,
@@ -732,27 +570,6 @@ export class Embedding extends Construct {
     );
 
     return this;
-  }
-
-  private outputValues(): void {
-    new CfnOutput(this, "ClusterName", {
-      value: this._cluster.clusterName,
-    });
-    new CfnOutput(this, "TaskDefinitionName", {
-      value: cdk.Fn.select(
-        1,
-        cdk.Fn.split(
-          "/",
-          cdk.Fn.select(
-            5,
-            cdk.Fn.split(":", this._taskDefinition.taskDefinitionArn)
-          )
-        )
-      ),
-    });
-    new CfnOutput(this, "TaskSecurityGroupId", {
-      value: this._taskSecurityGroup.securityGroupId,
-    });
   }
 
   private createUpdateSyncStatusTask(

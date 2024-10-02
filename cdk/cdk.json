@@ -68,12 +68,6 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "rdbSchedules": {
-      "stop": {},
-      "start": {}
-    },
-    "embeddingContainerVcpu": 2048,
-    "embeddingContainerMemory": 4096,
     "natgatewayCount": 2,
     "useBedrockKnowledgeBaseForRag": false
   }
