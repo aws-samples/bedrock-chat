@@ -10,7 +10,6 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
 import * as cdk from "aws-cdk-lib";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import { excludeDockerImage } from "../constants/docker";
@@ -27,7 +26,6 @@ import * as tasks from "aws-cdk-lib/aws-stepfunctions-tasks";
 export interface EmbeddingProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
-  readonly dbSecrets: ISecret;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
@@ -133,9 +131,7 @@ export class Embedding extends Construct {
       directory: path.join(__dirname, "../../../backend"),
       file: "embedding/Dockerfile",
       platform: Platform.LINUX_AMD64,
-      exclude: [
-        ...excludeDockerImage
-      ]
+      exclude: [...excludeDockerImage],
     });
     SociIndexBuild.fromDockerImageAsset(this, "Index", asset);
 
@@ -147,7 +143,6 @@ export class Embedding extends Construct {
       }),
       environment: {
         BEDROCK_REGION: props.bedrockRegion,
-        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         TABLE_NAME: props.database.tableName,
@@ -156,7 +151,6 @@ export class Embedding extends Construct {
       },
     });
     taskLogGroup.grantWrite(this._container.taskDefinition.executionRole!);
-    props.dbSecrets.grantRead(this._container.taskDefinition.taskRole);
     this._container.taskDefinition.executionRole?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         "service-role/AmazonECSTaskExecutionRolePolicy"
@@ -211,9 +205,7 @@ export class Embedding extends Construct {
             cmd: [
               "embedding_statemachine.bedrock_knowledge_base.update_bot_status.handler",
             ],
-            exclude: [
-              ...excludeDockerImage
-            ]
+            exclude: [...excludeDockerImage],
           }
         ),
         memorySize: 512,
@@ -240,9 +232,7 @@ export class Embedding extends Construct {
             cmd: [
               "embedding_statemachine.bedrock_knowledge_base.fetch_stack_output.handler",
             ],
-            exclude: [
-              ...excludeDockerImage
-            ]
+            exclude: [...excludeDockerImage],
           }
         ),
         memorySize: 512,
@@ -265,9 +255,7 @@ export class Embedding extends Construct {
             cmd: [
               "embedding_statemachine.bedrock_knowledge_base.store_knowledge_base_id.handler",
             ],
-            exclude: [
-              ...excludeDockerImage
-            ]
+            exclude: [...excludeDockerImage],
           }
         ),
         memorySize: 512,
@@ -293,9 +281,7 @@ export class Embedding extends Construct {
             cmd: [
               "embedding_statemachine.guardrails.store_guardrail_arn.handler",
             ],
-            exclude: [
-              ...excludeDockerImage
-            ]
+            exclude: [...excludeDockerImage],
           }
         ),
         memorySize: 512,
@@ -399,7 +385,7 @@ export class Embedding extends Construct {
             value: sfn.JsonPath.stringAt(
               "States.JsonToString($.dynamodb.NewImage.GuardrailsParams.M)"
             ),
-          }
+          },
         },
         resultPath: "$.Build",
       }
@@ -498,30 +484,34 @@ export class Embedding extends Construct {
       }
     );
 
-    const getIngestionJob = new tasks.CallAwsServiceCrossRegion(this, "GetIngestionJob", {
-      service: "bedrock-agent",
-      action: "getIngestionJob",
-      iamAction: "bedrock:GetIngestionJob",
-      region: props.bedrockRegion,
-      parameters: {
-        dataSourceId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.dataSourceId"
-        ),
-        knowledgeBaseId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.knowledgeBaseId"
-        ),
-        ingestionJobId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.ingestionJobId"
-        ),
-      },
-      // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
-      iamResources: [
-        `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
-          Stack.of(this).account
-        }:knowledge-base/*`,
-      ],
-      resultPath: "$.IngestionJob",
-    });
+    const getIngestionJob = new tasks.CallAwsServiceCrossRegion(
+      this,
+      "GetIngestionJob",
+      {
+        service: "bedrock-agent",
+        action: "getIngestionJob",
+        iamAction: "bedrock:GetIngestionJob",
+        region: props.bedrockRegion,
+        parameters: {
+          dataSourceId: sfn.JsonPath.stringAt(
+            "$.IngestionJob.ingestionJob.dataSourceId"
+          ),
+          knowledgeBaseId: sfn.JsonPath.stringAt(
+            "$.IngestionJob.ingestionJob.knowledgeBaseId"
+          ),
+          ingestionJobId: sfn.JsonPath.stringAt(
+            "$.IngestionJob.ingestionJob.ingestionJobId"
+          ),
+        },
+        // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
+        iamResources: [
+          `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
+            Stack.of(this).account
+          }:knowledge-base/*`,
+        ],
+        resultPath: "$.IngestionJob",
+      }
+    );
 
     const waitTask = new sfn.Wait(this, "WaitSeconds", {
       time: sfn.WaitTime.duration(Duration.seconds(3)),
@@ -712,9 +702,7 @@ export class Embedding extends Construct {
           platform: Platform.LINUX_AMD64,
           file: "lambda.Dockerfile",
           cmd: ["app.bot_remove.handler"],
-          exclude: [
-            ...excludeDockerImage,
-          ]
+          exclude: [...excludeDockerImage],
         }
       ),
       vpc: props.vpc,
@@ -726,12 +714,10 @@ export class Embedding extends Construct {
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_NAME: props.database.tableName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
-        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
       role: removeHandlerRole,
     });
-    props.dbSecrets.grantRead(this._removalHandler);
     this._removalHandler.addEventSource(
       new DynamoEventSource(props.database, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,

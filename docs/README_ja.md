@@ -15,7 +15,7 @@
 
 ### ボットのカスタマイズ
 
-外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。カスタマイズされたボットはスタンドアロンの API として公開できます (詳細は[こちら](./PUBLISH_API.md)をご覧ください)。
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。カスタマイズされたボットはスタンドアロンの API として公開できます (詳細は[こちら](./PUBLISH_API.md)をご覧ください)。
 
 ![](./imgs/bot_creation_ja.png)
 ![](./imgs/bot_chat_ja.png)
@@ -217,30 +217,6 @@ GENERATION_CONFIG = {
 
 cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
 
-### RAG 用ベクトル DB の停止
-
-[cdk.json](../cdk/cdk.json) を以下のように CRON 形式で設定することで、[VectorStore コンストラクト](../cdk/lib/constructs/vectorstore.ts)で作成される Aurora Serverless リソースを停止・再起動できます。この設定を適用することで運用コストの削減が見込めます。なお、デフォルト設定で Aurora Serverless は常時起動状態になっています。なお UTC で実行される点に留意ください。
-
-```json
-...
-"rdbSchedules": {
-  "stop": {
-    "minute": "50",
-    "hour": "10",
-    "day": "*",
-    "month": "*",
-    "year": "*"
-  },
-  "start": {
-    "minute": "40",
-    "hour": "2",
-    "day": "*",
-    "month": "*",
-    "year": "*"
-  }
-}
-```
-
 ### 言語設定について
 
 このアセットは、[i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) を用いて自動で言語を検出します。もし任意の言語へ変更されたい場合はアプリケーション左下のメニューから切り替えてください。なお以下のように Query String で設定することも可能です。
@@ -287,7 +263,3 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 - [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
 - [CONTRIBUTING](../CONTRIBUTING.md)
-
-### RAG (Retrieval Augmented Generation, 検索拡張生成)
-
-[こちら](./RAG_ja.md)を参照

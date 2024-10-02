@@ -31,7 +31,7 @@ To enable the Agent functionality for your customized chatbot, follow these step
 ![](./imgs/agent_tools.png)
 
 > [!Important]
-> It's important to note that enabling any tool in the Agent section will automatically treat the ["Knowledge" functionality](RAG.md) as a tool as well. This means that the LLM will autonomously determine whether to use the "Knowledge" to answer user queries, considering it as one of the available tools at its disposal.
+> It's important to note that enabling any tool in the Agent section will automatically treat the ["Knowledge" functionality](https://aws.amazon.com/what-is/retrieval-augmented-generation/) as a tool as well. This means that the LLM will autonomously determine whether to use the "Knowledge" to answer user queries, considering it as one of the available tools at its disposal.
 
 4. By default "Internet Search" tool is provided. This tool allows the Agent to fetch information from the internet to answer user questions.
 

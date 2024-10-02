@@ -28,7 +28,6 @@ import { excludeDockerImage } from "../constants/docker";
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
-  readonly dbSecrets: ISecret;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -180,9 +179,7 @@ export class Api extends Construct {
         {
           platform: Platform.LINUX_AMD64,
           file: "Dockerfile",
-          exclude: [
-            ...excludeDockerImage
-          ]
+          exclude: [...excludeDockerImage],
         }
       ),
       vpc: props.vpc,
@@ -198,7 +195,6 @@ export class Api extends Construct {
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
-        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
@@ -214,7 +210,6 @@ export class Api extends Construct {
       },
       role: handlerRole,
     });
-    props.dbSecrets.grantRead(handler);
 
     const api = new HttpApi(this, "Default", {
       corsPreflight: {

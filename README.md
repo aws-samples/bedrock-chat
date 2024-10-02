@@ -22,7 +22,7 @@ Not only text but also images are available with [Anthropic's Claude 3](https://
 
 ### Bot Personalization
 
-Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users. The customized bot also can be published as stand-alone API (See the [detail](./docs/PUBLISH_API.md)).
+Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/). The bot can be shared among application users. The customized bot also can be published as stand-alone API (See the [detail](./docs/PUBLISH_API.md)).
 
 ![](./docs/imgs/bot_creation.png)
 ![](./docs/imgs/bot_chat.png)
@@ -231,30 +231,6 @@ DEFAULT_GENERATION_CONFIG = {
 
 If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
 
-### Stopping Vector DB for RAG
-
-By setting [cdk.json](./cdk/cdk.json) in the following CRON format, you can stop and restart Aurora Serverless resources created by the [VectorStore construct](./cdk/lib/constructs/vectorstore.ts). Applying this setting can reduce operating costs. By default, Aurora Serverless is always running. Note that it will be executed in UTC time.
-
-```json
-...
-"rdbSchedules": {
-  "stop": {
-    "minute": "50",
-    "hour": "10",
-    "day": "*",
-    "month": "*",
-    "year": "*"
-  },
-  "start": {
-    "minute": "40",
-    "hour": "2",
-    "day": "*",
-    "month": "*",
-    "year": "*"
-  }
-}
-```
-
 ### Language Settings
 
 This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
@@ -315,10 +291,6 @@ Please also take a look at the following guidelines before contributing:
 
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
-
-### RAG (Retrieval Augmented Generation)
-
-See [here](./docs/RAG.md).
 
 ## Contacts
 

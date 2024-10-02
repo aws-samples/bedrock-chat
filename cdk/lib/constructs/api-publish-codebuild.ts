@@ -7,7 +7,6 @@ import { NagSuppressions } from "cdk-nag";
 
 export interface ApiPublishCodebuildProps {
   readonly sourceBucket: s3.Bucket;
-  readonly dbSecret: secretsmanager.ISecret;
 }
 
 export class ApiPublishCodebuild extends Construct {
@@ -65,7 +64,6 @@ export class ApiPublishCodebuild extends Construct {
       }),
     });
     sourceBucket.grantRead(project.role!);
-    props.dbSecret.grantRead(project.role!);
 
     // Allow `cdk deploy`
     project.role!.addToPrincipalPolicy(

@@ -24,7 +24,6 @@ import { excludeDockerImage } from "../constants/docker";
 export interface WebSocketProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
-  readonly dbSecrets: ISecret;
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
@@ -94,9 +93,7 @@ export class WebSocket extends Construct {
         {
           platform: Platform.LINUX_AMD64,
           file: "lambda.Dockerfile",
-          exclude: [
-            ...excludeDockerImage
-          ]
+          exclude: [...excludeDockerImage],
         }
       ),
       vpc: props.vpc,
@@ -112,14 +109,12 @@ export class WebSocket extends Construct {
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
-        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
         WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
         ENABLE_MISTRAL: props.enableMistral.toString(),
       },
       role: handlerRole,
     });
-    props.dbSecrets.grantRead(handler);
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {

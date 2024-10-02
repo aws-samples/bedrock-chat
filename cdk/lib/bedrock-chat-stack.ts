@@ -6,9 +6,7 @@ import {
   HttpMethods,
   ObjectOwnership,
 } from "aws-cdk-lib/aws-s3";
-import {
-  CloudFrontWebDistribution,
-} from "aws-cdk-lib/aws-cloudfront";
+import { CloudFrontWebDistribution } from "aws-cdk-lib/aws-cloudfront";
 import { Construct } from "constructs";
 import { Auth } from "./constructs/auth";
 import { Api } from "./constructs/api";
@@ -18,7 +16,6 @@ import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
-import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
@@ -45,7 +42,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly selfSignUpEnabled: boolean;
   readonly enableIpV6: boolean;
   readonly natgatewayCount: number;
-  readonly documentBucket: Bucket
+  readonly documentBucket: Bucket;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -54,7 +51,6 @@ export class BedrockChatStack extends cdk.Stack {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
       ...props,
     });
-    const cronSchedule = createCronSchedule(props.rdsSchedules);
 
     const vpc = new ec2.Vpc(this, "VPC", {
       natGateways: props.natgatewayCount,
@@ -63,10 +59,6 @@ export class BedrockChatStack extends cdk.Stack {
       (subnet.node.defaultChild as ec2.CfnSubnet).mapPublicIpOnLaunch = false;
     });
 
-    const vectorStore = new VectorStore(this, "VectorStore", {
-      vpc: vpc,
-      rdsSchedule: cronSchedule,
-    });
     const idp = identityProvider(props.identityProviders);
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
@@ -125,7 +117,6 @@ export class BedrockChatStack extends cdk.Stack {
       "ApiPublishCodebuild",
       {
         sourceBucket,
-        dbSecret: vectorStore.secret,
       }
     );
     // CodeBuild used for KnowledgeBase
@@ -180,7 +171,6 @@ export class BedrockChatStack extends cdk.Stack {
       auth,
       bedrockRegion: props.bedrockRegion,
       tableAccessRole: database.tableAccessRole,
-      dbSecrets: vectorStore.secret,
       documentBucket: props.documentBucket,
       apiPublishProject: apiPublishCodebuild.project,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
@@ -194,7 +184,6 @@ export class BedrockChatStack extends cdk.Stack {
     const websocket = new WebSocket(this, "WebSocket", {
       accessLogBucket,
       vpc,
-      dbSecrets: vectorStore.secret,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       websocketSessionTable: database.websocketSessionTable,
@@ -214,23 +203,23 @@ export class BedrockChatStack extends cdk.Stack {
       idp,
     });
 
-    const cloudFrontWebDistribution = frontend.cloudFrontWebDistribution.node.defaultChild as CloudFrontWebDistribution;
+    const cloudFrontWebDistribution = frontend.cloudFrontWebDistribution.node
+      .defaultChild as CloudFrontWebDistribution;
     props.documentBucket.addCorsRule({
-        allowedMethods: [HttpMethods.PUT],
-        allowedOrigins: [
-          `https://${cloudFrontWebDistribution.distributionDomainName}`, // frontend.getOrigin() is cyclic reference
-          "http://localhost:5173",
-          "*"
-        ],
-        allowedHeaders: ["*"],
-        maxAge: 3000,
+      allowedMethods: [HttpMethods.PUT],
+      allowedOrigins: [
+        `https://${cloudFrontWebDistribution.distributionDomainName}`, // frontend.getOrigin() is cyclic reference
+        "http://localhost:5173",
+        "*",
+      ],
+      allowedHeaders: ["*"],
+      maxAge: 3000,
     });
 
     const embedding = new Embedding(this, "Embedding", {
       vpc,
       bedrockRegion: props.bedrockRegion,
       database: database.table,
-      dbSecrets: vectorStore.secret,
       tableAccessRole: database.tableAccessRole,
       documentBucket: props.documentBucket,
       embeddingContainerVcpu: props.embeddingContainerVcpu,
@@ -238,11 +227,6 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
     });
     props.documentBucket.grantRead(embedding.container.taskDefinition.taskRole);
-
-    vectorStore.allowFrom(embedding.taskSecurityGroup);
-    vectorStore.allowFrom(embedding.removalHandler);
-    vectorStore.allowFrom(backendApi.handler);
-    vectorStore.allowFrom(websocket.handler);
 
     // WebAcl for published API
     const webAclForPublishedApi = new WebAclForPublishedApi(
@@ -294,18 +278,6 @@ export class BedrockChatStack extends cdk.Stack {
       value: vpc.privateSubnets[1].subnetId,
       exportName: "BedrockClaudeChatPrivateSubnetId1",
     });
-    new CfnOutput(this, "DbConfigSecretArn", {
-      value: vectorStore.secret.secretArn,
-      exportName: "BedrockClaudeChatDbConfigSecretArn",
-    });
-    new CfnOutput(this, "DbConfigHostname", {
-      value: vectorStore.cluster.clusterEndpoint.hostname,
-      exportName: "BedrockClaudeChatDbConfigHostname",
-    });
-    new CfnOutput(this, "DbConfigPort", {
-      value: vectorStore.cluster.clusterEndpoint.port.toString(),
-      exportName: "BedrockClaudeChatDbConfigPort",
-    });
     new CfnOutput(this, "ConversationTableName", {
       value: database.table.tableName,
       exportName: "BedrockClaudeChatConversationTableName",
@@ -313,10 +285,6 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "TableAccessRoleArn", {
       value: database.tableAccessRole.roleArn,
       exportName: "BedrockClaudeChatTableAccessRoleArn",
-    });
-    new CfnOutput(this, "DbSecurityGroupId", {
-      value: vectorStore.securityGroup.securityGroupId,
-      exportName: "BedrockClaudeChatDbSecurityGroupId",
     });
     new CfnOutput(this, "LargeMessageBucketName", {
       value: largeMessageBucket.bucketName,
