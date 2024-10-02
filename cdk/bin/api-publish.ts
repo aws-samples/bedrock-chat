@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { ApiPublishmentStack, VpcConfig } from "../lib/api-publishment-stack";
+import { ApiPublishmentStack } from "../lib/api-publishment-stack";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
 const app = new cdk.App();
@@ -52,49 +52,12 @@ console.log(`PUBLISHED_API_ID: ${PUBLISHED_API_ID}`);
 console.log(`PUBLISHED_API_ALLOWED_ORIGINS: ${PUBLISHED_API_ALLOWED_ORIGINS}`);
 
 const webAclArn = cdk.Fn.importValue("PublishedApiWebAclArn");
-const vpcId = cdk.Fn.importValue("BedrockClaudeChatVpcId");
-const availabilityZone0 = cdk.Fn.importValue(
-  "BedrockClaudeChatAvailabilityZone0"
-);
-const availabilityZone1 = cdk.Fn.importValue(
-  "BedrockClaudeChatAvailabilityZone1"
-);
-const publicSubnetId0 = cdk.Fn.importValue("BedrockClaudeChatPublicSubnetId0");
-const publicSubnetId1 = cdk.Fn.importValue("BedrockClaudeChatPublicSubnetId1");
-const privateSubnetId0 = cdk.Fn.importValue(
-  "BedrockClaudeChatPrivateSubnetId0"
-);
-const privateSubnetId1 = cdk.Fn.importValue(
-  "BedrockClaudeChatPrivateSubnetId1"
-);
-
-const vpcConfig = {
-  vpcId: vpcId,
-  availabilityZones: [availabilityZone0, availabilityZone1],
-  publicSubnetIds: [publicSubnetId0, publicSubnetId1],
-  privateSubnetIds: [privateSubnetId0, privateSubnetId1],
-  isolatedSubnetIds: [],
-};
 
 const conversationTableName = cdk.Fn.importValue(
   "BedrockClaudeChatConversationTableName"
 );
 const tableAccessRoleArn = cdk.Fn.importValue(
   "BedrockClaudeChatTableAccessRoleArn"
-);
-
-const dbConfigHostname = cdk.Fn.importValue(
-  "BedrockClaudeChatDbConfigHostname"
-);
-const dbConfigPort = cdk.Token.asNumber(
-  cdk.Fn.importValue("BedrockClaudeChatDbConfigPort")
-);
-
-const dbConfigSecretArn = cdk.Fn.importValue(
-  "BedrockClaudeChatDbConfigSecretArn"
-);
-const dbSecurityGroupId = cdk.Fn.importValue(
-  "BedrockClaudeChatDbSecurityGroupId"
 );
 const largeMessageBucketName = cdk.Fn.importValue(
   "BedrockClaudeChatLargeMessageBucketName"
@@ -109,13 +72,8 @@ const publishedApi = new ApiPublishmentStack(
       region: process.env.CDK_DEFAULT_REGION,
     },
     bedrockRegion: BEDROCK_REGION,
-    vpcConfig: vpcConfig,
     conversationTableName: conversationTableName,
     tableAccessRoleArn: tableAccessRoleArn,
-    dbConfigSecretArn: dbConfigSecretArn,
-    dbConfigHostname: dbConfigHostname,
-    dbConfigPort: dbConfigPort,
-    dbSecurityGroupId: dbSecurityGroupId,
     webAclArn: webAclArn,
     largeMessageBucketName: largeMessageBucketName,
     usagePlan: {
