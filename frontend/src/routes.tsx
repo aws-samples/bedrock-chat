@@ -17,8 +17,6 @@ import {
 } from 'react-router-dom';
 import { useMemo } from 'react';
 
-const KB_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_KB === 'true';
-
 const rootChildren = [
   {
     path: '/',

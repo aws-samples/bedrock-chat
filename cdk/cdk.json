@@ -68,7 +68,6 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "natgatewayCount": 2,
-    "useBedrockKnowledgeBaseForRag": false
+    "natgatewayCount": 2
   }
 }

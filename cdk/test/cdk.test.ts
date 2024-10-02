@@ -49,12 +49,7 @@ describe("Bedrock Chat Stack Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
-        rdsSchedules: {
-          stop: {},
-          start: {},
-        },
         enableMistral: false,
-        enableKB: false,
         selfSignUpEnabled: true,
         natgatewayCount: 2,
         enableIpV6: true,
@@ -123,12 +118,7 @@ describe("Bedrock Chat Stack Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
-        rdsSchedules: {
-          stop: {},
-          start: {},
-        },
         enableMistral: false,
-        enableKB: false,
         selfSignUpEnabled: true,
         natgatewayCount: 2,
         enableIpV6: true,
@@ -187,12 +177,7 @@ describe("Bedrock Chat Stack Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
       autoJoinUserGroups: [],
-      rdsSchedules: {
-        stop: {},
-        start: {},
-      },
       enableMistral: false,
-      enableKB: false,
       selfSignUpEnabled: true,
       natgatewayCount: 2,
       enableIpV6: true,
@@ -207,110 +192,6 @@ describe("Bedrock Chat Stack Test", () => {
         VITE_APP_ENABLE_MISTRAL: "false",
       },
     });
-  });
-});
-
-describe("Scheduler Test", () => {
-  test("has schedules", () => {
-    const app = new cdk.App();
-
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
-      app,
-      "BedrockRegionResourcesStack",
-      {
-        env: {
-          region: "us-east-1",
-        },
-        crossRegionReferences: true,
-      }
-    );
-
-    const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
-      env: {
-        region: "us-west-2",
-      },
-      bedrockRegion: "us-east-1",
-      crossRegionReferences: true,
-      webAclId: "",
-      identityProviders: [],
-      userPoolDomainPrefix: "",
-      publishedApiAllowedIpV4AddressRanges: [""],
-      publishedApiAllowedIpV6AddressRanges: [""],
-      allowedSignUpEmailDomains: [],
-      autoJoinUserGroups: [],
-      rdsSchedules: {
-        stop: {
-          minute: "00",
-          hour: "22",
-          day: "*",
-          month: "*",
-          year: "*",
-        },
-        start: {
-          minute: "00",
-          hour: "7",
-          day: "*",
-          month: "*",
-          year: "*",
-        },
-      },
-      enableMistral: false,
-      enableKB: false,
-      selfSignUpEnabled: true,
-      natgatewayCount: 2,
-      enableIpV6: true,
-      documentBucket: bedrockRegionResourcesStack.documentBucket,
-    });
-    const template = Template.fromStack(hasScheduleStack);
-    template.hasResourceProperties("AWS::Scheduler::Schedule", {
-      ScheduleExpression: "cron(00 22 * * ? *)",
-    });
-
-    template.hasResourceProperties("AWS::Scheduler::Schedule", {
-      ScheduleExpression: "cron(00 7 * * ? *)",
-    });
-  });
-  test("has'nt schedules", () => {
-    const app = new cdk.App();
-
-    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
-      app,
-      "BedrockRegionResourcesStack",
-      {
-        env: {
-          region: "us-east-1",
-        },
-        crossRegionReferences: true,
-      }
-    );
-
-    const defaultStack = new BedrockChatStack(app, "DefaultStack", {
-      env: {
-        region: "us-west-2",
-      },
-      bedrockRegion: "us-east-1",
-      crossRegionReferences: true,
-      webAclId: "",
-      identityProviders: [],
-      userPoolDomainPrefix: "",
-      publishedApiAllowedIpV4AddressRanges: [""],
-      publishedApiAllowedIpV6AddressRanges: [""],
-      allowedSignUpEmailDomains: [],
-      autoJoinUserGroups: [],
-      rdsSchedules: {
-        stop: {},
-        start: {},
-      },
-      enableMistral: false,
-      enableKB: false,
-      selfSignUpEnabled: true,
-      natgatewayCount: 2,
-      enableIpV6: true,
-      documentBucket: bedrockRegionResourcesStack.documentBucket,
-    });
-    const template = Template.fromStack(defaultStack);
-    // The stack should have only 1 rule for exporting the data from ddb to s3
-    template.resourceCountIs("AWS::Events::Rule", 1);
   });
 });
 

@@ -37,9 +37,6 @@ const AUTO_JOIN_USER_GROUPS: string[] =
 const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
 const SELF_SIGN_UP_ENABLED: boolean =
   app.node.tryGetContext("selfSignUpEnabled");
-const ENABLE_KB: boolean = app.node.tryGetContext(
-  "useBedrockKnowledgeBaseForRag"
-);
 
 // how many nat gateways
 const NATGATEWAY_COUNT: number = app.node.tryGetContext("natgatewayCount");
@@ -89,9 +86,7 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
   allowedSignUpEmailDomains: ALLOWED_SIGN_UP_EMAIL_DOMAINS,
   autoJoinUserGroups: AUTO_JOIN_USER_GROUPS,
-  rdsSchedules: RDS_SCHEDULES,
   enableMistral: ENABLE_MISTRAL,
-  enableKB: ENABLE_KB,
   selfSignUpEnabled: SELF_SIGN_UP_ENABLED,
   natgatewayCount: NATGATEWAY_COUNT,
   documentBucket: bedrockRegionResources.documentBucket,

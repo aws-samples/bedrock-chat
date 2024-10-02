@@ -13,7 +13,6 @@ interface ImportMetaEnv {
   readonly VITE_APP_CUSTOM_PROVIDER_ENABLED: string;
   readonly VITE_APP_CUSTOM_PROVIDER_NAME: string;
   readonly VITE_APP_ENABLE_MISTRAL: string;
-  readonly VITE_APP_ENABLE_KB: string;
 }
 
 interface ImportMeta {
