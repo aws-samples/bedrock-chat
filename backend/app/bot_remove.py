@@ -1,54 +1,22 @@
-import json
 import os
 from typing import Any
 
 import boto3
-import pg8000
-from app.repositories.api_publication import delete_api_key, find_usage_plan_by_id
 from app.repositories.api_publication import (
+    delete_api_key,
     delete_stack_by_bot_id,
     find_stack_by_bot_id,
+    find_usage_plan_by_id,
 )
 from app.repositories.common import RecordNotFoundError, decompose_bot_id
-from aws_lambda_powertools.utilities import parameters
-from app.repositories.custom_bot import find_public_bot_by_id
 
-DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
 s3_client = boto3.client("s3", BEDROCK_REGION)
 
 
-def delete_from_postgres(bot_id: str):
-    """Delete data related to `bot_id` from vector store (i.e. PostgreSQL)."""
-
-    secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
-    db_info = json.loads(secrets)
-
-    conn = pg8000.connect(
-        database=db_info["dbname"],
-        host=db_info["host"],
-        port=db_info["port"],
-        user=db_info["username"],
-        password=db_info["password"],
-    )
-
-    try:
-        with conn.cursor() as cursor:
-            delete_query = "DELETE FROM items WHERE botid = %s"
-            cursor.execute(delete_query, (bot_id,))
-        conn.commit()
-        print(f"Successfully deleted records for bot_id: {bot_id}")
-    except Exception as e:
-        conn.rollback()
-        print(f"Error deleting records for bot_id: {bot_id}")
-        print(e)
-    finally:
-        conn.close()
-
-
-def delete_kb_stack_by_bot_id(bot_id: str):
+def delete_custom_bot_stack_by_bot_id(bot_id: str):
     client = boto3.client("cloudformation")
     stack_name = f"BrChatKbStack{bot_id}"
     try:
@@ -106,16 +74,9 @@ def handler(event, context):
     bot_id = decompose_bot_id(sk)
 
     delete_from_s3(user_id, bot_id)
+    delete_custom_bot_stack_by_bot_id(bot_id)
 
-    try:
-        print(f"Remove Bedrock Knowledge Base Stack.")
-        # Remove Knowledge Base Stack
-        delete_kb_stack_by_bot_id(bot_id)
-    except RecordNotFoundError:
-        print(f"Remove records from PostgreSQL.")
-        delete_from_postgres(bot_id)
-
-    # Check if cloudformation stack exists
+    # Check if api published stack exists
     try:
         stack = find_stack_by_bot_id(bot_id)
     except RecordNotFoundError:
