@@ -1,8 +1,10 @@
 import json
 
-from app.agents.tools.base import BaseTool, StructuredTool
+from app.agents.tools.agent_tool import AgentTool
+from app.repositories.models.custom_bot import BotModel
+from app.routes.schemas.conversation import type_model_name
 from duckduckgo_search import DDGS
-from langchain_core.pydantic_v1 import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator
 
 
 class InternetSearchInput(BaseModel):
@@ -14,7 +16,7 @@ class InternetSearchInput(BaseModel):
         description="The time limit for the search. Options are 'd' (day), 'w' (week), 'm' (month), 'y' (year)."
     )
 
-    @root_validator
+    @root_validator(pre=True)
     def validate_country(cls, values):
         country = values.get("country")
         if country not in [
@@ -33,7 +35,13 @@ class InternetSearchInput(BaseModel):
         return values
 
 
-def internet_search(query: str, time_limit: str, country: str) -> str:
+def internet_search(
+    tool_input: InternetSearchInput, bot: BotModel | None, model: type_model_name | None
+) -> str:
+    query = tool_input.query
+    time_limit = tool_input.time_limit
+    country = tool_input.country
+
     REGION = country
     SAFE_SEARCH = "moderate"
     MAX_RESULTS = 20
@@ -51,9 +59,9 @@ def internet_search(query: str, time_limit: str, country: str) -> str:
     return json.dumps(res)
 
 
-internet_search_tool = StructuredTool(
-    func=internet_search,
+internet_search_tool = AgentTool(
     name="internet_search",
     description="Search the internet for information.",
     args_schema=InternetSearchInput,
+    function=internet_search,
 )

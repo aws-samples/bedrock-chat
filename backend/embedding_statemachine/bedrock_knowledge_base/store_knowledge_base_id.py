@@ -1,13 +1,13 @@
-import os
 import json
 import logging
+import os
 
 import boto3
-from retry import retry
-from app.routes.schemas.bot import type_sync_status
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import decompose_bot_id, update_knowledge_base_id
-from typing import TypedDict
+from app.routes.schemas.bot import type_sync_status
+from retry import retry
+from typing_extensions import TypedDict
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

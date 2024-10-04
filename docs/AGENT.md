@@ -35,7 +35,8 @@ To enable the Agent functionality for your customized chatbot, follow these step
 
 4. By default "Internet Search" tool is provided. This tool allows the Agent to fetch information from the internet to answer user questions.
 
-![](./imgs/agent.gif)
+![](./imgs/agent1.png)
+![](./imgs/agent2.png)
 
 This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It's suitable for PoC or demo purpose, but if you'd like to use for production environment, we recommend to use another search API.
 
@@ -59,7 +60,6 @@ To develop your own custom tools for the Agent, follow these guidelines:
 
   - Edit i18n files. Open [en/index.ts](../frontend/src/i18n/en/index.ts) and add your own `name` and `description` on `agent.tools`.
   - Edit `xx/index.ts` as well. Where `xx` represents the country code you wish.
-  - Edit [formatDescription.ts](../frontend/src/features/agent/functions/formatDescription.ts) so that frontend app can refer to it correctly.
 
 - Run `cdk deploy` to deploy your changes. This will make your custom tool available in the custom bot screen.
 

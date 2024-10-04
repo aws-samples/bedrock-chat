@@ -9,7 +9,7 @@ export type BedrockKnowledgeBase = {
   searchParams: SearchParams;
 };
 
-export type EmbeddingsModel = 'titan_v1' | 'cohere_multilingual_v3';
+export type EmbeddingsModel = 'titan_v2' | 'cohere_multilingual_v3';
 
 export type ChunkingStrategy = 'default' | 'fixed_size' | 'none';
 

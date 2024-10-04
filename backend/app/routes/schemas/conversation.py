@@ -1,5 +1,14 @@
 import base64
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from app.repositories.models.conversation import (
+        AgentContentModel,
+        AgentMessageModel,
+        AgentToolResultModel,
+        AgentToolResultModelContentModel,
+        AgentToolUseContentModel,
+    )
 
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field, root_validator, validator
@@ -88,6 +97,76 @@ class Chunk(BaseSchema):
     rank: int
 
 
+class AgentToolUseContent(BaseSchema):
+    tool_use_id: str
+    name: str
+    input: dict
+
+    @classmethod
+    def from_model(cls, model: "AgentToolUseContentModel"):
+        return AgentToolUseContent(
+            tool_use_id=model.tool_use_id, name=model.name, input=model.input
+        )
+
+
+class AgentToolResultContent(BaseSchema):
+    json_: dict | None  # `json` is a reserved keyword on pydantic
+    text: str | None
+
+    @classmethod
+    def from_model(cls, model: "AgentToolResultModelContentModel"):
+        return AgentToolResultContent(json_=model.json_, text=model.text)
+
+
+class AgentToolResult(BaseSchema):
+    tool_use_id: str
+    content: AgentToolResultContent
+    status: str
+
+    @classmethod
+    def from_model(cls, model: "AgentToolResultModel"):
+        return AgentToolResult(
+            tool_use_id=model.tool_use_id,
+            content=AgentToolResultContent.from_model(model.content),
+            status=model.status,
+        )
+
+
+class AgentContent(BaseSchema):
+    content_type: Literal["text", "toolUse", "toolResult"]
+    body: str | AgentToolUseContent | AgentToolResult
+
+    @classmethod
+    def from_model(cls, model: "AgentContentModel"):
+        if model.content_type == "text":
+            return AgentContent(content_type="text", body=model.body)  # type: ignore[arg-type]
+        elif model.content_type == "toolUse":
+            return AgentContent(
+                content_type="toolUse",
+                body=AgentToolUseContent.from_model(model.body),  # type: ignore[arg-type]
+            )
+        elif model.content_type == "toolResult":
+            return AgentContent(
+                content_type="toolResult",
+                body=AgentToolResult.from_model(model.body),  # type: ignore[arg-type]
+            )
+        else:
+            # Should never reach here
+            raise ValueError(f"Invalid content type: {model.content_type}")
+
+
+class AgentMessage(BaseSchema):
+    role: str
+    content: list[AgentContent]
+
+    @classmethod
+    def from_model(cls, model: "AgentMessageModel"):
+        return AgentMessage(
+            role=model.role,
+            content=[AgentContent.from_model(content) for content in model.content],
+        )
+
+
 class MessageInput(BaseSchema):
     role: str
     content: list[Content]
@@ -106,6 +185,7 @@ class MessageOutput(BaseSchema):
     feedback: FeedbackOutput | None
     used_chunks: list[Chunk] | None
     parent: str | None
+    thinking_log: list[AgentMessage] | None
 
 
 class ChatInput(BaseSchema):

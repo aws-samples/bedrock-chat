@@ -379,7 +379,7 @@ describe("Bedrock Knowledge Base Stack", () => {
         },
       },
       embeddings_model: {
-        S: "titan_v1",
+        S: "titan_v2",
       },
     };
 

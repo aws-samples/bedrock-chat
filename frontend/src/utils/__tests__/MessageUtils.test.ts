@@ -18,6 +18,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -36,6 +37,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '1');
@@ -57,6 +59,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -71,6 +74,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -89,6 +93,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2',
@@ -105,6 +110,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2');
@@ -126,6 +132,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -140,6 +147,7 @@ describe('convertMessageMapToArray', () => {
         children: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3': {
         role: 'user',
@@ -154,6 +162,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -172,6 +181,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2',
@@ -188,6 +198,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '3',
@@ -204,6 +215,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '3');
@@ -225,6 +237,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -239,6 +252,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -253,6 +267,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -271,6 +286,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-1',
@@ -287,6 +303,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2-1');
@@ -308,6 +325,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -322,6 +340,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -336,6 +355,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -354,6 +374,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2',
@@ -370,6 +391,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -391,6 +413,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -405,6 +428,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -419,6 +443,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-1': {
         role: 'user',
@@ -433,6 +458,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -451,6 +477,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2',
@@ -467,6 +494,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2-1',
@@ -483,6 +511,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2-1');
@@ -504,6 +533,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -518,6 +548,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -532,6 +563,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-1': {
         role: 'user',
@@ -546,6 +578,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -564,6 +597,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2',
@@ -580,6 +614,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2-1',
@@ -596,6 +631,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -617,6 +653,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -631,6 +668,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -645,6 +683,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-1': {
         role: 'user',
@@ -659,6 +698,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-2': {
         role: 'user',
@@ -673,6 +713,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-2-2-1', '2-2-2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-2-1': {
         role: 'user',
@@ -687,6 +728,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2-2-2': {
         role: 'user',
@@ -701,6 +743,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -719,6 +762,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2',
@@ -735,6 +779,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2-1',
@@ -751,6 +796,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2-2',
@@ -767,6 +813,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-2-2-1',
@@ -783,6 +830,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-2-2-1', '2-2-2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -804,6 +852,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1': {
         role: 'user',
@@ -818,6 +867,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -832,6 +882,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -850,6 +901,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2',
@@ -866,6 +918,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '2');
@@ -887,6 +940,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1': {
         role: 'user',
@@ -901,6 +955,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2': {
         role: 'user',
@@ -915,6 +970,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1-1': {
         role: 'user',
@@ -929,6 +985,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2-1': {
         role: 'user',
@@ -943,6 +1000,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -961,6 +1019,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '1-1-1',
@@ -977,6 +1036,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-1-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '1-1');
@@ -998,6 +1058,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1': {
         role: 'user',
@@ -1012,6 +1073,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2': {
         role: 'user',
@@ -1026,6 +1088,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1-1': {
         role: 'user',
@@ -1040,6 +1103,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2-1': {
         role: 'user',
@@ -1054,6 +1118,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1072,6 +1137,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '1-2-1',
@@ -1088,6 +1154,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '1-2');
@@ -1109,6 +1176,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1': {
         role: 'user',
@@ -1123,6 +1191,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-1-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2': {
         role: 'user',
@@ -1137,6 +1206,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1-2-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-1-1': {
         role: 'user',
@@ -1151,6 +1221,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '1-2-1': {
         role: 'user',
@@ -1165,6 +1236,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1183,6 +1255,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-1', '1-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '1-1-1',
@@ -1199,6 +1272,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1-1-1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
     const actual = convertMessageMapToArray(data, '999');
@@ -1227,6 +1301,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-1': {
         role: 'user',
@@ -1241,6 +1316,7 @@ describe('convertMessageMapToArray', () => {
         children: ['3-1', '3-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2-2': {
         role: 'user',
@@ -1255,6 +1331,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3-1': {
         role: 'user',
@@ -1269,6 +1346,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3-2': {
         role: 'user',
@@ -1283,6 +1361,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1301,6 +1380,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2-1',
@@ -1317,6 +1397,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2-1', '2-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '3-1',
@@ -1333,6 +1414,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['3-1', '3-2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
 
@@ -1355,6 +1437,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -1369,6 +1452,7 @@ describe('convertMessageMapToArray', () => {
         children: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3': {
         role: 'user',
@@ -1383,6 +1467,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1401,6 +1486,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '3',
@@ -1417,6 +1503,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
 
@@ -1439,6 +1526,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -1453,6 +1541,7 @@ describe('convertMessageMapToArray', () => {
         children: ['4'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3': {
         role: 'user',
@@ -1467,6 +1556,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1485,6 +1575,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2',
@@ -1501,6 +1592,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
 
@@ -1523,6 +1615,7 @@ describe('convertMessageMapToArray', () => {
         children: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -1537,6 +1630,7 @@ describe('convertMessageMapToArray', () => {
         children: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3': {
         role: 'user',
@@ -1551,6 +1645,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1569,6 +1664,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '3',
@@ -1585,6 +1681,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['3'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
 
@@ -1607,6 +1704,7 @@ describe('convertMessageMapToArray', () => {
         children: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '2': {
         role: 'user',
@@ -1621,6 +1719,7 @@ describe('convertMessageMapToArray', () => {
         children: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       '3': {
         role: 'user',
@@ -1635,6 +1734,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     };
     const expected: DisplayMessageContent[] = [
@@ -1653,6 +1753,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['1'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
       {
         id: '2',
@@ -1669,6 +1770,7 @@ describe('convertMessageMapToArray', () => {
         sibling: ['2'],
         feedback: null,
         usedChunks: null,
+        thinkingLog: null,
       },
     ];
 

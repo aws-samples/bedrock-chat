@@ -2,11 +2,8 @@ import logging
 from copy import deepcopy
 from typing import Literal
 
-from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
-from app.agents.handlers.token_count import get_token_count_callback
-from app.agents.handlers.used_chunk import get_used_chunk_callback
-from app.agents.langchain import BedrockLLM
-from app.agents.tools.knowledge import AnswerWithKnowledgeTool
+from app.agents.agent import AgentRunner
+from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import (
     calculate_price,
@@ -32,6 +29,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
 )
 from app.routes.schemas.conversation import (
+    AgentMessage,
     ChatInput,
     ChatOutput,
     Chunk,
@@ -255,58 +253,35 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     if bot and bot.is_agent_enabled():
         logger.info("Bot has agent tools. Using agent for response.")
-        llm = BedrockLLM.from_model(model=chat_input.message.model)
-
         tools = [get_tool_by_name(t.name) for t in bot.agent.tools]
 
-        if bot and bot.has_knowledge():
-            logger.info("Bot has knowledge. Adding answer with knowledge tool.")
-            answer_with_knowledge_tool = AnswerWithKnowledgeTool.from_bot(
-                bot=bot,
-                llm=llm,
-            )
-            tools.append(answer_with_knowledge_tool)
+        if bot.has_knowledge():
+            # Add knowledge tool
+            knowledge_tool = create_knowledge_tool(bot, chat_input.message.model)
+            tools.append(knowledge_tool)
 
-        logger.info(f"Tools: {tools}")
-        agent = create_react_agent(
+        runner = AgentRunner(
+            bot=bot,
+            tools=tools,
             model=chat_input.message.model,
-            tools=tools,
-            generation_config=bot.generation_params,
+            on_thinking=None,
+            on_tool_result=None,
+            on_stop=None,
         )
-        executor = AgentExecutor(
-            name="Agent Executor",
-            agent=agent,
-            tools=tools,
-            return_intermediate_steps=True,
-            callbacks=[],
-            verbose=False,
-            max_iterations=15,
-            max_execution_time=None,
-            early_stopping_method="force",
-            handle_parsing_errors=True,
+        message_map = conversation.message_map
+        messages = trace_to_root(
+            node_id=conversation.message_map[user_msg_id].parent,
+            message_map=message_map,
         )
+        messages.append(chat_input.message)  # type: ignore
+        result = runner.run(messages)
+        reply_txt = result.last_response["output"]["message"]["content"][0].get(
+            "text", ""
+        )
+        price = result.price
+        thinking_log = result.thinking_conversation
 
-        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
-            agent_response = executor.invoke(
-                {
-                    "input": chat_input.message.content[0].body,  # type: ignore
-                },
-                config={
-                    "callbacks": [
-                        token_cb,
-                        chunk_cb,
-                    ],
-                },
-            )
-            price = token_cb.total_cost
-            if bot.display_retrieved_chunks and chunk_cb.used_chunks:
-                used_chunks = chunk_cb.used_chunks
-            thinking_log = format_log_to_str(
-                agent_response.get("intermediate_steps", [])
-            )
-            logger.info(f"Thinking log: {thinking_log}")
-
-        reply_txt = agent_response["output"]
+        # Agent does not support continued generation
         conversation.should_continue = False
     else:
         message_map = conversation.message_map
@@ -349,7 +324,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         )
 
         converse_response = call_converse_api(args)
-        reply_txt = converse_response["output"]["message"]["content"][0]["text"]
+        reply_txt = converse_response["output"]["message"]["content"][0].get("text", "")
         reply_txt = reply_txt.rstrip()
 
         # Used chunks for RAG generation
@@ -445,6 +420,11 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
                 if message.used_chunks
                 else None
             ),
+            thinking_log=(
+                [AgentMessage.from_model(m) for m in message.thinking_log]
+                if message.thinking_log
+                else None
+            ),
         ),
         bot_id=conversation.bot_id,
     )
@@ -504,11 +484,13 @@ def propose_conversation_title(
     )
     messages.append(new_message)
 
+    print(f"messages: {messages}")
     # Invoke Bedrock
     args = compose_args_for_converse_api(
         messages=messages,
         model=model,
     )
+    print(f"args: {args}")
     response = call_converse_api(args)
     reply_txt = response["output"]["message"]["content"][0]["text"]
 
@@ -553,6 +535,11 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
                     for c in message.used_chunks
                 ]
                 if message.used_chunks
+                else None
+            ),
+            thinking_log=(
+                [AgentMessage.from_model(m) for m in message.thinking_log]
+                if message.thinking_log
                 else None
             ),
         )

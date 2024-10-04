@@ -38,16 +38,15 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
-import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
-import { AgentState } from '../features/agent/xstates/agentThinkProgress';
+import { AgentState } from '../features/agent/xstates/agentThink';
 import { SyncStatus } from '../constants';
-
 import { BottomHelper } from '../features/helper/components/BottomHelper';
 import { useIsWindows } from '../hooks/useIsWindows';
 import {
   DisplayMessageContent,
   PutFeedbackRequest,
 } from '../@types/conversation';
+import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -348,8 +347,19 @@ const ChatPage: React.FC = () => {
       }
     })();
 
+    const isAgentThinking = [AgentState.THINKING, AgentState.LEAVING].some(
+      (v) => v == agentThinking.value
+    );
+    const tools = isAgentThinking
+      ? agentThinking.context.tools
+      : message.thinkingLog
+        ? convertThinkingLogToAgentToolProps(message.thinkingLog)
+        : undefined;
+
     return (
       <ChatMessage
+        isAgentThinking={isAgentThinking}
+        tools={tools}
         chatContent={message}
         relatedDocuments={relatedDocuments}
         onChangeMessageId={props.onChangeMessageId}
@@ -458,26 +468,16 @@ const ChatPage: React.FC = () => {
                       className={`${
                         message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
                       }`}>
-                      {messages.length === idx + 1 &&
-                      [AgentState.THINKING, AgentState.LEAVING].some(
-                        (v) => v == agentThinking.value
-                      ) ? (
-                        <AgentProcessingIndicator
-                          processCount={agentThinking.context.count}
-                        />
-                      ) : (
-                        <ChatMessageWithRelatedDocuments
-                          chatContent={message}
-                          onChangeMessageId={onChangeCurrentMessageId}
-                          onSubmit={onSubmitEditedContent}
-                          onSubmitFeedback={(messageId, feedback) => {
-                            if (conversationId) {
-                              giveFeedback(messageId, feedback);
-                            }
-                          }}
-                        />
-                      )}
-
+                      <ChatMessageWithRelatedDocuments
+                        chatContent={message}
+                        onChangeMessageId={onChangeCurrentMessageId}
+                        onSubmit={onSubmitEditedContent}
+                        onSubmitFeedback={(messageId, feedback) => {
+                          if (conversationId) {
+                            giveFeedback(messageId, feedback);
+                          }
+                        }}
+                      />
                       <div className="w-full border-b border-aws-squid-ink/10"></div>
                     </div>
                   ))}

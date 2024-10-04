@@ -178,7 +178,7 @@ def main(
             )
             return
 
-        # Calculate embeddings using LangChain
+        # Calculate embeddings
         with multiprocessing.Manager() as manager:
             contents: ListProxy = manager.list()
             sources: ListProxy = manager.list()

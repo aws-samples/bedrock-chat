@@ -5,7 +5,7 @@ from pydantic import Field
 
 # Ref: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_ChunkingConfiguration.html
 type_kb_chunking_strategy = Literal["default", "fixed_size", "none"]
-type_kb_embeddings_model = Literal["titan_v1", "cohere_multilingual_v3"]
+type_kb_embeddings_model = Literal["titan_v2", "cohere_multilingual_v3"]
 type_kb_search_type = Literal["hybrid", "semantic"]
 
 # OpenSearch Serverless Analyzer

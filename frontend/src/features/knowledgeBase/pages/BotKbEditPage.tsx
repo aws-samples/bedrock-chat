@@ -102,7 +102,7 @@ const BotKbEditPage: React.FC = () => {
 
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null); // Send null when creating a new bot
   const [embeddingsModel, setEmbeddingsModel] =
-    useState<EmbeddingsModel>('titan_v1');
+    useState<EmbeddingsModel>('titan_v2');
 
   const [ hateThreshold, setHateThreshold ] = useState<number>(0)
   const [ insultsThreshold, setInsultsThreshold ] = useState<number>(0)
@@ -119,8 +119,8 @@ const BotKbEditPage: React.FC = () => {
     value: EmbeddingsModel;
   }[] = [
     {
-      label: t('knowledgeBaseSettings.embeddingModel.titan_v1.label'),
-      value: 'titan_v1',
+      label: t('knowledgeBaseSettings.embeddingModel.titan_v2.label'),
+      value: 'titan_v2',
     },
     {
       label: t(

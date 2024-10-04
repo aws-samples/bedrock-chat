@@ -28,6 +28,7 @@ export const Conversation = () => {
       parent: null,
       children: [],
       sibling: [],
+      thinkingLog: null,
     },
     {
       id: '2',
@@ -57,6 +58,7 @@ export const Conversation = () => {
       parent: null,
       children: [],
       sibling: [],
+      thinkingLog: null,
     },
   ];
   return (
@@ -66,11 +68,11 @@ export const Conversation = () => {
           key={idx}
           className={`${
             message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-          }`}
-        >
+          }`}>
           <ChatMessage
+            isAgentThinking={false}
             chatContent={message}
-            relatedDocuments={message.usedChunks?.map(chunk => ({
+            relatedDocuments={message.usedChunks?.map((chunk) => ({
               chunkBody: chunk.content,
               contentType: chunk.contentType,
               sourceLink: chunk.source,

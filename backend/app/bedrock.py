@@ -4,7 +4,6 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TypedDict, no_type_check
 
 from app.config import BEDROCK_PRICING, DEFAULT_EMBEDDING_CONFIG
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
@@ -14,6 +13,7 @@ from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import convert_dict_keys_to_camel_case, get_bedrock_runtime_client
+from typing_extensions import NotRequired, TypedDict, no_type_check
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,28 @@ class GuardrailConfig(TypedDict):
     streamProcessingMode: str
 
 
+class ConverseApiToolSpec(TypedDict):
+    name: str
+    description: str
+    inputSchema: dict
+
+
+class ConverseApiToolConfig(TypedDict):
+    tools: list[ConverseApiToolSpec]
+    toolChoice: dict
+
+
+class ConverseApiToolResultContent(TypedDict):
+    json: NotRequired[dict]
+    text: NotRequired[str]
+
+
+class ConverseApiToolResult(TypedDict):
+    toolUseId: str
+    content: ConverseApiToolResultContent
+    status: NotRequired[str]
+
+
 class ConverseApiRequest(TypedDict):
     inference_config: dict
     additional_model_request_fields: dict
@@ -43,10 +65,18 @@ class ConverseApiRequest(TypedDict):
     stream: bool
     system: list[dict]
     guardrailConfig: GuardrailConfig | None
+    tool_config: NotRequired[ConverseApiToolConfig]
+
+
+class ConverseApiToolUseContent(TypedDict):
+    toolUseId: str
+    name: str
+    input: dict
 
 
 class ConverseApiResponseMessageContent(TypedDict):
-    text: str
+    text: NotRequired[str]
+    toolUse: NotRequired[ConverseApiToolUseContent]
 
 
 class ConverseApiResponseMessage(TypedDict):

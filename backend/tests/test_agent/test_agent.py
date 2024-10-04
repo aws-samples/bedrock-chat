@@ -5,13 +5,16 @@ sys.path.append(".")
 import unittest
 from pprint import pprint
 
-from app.agents.agent import AgentExecutor, create_react_agent
-from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
-from app.agents.handlers.token_count import get_token_count_callback
-from app.agents.handlers.used_chunk import get_used_chunk_callback
-from app.agents.langchain import BedrockLLM
-from app.agents.tools.knowledge import AnswerWithKnowledgeTool
+from app.agents.agent import AgentMessageModel, AgentRunner, OnStopInput
+from app.agents.tools.agent_tool import RunResult
+from app.agents.tools.internet_search import internet_search_tool
+from app.bedrock import ConverseApiToolResult, ConverseApiToolUseContent
 from app.config import DEFAULT_EMBEDDING_CONFIG
+from app.repositories.models.conversation import (
+    AgentToolUseContentModel,
+    ContentModel,
+    MessageModel,
+)
 from app.repositories.models.custom_bot import (
     AgentModel,
     BotModel,
@@ -20,13 +23,47 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
     SearchParamsModel,
 )
+from app.routes.schemas.conversation import type_model_name
 
 
-class TestReactAgent(unittest.TestCase):
-    MODEL = "claude-v3-sonnet"
+def on_thinking(agent_log: list[AgentMessageModel]):
+    print("====================================")
+    print("Thinking...")
+    print("====================================")
+    assert len(agent_log) > 0
+    assert agent_log[-1].role == "assistant"
+    to_send = dict()
+    for c in agent_log[-1].content:
+        assert type(c.body) == AgentToolUseContentModel
+        to_send[c.body.tool_use_id] = {
+            "name": c.body.name,
+            "input": c.body.input,
+        }
+    pprint(to_send)
 
-    def test_create_react_agent(self):
-        llm = BedrockLLM.from_model(model=self.MODEL)
+
+def on_tool_result(tool_result: ConverseApiToolResult):
+    print("====================================")
+    print("Tool Result...")
+    print("====================================")
+    to_send = {
+        "toolUseId": tool_result["toolUseId"],
+        "status": tool_result["status"],  # type: ignore
+        "content": tool_result["content"]["text"][:10],  # type: ignore
+    }
+    pprint(to_send["toolUseId"])
+    pprint(to_send["status"])
+
+
+def on_stop(on_stop_input: OnStopInput):
+    print("====================================")
+    print("Stop...")
+    print("====================================")
+    pprint(on_stop_input)
+
+
+class TestAgentRunner(unittest.TestCase):
+    def setUp(self) -> None:
         bot = BotModel(
             id="dummy",
             title="Japanese Dishes",
@@ -75,52 +112,40 @@ class TestReactAgent(unittest.TestCase):
             bedrock_knowledge_base=None,
             bedrock_guardrails=None,
         )
-        answer_with_knowledge_tool = AnswerWithKnowledgeTool.from_bot(
+        tools = [internet_search_tool]
+        model = "claude-v3-sonnet"
+        self.runner = AgentRunner(
             bot=bot,
-            llm=llm,
-        )
-        tools = []
-        tools.append(answer_with_knowledge_tool)  # RAG Tool
-
-        agent = create_react_agent(model=self.MODEL, tools=tools)
-        executor = AgentExecutor(
-            name="Agent Executor",
-            agent=agent,
-            return_intermediate_steps=True,
             tools=tools,
-            callbacks=[],
-            verbose=False,
-            max_iterations=15,
-            max_execution_time=None,
-            early_stopping_method="force",
-            handle_parsing_errors=True,
+            model=model,
+            on_thinking=on_thinking,
+            on_tool_result=on_tool_result,
+            on_stop=on_stop,
         )
+        self.model: type_model_name = model
 
-        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
-            res = executor.invoke(
-                {
-                    # "input": "Tell me the today's weather with temperature on Seattle and Tokyo. Output must be in a table format."
-                    # "input": "東京とシアトルの今日の天気と気温を教えてください。出力は表形式である必要があります。"
-                    "input": "ラーメンとはなんですか？"
-                },
-                config={
-                    "callbacks": [
-                        ApigwWebsocketCallbackHandler(
-                            gatewayapi="dummy", connection_id="dummy", debug=True
-                        ),
-                        token_cb,
-                        chunk_cb,
-                    ],
-                },
-            )
-            print(f"Total Input Token Count: {token_cb.total_input_token_count}")
-            print(f"Total Output Token Count: {token_cb.total_output_token_count}")
-            print(f"Total Cost (USD): ${token_cb.total_cost}")
-            print(f"Used Chunks: {chunk_cb.used_chunks}")
-
-        print(f"type of res: {type(res)}")
-        # pprint(res)
-        print(f"type of intermediate_steps: {type(res.get('intermediate_steps'))}")
+    def test_run(self):
+        message = MessageModel(
+            role="user",
+            content=[
+                ContentModel(
+                    content_type="text",
+                    media_type=None,
+                    body="今日の東京の天気?あと宮崎の天気も。並列処理して",
+                    file_name=None,
+                )
+            ],
+            model=self.model,
+            children=[],
+            parent=None,
+            create_time=0,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        res = self.runner.run(messages=[message])
+        print("====================================")
+        pprint(res)
 
 
 if __name__ == "__main__":

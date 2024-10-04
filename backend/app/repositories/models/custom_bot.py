@@ -31,7 +31,11 @@ class KnowledgeModel(BaseModel):
         for filename in self.filenames:
             _filenames += f"<filename>{filename}</filename>"
         _filenames += "</filenames>"
-        return f"{_source_urls}{_sitemap_urls}{_filenames}"
+        _s3_urls = "<s3_urls>"
+        for url in self.s3_urls:
+            _s3_urls += f"<url>{url}</url>"
+        _s3_urls += "</s3_urls>"
+        return f"{_source_urls}{_sitemap_urls}{_filenames}{_s3_urls}"
 
 
 class GenerationParamsModel(BaseModel):

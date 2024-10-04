@@ -58,7 +58,7 @@ export const DEFAULT_CHUNKING_OVERLAP_PERCENTAGE = 20;
 
 export const EDGE_CHUNKING_MAX_TOKENS = {
   MAX: {
-    titan_v1: 8192,
+    titan_v2: 8192,
     cohere_multilingual_v3: 512,
   },
   MIN: 20,

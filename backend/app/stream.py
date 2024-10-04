@@ -4,7 +4,6 @@ from typing import Any, Callable
 from app.bedrock import ConverseApiRequest, calculate_price, get_model_id
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
-from langchain_core.outputs import GenerationChunk
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -27,8 +26,8 @@ class ConverseApiStreamHandler:
     def __init__(
         self,
         model: type_model_name,
-        on_stream: Callable[[str], GenerationChunk | None],
-        on_stop: Callable[[OnStopInput], GenerationChunk | None],
+        on_stream: Callable[[str], None],
+        on_stop: Callable[[OnStopInput], None],
     ):
         """Base class for stream handlers.
         :param model: Model name.
@@ -77,20 +76,21 @@ class ConverseApiStreamHandler:
         stop_reason = ""
         for event in response["stream"]:
             if "contentBlockDelta" in event:
+                print(f"event: {event}")
                 text = event["contentBlockDelta"]["delta"]["text"]
                 completions.append(text)
                 response = self.on_stream(text)
                 yield response
             elif "messageStop" in event:
+                print(f"event: {event}")
                 stop_reason = event["messageStop"]["stopReason"]
             elif "metadata" in event:
+                print(f"event: {event}")
                 metadata = event["metadata"]
                 usage = metadata["usage"]
                 input_token_count = usage["inputTokens"]
                 output_token_count = usage["outputTokens"]
-                price = calculate_price(
-                    self.model, input_token_count, output_token_count
-                )
+                price = calculate_price(self.model, input_token_count, output_token_count)
                 concatenated = "".join(completions)
                 response = self.on_stop(
                     OnStopInput(

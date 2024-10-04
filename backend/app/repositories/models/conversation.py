@@ -1,5 +1,14 @@
+from __future__ import annotations
+
 import base64
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from app.bedrock import (
+        ConverseApiToolResult,
+        ConverseApiToolResultContent,
+        ConverseApiToolUseContent,
+    )
 
 from app.routes.schemas.conversation import MessageInput, type_model_name
 from pydantic import BaseModel, Field
@@ -34,6 +43,75 @@ class ChunkModel(BaseModel):
     rank: int
 
 
+class AgentToolUseContentModel(BaseModel):
+    tool_use_id: str
+    name: str
+    input: dict
+
+    @classmethod
+    def from_tool_use_content(cls, tool_use_content: "ConverseApiToolUseContent"):
+        return AgentToolUseContentModel(
+            tool_use_id=tool_use_content["toolUseId"],
+            name=tool_use_content["name"],
+            input=tool_use_content["input"],
+        )
+
+
+class AgentToolResultModelContentModel(BaseModel):
+    json_: dict | None  # `json` is a reserved keyword on pydantic
+    text: str | None
+
+    @classmethod
+    def from_tool_result_content(
+        cls, tool_result_content: "ConverseApiToolResultContent"
+    ):
+        return AgentToolResultModelContentModel(
+            json_=(
+                tool_result_content["json"] if "json" in tool_result_content else None
+            ),
+            text=tool_result_content["text"] if "text" in tool_result_content else None,
+        )
+
+
+class AgentToolResultModel(BaseModel):
+    tool_use_id: str
+    content: AgentToolResultModelContentModel
+    status: str
+
+    @classmethod
+    def from_tool_result(cls, tool_result: "ConverseApiToolResult"):
+        return AgentToolResultModel(
+            tool_use_id=tool_result["toolUseId"],
+            content=AgentToolResultModelContentModel.from_tool_result_content(
+                tool_result["content"]
+            ),
+            status=tool_result["status"] if "status" in tool_result else "",
+        )
+
+
+class AgentContentModel(BaseModel):
+    content_type: Literal["text", "toolUse", "toolResult"]
+    body: str | AgentToolUseContentModel | AgentToolResultModel
+
+
+class AgentMessageModel(BaseModel):
+    role: str
+    content: list[AgentContentModel]
+
+    @classmethod
+    def from_message_model(cls, message: "MessageModel"):
+        return AgentMessageModel(
+            role=message.role,  # type: ignore
+            content=[
+                AgentContentModel(
+                    content_type=content.content_type,  # type: ignore
+                    body=content.body,
+                )
+                for content in message.content
+            ],
+        )
+
+
 class MessageModel(BaseModel):
     role: str
     content: list[ContentModel]
@@ -43,7 +121,9 @@ class MessageModel(BaseModel):
     create_time: float
     feedback: FeedbackModel | None
     used_chunks: list[ChunkModel] | None
-    thinking_log: str | None = Field(None, description="Only available for agent.")
+    thinking_log: list[AgentMessageModel] | None = Field(
+        None, description="Only available for agent."
+    )
 
     @classmethod
     def from_message_input(cls, message_input: MessageInput):

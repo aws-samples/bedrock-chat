@@ -19,7 +19,7 @@ import { convertMessageMapToArray } from '../utils/MessageUtils';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
 import { useMachine } from '@xstate/react';
-import { agentThinkingState } from '../features/agent/xstates/agentThinkProgress';
+import { agentThinkingState } from '../features/agent/xstates/agentThink';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -340,6 +340,7 @@ const useChat = () => {
         model: messageContent.model,
         feedback: messageContent.feedback,
         usedChunks: messageContent.usedChunks,
+        thinkingLog: messageContent.thinkingLog,
       }
     );
   };
@@ -404,6 +405,7 @@ const useChat = () => {
       role: 'user',
       feedback: null,
       usedChunks: null,
+      thinkingLog: null,
     };
     const input: PostMessageRequest = {
       conversationId: isNewChat ? newConversationId : conversationId,
@@ -447,7 +449,7 @@ const useChat = () => {
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
           thinkingDispatch: (event) => {
-            send({ type: event });
+            send(event);
           },
         })
           .then((message) => {
@@ -522,6 +524,7 @@ const useChat = () => {
       role: 'user',
       feedback: null,
       usedChunks: null,
+      thinkingLog: null,
     };
     const input: PostMessageRequest = {
       conversationId: conversationId,
@@ -543,7 +546,7 @@ const useChat = () => {
         editMessage(conversationId, currentMessage.id, currentContentBody + c);
       },
       thinkingDispatch: (event) => {
-        send({ type: event });
+        send(event);
       },
     })
       .then(() => {
@@ -625,6 +628,7 @@ const useChat = () => {
           model: messages[index].model,
           feedback: messages[index].feedback,
           usedChunks: messages[index].usedChunks,
+          thinkingLog: messages[index].thinkingLog,
         }
       );
     } else {
@@ -642,7 +646,7 @@ const useChat = () => {
         editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
       },
       thinkingDispatch: (event) => {
-        send({ type: event });
+        send(event);
       },
     })
       .then(() => {

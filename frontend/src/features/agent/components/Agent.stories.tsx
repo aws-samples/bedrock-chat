@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInputChatContent } from './TextInputChatContent';
-import { AgentProcessingIndicator } from './AgentProcessingIndicator';
 import { AvailableTools } from './AvailableTools';
 import { AgentTool } from '../types';
+import ToolCard from './ToolCard';
+import AgentToolList from './AgentToolList';
+import { AgentToolState } from '../xstates/agentThink';
 
 export const InputChatContent = () => (
   <TextInputChatContent
@@ -48,10 +50,6 @@ export const InputChatContentWithRegenerate = () => (
   />
 );
 
-export const ProcessingIndicator = () => (
-  <AgentProcessingIndicator processCount={5}/>
-);
-
 export const Tools = () => {
   const availableTools: AgentTool[] = [
     {
@@ -87,4 +85,58 @@ export const Tools = () => {
       setTools={setTools}
     />
   );
+};
+
+export const ToolCardRunning = () => (
+  <ToolCard
+    toolUseId="tool1"
+    name="internet_search"
+    status="running"
+    input={{ country: 'jp-jp', query: '東京 天気', time_limit: 'd' }}
+  />
+);
+
+export const ToolCardSuccess = () => (
+  <ToolCard
+    toolUseId="tool2"
+    name="Database Query"
+    status="success"
+    input={{ query: 'SELECT * FROM table' }}
+    content={{ text: 'some data' }}
+  />
+);
+
+export const ToolCardError = () => (
+  <ToolCard
+    toolUseId="tool3"
+    name="API Call"
+    status="error"
+    input={{ query: 'SELECT * FROM table' }}
+  />
+);
+
+export const ToolCardList = () => {
+  const tools = {
+    tool1: {
+      name: 'internet_search',
+      status: 'running' as AgentToolState,
+      input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
+    },
+    tool2: {
+      name: 'database_query',
+      status: 'success' as AgentToolState,
+      input: { query: 'SELECT * FROM table' },
+      // Pass the content as stringified JSON
+      content: { text: '{"result": "success", "data": "some data"}' },
+    },
+    tool4: {
+      name: 'API Call',
+      status: 'error' as AgentToolState,
+      input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
+      // Pass the content as simple string
+      content: { text: 'Error! Connection Timeout' },
+    },
+  };
+
+  return <AgentToolList tools={tools} isRunning={true} />;
 };

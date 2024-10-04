@@ -13,8 +13,8 @@ export const getEmbeddingModel = (
   embeddingsModel: string
 ): BedrockFoundationModel => {
   switch (embeddingsModel) {
-    case "titan_v1":
-      return BedrockFoundationModel.TITAN_EMBED_TEXT_V1;
+    case "titan_v2":
+      return BedrockFoundationModel.TITAN_EMBED_TEXT_V2_1024;
     case "cohere_multilingual_v3":
       return BedrockFoundationModel.COHERE_EMBED_MULTILINGUAL_V3;
     default:
