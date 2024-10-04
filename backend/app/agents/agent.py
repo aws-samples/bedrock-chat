@@ -9,7 +9,7 @@ from app.bedrock import (
     ConverseApiToolResult,
     ConverseApiToolUseContent,
     calculate_price,
-    get_bedrock_client,
+    get_bedrock_runtime_client,
     get_model_id,
 )
 from app.repositories.models.conversation import (
@@ -46,7 +46,7 @@ class AgentRunner:
     ):
         self.bot = bot
         self.tools = {tool.name: tool for tool in tools}
-        self.client = get_bedrock_client()
+        self.client = get_bedrock_runtime_client()
         self.model: type_model_name = model
         self.model_id = get_model_id(model)
         self.on_thinking = on_thinking
