@@ -285,12 +285,13 @@ def process_chat_input(
     if not chat_input.continue_generate:
         messages.append(chat_input.message)  # type: ignore
 
+    # Guardrails
     guardrail = bot.bedrock_guardrails if bot else None
     grounding_source = None
     if guardrail and guardrail.is_guardrail_enabled:
         grounding_source = to_guardrails_grounding_source(search_results)
 
-    compose_args_for_converse_api(
+    args = compose_args_for_converse_api(
         messages=messages,
         model=chat_input.message.model,
         instruction=(

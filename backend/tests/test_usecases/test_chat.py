@@ -1,10 +1,13 @@
 import base64
 import sys
 
+from ulid import ULID
+
 sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
 
+import boto3
 from app.bedrock import get_model_id
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.conversation import (
@@ -24,6 +27,7 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
+from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -880,6 +884,93 @@ class TestAgentChat(unittest.TestCase):
         assistant_message = conv.message_map[conv.last_message_id]
         self.assertIsNotNone(assistant_message.thinking_log)
         print("Thinking log: ", assistant_message.thinking_log)
+
+
+class TestGuardrailChat(unittest.TestCase):
+    user_name = "user1"
+    bot_id = "bot1"
+    model: type_model_name = "claude-v3-sonnet"
+
+    def setUp(self) -> None:
+
+        # Note that the region must be the same as the one used in the bedrock client
+        # https://github.com/aws/aws-sdk-js-v3/issues/6482
+        self.bedrock_client = boto3.client("bedrock", region_name="us-east-1")
+        self.guardrail_name = f"test-guardrail-{ULID()}"
+
+        # Create dummy guardrail
+        res = self.bedrock_client.create_guardrail(
+            name=self.guardrail_name,
+            description="Test guardrail for unit tests",
+            contentPolicyConfig={
+                "filtersConfig": [
+                    {"type": "SEXUAL", "inputStrength": "HIGH", "outputStrength": "HIGH"},
+                ]
+            },
+            blockedInputMessaging="blocked",
+            blockedOutputsMessaging="blocked",
+        )
+        self.guardrail_arn = res["guardrailArn"]
+
+        private_bot = create_test_private_bot(
+            self.bot_id,
+            True,
+            self.user_name,
+            "",
+            "SUCCEEDED",
+            include_internet_tool=False,
+            set_dummy_knowledge=False,
+            bedrock_guardrails=BedrockGuardrailsModel(
+                is_guardrail_enabled=True,
+                hate_threshold=0,
+                insults_threshold=0,
+                sexual_threshold=1,
+                violence_threshold=0,
+                misconduct_threshold=0,
+                grounding_threshold=0,
+                relevance_threshold=0,
+                guardrail_arn=res["guardrailArn"],
+                guardrail_version="DRAFT",
+            ),
+        )
+        store_bot(self.user_name, private_bot)
+
+    def tearDown(self) -> None:
+        delete_bot_by_id(self.user_name, self.bot_id)
+        delete_conversation_by_user_id(self.user_name)
+        # Delete dummy guardrail
+        try:
+            self.bedrock_client.delete_guardrail(guardrailIdentifier=self.guardrail_arn)
+
+        except Exception as e:
+            print(f"Error deleting guardrail: {e}")
+
+    def test_guardrail_chat(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        # Sexual content
+                        body="Which bust do you like, A cup, B cup, C cup, D cup, or E cup?",
+                        media_type=None,
+                        file_name=None,
+                    )
+                ],
+                model=self.model,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=self.bot_id,
+            continue_generate=False,
+        )
+        output: ChatOutput = chat(user_id=self.user_name, chat_input=chat_input)
+        print(output.message.content[0].body)
+
+        # Must be blocked
+        assert output.message.content[0].body == "blocked"
 
 
 class TestInsertKnowledge(unittest.TestCase):
