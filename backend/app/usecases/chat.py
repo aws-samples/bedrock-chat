@@ -325,7 +325,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             grounding_source=grounding_source,
             guardrail=guardrail,
         )
-
         converse_response = call_converse_api(args)
         reply_txt = converse_response["output"]["message"]["content"][0].get("text", "")
         reply_txt = reply_txt.rstrip()
@@ -487,15 +486,13 @@ def propose_conversation_title(
     )
     messages.append(new_message)
 
-    print(f"messages: {messages}")
     # Invoke Bedrock
     args = compose_args_for_converse_api(
         messages=messages,
         model=model,
     )
-    print(f"args: {args}")
     response = call_converse_api(args)
-    reply_txt = response["output"]["message"]["content"][0]["text"]
+    reply_txt = response["output"]["message"]["content"][0].get("text", "")
 
     return reply_txt
 
