@@ -160,9 +160,7 @@ def compose_args_for_converse_api(
                     {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
                 ]
             elif role == "assistant":
-                return [
-                    {"text": {"content": c.body} if isinstance(c.body, str) else None}
-                ]
+                return [{"text": c.body if isinstance(c.body, str) else None}]
             else:
                 return [{"text": c.body}]
         elif c.content_type == "image":
