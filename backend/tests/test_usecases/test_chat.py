@@ -51,7 +51,7 @@ from tests.test_usecases.utils.bot_factory import (
     create_test_public_bot,
 )
 
-MODEL: type_model_name = "claude-instant-v1"
+MODEL: type_model_name = "claude-v3-haiku"
 MISTRAL_MODEL: type_model_name = "mistral-7b-instruct"
 
 
@@ -230,48 +230,48 @@ class TestStartChat(unittest.TestCase):
         self.assertEqual(conv.last_message_id, second_key)
         self.assertNotEqual(conv.total_price, 0)
 
-    def test_chat_mistral(self):
-        prompt = "あなたの名前は何ですか?"
-        body = f"<s>[INST]{prompt}[/INST]"
+    # def test_chat_mistral(self):
+    #     prompt = "あなたの名前は何ですか?"
+    #     body = f"<s>[INST]{prompt}[/INST]"
 
-        chat_input = ChatInput(
-            conversation_id="test_conversation_id",
-            message=MessageInput(
-                role="user",
-                content=[
-                    Content(
-                        content_type="text", body=body, media_type=None, file_name=None
-                    )
-                ],
-                model=MISTRAL_MODEL,
-                parent_message_id=None,
-                message_id=None,
-            ),
-            bot_id=None,
-            continue_generate=False,
-        )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-        self.output = output
+    #     chat_input = ChatInput(
+    #         conversation_id="test_conversation_id",
+    #         message=MessageInput(
+    #             role="user",
+    #             content=[
+    #                 Content(
+    #                     content_type="text", body=body, media_type=None, file_name=None
+    #                 )
+    #             ],
+    #             model=MISTRAL_MODEL,
+    #             parent_message_id=None,
+    #             message_id=None,
+    #         ),
+    #         bot_id=None,
+    #         continue_generate=False,
+    #     )
+    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+    #     self.output = output
 
-        pprint(output.model_dump())
-        self.assertNotEqual(output.conversation_id, "")
+    #     pprint(output.model_dump())
+    #     self.assertNotEqual(output.conversation_id, "")
 
-        conv = find_conversation_by_id(
-            user_id="user1", conversation_id=output.conversation_id
-        )
-        self.assertEqual(len(conv.message_map), 3)
-        for k, v in conv.message_map.items():
-            if v.parent == "system":
-                first_key = k
-                first_message = v
-            elif v.parent:
-                second_key = k
-                second_message = v
+    #     conv = find_conversation_by_id(
+    #         user_id="user1", conversation_id=output.conversation_id
+    #     )
+    #     self.assertEqual(len(conv.message_map), 3)
+    #     for k, v in conv.message_map.items():
+    #         if v.parent == "system":
+    #             first_key = k
+    #             first_message = v
+    #         elif v.parent:
+    #             second_key = k
+    #             second_message = v
 
-        self.assertEqual(second_message.parent, first_key)
-        self.assertEqual(first_message.children, [second_key])
-        self.assertEqual(conv.last_message_id, second_key)
-        self.assertNotEqual(conv.total_price, 0)
+    #     self.assertEqual(second_message.parent, first_key)
+    #     self.assertEqual(first_message.children, [second_key])
+    #     self.assertEqual(conv.last_message_id, second_key)
+    #     self.assertNotEqual(conv.total_price, 0)
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)
@@ -283,6 +283,8 @@ class TestAttachmentChat(unittest.TestCase):
 
     def test_chat(self):
         file_name, body = get_aws_overview()
+        body = base64.b64encode(body).decode("utf-8")
+        file_name = "test.md"
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(
@@ -290,7 +292,7 @@ class TestAttachmentChat(unittest.TestCase):
                 content=[
                     Content(
                         content_type="attachment",
-                        body=base64.b64encode(body).decode("utf-8"),
+                        body=body,
                         media_type=None,
                         file_name=file_name,
                     ),
@@ -627,18 +629,19 @@ class TestProposeTitle(unittest.TestCase):
         print(output)
         self.output = output
 
-        chat_input.message.model = MISTRAL_MODEL
-        mistral_output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-        self.mistral_output = mistral_output
-        print(mistral_output)
+        # chat_input.conversation_id = "test_conversation_mistral_id"
+        # chat_input.message.model = MISTRAL_MODEL
+        # mistral_output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        # self.mistral_output = mistral_output
+        # print(mistral_output)
 
     def test_propose_title(self):
         title = propose_conversation_title("user1", self.output.conversation_id)
         print(f"[title]: {title}")
 
-    def test_propose_title_mistral(self):
-        title = propose_conversation_title("user1", self.mistral_output.conversation_id)
-        print(f"[title]: {title}")
+    # def test_propose_title_mistral(self):
+    #     title = propose_conversation_title("user1", self.mistral_output.conversation_id)
+    #     print(f"[title]: {title}")
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)

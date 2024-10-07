@@ -35,35 +35,6 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
         self.stream_handler.bind(on_stream=on_stream, on_stop=on_stop)
 
-        # Note that the region must be the same as the one used in the bedrock client
-        # https://github.com/aws/aws-sdk-js-v3/issues/6482
-        self.bedrock_client = boto3.client("bedrock", region_name="us-east-1")
-        self.guardrail_name = f"test-guardrail-{ULID()}"
-
-        # Create dummy guardrail
-        guardrail_res = self.bedrock_client.create_guardrail(
-            name=self.guardrail_name,
-            description="Test guardrail for unit tests",
-            contentPolicyConfig={
-                "filtersConfig": [
-                    {"type": "SEXUAL", "inputStrength": "LOW", "outputStrength": "LOW"},
-                ]
-            },
-            blockedInputMessaging="blocked",
-            blockedOutputsMessaging="blocked",
-        )
-
-        self.guardrail_arn = guardrail_res["guardrailArn"]
-
-    def tearDown(self):
-        print("Cleaning up...")
-        # Delete dummy guardrail
-        try:
-            self.bedrock_client.delete_guardrail(guardrailIdentifier=self.guardrail_arn)
-
-        except Exception as e:
-            print(f"Error deleting guardrail: {e}")
-
     def _run(self, message, instruction=None, generation_params=None, guardrail=None):
         args = compose_args_for_converse_api(
             [message],
@@ -216,6 +187,59 @@ class TestConverseApiStreamHandler(unittest.TestCase):
             thinking_log=None,
         )
         self._run(message)
+
+
+class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
+    MODEL = "claude-v3-sonnet"
+    # MODEL = "mistral-7b-instruct"
+
+    def setUp(self) -> None:
+        self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
+        self.stream_handler.bind(on_stream=on_stream, on_stop=on_stop)
+
+        # Note that the region must be the same as the one used in the bedrock client
+        # https://github.com/aws/aws-sdk-js-v3/issues/6482
+        self.bedrock_client = boto3.client("bedrock", region_name="us-east-1")
+        self.guardrail_name = f"test-guardrail-{ULID()}"
+
+        # Create dummy guardrail
+        guardrail_res = self.bedrock_client.create_guardrail(
+            name=self.guardrail_name,
+            description="Test guardrail for unit tests",
+            contentPolicyConfig={
+                "filtersConfig": [
+                    {"type": "SEXUAL", "inputStrength": "LOW", "outputStrength": "LOW"},
+                ]
+            },
+            blockedInputMessaging="blocked",
+            blockedOutputsMessaging="blocked",
+        )
+
+        self.guardrail_arn = guardrail_res["guardrailArn"]
+
+    def tearDown(self):
+        print("Cleaning up...")
+        # Delete dummy guardrail
+        try:
+            self.bedrock_client.delete_guardrail(guardrailIdentifier=self.guardrail_arn)
+
+        except Exception as e:
+            print(f"Error deleting guardrail: {e}")
+
+    def _run(self, message, instruction=None, generation_params=None, guardrail=None):
+        args = compose_args_for_converse_api(
+            [message],
+            self.MODEL,
+            instruction=instruction,
+            stream=True,
+            generation_params=generation_params,
+            grounding_source=None,
+            guardrail=guardrail,
+        )
+        for _ in self.stream_handler.run(
+            args=args,
+        ):
+            pass
 
     def test_run_with_guardrail(self):
         message = MessageModel(
