@@ -45,7 +45,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
 
 ### Steps for users of v1.2 or earlier
 
-1. **Backup your existing document bucket (optional but recommended).** If your system is already in operation, we strongly recommend this step. Back up the bucket named `bedrockchatstack-documentbucketxxxx-yyyy`.
+1. **Backup your existing document bucket (optional but recommended).** If your system is already in operation, we strongly recommend this step. Back up the bucket named `bedrockchatstack-documentbucketxxxx-yyyy`. For example, we can use [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html).
 
 2. **Update to v1.4**: Fetch the latest v1.4 tag, modify `cdk.json`, and deploy. Follow these steps:
 
@@ -67,7 +67,11 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
       cdk deploy
       ```
 
-3. **Recrate your bots**: Recreate your bots on Knowledge Base with the same definitions (documents, chunk size, etc.) as the pgvector bots. If you have a large volume of documents, restoring from the backup in step 1 will make this process easier. **Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support.** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
+3. **Recrate your bots**: Recreate your bots on Knowledge Base with the same definitions (documents, chunk size, etc.) as the pgvector bots. If you have a large volume of documents, restoring from the backup in step 1 will make this process easier. To restore, we can use restoring cross-region copies. For more detail, visit [here](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). To specify the restored bucket, set `S3 Data Source` section as following. The path structure is `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. You can check user id on Cognito user pool and bot id on address bar on bot creation screen.
+
+![](../imgs/v1_to_v2_KB_s3_source.png)
+
+**Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support (Planning to support web crawler ([issue](https://github.com/aws-samples/bedrock-claude-chat/issues/557))).** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
 
 4. **Upgrade to v2**: After the release of v2, fetch the tagged source and deploy as follows (this will be possible once released):
    ```bash
