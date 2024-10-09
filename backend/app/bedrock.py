@@ -8,7 +8,7 @@ from pathlib import Path
 from app.config import BEDROCK_PRICING, DEFAULT_EMBEDDING_CONFIG
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-from app.repositories.models.conversation import MessageModel
+from app.repositories.models.conversation import ContentModel, MessageModel
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -32,7 +32,7 @@ class GuardrailConfig(TypedDict):
     guardrailIdentifier: str
     guardrailVersion: str
     trace: str
-    streamProcessingMode: str
+    streamProcessingMode: NotRequired[str]
 
 
 class ConverseApiToolSpec(TypedDict):
@@ -64,7 +64,7 @@ class ConverseApiRequest(TypedDict):
     messages: list[dict]
     stream: bool
     system: list[dict]
-    guardrailConfig: GuardrailConfig | None
+    guardrailConfig: NotRequired[GuardrailConfig]
     tool_config: NotRequired[ConverseApiToolConfig]
 
 
@@ -143,89 +143,7 @@ def _convert_to_valid_file_name(file_name: str) -> str:
     return file_name
 
 
-@no_type_check
 def compose_args_for_converse_api(
-    messages: list[MessageModel],
-    model: type_model_name,
-    instruction: str | None = None,
-    stream: bool = False,
-    generation_params: GenerationParamsModel | None = None,
-) -> ConverseApiRequest:
-    """Compose arguments for Converse API.
-    Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse_stream.html
-    """
-    arg_messages = []
-    for message in messages:
-        if message.role not in ["system", "instruction"]:
-            content_blocks = []
-            for c in message.content:
-                if c.content_type == "text":
-                    content_blocks.append({"text": c.body})
-                elif c.content_type == "image":
-                    # e.g. "image/png" -> "png"
-                    format = c.media_type.split("/")[1]
-                    content_blocks.append(
-                        {
-                            "image": {
-                                "format": format,
-                                # decode base64 encoded image
-                                "source": {"bytes": base64.b64decode(c.body)},
-                            }
-                        }
-                    )
-                elif c.content_type == "attachment":
-                    content_blocks.append(
-                        {
-                            "document": {
-                                "format": _get_converse_supported_format(
-                                    Path(c.file_name).suffix[
-                                        1:
-                                    ],  # e.g. "document.txt" -> "txt"
-                                ),
-                                "name": Path(
-                                    _convert_to_valid_file_name(c.file_name)
-                                ).stem,  # e.g. "document.txt" -> "document"
-                                # encode text attachment body
-                                "source": {"bytes": base64.b64decode(c.body)},
-                            }
-                        }
-                    )
-                else:
-                    raise NotImplementedError()
-            arg_messages.append({"role": message.role, "content": content_blocks})
-
-    inference_config = {
-        **DEFAULT_GENERATION_CONFIG,
-        **(
-            {
-                "maxTokens": generation_params.max_tokens,
-                "temperature": generation_params.temperature,
-                "topP": generation_params.top_p,
-                "stopSequences": generation_params.stop_sequences,
-            }
-            if generation_params
-            else {}
-        ),
-    }
-
-    # `top_k` is configured in `additional_model_request_fields` instead of `inference_config`
-    additional_model_request_fields = {"top_k": inference_config["top_k"]}
-    del inference_config["top_k"]
-
-    args: ConverseApiRequest = {
-        "inference_config": convert_dict_keys_to_camel_case(inference_config),
-        "additional_model_request_fields": additional_model_request_fields,
-        "model_id": get_model_id(model),
-        "messages": arg_messages,
-        "stream": stream,
-        "system": [],
-    }
-    if instruction:
-        args["system"].append({"text": instruction})
-    return args
-
-
-def compose_args_for_converse_api_with_guardrail(
     messages: list[MessageModel],
     model: type_model_name,
     instruction: str | None = None,
@@ -234,74 +152,60 @@ def compose_args_for_converse_api_with_guardrail(
     grounding_source: dict | None = None,
     guardrail: BedrockGuardrailsModel | None = None,
 ) -> ConverseApiRequest:
-    """Compose arguments for Converse API.
-    Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse_stream.html
-    """
-    arg_messages = []
-    for message in messages:
-        if message.role not in ["system", "instruction"]:
-            content_blocks = []
-            for c in message.content:
-                if c.content_type == "text":
-                    if message.role == "user":
-                        if guardrail and getattr(guardrail, "grounding_threshold", 0) > 0:
-                            content_blocks.append({"guardContent": grounding_source})
-                        content_blocks.append(
-                            {
-                                "guardContent": {
-                                    "text": {"text": c.body, "qualifiers": ["query"]},
-                                }
-                            }
-                        )
-                    elif message.role == "assistant":
-                        content_blocks.append(
-                            {
-                                "text": (
-                                    {"content": c.body}  # type: ignore
-                                    if isinstance(c.body, str)
-                                    else None
-                                )
-                            }
-                        )
+    def process_content(c: ContentModel, role: str):
+        if c.content_type == "text":
+            if role == "user" and guardrail and guardrail.grounding_threshold > 0:
+                return [
+                    {"guardContent": grounding_source},
+                    {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
+                ]
+            elif role == "assistant":
+                return [{"text": c.body if isinstance(c.body, str) else None}]
+            else:
+                return [{"text": c.body}]
+        elif c.content_type == "image":
+            format = c.media_type.split("/")[1] if c.media_type else "unknown"
+            return [
+                {
+                    "image": {
+                        "format": format,
+                        "source": {"bytes": base64.b64decode(c.body)},
+                    }
+                }
+            ]
+        elif c.content_type == "attachment":
+            return [
+                {
+                    "document": {
+                        "format": _get_converse_supported_format(
+                            Path(c.file_name).suffix[1:]  # type: ignore
+                        ),
+                        "name": Path(c.file_name).stem,  # type: ignore
+                        "source": {
+                            "bytes": (
+                                c.body.encode("utf-8")
+                                if isinstance(c.body, str)
+                                else c.body
+                            )
+                        },  # And this line
+                    }
+                }
+            ]
+        else:
+            raise NotImplementedError(f"Unsupported content type: {c.content_type}")
 
-                elif c.content_type == "image":
-                    # e.g. "image/png" -> "png"
-                    format = (
-                        c.media_type.split("/")[1]
-                        if c.media_type is not None
-                        else "unknown"
-                    )
-
-                    content_blocks.append(
-                        {
-                            "image": {
-                                "format": format,  # type: ignore
-                                # decode base64 encoded image
-                                "source": {"bytes": base64.b64decode(c.body)},  # type: ignore
-                            }
-                        }
-                    )
-
-                elif c.content_type == "attachment":
-                    content_blocks.append(
-                        {
-                            "document": {
-                                "format": _get_converse_supported_format(
-                                    Path(c.file_name).suffix[
-                                        1:
-                                    ],  # e.g. "document.txt" -> "txt"
-                                ),
-                                "name": Path(
-                                    c.file_name
-                                ).stem,  # e.g. "document.txt" -> "document"
-                                # encode text attachment body
-                                "source": {"bytes": c.body.encode("utf-8")},
-                            }
-                        }
-                    )
-                else:
-                    raise NotImplementedError()
-            arg_messages.append({"role": message.role, "content": content_blocks})
+    arg_messages = [
+        {
+            "role": message.role,
+            "content": [
+                block
+                for c in message.content
+                for block in process_content(c, message.role)
+            ],
+        }
+        for message in messages
+        if message.role not in ["system", "instruction"]
+    ]
 
     inference_config = {
         **DEFAULT_GENERATION_CONFIG,
@@ -317,9 +221,7 @@ def compose_args_for_converse_api_with_guardrail(
         ),
     }
 
-    # `top_k` is configured in `additional_model_request_fields` instead of `inference_config`
-    additional_model_request_fields = {"top_k": inference_config["top_k"]}
-    del inference_config["top_k"]
+    additional_model_request_fields = {"top_k": inference_config.pop("top_k")}
 
     args: ConverseApiRequest = {
         "inference_config": convert_dict_keys_to_camel_case(inference_config),
@@ -327,27 +229,19 @@ def compose_args_for_converse_api_with_guardrail(
         "model_id": get_model_id(model),
         "messages": arg_messages,
         "stream": stream,
-        "system": [],
-        "guardrailConfig": None,  # Initialize with None
+        "system": [{"text": instruction}] if instruction else [],
     }
 
-    if instruction:
-        args["system"].append({"text": instruction})
-
-    if (
-        guardrail
-        and hasattr(guardrail, "guardrail_arn")
-        and guardrail.guardrail_arn
-        and hasattr(guardrail, "guardrail_version")
-        and guardrail.guardrail_version
-    ):
-
+    if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
         args["guardrailConfig"] = {
             "guardrailIdentifier": guardrail.guardrail_arn,
             "guardrailVersion": guardrail.guardrail_version,
             "trace": "enabled",
-            "streamProcessingMode": "async",
         }
+
+        if stream:
+            # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
+            args["guardrailConfig"]["streamProcessingMode"] = "async"
 
     return args
 

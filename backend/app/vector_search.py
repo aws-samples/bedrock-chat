@@ -21,6 +21,19 @@ class SearchResult(BaseModel):
     rank: int
 
 
+def to_guardrails_grounding_source(
+    search_results: list[SearchResult],
+) -> dict:
+    """Convert search results to Guardrails Grounding source format."""
+    grounding_source = {
+        "text": {
+            "text": "\n\n".join(x.content for x in search_results),
+            "qualifiers": ["grounding_source"],
+        }
+    }
+    return grounding_source
+
+
 def filter_used_results(
     generated_text: str, search_results: list[SearchResult]
 ) -> list[SearchResult]:
@@ -127,9 +140,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
             source = (
-                retrieval_result.get("location", {})
-                .get("s3Location", {})
-                .get("uri", "")
+                retrieval_result.get("location", {}).get("s3Location", {}).get("uri", "")
             )
 
             search_results.append(

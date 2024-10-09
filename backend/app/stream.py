@@ -7,7 +7,7 @@ from app.utils import get_bedrock_runtime_client
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 class OnStopInput(BaseModel):
@@ -56,18 +56,19 @@ class ConverseApiStreamHandler:
         response = None
         try:
             base_args = {
-                "modelId": get_model_id(self.model),
+                "modelId": args["model_id"],
                 "messages": args["messages"],
                 "inferenceConfig": args["inference_config"],
                 "system": args["system"],
+                # for topK
+                "additionalModelRequestFields": args["additional_model_request_fields"],
             }
 
             if "guardrailConfig" in args:
                 base_args["guardrailConfig"] = args["guardrailConfig"]  # type: ignore
 
-            logger.info(f"args before converse_stream: {args}")
+            logger.info(f"args for converse_stream: {args}")
             response = client.converse_stream(**base_args)
-            logger.info(f"response of converse_stream: {response}")
         except Exception as e:
             logger.error(f"Error: {e}")
             raise e
@@ -76,16 +77,16 @@ class ConverseApiStreamHandler:
         stop_reason = ""
         for event in response["stream"]:
             if "contentBlockDelta" in event:
-                print(f"event: {event}")
+                logger.debug(f"event: {event}")
                 text = event["contentBlockDelta"]["delta"]["text"]
                 completions.append(text)
                 response = self.on_stream(text)
                 yield response
             elif "messageStop" in event:
-                print(f"event: {event}")
+                logger.debug(f"event: {event}")
                 stop_reason = event["messageStop"]["stopReason"]
             elif "metadata" in event:
-                print(f"event: {event}")
+                logger.debug(f"event: {event}")
                 metadata = event["metadata"]
                 usage = metadata["usage"]
                 input_token_count = usage["inputTokens"]
