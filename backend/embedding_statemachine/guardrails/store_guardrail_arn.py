@@ -14,10 +14,11 @@ logger.setLevel(logging.INFO)
 
 
 class StackOutput(TypedDict):
-    KnowledgeBaseId: str 
+    KnowledgeBaseId: str
     DataSourceId: str
     GuardrailArn: str
     GuardrailVersion: str
+
 
 def handler(event, context):
     logger.info(f"Event: {event}")

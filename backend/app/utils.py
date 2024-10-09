@@ -230,4 +230,3 @@ def query_postgres(
     if include_columns:
         return columns, res
     return res
-

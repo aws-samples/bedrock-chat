@@ -74,7 +74,9 @@ def create_test_private_bot(
                 s3_urls=["s3://example/doc/"],
             )
             if set_dummy_knowledge
-            else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[], s3_urls=[])
+            else KnowledgeModel(
+                source_urls=[], sitemap_urls=[], filenames=[], s3_urls=[]
+            )
         ),
         sync_status=sync_status,
         sync_status_reason="reason",

@@ -91,7 +91,9 @@ class ConverseApiStreamHandler:
                 usage = metadata["usage"]
                 input_token_count = usage["inputTokens"]
                 output_token_count = usage["outputTokens"]
-                price = calculate_price(self.model, input_token_count, output_token_count)
+                price = calculate_price(
+                    self.model, input_token_count, output_token_count
+                )
                 concatenated = "".join(completions)
                 response = self.on_stop(
                     OnStopInput(

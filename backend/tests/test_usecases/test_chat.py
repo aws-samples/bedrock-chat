@@ -907,7 +907,11 @@ class TestGuardrailChat(unittest.TestCase):
             description="Test guardrail for unit tests",
             contentPolicyConfig={
                 "filtersConfig": [
-                    {"type": "SEXUAL", "inputStrength": "HIGH", "outputStrength": "HIGH"},
+                    {
+                        "type": "SEXUAL",
+                        "inputStrength": "HIGH",
+                        "outputStrength": "HIGH",
+                    },
                 ]
             },
             blockedInputMessaging="blocked",
