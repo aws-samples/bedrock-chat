@@ -7,6 +7,9 @@
 - **For users who wish to continue using pgvector**: Upgrading to v2 is not recommended if you plan to continue using pgvector. Upgrading to v2 will remove all resources related to pgvector, and future support will no longer be available. Continue using v1 in this case.
 - Note that **upgrading to v2 will result in the deletion of all Aurora-related resources.** Future updates will focus exclusively on v2, with v1 being deprecated.
 
+> [!Important]
+> v2 will be released soon.
+
 ## Introduction
 
 ### What will happen
