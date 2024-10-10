@@ -695,17 +695,12 @@ const BotKbEditPage: React.FC = () => {
       title,
       description,
       instruction,
-      embeddingParams: null,
       generationParams: {
         maxTokens,
         temperature,
         topK,
         topP,
         stopSequences: stopSequences.split(','),
-      },
-      searchParams: {
-        // set same value as bedrockKnowledgeBase.searchParams
-        maxResults: searchParams.maxResults,
       },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
@@ -802,17 +797,12 @@ const BotKbEditPage: React.FC = () => {
         title,
         description,
         instruction,
-        embeddingParams: null,
         generationParams: {
           maxTokens,
           temperature,
           topK,
           topP,
           stopSequences: stopSequences.split(','),
-        },
-        searchParams: {
-          // set same value as bedrockKnowledgeBase.searchParams
-          maxResults: searchParams.maxResults,
         },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),

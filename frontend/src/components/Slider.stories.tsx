@@ -1,30 +1,30 @@
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
+import { EDGE_SEARCH_PARAMS } from '../constants';
+import { DEFAULT_SEARCH_CONFIG } from '../features/knowledgeBase/constants';
 import { Slider } from './Slider';
 import { useState } from 'react';
-import { EmdeddingParams } from '../@types/bot';
+import { SearchParams } from '../features/knowledgeBase/types';
 
 export const Ideal = () => {
   const { t } = useTranslation();
-  const [embeddingParams, setEmbeddingParams] = useState<EmdeddingParams>({
-    chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
-    chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
-    enablePartitionPdf: DEFAULT_EMBEDDING_CONFIG.enablePartitionPdf,
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    maxResults: DEFAULT_SEARCH_CONFIG.maxResults,
+    searchType: DEFAULT_SEARCH_CONFIG.searchType,
   });
   return (
     <Slider
-      value={embeddingParams.chunkSize}
-      hint={t('generationConfig.maxTokens.hint')}
-      label={t('generationConfig.maxTokens.label')}
+      value={searchParams.maxResults}
+      hint={t('searchSettings.maxResults.hint')}
+      label={t('searchSettings.maxResults.label')}
       range={{
-        min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
-        max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
-        step: EDGE_EMBEDDING_PARAMS.chunkSize.STEP,
+        min: EDGE_SEARCH_PARAMS.maxResults.MIN,
+        max: EDGE_SEARCH_PARAMS.maxResults.MAX,
+        step: EDGE_SEARCH_PARAMS.maxResults.STEP,
       }}
-      onChange={(chunkSize) =>
-        setEmbeddingParams((params) => ({
+      onChange={(maxResults) =>
+        setSearchParams((params) => ({
           ...params,
-          chunkSize: chunkSize,
+          maxResults: maxResults,
         }))
       }
     />
@@ -33,25 +33,24 @@ export const Ideal = () => {
 
 export const IdealDisabled = () => {
   const { t } = useTranslation();
-  const [embeddingParams, setEmbeddingParams] = useState<EmdeddingParams>({
-    chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
-    chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
-    enablePartitionPdf: DEFAULT_EMBEDDING_CONFIG.enablePartitionPdf,
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    maxResults: DEFAULT_SEARCH_CONFIG.maxResults,
+    searchType: DEFAULT_SEARCH_CONFIG.searchType,
   });
   return (
     <Slider
-      value={embeddingParams.chunkSize}
-      hint={t('generationConfig.maxTokens.hint')}
-      label={t('generationConfig.maxTokens.label')}
+      value={searchParams.maxResults}
+      hint={t('searchSettings.maxResults.hint')}
+      label={t('searchSettings.maxResults.label')}
       range={{
-        min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
-        max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
-        step: EDGE_EMBEDDING_PARAMS.chunkSize.STEP,
+        min: EDGE_SEARCH_PARAMS.maxResults.MIN,
+        max: EDGE_SEARCH_PARAMS.maxResults.MAX,
+        step: EDGE_SEARCH_PARAMS.maxResults.STEP,
       }}
-      onChange={(chunkSize) =>
-        setEmbeddingParams((params) => ({
+      onChange={(maxResults) =>
+        setSearchParams((params) => ({
           ...params,
-          chunkSize: chunkSize,
+          maxResults: maxResults,
         }))
       }
       disabled={true}
@@ -61,25 +60,24 @@ export const IdealDisabled = () => {
 
 export const Error = () => {
   const { t } = useTranslation();
-  const [embeddingParams, setEmbeddingParams] = useState<EmdeddingParams>({
-    chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
-    chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
-    enablePartitionPdf: DEFAULT_EMBEDDING_CONFIG.enablePartitionPdf,
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    maxResults: DEFAULT_SEARCH_CONFIG.maxResults,
+    searchType: DEFAULT_SEARCH_CONFIG.searchType,
   });
   return (
     <Slider
-      value={embeddingParams.chunkSize}
-      hint={t('generationConfig.maxTokens.hint')}
-      label={t('generationConfig.maxTokens.label')}
+      value={searchParams.maxResults}
+      hint={t('searchSettings.maxResults.hint')}
+      label={t('searchSettings.maxResults.label')}
       range={{
-        min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
-        max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
-        step: EDGE_EMBEDDING_PARAMS.chunkSize.STEP,
+        min: EDGE_SEARCH_PARAMS.maxResults.MIN,
+        max: EDGE_SEARCH_PARAMS.maxResults.MAX,
+        step: EDGE_SEARCH_PARAMS.maxResults.STEP,
       }}
-      onChange={(chunkSize) =>
-        setEmbeddingParams((params) => ({
+      onChange={(maxResults) =>
+        setSearchParams((params) => ({
           ...params,
-          chunkSize: chunkSize,
+          maxResults: maxResults,
         }))
       }
       errorMessage="error"
