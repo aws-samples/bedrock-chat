@@ -58,17 +58,6 @@ const BotApiSettingsPage: React.FC = () => {
     deleteBotPublication,
   } = useBotApiSettings(botId ?? '');
 
-  useEffect(() => {
-    // Disallow editing of bots created under opposite VITE_APP_ENABLE_KB environment state
-    const KB_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_KB === 'true';
-    if (
-      myBot &&
-      (KB_ENABLED ? !myBot.bedrockKnowledgeBase : !!myBot.bedrockKnowledgeBase)
-    ) {
-      navigate('/');
-    }
-  }, [myBot, navigate]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingShare, setIsLoadingShare] = useState(false);
 

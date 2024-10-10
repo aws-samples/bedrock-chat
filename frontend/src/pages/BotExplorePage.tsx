@@ -31,10 +31,6 @@ const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAllowCreatingBot, isAllowApiSettings } = useUser();
-
-  // Disallow editing of bots created under opposite VITE_APP_ENABLE_KB environment state
-  const KB_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_KB === 'true';
-
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
@@ -162,14 +158,7 @@ const BotExplorePage: React.FC = () => {
               {myBots?.map((bot, idx) => (
                 <ListItemBot
                   key={bot.id}
-                  // Add "Unsupported" prefix for bots created under opposite VITE_APP_ENABLE_KB environment state
-                  bot={{
-                    ...bot,
-                    title:
-                      bot.hasBedrockKnowledgeBase === KB_ENABLED
-                        ? bot.title
-                        : `[${t('bot.label.unsupported')}] ${bot.title}`,
-                  }}
+                  bot={bot}
                   onClick={onClickBot}
                   className="last:border-b-0">
                   <div className="flex items-center">
@@ -190,14 +179,8 @@ const BotExplorePage: React.FC = () => {
                           <ButtonIcon
                             className="-mr-3"
                             onClick={() => {
-                              if (bot.hasBedrockKnowledgeBase === KB_ENABLED) {
-                                onClickShare(idx);
-                              }
-                            }}
-                            // Disable the share button for bots created under opposite VITE_APP_ENABLE_KB environment state
-                            disabled={
-                              bot.hasBedrockKnowledgeBase !== KB_ENABLED
-                            }>
+                              onClickShare(idx);
+                            }}>
                             <PiLink />
                           </ButtonIcon>
                         </div>
@@ -232,42 +215,24 @@ const BotExplorePage: React.FC = () => {
                       className="mr-2 h-8 text-sm font-semibold"
                       outlined
                       onClick={() => {
-                        if (bot.hasBedrockKnowledgeBase === KB_ENABLED) {
-                          onClickEditBot(bot.id);
-                        }
-                      }}
-                      // Disable the edit button for bots created under opposite VITE_APP_ENABLE_KB environment state
-                      disabled={bot.hasBedrockKnowledgeBase !== KB_ENABLED}>
+                        onClickEditBot(bot.id);
+                      }}>
                       {t('bot.button.edit')}
                     </Button>
                     <div className="relative">
                       <PopoverMenu className="h-8" target="bottom-right">
                         <PopoverItem
-                          // Disable the share action for bots created under opposite VITE_APP_ENABLE_KB environment state
                           onClick={() => {
-                            if (bot.hasBedrockKnowledgeBase === KB_ENABLED) {
-                              onClickShare(idx);
-                            }
-                          }}
-                          className={`${
-                            bot.hasBedrockKnowledgeBase !== KB_ENABLED &&
-                            'opacity-30 hover:filter-none'
-                          }`}>
+                            onClickShare(idx);
+                          }}>
                           <PiUsers />
                           {t('bot.button.share')}
                         </PopoverItem>
                         {isAllowApiSettings && (
                           <PopoverItem
                             onClick={() => {
-                              // Disable the API settings action for bots created under opposite VITE_APP_ENABLE_KB environment state
-                              if (bot.hasBedrockKnowledgeBase === KB_ENABLED) {
-                                onClickApiSettings(bot.id);
-                              }
-                            }}
-                            className={`${
-                              bot.hasBedrockKnowledgeBase !== KB_ENABLED &&
-                              'opacity-30 hover:filter-none'
-                            }`}>
+                              onClickApiSettings(bot.id);
+                            }}>
                             <PiGlobe />
                             {t('bot.button.apiSettings')}
                           </PopoverItem>
