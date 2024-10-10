@@ -3,7 +3,6 @@ import logging
 import re
 from typing import Any, Literal
 
-from app.bedrock import calculate_query_embedding
 from app.repositories.custom_bot import find_public_bot_by_id
 from app.repositories.models.custom_bot import BotModel
 from app.utils import generate_presigned_url, get_bedrock_agent_client
@@ -107,7 +106,9 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
             source = (
-                retrieval_result.get("location", {}).get("s3Location", {}).get("uri", "")
+                retrieval_result.get("location", {})
+                .get("s3Location", {})
+                .get("uri", "")
             )
 
             search_results.append(

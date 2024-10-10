@@ -9,7 +9,6 @@ from app.agents.agent import AgentMessageModel, AgentRunner, OnStopInput
 from app.agents.tools.agent_tool import RunResult
 from app.agents.tools.internet_search import internet_search_tool
 from app.bedrock import ConverseApiToolResult, ConverseApiToolUseContent
-from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.models.conversation import (
     AgentToolUseContentModel,
     ContentModel,
@@ -18,10 +17,8 @@ from app.repositories.models.conversation import (
 from app.repositories.models.custom_bot import (
     AgentModel,
     BotModel,
-    EmbeddingParamsModel,
     GenerationParamsModel,
     KnowledgeModel,
-    SearchParamsModel,
 )
 from app.routes.schemas.conversation import type_model_name
 
@@ -75,20 +72,12 @@ class TestAgentRunner(unittest.TestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="dummy",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=False,
-            ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
                 stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
             ),
             agent=AgentModel(tools=[]),
             knowledge=KnowledgeModel(

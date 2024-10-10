@@ -5,7 +5,7 @@ import os
 import re
 from pathlib import Path
 
-from app.config import BEDROCK_PRICING, DEFAULT_EMBEDDING_CONFIG
+from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import ContentModel, MessageModel
@@ -309,51 +309,3 @@ def get_model_id(model: type_model_name) -> str:
         return "mistral.mixtral-8x7b-instruct-v0:1"
     elif model == "mistral-large":
         return "mistral.mistral-large-2402-v1:0"
-
-
-def calculate_query_embedding(question: str) -> list[float]:
-    model_id = DEFAULT_EMBEDDING_CONFIG["model_id"]
-
-    # Currently only supports "cohere.embed-multilingual-v3"
-    assert model_id == "cohere.embed-multilingual-v3"
-
-    payload = json.dumps({"texts": [question], "input_type": "search_query"})
-    accept = "application/json"
-    content_type = "application/json"
-
-    response = client.invoke_model(
-        accept=accept, contentType=content_type, body=payload, modelId=model_id
-    )
-    output = json.loads(response.get("body").read())
-    embedding = output.get("embeddings")[0]
-
-    return embedding
-
-
-def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
-    def _calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
-        payload = json.dumps({"texts": documents, "input_type": "search_document"})
-        accept = "application/json"
-        content_type = "application/json"
-
-        response = client.invoke_model(
-            accept=accept, contentType=content_type, body=payload, modelId=model_id
-        )
-        output = json.loads(response.get("body").read())
-        embeddings = output.get("embeddings")
-
-        return embeddings
-
-    BATCH_SIZE = 10
-    model_id = DEFAULT_EMBEDDING_CONFIG["model_id"]
-
-    # Currently only supports "cohere.embed-multilingual-v3"
-    assert model_id == "cohere.embed-multilingual-v3"
-
-    embeddings = []
-    for i in range(0, len(documents), BATCH_SIZE):
-        # Split documents into batches to avoid exceeding the payload size limit
-        batch = documents[i : i + BATCH_SIZE]
-        embeddings += _calculate_document_embeddings(batch)
-
-    return embeddings

@@ -9,7 +9,7 @@ from functools import partial
 
 import boto3
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
-from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG, DEFAULT_SEARCH_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -26,10 +26,8 @@ from app.repositories.models.custom_bot import (
     BotMetaWithStackInfo,
     BotModel,
     ConversationQuickStarterModel,
-    EmbeddingParamsModel,
     GenerationParamsModel,
     KnowledgeModel,
-    SearchParamsModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -76,9 +74,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "CreateTime": decimal(custom_bot.create_time),
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
-        "EmbeddingParams": custom_bot.embedding_params.model_dump(),
         "GenerationParams": custom_bot.generation_params.model_dump(),
-        "SearchParams": custom_bot.search_params.model_dump(),
         "AgentData": custom_bot.agent.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
@@ -107,9 +103,7 @@ def update_bot(
     title: str,
     description: str,
     instruction: str,
-    embedding_params: EmbeddingParamsModel,
     generation_params: GenerationParamsModel,
-    search_params: SearchParamsModel,
     agent: AgentModel,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
@@ -129,13 +123,11 @@ def update_bot(
         "SET Title = :title, "
         "Description = :description, "
         "Instruction = :instruction, "
-        "EmbeddingParams = :embedding_params, "
         "AgentData = :agent_data, "
         "Knowledge = :knowledge, "
         "SyncStatus = :sync_status, "
         "SyncStatusReason = :sync_status_reason, "
         "GenerationParams = :generation_params, "
-        "SearchParams = :search_params, "
         "DisplayRetrievedChunks = :display_retrieved_chunks, "
         "ConversationQuickStarters = :conversation_quick_starters"
     )
@@ -146,12 +138,10 @@ def update_bot(
         ":instruction": instruction,
         ":knowledge": knowledge.model_dump(),
         ":agent_data": agent.model_dump(),
-        ":embedding_params": embedding_params.model_dump(),
         ":sync_status": sync_status,
         ":sync_status_reason": sync_status_reason,
         ":display_retrieved_chunks": display_retrieved_chunks,
         ":generation_params": generation_params.model_dump(),
-        ":search_params": search_params.model_dump(),
         ":conversation_quick_starters": [
             starter.model_dump() for starter in conversation_quick_starters
         ],
@@ -445,38 +435,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
-        embedding_params=EmbeddingParamsModel(
-            # For backward compatibility
-            chunk_size=(
-                item["EmbeddingParams"]["chunk_size"]
-                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
-                else 1000
-            ),
-            chunk_overlap=(
-                item["EmbeddingParams"]["chunk_overlap"]
-                if "EmbeddingParams" in item
-                and "chunk_overlap" in item["EmbeddingParams"]
-                else 200
-            ),
-            enable_partition_pdf=(
-                item["EmbeddingParams"]["enable_partition_pdf"]
-                if "EmbeddingParams" in item
-                and "enable_partition_pdf" in item["EmbeddingParams"]
-                else False
-            ),
-        ),
         generation_params=GenerationParamsModel(
             **(
                 item["GenerationParams"]
                 if "GenerationParams" in item
                 else DEFAULT_GENERATION_CONFIG
-            )
-        ),
-        search_params=SearchParamsModel(
-            max_results=(
-                item["SearchParams"]["max_results"]
-                if "SearchParams" in item
-                else DEFAULT_SEARCH_CONFIG["max_results"]
             )
         ),
         agent=(
@@ -543,38 +506,11 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
         owner_user_id=item["PK"],
-        embedding_params=EmbeddingParamsModel(
-            # For backward compatibility
-            chunk_size=(
-                item["EmbeddingParams"]["chunk_size"]
-                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
-                else 1000
-            ),
-            chunk_overlap=(
-                item["EmbeddingParams"]["chunk_overlap"]
-                if "EmbeddingParams" in item
-                and "chunk_overlap" in item["EmbeddingParams"]
-                else 200
-            ),
-            enable_partition_pdf=(
-                item["EmbeddingParams"]["enable_partition_pdf"]
-                if "EmbeddingParams" in item
-                and "enable_partition_pdf" in item["EmbeddingParams"]
-                else False
-            ),
-        ),
         generation_params=GenerationParamsModel(
             **(
                 item["GenerationParams"]
                 if "GenerationParams" in item
                 else DEFAULT_GENERATION_CONFIG
-            )
-        ),
-        search_params=SearchParamsModel(
-            max_results=(
-                item["SearchParams"]["max_results"]
-                if "SearchParams" in item
-                else DEFAULT_SEARCH_CONFIG["max_results"]
             )
         ),
         agent=(

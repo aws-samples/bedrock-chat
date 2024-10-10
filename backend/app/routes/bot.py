@@ -9,6 +9,7 @@ from app.repositories.custom_bot import (
 from app.routes.schemas.bot import (
     Agent,
     AgentTool,
+    BedrockGuardrailsOutput,
     BedrockKnowledgeBaseOutput,
     BotInput,
     BotMetaOutput,
@@ -19,11 +20,8 @@ from app.routes.schemas.bot import (
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ConversationQuickStarter,
-    EmbeddingParams,
     GenerationParams,
     Knowledge,
-    SearchParams,
-    BedrockGuardrailsOutput,
 )
 from app.usecases.bot import (
     create_new_bot,
@@ -138,11 +136,6 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
-        embedding_params=EmbeddingParams(
-            chunk_size=bot.embedding_params.chunk_size,
-            chunk_overlap=bot.embedding_params.chunk_overlap,
-            enable_partition_pdf=bot.embedding_params.enable_partition_pdf,
-        ),
         agent=Agent(
             tools=[
                 AgentTool(name=tool.name, description=tool.description)
@@ -161,9 +154,6 @@ def get_private_bot(request: Request, bot_id: str):
             top_p=bot.generation_params.top_p,
             temperature=bot.generation_params.temperature,
             stop_sequences=bot.generation_params.stop_sequences,
-        ),
-        search_params=SearchParams(
-            max_results=bot.search_params.max_results,
         ),
         sync_status=bot.sync_status,
         sync_status_reason=bot.sync_status_reason,

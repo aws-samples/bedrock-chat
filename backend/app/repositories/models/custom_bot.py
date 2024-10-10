@@ -1,14 +1,8 @@
 from app.repositories.models.common import Float
-from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
+from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
-
-
-class EmbeddingParamsModel(BaseModel):
-    chunk_size: int
-    chunk_overlap: int
-    enable_partition_pdf: bool
 
 
 class KnowledgeModel(BaseModel):
@@ -46,10 +40,6 @@ class GenerationParamsModel(BaseModel):
     stop_sequences: list[str]
 
 
-class SearchParamsModel(BaseModel):
-    max_results: int
-
-
 class AgentToolModel(BaseModel):
     name: str
     description: str
@@ -75,9 +65,7 @@ class BotModel(BaseModel):
     public_bot_id: str | None
     owner_user_id: str
     is_pinned: bool
-    embedding_params: EmbeddingParamsModel
     generation_params: GenerationParamsModel
-    search_params: SearchParamsModel
     agent: AgentModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status

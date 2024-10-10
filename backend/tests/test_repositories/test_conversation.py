@@ -3,7 +3,7 @@ import unittest
 
 sys.path.append(".")
 
-from app.config import DEFAULT_EMBEDDING_CONFIG
+
 from app.repositories.conversation import (
     ContentModel,
     ConversationModel,
@@ -34,10 +34,8 @@ from app.repositories.models.custom_bot import (
     AgentToolModel,
     BotModel,
     ConversationQuickStarterModel,
-    EmbeddingParamsModel,
     GenerationParamsModel,
     KnowledgeModel,
-    SearchParamsModel,
 )
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -436,20 +434,12 @@ class TestConversationBotRepository(unittest.TestCase):
             public_bot_id="1",
             is_pinned=False,
             owner_user_id="user",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
                 stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
             ),
             agent=AgentModel(
                 tools=[
@@ -486,20 +476,12 @@ class TestConversationBotRepository(unittest.TestCase):
             public_bot_id="2",
             is_pinned=False,
             owner_user_id="user",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
                 stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
             ),
             agent=AgentModel(
                 tools=[

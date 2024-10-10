@@ -36,20 +36,6 @@ DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
     "stop_sequences": ["[INST]", "[/INST]"],
 }
 
-# Configure embedding parameter.
-DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
-    # DO NOT change `model_id` (currently other models are not supported)
-    "model_id": "cohere.embed-multilingual-v3",
-    # NOTE: consider that cohere allows up to 2048 tokens per request
-    "chunk_size": 1000,
-    "chunk_overlap": 200,
-    "enable_partition_pdf": False,
-}
-
-# Configure search parameter to fetch relevant documents from vector store.
-DEFAULT_SEARCH_CONFIG = {
-    "max_results": 20,
-}
 
 # Used for price estimation.
 # NOTE: The following is based on 2024-03-07
