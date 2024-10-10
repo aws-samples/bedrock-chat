@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { EDGE_SEARCH_PARAMS } from '../constants';
-import { DEFAULT_SEARCH_CONFIG } from '../features/knowledgeBase/constants';
+import {
+  DEFAULT_SEARCH_CONFIG,
+  EDGE_SEARCH_PARAMS,
+} from '../features/knowledgeBase/constants';
 import { Slider } from './Slider';
 import { useState } from 'react';
 import { SearchParams } from '../features/knowledgeBase/types';

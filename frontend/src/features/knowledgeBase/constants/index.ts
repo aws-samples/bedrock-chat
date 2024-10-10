@@ -71,6 +71,14 @@ export const EDGE_CHUNKING_OVERLAP_PERCENTAGE = {
   STEP: 1,
 };
 
+export const EDGE_SEARCH_PARAMS = {
+  maxResults: {
+    MAX: 100,
+    MIN: 1,
+    STEP: 1,
+  },
+};
+
 export const DEFAULT_SEARCH_CONFIG: SearchParams = {
   maxResults: 20,
   searchType: 'hybrid',

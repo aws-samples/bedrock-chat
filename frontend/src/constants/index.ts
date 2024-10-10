@@ -46,14 +46,6 @@ export const EDGE_MISTRAL_GENERATION_PARAMS = {
   },
 };
 
-export const EDGE_SEARCH_PARAMS = {
-  maxResults: {
-    MAX: 100,
-    MIN: 1,
-    STEP: 1,
-  },
-};
-
 export const DEFAULT_GENERATION_CONFIG: GenerationParams = {
   maxTokens: 2000,
   topK: 250,
