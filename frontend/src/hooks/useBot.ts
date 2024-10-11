@@ -56,7 +56,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
             isPublic: false,
             owned: true,
             syncStatus: 'QUEUED',
-            hasBedrockKnowledgeBase: !!params.bedrockKnowledgeBase,
           });
         }),
         {

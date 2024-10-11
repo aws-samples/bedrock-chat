@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import ChatListDrawer from "./ChatListDrawer";
+import ChatListDrawer from './ChatListDrawer';
 import { BotListItem } from '../@types/bot';
 import { ConversationMeta } from '../@types/conversation';
 
@@ -26,7 +26,6 @@ const bots: BotListItem[] = [
     owned: false,
     syncStatus: 'SUCCEEDED',
     available: true,
-    hasBedrockKnowledgeBase: false,
   },
   {
     id: '2',
@@ -39,7 +38,6 @@ const bots: BotListItem[] = [
     owned: true,
     syncStatus: 'SUCCEEDED',
     available: true,
-    hasBedrockKnowledgeBase: false,
   },
 ];
 
@@ -65,8 +63,8 @@ export const Admin: Story = () => {
     <ChatListDrawer
       isAdmin={true}
       conversations={conversations}
-      starredBots={bots.filter(bot => bot.isPinned)}
-      recentlyUsedUnsterredBots={bots.filter(bot => !bot.isPinned)}
+      starredBots={bots.filter((bot) => bot.isPinned)}
+      recentlyUsedUnsterredBots={bots.filter((bot) => !bot.isPinned)}
       updateConversationTitle={async () => {}}
       onSignOut={() => {}}
       onDeleteConversation={() => {}}
@@ -81,8 +79,8 @@ export const NonAdmin: Story = () => {
     <ChatListDrawer
       isAdmin={false}
       conversations={conversations}
-      starredBots={bots.filter(bot => bot.isPinned)}
-      recentlyUsedUnsterredBots={bots.filter(bot => !bot.isPinned)}
+      starredBots={bots.filter((bot) => bot.isPinned)}
+      recentlyUsedUnsterredBots={bots.filter((bot) => !bot.isPinned)}
       updateConversationTitle={async () => {}}
       onSignOut={() => {}}
       onDeleteConversation={() => {}}

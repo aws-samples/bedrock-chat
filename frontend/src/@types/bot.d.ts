@@ -41,7 +41,6 @@ export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
 export type BotListItem = BotMeta & {
   available: boolean;
-  hasBedrockKnowledgeBase: boolean;
 };
 
 export type GenerationParams = {
@@ -80,7 +79,6 @@ export type BotDetails = BotMeta & {
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
   hasAgent: boolean;
-  ownedAndHasBedrockKnowledgeBase: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
 };
 

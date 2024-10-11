@@ -25,6 +25,7 @@ from app.routes.schemas.bot import (
 )
 from app.usecases.bot import (
     create_new_bot,
+    fetch_all_bots,
     fetch_all_bots_by_user_id,
     fetch_available_agent_tools,
     fetch_bot_summary,
@@ -91,33 +92,8 @@ def get_all_bots(
     """
     current_user: User = request.state.current_user
 
-    bots = []
-    if kind == "private":
-        bots = find_private_bots_by_user_id(current_user.id, limit=limit)
-    elif kind == "mixed":
-        bots = fetch_all_bots_by_user_id(
-            current_user.id, limit=limit, only_pinned=pinned
-        )
-    else:
-        raise ValueError(f"Invalid kind: {kind}")
-
-    output = [
-        BotMetaOutput(
-            id=bot.id,
-            title=bot.title,
-            create_time=bot.create_time,
-            last_used_time=bot.last_used_time,
-            is_pinned=bot.is_pinned,
-            owned=bot.owned,
-            available=bot.available,
-            description=bot.description,
-            is_public=bot.is_public,
-            sync_status=bot.sync_status,
-            has_bedrock_knowledge_base=bot.has_bedrock_knowledge_base,
-        )
-        for bot in bots
-    ]
-    return output
+    bots = fetch_all_bots(current_user.id, limit, pinned, kind)
+    return bots
 
 
 @router.get("/bot/private/{bot_id}", response_model=BotOutput)
@@ -198,9 +174,7 @@ def delete_bot(request: Request, bot_id: str):
 
 
 @router.get("/bot/{bot_id}/presigned-url", response_model=BotPresignedUrlOutput)
-def get_bot_presigned_url(
-    request: Request, bot_id: str, filename: str, contentType: str
-):
+def get_bot_presigned_url(request: Request, bot_id: str, filename: str, contentType: str):
     """Get presigned url for bot"""
     current_user: User = request.state.current_user
     url = issue_presigned_url(current_user.id, bot_id, filename, contentType)

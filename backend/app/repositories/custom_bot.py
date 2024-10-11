@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from decimal import Decimal as decimal
 from functools import partial
+from typing import Literal
 
 import boto3
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
@@ -31,7 +32,7 @@ from app.repositories.models.custom_bot import (
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
-from app.routes.schemas.bot import type_sync_status
+from app.routes.schemas.bot import BotMetaOutput, type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -330,9 +331,7 @@ def update_guardrails_params(
     return response
 
 
-def find_private_bots_by_user_id(
-    user_id: str, limit: int | None = None
-) -> list[BotMeta]:
+def find_private_bots_by_user_id(user_id: str, limit: int | None = None) -> list[BotMeta]:
     """Find all private bots owned by user.
     This does not include public bots.
     The order is descending by `last_used_time`.
@@ -462,9 +461,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None
-            if "ApiPublishCodeBuildId" not in item
-            else item["ApiPublishCodeBuildId"]
+            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
@@ -533,9 +530,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None
-            if "ApiPublishCodeBuildId" not in item
-            else item["ApiPublishCodeBuildId"]
+            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),

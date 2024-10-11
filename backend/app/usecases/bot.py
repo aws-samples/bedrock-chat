@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Literal
 
 from app.agents.utils import get_available_tools, get_tool_by_name
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
@@ -15,6 +16,7 @@ from app.repositories.custom_bot import (
     delete_bot_by_id,
     find_alias_by_id,
     find_private_bot_by_id,
+    find_private_bots_by_user_id,
     find_public_bot_by_id,
     store_alias,
     store_bot,
@@ -40,6 +42,7 @@ from app.routes.schemas.bot import (
     Agent,
     AgentTool,
     BotInput,
+    BotMetaOutput,
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
@@ -241,9 +244,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseOutput(
-                **(bot_input.bedrock_knowledge_base.model_dump())
-            )
+            BedrockKnowledgeBaseOutput(**(bot_input.bedrock_knowledge_base.model_dump()))
             if bot_input.bedrock_knowledge_base
             else None
         ),
@@ -298,8 +299,7 @@ def modify_owned_bot(
             tools=[
                 AgentToolModel(name=t.name, description=t.description)
                 for t in [
-                    get_tool_by_name(tool_name)
-                    for tool_name in modify_input.agent.tools
+                    get_tool_by_name(tool_name) for tool_name in modify_input.agent.tools
                 ]
             ]
         )
@@ -347,9 +347,7 @@ def modify_owned_bot(
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(
-                **modify_input.bedrock_knowledge_base.model_dump()
-            )
+            BedrockKnowledgeBaseModel(**modify_input.bedrock_knowledge_base.model_dump())
             if modify_input.bedrock_knowledge_base
             else None
         ),
@@ -545,6 +543,48 @@ def fetch_all_bots_by_user_id(
 
     return bots
 
+def fetch_all_bots(user_id: str, limit: int | None = None,pinned: bool = False, kind: Literal["private", "mixed"]) -> list[BotMetaOutput]:
+    """Fetch all bots. 
+    The order is descending by `last_used_time`.
+    - If `kind` is `private`, only private bots will be returned.
+        - If `mixed` must give either `pinned` or `limit`.
+    - If `pinned` is True, only pinned bots will be returned.
+        - When kind is `private`, this will be ignored.
+    - If `limit` is specified, only the first n bots will be returned.
+        - Cannot specify both `pinned` and `limit`.
+    """
+    bots = []
+    if kind == "private":
+        bots = find_private_bots_by_user_id(user_id, limit=limit)
+    elif kind == "mixed":
+        bots = fetch_all_bots_by_user_id(user_id, limit=limit, only_pinned=pinned)
+    else:
+        raise ValueError(f"Invalid kind: {kind}")
+
+    bot_metas = []
+    for bot in bots:
+        if not bot.has_bedrock_knowledge_base:
+            # Created bots under major version 1.4~, 2~ should have bedrock knowledge base.
+            # If the bot does not have bedrock knowledge base,
+            # it is not shown in the list.
+            continue
+        bot_metas.append(
+            BotMetaOutput(
+                id=bot.id,
+                title=bot.title,
+                create_time=bot.create_time,
+                last_used_time=bot.last_used_time,
+                is_pinned=bot.is_pinned,
+                owned=bot.owned,
+                available=bot.available,
+                description=bot.description,
+                is_public=bot.is_public,
+                sync_status=bot.sync_status,
+            )
+        )
+    return bot_metas
+
+
 
 def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
     try:
@@ -568,7 +608,6 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 )
                 for starter in bot.conversation_quick_starters
             ],
-            owned_and_has_bedrock_knowledge_base=bot.has_bedrock_knowledge_base(),
         )
 
     except RecordNotFoundError:
@@ -599,7 +638,6 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                     for starter in alias.conversation_quick_starters
                 ]
             ),
-            owned_and_has_bedrock_knowledge_base=False,
         )
     except RecordNotFoundError:
         pass
@@ -650,7 +688,6 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 )
                 for starter in bot.conversation_quick_starters
             ],
-            owned_and_has_bedrock_knowledge_base=False,
         )
     except RecordNotFoundError:
         raise RecordNotFoundError(
