@@ -18,6 +18,7 @@ const BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: string =
 const KNOWLEDGE: string = process.env.KNOWLEDGE!;
 const BEDROCK_KNOWLEDGE_BASE: string = process.env.BEDROCK_KNOWLEDGE_BASE!;
 const BEDROCK_GUARDRAILS: string = process.env.BEDROCK_GUARDRAILS!;
+const USE_STAND_BY_REPLICAS: string = process.env.USE_STAND_BY_REPLICAS!;
 
 console.log("PK: ", PK);
 console.log("SK: ", SK);
@@ -27,16 +28,18 @@ console.log(
 );
 console.log("KNOWLEDGE: ", KNOWLEDGE);
 console.log("BEDROCK_KNOWLEDGE_BASE: ", BEDROCK_KNOWLEDGE_BASE);
-console.log("BEDROCK_GUARDRAILS: ", BEDROCK_GUARDRAILS)
+console.log("BEDROCK_GUARDRAILS: ", BEDROCK_GUARDRAILS);
+console.log("USE_STAND_BY_REPLICAS: ", USE_STAND_BY_REPLICAS);
 
 const ownerUserId: string = PK;
 const botId: string = SK.split("#")[2];
 const knowledgeBase = JSON.parse(BEDROCK_KNOWLEDGE_BASE);
 const knowledge = JSON.parse(KNOWLEDGE);
-const guardrails = JSON.parse(BEDROCK_GUARDRAILS)
+const guardrails = JSON.parse(BEDROCK_GUARDRAILS);
 const existingS3Urls: string[] = knowledge.s3_urls.L.map(
   (s3Url: any) => s3Url.S
 );
+const useStandbyReplicas: boolean = USE_STAND_BY_REPLICAS === "true";
 
 console.log("ownerUserId: ", ownerUserId);
 console.log("botId: ", botId);
@@ -60,9 +63,10 @@ const overlapPercentage: number | undefined = knowledgeBase.overlap_percentage
   ? Number(knowledgeBase.overlap_percentage.N)
   : undefined;
 
-const is_guardrail_enabled: boolean | undefined = guardrails.is_guardrail_enabled
-  ? Boolean(guardrails.is_guardrail_enabled.BOOL)
-  : undefined;
+const is_guardrail_enabled: boolean | undefined =
+  guardrails.is_guardrail_enabled
+    ? Boolean(guardrails.is_guardrail_enabled.BOOL)
+    : undefined;
 const hateThreshold: number | undefined = guardrails.hate_threshold
   ? Number(guardrails.hate_threshold.N)
   : undefined;
@@ -78,13 +82,13 @@ const violenceThreshold: number | undefined = guardrails.violence_threshold
 const misconductThreshold: number | undefined = guardrails.misconduct_threshold
   ? Number(guardrails.misconduct_threshold.N)
   : undefined;
-  const groundingThreshold: number | undefined = guardrails.grounding_threshold
+const groundingThreshold: number | undefined = guardrails.grounding_threshold
   ? Number(guardrails.grounding_threshold.N)
   : undefined;
 const relevanceThreshold: number | undefined = guardrails.relevance_threshold
   ? Number(guardrails.relevance_threshold.N)
   : undefined;
-const guardrailArn: number |  undefined = guardrails.guardrail_arn
+const guardrailArn: number | undefined = guardrails.guardrail_arn
   ? Number(guardrails.guardrail_arn.N)
   : undefined;
 const guardrailVersion: number | undefined = guardrails.guardrail_version
@@ -145,7 +149,8 @@ const bedrockCustomBotStack = new BedrockCustomBotStack(
       groundingThreshold,
       relevanceThreshold,
       guardrailArn,
-      guardrailVersion
-    }
+      guardrailVersion,
+    },
+    useStandbyReplicas,
   }
 );

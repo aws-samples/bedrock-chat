@@ -35,8 +35,8 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableMistral: boolean;
   readonly selfSignUpEnabled: boolean;
   readonly enableIpV6: boolean;
-  readonly natgatewayCount: number;
   readonly documentBucket: Bucket;
+  readonly useStandbyReplicas: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -205,6 +205,7 @@ export class BedrockChatStack extends cdk.Stack {
       tableAccessRole: database.tableAccessRole,
       documentBucket: props.documentBucket,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
+      useStandbyReplicas: props.useStandbyReplicas,
     });
 
     // WebAcl for published API

@@ -2,7 +2,8 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+> [!Warning]
+> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -265,6 +266,19 @@ If you want newly created users to automatically join groups, you can specify th
 ```
 
 By default, newly created users will be joined to the `CreatingBotAllowed` group.
+
+### Configure RAG Replicas
+
+`enableRagReplicas` is an option in [cdk.json](./cdk/cdk.json) that controls the replica settings for the RAG database, specifically the Knowledge Bases using Amazon OpenSearch Serverless.
+
+- **Default**: true
+- **true**: Enhances availability by enabling additional replicas, making it suitable for production environments but increasing costs.
+- **false**: Reduces costs by using fewer replicas, making it suitable for development and testing.
+
+This is an account/region-level setting, affecting the entire application rather than individual bots.
+
+> [!Note]
+> As of June 2024, Amazon OpenSearch Serverless supports 0.5 OCU, lowering entry costs for small-scale workloads. Production deployments can start with 2 OCUs, while dev/test workloads can use 1 OCU. OpenSearch Serverless automatically scales based on workload demands. For more detail, visit [announcement](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
 
 ### Local Development
 

@@ -51,9 +51,9 @@ describe("Bedrock Chat Stack Test", () => {
         autoJoinUserGroups: [],
         enableMistral: false,
         selfSignUpEnabled: true,
-        natgatewayCount: 2,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
+        useStandbyReplicas: false,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -120,9 +120,9 @@ describe("Bedrock Chat Stack Test", () => {
         autoJoinUserGroups: [],
         enableMistral: false,
         selfSignUpEnabled: true,
-        natgatewayCount: 2,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
+        useStandbyReplicas: false,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -179,9 +179,9 @@ describe("Bedrock Chat Stack Test", () => {
       autoJoinUserGroups: [],
       enableMistral: false,
       selfSignUpEnabled: true,
-      natgatewayCount: 2,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
+      useStandbyReplicas: false,
     });
     const template = Template.fromStack(stack);
 

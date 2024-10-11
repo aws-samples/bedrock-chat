@@ -25,6 +25,7 @@ export interface EmbeddingProps {
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
   readonly bedrockCustomBotProject: codebuild.IProject;
+  readonly useStandbyReplicas: boolean;
 }
 
 export class Embedding extends Construct {
@@ -235,6 +236,10 @@ export class Embedding extends Construct {
             value: sfn.JsonPath.stringAt(
               "States.JsonToString($.dynamodb.NewImage.GuardrailsParams.M)"
             ),
+          },
+          USE_STAND_BY_REPLICAS: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: props.useStandbyReplicas.toString(),
           },
         },
         resultPath: "$.Build",

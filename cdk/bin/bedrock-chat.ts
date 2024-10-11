@@ -37,9 +37,8 @@ const AUTO_JOIN_USER_GROUPS: string[] =
 const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
 const SELF_SIGN_UP_ENABLED: boolean =
   app.node.tryGetContext("selfSignUpEnabled");
-
-// how many nat gateways
-const NATGATEWAY_COUNT: number = app.node.tryGetContext("natgatewayCount");
+const USE_STAND_BY_REPLICAS: boolean =
+  app.node.tryGetContext("enableRagReplicas");
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
@@ -88,8 +87,8 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   autoJoinUserGroups: AUTO_JOIN_USER_GROUPS,
   enableMistral: ENABLE_MISTRAL,
   selfSignUpEnabled: SELF_SIGN_UP_ENABLED,
-  natgatewayCount: NATGATEWAY_COUNT,
   documentBucket: bedrockRegionResources.documentBucket,
+  useStandbyReplicas: USE_STAND_BY_REPLICAS,
 });
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);

@@ -5,6 +5,7 @@ import {
   Analyzer,
   VectorIndex,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
+import { VectorCollectionStandbyReplicas } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import {
   BedrockFoundationModel,
@@ -44,6 +45,7 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly analyzer?: Analyzer;
   readonly overlapPercentage?: number;
   readonly guardrail?: BedrockGuardrailProps;
+  readonly useStandbyReplicas?: boolean;
 }
 
 export class BedrockCustomBotStack extends Stack {
@@ -52,7 +54,13 @@ export class BedrockCustomBotStack extends Stack {
 
     const { docBucketsAndPrefixes } = this.setupBucketsAndPrefixes(props);
 
-    const vectorCollection = new VectorCollection(this, "KBVectors");
+    const vectorCollection = new VectorCollection(this, "KBVectors", {
+      collectionName: `bedrock-knowledge-base-${props.botId}`,
+      standbyReplicas:
+        props.useStandbyReplicas === true
+          ? VectorCollectionStandbyReplicas.ENABLED
+          : VectorCollectionStandbyReplicas.DISABLED,
+    });
     const vectorIndex = new VectorIndex(this, "KBIndex", {
       collection: vectorCollection,
       // DO NOT CHANGE THIS VALUE
