@@ -76,12 +76,17 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
 
 **Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support (Planning to support web crawler ([issue](https://github.com/aws-samples/bedrock-claude-chat/issues/557))).** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
 
-4. **Upgrade to v2**: After the release of v2, fetch the tagged source and deploy as follows (this will be possible once released):
+4. **Remove published APIs**: All previously published APIs will need to be republished before deploying v2 due to VPC deletion. To do this, you will need to delete the existing APIs first. Using the [administrator's API Management feature](../ADMINISTRATOR.md) can simplify this process. Once the deletion of all `APIPublishmentStackXXXX` CloudFormation stacks is complete, the environment will be ready.
+
+5. **Deploy v2**: After the release of v2, fetch the tagged source and deploy as follows (this will be possible once released):
    ```bash
    git fetch --tags
    git checkout tags/v2.0.0
    cdk deploy
    ```
+
+> [!Tip]
+> During stack updates, you might encounter repeated messages like: Resource handler returned message: "The subnet 'subnet-xxx' has dependencies and cannot be deleted." In such cases, navigate to the Management Console > EC2 > Network Interfaces and search for BedrockChatStack. Delete the displayed interfaces associated with this name to help ensure a smoother deployment process.
 
 ### Steps for users of v1.3
 
