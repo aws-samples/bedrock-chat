@@ -156,4 +156,4 @@ jobs:
           author: github-actions <github-actions@github.com>
           committer: github-actions <github-actions@github.com>
           signoff: true
-          base: v1
+          base: v2

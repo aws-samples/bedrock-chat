@@ -40,7 +40,7 @@ IPV6_RANGES=""
 DISABLE_IPV6="false"
 ALLOWED_SIGN_UP_EMAIL_DOMAINS=""
 BEDROCK_REGION="us-east-1"
-VERSION="v1"
+VERSION="v2"
 
 # Parse command-line arguments for customization
 while [[ "$#" -gt 0 ]]; do
