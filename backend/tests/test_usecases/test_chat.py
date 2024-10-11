@@ -8,7 +8,6 @@ import unittest
 from pprint import pprint
 
 import boto3
-from app.bedrock import get_model_id
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.conversation import (
     delete_conversation_by_id,

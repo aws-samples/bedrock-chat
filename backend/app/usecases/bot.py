@@ -244,7 +244,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseOutput(**(bot_input.bedrock_knowledge_base.model_dump()))
+            BedrockKnowledgeBaseOutput(
+                **(bot_input.bedrock_knowledge_base.model_dump())
+            )
             if bot_input.bedrock_knowledge_base
             else None
         ),
@@ -299,7 +301,8 @@ def modify_owned_bot(
             tools=[
                 AgentToolModel(name=t.name, description=t.description)
                 for t in [
-                    get_tool_by_name(tool_name) for tool_name in modify_input.agent.tools
+                    get_tool_by_name(tool_name)
+                    for tool_name in modify_input.agent.tools
                 ]
             ]
         )
@@ -347,7 +350,9 @@ def modify_owned_bot(
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(**modify_input.bedrock_knowledge_base.model_dump())
+            BedrockKnowledgeBaseModel(
+                **modify_input.bedrock_knowledge_base.model_dump()
+            )
             if modify_input.bedrock_knowledge_base
             else None
         ),
@@ -543,8 +548,14 @@ def fetch_all_bots_by_user_id(
 
     return bots
 
-def fetch_all_bots(user_id: str, limit: int | None = None,pinned: bool = False, kind: Literal["private", "mixed"]) -> list[BotMetaOutput]:
-    """Fetch all bots. 
+
+def fetch_all_bots(
+    user_id: str,
+    limit: int | None = None,
+    pinned: bool = False,
+    kind: Literal["private", "mixed"] = "private",
+) -> list[BotMetaOutput]:
+    """Fetch all bots.
     The order is descending by `last_used_time`.
     - If `kind` is `private`, only private bots will be returned.
         - If `mixed` must give either `pinned` or `limit`.
@@ -583,7 +594,6 @@ def fetch_all_bots(user_id: str, limit: int | None = None,pinned: bool = False, 
             )
         )
     return bot_metas
-
 
 
 def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
