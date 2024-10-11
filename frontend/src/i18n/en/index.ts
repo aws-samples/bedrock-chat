@@ -119,7 +119,7 @@ const translation = {
             'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
           url: 'The information from the specified URL will be used as Knowledge. If you set the URL of a YouTube video, the transcript of that video will be used as Knowledge.',
           s3url:
-            'By entering the S3 URI, you can add S3 as a data source. You can add up to 4 sources. It only supports buckets that exist in the same account and the same region as the deployment destination.',
+            'By entering the S3 URI, you can add S3 as a data source. You can add up to 4 sources. It only supports buckets that exist in the same account and the same region as bedrock region.',
           sitemap:
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
@@ -620,71 +620,68 @@ How would you categorize this email?`,
       },
     },
     guardrails: {
-      title: "Guardrails",
-      label: "Enable Guardrails for Amazon Bedrock",
-      hint: "Guardrails for Amazon Bedrock are used to implement application-specific safeguards based on your use cases and responsible AI policies.",
+      title: 'Guardrails',
+      label: 'Enable Guardrails for Amazon Bedrock',
+      hint: 'Guardrails for Amazon Bedrock are used to implement application-specific safeguards based on your use cases and responsible AI policies.',
       harmfulCategories: {
-        label: "Harmful Categories",
-        hint: "Configure content filters by adjusting the degree of filtering to detect and block harmful user inputs and model responses that violate your usage policies. 0: disable, 1: low, 2: middle, 3: High",
+        label: 'Harmful Categories',
+        hint: 'Configure content filters by adjusting the degree of filtering to detect and block harmful user inputs and model responses that violate your usage policies. 0: disable, 1: low, 2: middle, 3: High',
         hate: {
-          label: "Hate",
-          hint: "Describes input prompts and model responses that discriminate, criticize, insult, denounce, or dehumanize a person or group on the basis of an identity (such as race, ethnicity, gender, religion, sexual orientation, ability, and national origin). 0: disable, 1: low, 2: middle, 3: High",
+          label: 'Hate',
+          hint: 'Describes input prompts and model responses that discriminate, criticize, insult, denounce, or dehumanize a person or group on the basis of an identity (such as race, ethnicity, gender, religion, sexual orientation, ability, and national origin). 0: disable, 1: low, 2: middle, 3: High',
         },
         insults: {
-          label: "Insults",
-          hint: "Describes input prompts and model responses that includes demeaning, humiliating, mocking, insulting, or belittling language. This type of language is also labeled as bullying. 0: disable, 1: low, 2: middle, 3: High"
+          label: 'Insults',
+          hint: 'Describes input prompts and model responses that includes demeaning, humiliating, mocking, insulting, or belittling language. This type of language is also labeled as bullying. 0: disable, 1: low, 2: middle, 3: High',
         },
         sexual: {
-          label: "Sexual",
-          hint: "Describes input prompts and model responses that indicates sexual interest, activity, or arousal using direct or indirect references to body parts, physical traits, or sex. 0: disable, 1: low, 2: middle, 3: High"
+          label: 'Sexual',
+          hint: 'Describes input prompts and model responses that indicates sexual interest, activity, or arousal using direct or indirect references to body parts, physical traits, or sex. 0: disable, 1: low, 2: middle, 3: High',
         },
         violence: {
-          label: "Violence",
-          hint: "Describes input prompts and model responses that includes glorification of or threats to inflict physical pain, hurt, or injury toward a person, group or thing. 0: disable, 1: low, 2: middle, 3: High "
+          label: 'Violence',
+          hint: 'Describes input prompts and model responses that includes glorification of or threats to inflict physical pain, hurt, or injury toward a person, group or thing. 0: disable, 1: low, 2: middle, 3: High ',
         },
         misconduct: {
-          label: "Misconduct",
-          hint: "Describes input prompts and model responses that seeks or provides information about engaging in misconduct activity, or harming, defrauding, or taking advantage of a person, group or institution. 0: disable, 1: low, 2: middle, 3: High"
-        }
+          label: 'Misconduct',
+          hint: 'Describes input prompts and model responses that seeks or provides information about engaging in misconduct activity, or harming, defrauding, or taking advantage of a person, group or institution. 0: disable, 1: low, 2: middle, 3: High',
+        },
       },
       promptAttacks: {
-        hint: "Describes user prompts intended to bypass the safety and moderation capabilities of a foundation model in order to generate harmful content (also known as jailbreak), and ignore and override instructions specified by the developer (referred to as prompt injection). Please refer to Prompt Attack for more details to use it with input tagging."
+        hint: 'Describes user prompts intended to bypass the safety and moderation capabilities of a foundation model in order to generate harmful content (also known as jailbreak), and ignore and override instructions specified by the developer (referred to as prompt injection). Please refer to Prompt Attack for more details to use it with input tagging.',
       },
-      deniedTopics : {
-        hint: "Add up to 30 denied topics to block user inputs or model responses associated with the topic."
+      deniedTopics: {
+        hint: 'Add up to 30 denied topics to block user inputs or model responses associated with the topic.',
       },
       wordFilters: {
-        hint: "Use these filters to block certain words and phrases in user inputs and model responses.",
+        hint: 'Use these filters to block certain words and phrases in user inputs and model responses.',
         profanityFilter: {
-          hint: "Enable this feature to block profane words in user inputs and model responses. The list of words is based on the global definition of profanity and is subject to change."
+          hint: 'Enable this feature to block profane words in user inputs and model responses. The list of words is based on the global definition of profanity and is subject to change.',
         },
         customWordsAndPhrases: {
-          hint: "Specify up to 10,000 words or phrases (max 3 words) to be blocked by the guardrail. A blocked message will show if user input or model responses contain these words or phrases."
-        }
+          hint: 'Specify up to 10,000 words or phrases (max 3 words) to be blocked by the guardrail. A blocked message will show if user input or model responses contain these words or phrases.',
+        },
       },
       sensitiveInformationFilters: {
-        hint: "Use these filters to handle any data related to privacy.",
+        hint: 'Use these filters to handle any data related to privacy.',
         personallyIdentifiableInformationTypes: {
-          PIITypes: {
-          },
-          regexPatterns: {
-          }
-        }
+          PIITypes: {},
+          regexPatterns: {},
+        },
       },
       contextualGroundingCheck: {
-        label: "Contextual Grounding Check",
-        hint: "Use this policy to validate if model responses are grounded in the reference source and relevant to user’s query to filter model hallucination.",
+        label: 'Contextual Grounding Check',
+        hint: 'Use this policy to validate if model responses are grounded in the reference source and relevant to user’s query to filter model hallucination.',
         groundingThreshold: {
-          label: "Grounding",
-          hint: "Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 0.99: blocks almost everything"
+          label: 'Grounding',
+          hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 0.99: blocks almost everything',
         },
         relevanceThreshold: {
-          label: "Relevance",
-          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything"
-        }
-      }
-      
-    }
+          label: 'Relevance',
+          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything",
+        },
+      },
+    },
   },
 };
 
