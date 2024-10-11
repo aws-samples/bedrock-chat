@@ -5,7 +5,7 @@ echo "###           ⚠️  Caution: A Whole New World with v2.x Awaits!  ⚠️
 echo "###                                                                      ###"
 echo "###  🚨 v2.x is NOT compatible with any older versions like v1.x or below. 🚨  ###"
 echo "###  You must read the migration guide carefully before proceeding:       ###"
-echo "###  https://github.com/aws-samples/bedrock-claude-chat/blob/v1/docs/migration/V1_TO_V2.md  ###"
+echo "###  https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/migration/V1_TO_V2.md  ###"
 echo "###                                                                      ###"
 echo "###  This isn't just a regular upgrade. Data preservation requires        ###"
 echo "###  following specific steps, or you may risk CUSTOMIZED BOT LOSS.      ###"
