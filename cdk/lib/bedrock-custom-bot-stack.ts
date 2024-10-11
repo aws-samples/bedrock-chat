@@ -55,7 +55,7 @@ export class BedrockCustomBotStack extends Stack {
     const { docBucketsAndPrefixes } = this.setupBucketsAndPrefixes(props);
 
     const vectorCollection = new VectorCollection(this, "KBVectors", {
-      collectionName: `bedrock-knowledge-base-${props.botId}`,
+      collectionName: `bedrock-kb-${props.botId.slice(0, 20)}`,
       standbyReplicas:
         props.useStandbyReplicas === true
           ? VectorCollectionStandbyReplicas.ENABLED
