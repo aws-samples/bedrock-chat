@@ -1,39 +1,37 @@
 #!/bin/bash
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo "!!! !!!"
-echo "!!! IMPORTANT NOTICE !!!"
-echo "!!! !!!"
-echo "!!! If you are using Bedrock Claude Chat with a version prior to v1.x !!!"
-echo "!!! (e.g., v0.4.x), please follow the migration guide before proceeding. !!!"
-echo "!!! !!!"
-echo "!!! Migrating from an older version requires specific steps to ensure !!!"
-echo "!!! your data is properly preserved and migrated. Failure to follow !!!"
-echo "!!! the migration guide may result in DATA LOSS. !!!"
-echo "!!! !!!"
-echo "!!! Please refer to the migration guide at: !!!"
-echo "!!! https://github.com/aws-samples/bedrock-claude-chat/blob/v1/docs/migration/V0_TO_V1.md !!!"
-echo "!!! !!!"
-echo "!!! If you are a new user or already using v1.x, !!!"
-echo "!!! you can safely proceed with the installation. !!!"
-echo "!!! !!!"
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "############################################################################"
+echo "###                                                                      ###"
+echo "###           ⚠️  Caution: A Whole New World with v2.x Awaits!  ⚠️          ###"
+echo "###                                                                      ###"
+echo "###  🚨 v2.x is NOT compatible with any older versions like v1.x or below. 🚨  ###"
+echo "###  You must read the migration guide carefully before proceeding:       ###"
+echo "###  https://github.com/aws-samples/bedrock-claude-chat/blob/v1/docs/migration/V1_TO_V2.md  ###"
+echo "###                                                                      ###"
+echo "###  This isn't just a regular upgrade. Data preservation requires        ###"
+echo "###  following specific steps, or you may risk CUSTOMIZED BOT LOSS.      ###"
+echo "###                                                                      ###"
+echo "###  💡 This script is only for new users or those already on v2.x.        ###"
+echo "###  If that's you, let's get started! Otherwise, check the guide first.  ###"
+echo "###                                                                      ###"
+echo "############################################################################"
 echo ""
 while true; do
-read -p "Are you a new user starting with v1.x or later? (y/N): " answer
-case ${answer:0:1} in
-y|Y )
-echo "Starting deployment..."
-break
-;;
-n|N )
-echo "This script is intended for new users or v1.x user only. If you are using previous version, please refer migration guide."
-exit 1
-;;
-* )
-echo "Please enter y or n."
-;;
-esac
+    read -p "Are you ready to explore the world of v2.x? (y/N): " answer
+    case ${answer:0:1} in
+        y|Y )
+            echo "Buckle up! Starting deployment for v2.x..."
+            break
+            ;;
+        n|N )
+            echo "Whoa, hold on! This script is only for v2.x users. Please refer to the migration guide if you're coming from an older version."
+            exit 1
+            ;;
+        * )
+            echo "Let's keep it simple. Please enter y or n."
+            ;;
+    esac
 done
+
 
 # Default parameters
 ALLOW_SELF_REGISTER="true"
