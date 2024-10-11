@@ -85,6 +85,9 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
    cdk deploy
    ```
 
+> [!Warning]
+> After deploying v2, **ALL BOTS WITH THE PREFIX [Unsupported, Read-only] WILL BE HIDDEN.** Ensure you recreate necessary bots before upgrading to avoid any loss of access.
+
 > [!Tip]
 > During stack updates, you might encounter repeated messages like: Resource handler returned message: "The subnet 'subnet-xxx' has dependencies and cannot be deleted." In such cases, navigate to the Management Console > EC2 > Network Interfaces and search for BedrockChatStack. Delete the displayed interfaces associated with this name to help ensure a smoother deployment process.
 
