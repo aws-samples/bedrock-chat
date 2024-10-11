@@ -8,8 +8,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk",
-    "postinstall": "npm install --prefix custom-resources/setup-pgvector"
+    "cdk": "cdk"
   },
   "devDependencies": {
     "@aws-prototyping-sdk/pdk-nag": "^0.19.68",

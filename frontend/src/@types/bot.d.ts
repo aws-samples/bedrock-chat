@@ -73,7 +73,7 @@ export type BotDetails = BotMeta & {
   displayRetrievedChunks: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockGuardrails: GuardrailsParams;
-  bedrockKnowledgeBase: BedrockKnowledgeBase | null;
+  bedrockKnowledgeBase: BedrockKnowledgeBase;
 };
 
 export type BotSummary = BotMeta & {
