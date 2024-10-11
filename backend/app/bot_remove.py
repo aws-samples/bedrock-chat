@@ -17,7 +17,7 @@ s3_client = boto3.client("s3", BEDROCK_REGION)
 
 
 def delete_custom_bot_stack_by_bot_id(bot_id: str):
-    client = boto3.client("cloudformation")
+    client = boto3.client("cloudformation", BEDROCK_REGION)
     stack_name = f"BrChatKbStack{bot_id}"
     try:
         response = client.delete_stack(StackName=stack_name)
