@@ -6,14 +6,16 @@ labels: ""
 assignees: ""
 ---
 
+## 🚨 **Please Note** 🚨
+
+To ensure efficient investigation of the issue, please fill out the fields below with as much detail as possible. **Reports that do not follow this template may be closed without notification.** We appreciate your cooperation.
+
 ## Describe the bug
 
-**Filling out this field will help us investigate the issue efficiently. Providing detailed information allows us to set the appropriate priority. We appreciate your cooperation.**  
 A clear and concise description of what the bug is.
 
 ## To Reproduce
 
-**Filling out this field will help us investigate the issue efficiently. Providing detailed information allows us to set the appropriate priority. We appreciate your cooperation.**  
 Steps to reproduce the behavior:
 
 1. Go to '...'

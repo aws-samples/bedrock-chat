@@ -20,7 +20,7 @@ Add any other context or screenshots about the feature request here.
 
 ## Implementation feasibility
 
-Are you willing to discuss the solution with us, decide on the approach, and assist with the implementation?
+Are you willing to collaborate with us to discuss the solution, decide on the approach, and assist with the implementation?
 
-- [ ] Yes
-- [ ] No
+- [ ] Yes, I am able to implement the feature and create a pull request.
+- [ ] No, I am unable to implement the feature, but I am open to discussing the solution.
