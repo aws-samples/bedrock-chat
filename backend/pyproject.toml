@@ -19,6 +19,7 @@ langdetect = "^1.0.9"
 retry = ">=0.9.2,<1"
 types-retry = ">=0.9.9.4,<1"
 duckduckgo-search = "^6.1.4"
+boto3-stubs = {extras = ["bedrock", "bedrock-agent-runtime", "bedrock-runtime", "boto3"], version = "^1.35.41"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"

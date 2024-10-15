@@ -1,17 +1,18 @@
-import base64
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Annotated
 
 if TYPE_CHECKING:
     from app.repositories.models.conversation import (
-        AgentContentModel,
         AgentMessageModel,
-        AgentToolResultModel,
-        AgentToolResultModelContentModel,
-        AgentToolUseContentModel,
     )
 
 from app.routes.schemas.base import BaseSchema
-from pydantic import Field, root_validator, validator
+from app.repositories.models.common import Base64EncodedBytes
+from pydantic import Field, Discriminator, JsonValue, root_validator
+
+from mypy_boto3_bedrock_runtime.literals import (
+    DocumentFormatType,
+    ImageFormatType,
+)
 
 type_model_name = Literal[
     "claude-instant-v1",
@@ -28,44 +29,33 @@ type_model_name = Literal[
 ]
 
 
-class Content(BaseSchema):
-    content_type: Literal["text", "image", "attachment"] = Field(
+class TextContent(BaseSchema):
+    content_type: Literal["text"] = Field(
         ..., description="Content type. Note that image is only available for claude 3."
-    )
-    media_type: str | None = Field(
-        None,
-        description="MIME type of the image. Must be specified if `content_type` is `image`.",
-    )
-    file_name: str | None = Field(
-        None,
-        description="File name of the attachment. Must be specified if `content_type` is `attachment`.",
     )
     body: str = Field(..., description="Content body.")
 
-    @validator("media_type", pre=True)
-    def check_media_type(cls, v, values):
-        content_type = values.get("content_type")
-        if content_type == "image" and v is None:
-            raise ValueError("media_type is required if `content_type` is `image`")
-        return v
 
-    @validator("body", pre=True)
-    def check_body(cls, v, values):
-        content_type = values.get("content_type")
+class ImageContent(BaseSchema):
+    content_type: Literal["image"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    media_type: str = Field(
+        ...,
+        description="MIME type of the image. Must be specified if `content_type` is `image`.",
+    )
+    body: Base64EncodedBytes = Field(..., description="Content body.")
 
-        if content_type == "text" and not isinstance(v, str):
-            raise ValueError("body must be str if `content_type` is `text`")
 
-        if content_type in ["image", "attachment"]:
-            try:
-                # Check if the body is a valid base64 string
-                base64.b64decode(v, validate=True)
-            except Exception:
-                raise ValueError(
-                    "body must be a valid base64 string if `content_type` is `image` or `attachment`"
-                )
-
-        return v
+class AttachmentContent(BaseSchema):
+    content_type: Literal["attachment"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    file_name: str = Field(
+        ...,
+        description="File name of the attachment. Must be specified if `content_type` is `attachment`.",
+    )
+    body: Base64EncodedBytes = Field(..., description="Content body.")
 
 
 class FeedbackInput(BaseSchema):
@@ -99,73 +89,72 @@ class Chunk(BaseSchema):
     rank: int
 
 
-class AgentToolUseContent(BaseSchema):
+class ToolUseContentBody(BaseSchema):
     tool_use_id: str
     name: str
-    input: dict
-
-    @classmethod
-    def from_model(cls, model: "AgentToolUseContentModel"):
-        return AgentToolUseContent(
-            tool_use_id=model.tool_use_id, name=model.name, input=model.input
-        )
+    input: dict[str, JsonValue]
 
 
-class AgentToolResultContent(BaseSchema):
-    json_: dict | None  # `json` is a reserved keyword on pydantic
-    text: str | None
-
-    @classmethod
-    def from_model(cls, model: "AgentToolResultModelContentModel"):
-        return AgentToolResultContent(json_=model.json_, text=model.text)
+class ToolUseContent(BaseSchema):
+    content_type: Literal["toolUse"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    body: ToolUseContentBody
 
 
-class AgentToolResult(BaseSchema):
+class TextToolResult(BaseSchema):
+    text: str
+
+
+class JsonToolResult(BaseSchema):
+    json_: dict[str, JsonValue] = Field(alias="json")  # `json` is a reserved keyword on pydantic
+
+
+class ImageToolResult(BaseSchema):
+    format: ImageFormatType
+    image: Base64EncodedBytes
+
+
+class DocumentToolResult(BaseSchema):
+    format: DocumentFormatType
+    name: str
+    document: Base64EncodedBytes
+
+
+ToolResult = TextToolResult | JsonToolResult | ImageToolResult | DocumentToolResult
+
+
+class ToolResultContentBody(BaseSchema):
     tool_use_id: str
-    content: AgentToolResultContent
-    status: str
-
-    @classmethod
-    def from_model(cls, model: "AgentToolResultModel"):
-        return AgentToolResult(
-            tool_use_id=model.tool_use_id,
-            content=AgentToolResultContent.from_model(model.content),
-            status=model.status,
-        )
+    content: ToolResult
+    status: Literal["error", "success"]
 
 
-class AgentContent(BaseSchema):
-    content_type: Literal["text", "toolUse", "toolResult"]
-    body: str | AgentToolUseContent | AgentToolResult
+class ToolResultContent(BaseSchema):
+    content_type: Literal["toolResult"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    body: ToolResultContentBody
 
-    @classmethod
-    def from_model(cls, model: "AgentContentModel"):
-        if model.content_type == "text":
-            return AgentContent(content_type="text", body=model.body)  # type: ignore[arg-type]
-        elif model.content_type == "toolUse":
-            return AgentContent(
-                content_type="toolUse",
-                body=AgentToolUseContent.from_model(model.body),  # type: ignore[arg-type]
-            )
-        elif model.content_type == "toolResult":
-            return AgentContent(
-                content_type="toolResult",
-                body=AgentToolResult.from_model(model.body),  # type: ignore[arg-type]
-            )
-        else:
-            # Should never reach here
-            raise ValueError(f"Invalid content type: {model.content_type}")
+
+Content = Annotated[
+    TextContent | ImageContent | AttachmentContent | ToolUseContent | ToolResultContent,
+    Discriminator("content_type"),
+]
 
 
 class AgentMessage(BaseSchema):
     role: str
-    content: list[AgentContent]
+    content: list[Content]
 
     @classmethod
     def from_model(cls, model: "AgentMessageModel"):
         return AgentMessage(
             role=model.role,
-            content=[AgentContent.from_model(content) for content in model.content],
+            content=[
+                content.to_content()
+                for content in model.content
+            ],
         )
 
 

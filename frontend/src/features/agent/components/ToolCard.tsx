@@ -11,6 +11,7 @@ import {
 } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
 import useToolCardExpand from '../hooks/useToolCardExpand';
+import { AgentToolResultContent } from '../../../@types/conversation';
 
 // Theme of JSONTree
 // NOTE: need to set the theme as base16 style
@@ -41,7 +42,7 @@ type ToolCardProps = {
   name: string;
   status: AgentToolState;
   input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-  content?: { text: string };
+  content?: AgentToolResultContent;
 };
 
 const ToolCard: React.FC<ToolCardProps> = ({
@@ -83,11 +84,15 @@ const ToolCard: React.FC<ToolCardProps> = ({
   // Convert output content text to JSON object if possible.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let displayContent: any = null;
-  if (content?.text) {
-    try {
-      displayContent = JSON.parse(content.text);
-    } catch (e) {
-      displayContent = content;
+  if (content) {
+    if ("text" in content) {
+      try {
+        displayContent = JSON.parse(content.text);
+      } catch (e) {
+        displayContent = content;
+      }
+    } else if ("json" in content) {
+      displayContent = content.json;
     }
   }
 

@@ -8,11 +8,11 @@ from pprint import pprint
 from app.agents.agent import AgentMessageModel, AgentRunner, OnStopInput
 from app.agents.tools.agent_tool import RunResult
 from app.agents.tools.internet_search import internet_search_tool
-from app.bedrock import ConverseApiToolResult, ConverseApiToolUseContent
+from app.bedrock import ConverseApiToolResult
 from app.repositories.models.conversation import (
-    AgentToolUseContentModel,
-    ContentModel,
     MessageModel,
+    TextContentModel,
+    ToolUseContentModel,
 )
 from app.repositories.models.custom_bot import (
     AgentModel,
@@ -31,7 +31,7 @@ def on_thinking(agent_log: list[AgentMessageModel]):
     assert agent_log[-1].role == "assistant"
     to_send = dict()
     for c in agent_log[-1].content:
-        assert type(c.body) == AgentToolUseContentModel
+        assert type(c) == ToolUseContentModel
         to_send[c.body.tool_use_id] = {
             "name": c.body.name,
             "input": c.body.input,
@@ -117,11 +117,9 @@ class TestAgentRunner(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="今日の東京の天気?あと宮崎の天気も。並列処理して",
-                    file_name=None,
                 )
             ],
             model=self.model,

@@ -58,8 +58,8 @@ class TestKnowledgeTool(unittest.TestCase):
         response = tool.run(
             KnowledgeToolInput(query="What are delicious Japanese dishes?")
         )
-        self.assertIsInstance(response.body, str)
-        self.assertTrue(response.succeeded)
+        self.assertIsInstance(response["body"], str)
+        self.assertTrue(response["succeeded"])
         print(response)
 
 

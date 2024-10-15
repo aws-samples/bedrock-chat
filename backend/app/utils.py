@@ -23,16 +23,6 @@ def snake_to_camel(snake_str):
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-def convert_dict_keys_to_camel_case(snake_dict):
-    camel_dict = {}
-    for key, value in snake_dict.items():
-        new_key = snake_to_camel(key)
-        if isinstance(value, dict):
-            value = convert_dict_keys_to_camel_case(value)
-        camel_dict[new_key] = value
-    return camel_dict
-
-
 def is_running_on_lambda():
     return "AWS_EXECUTION_ENV" in os.environ
 

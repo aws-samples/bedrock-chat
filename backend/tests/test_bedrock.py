@@ -10,7 +10,7 @@ from pprint import pprint
 from unittest.mock import patch
 
 from app.bedrock import call_converse_api, compose_args_for_converse_api, get_model_id
-from app.repositories.models.conversation import ContentModel, MessageModel
+from app.repositories.models.conversation import TextContentModel, MessageModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 
@@ -53,11 +53,9 @@ class TestCallConverseApi(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello, World!",
-                    file_name=None,
                 )
             ],
             model=MODEL,
@@ -132,11 +130,9 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello, World!",
-                    file_name=None,
                 )
             ],
             model=MODEL,

@@ -1,33 +1,180 @@
 from __future__ import annotations
 
-import base64
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Any, Annotated, Self, TypeGuard
+from pathlib import Path
+import re
 
 if TYPE_CHECKING:
     from app.bedrock import (
         ConverseApiToolResult,
-        ConverseApiToolResultContent,
-        ConverseApiToolUseContent,
     )
 
-from app.routes.schemas.conversation import MessageInput, type_model_name
-from pydantic import BaseModel, Field
+from app.repositories.models.common import Base64EncodedBytes
+from app.routes.schemas.conversation import (
+    MessageInput,
+    type_model_name,
+    Content,
+    TextContent,
+    ImageContent,
+    AttachmentContent,
+    ToolUseContent,
+    ToolUseContentBody,
+    ToolResult,
+    TextToolResult,
+    JsonToolResult,
+    ImageToolResult,
+    DocumentToolResult,
+    ToolResultContentBody,
+    ToolResultContent
+)
+from pydantic import BaseModel, Field, field_validator, Discriminator, JsonValue
+from mypy_boto3_bedrock_runtime.type_defs import (
+    ContentBlockTypeDef,
+    ToolUseBlockTypeDef,
+    ToolUseBlockOutputTypeDef,
+    ToolResultBlockTypeDef,
+    ToolResultContentBlockOutputTypeDef,
+)
+from mypy_boto3_bedrock_runtime.literals import (
+    DocumentFormatType,
+    ImageFormatType,
+)
 
 
-class ContentModel(BaseModel):
-    content_type: Literal["text", "image", "attachment"]
-    media_type: str | None
+class TextContentModel(BaseModel):
+    content_type: Literal["text"]
     body: str = Field(
         ...,
         description="Body string. If content_type is image or attachment, it should be base64 encoded.",
     )
-    file_name: str | None = Field(None)
 
-    model_config = {
-        "json_encoders": {
-            bytes: lambda v: base64.b64encode(v).decode(),
-        }
+    @classmethod
+    def from_text_content(cls, content: TextContent) -> Self:
+        return cls(
+            content_type="text",
+            body=content.body,
+        )
+
+    def to_content(self) -> Content:
+        return TextContent(
+            content_type="text",
+            body=self.body,
+        )
+
+    def to_contents_for_converse(self) -> list[ContentBlockTypeDef]:
+        return [
+            {
+                "text": self.body,
+            }
+        ]
+
+
+def _is_converse_supported_image_format(format: str) -> TypeGuard[ImageFormatType]:
+    return format in {"gif", "jpeg", "png", "webp"}
+
+
+class ImageContentModel(BaseModel):
+    content_type: Literal["image"]
+    media_type: str
+    body: Base64EncodedBytes = Field(
+        ...,
+        description="Body string. If content_type is image or attachment, it should be base64 encoded.",
+    )
+
+    @classmethod
+    def from_image_content(cls, content: ImageContent) -> Self:
+        return cls(
+            content_type="image",
+            media_type=content.media_type,
+            body=content.body,
+        )
+
+    def to_content(self) -> Content:
+        return ImageContent(
+            content_type="image",
+            media_type=self.media_type,
+            body=self.body,
+        )
+
+    def to_contents_for_converse(self) -> list[ContentBlockTypeDef]:
+        # e.g. "image/png" -> "png"
+        format = self.media_type.split("/")[1] if self.media_type else "unknown"
+
+        return [
+            {
+                "image": {
+                    "format": format,
+                    "source": {"bytes": self.body},
+                },
+            },
+        ] if _is_converse_supported_image_format(format) else []
+
+
+def _is_converse_supported_document_format(ext: str) -> TypeGuard[DocumentFormatType]:
+    supported_formats = {
+        "pdf",
+        "csv",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "html",
+        "txt",
+        "md",
     }
+    return ext in supported_formats
+
+
+def _convert_to_valid_file_name(file_name: str) -> str:
+    # Note: The document file name can only contain alphanumeric characters,
+    # whitespace characters, hyphens, parentheses, and square brackets.
+    # The name can't contain more than one consecutive whitespace character.
+    file_name = re.sub(r"[^a-zA-Z0-9\s\-\(\)\[\]]", "", file_name)
+    file_name = re.sub(r"\s+", " ", file_name)
+    file_name = file_name.strip()
+
+    return file_name
+
+
+class AttachmentContentModel(BaseModel):
+    content_type: Literal["attachment"]
+    body: Base64EncodedBytes = Field(
+        ...,
+        description="Body string. If content_type is image or attachment, it should be base64 encoded.",
+    )
+    file_name: str
+
+    @classmethod
+    def from_attachment_content(cls, content: AttachmentContent) -> Self:
+        return cls(
+            content_type="attachment",
+            body=content.body,
+            file_name=content.file_name,
+        )
+
+    def to_content(self) -> Content:
+        return AttachmentContent(
+            content_type="attachment",
+            body=self.body,
+            file_name=self.file_name,
+        )
+
+    def to_contents_for_converse(self) -> list[ContentBlockTypeDef]:
+        # e.g. "document.txt" -> "txt"
+        format = Path(self.file_name).suffix[1:]
+
+        # e.g. "document.txt" -> "document"
+        name = Path(self.file_name).stem
+
+        return [
+            {
+                "document": {
+                    "format": format,
+                    "name": _convert_to_valid_file_name(name),
+                    "source": {"bytes": self.body},
+                },
+            },
+        ] if _is_converse_supported_document_format(format) else []
 
 
 class FeedbackModel(BaseModel):
@@ -38,77 +185,317 @@ class FeedbackModel(BaseModel):
 
 class ChunkModel(BaseModel):
     content: str
-    content_type: str
+    content_type: str = Field(default="s3")
     source: str
     rank: int
 
 
-class AgentToolUseContentModel(BaseModel):
+class ToolUseContentModelBody(BaseModel):
     tool_use_id: str
     name: str
-    input: dict
+    input: dict[str, JsonValue]
 
     @classmethod
-    def from_tool_use_content(cls, tool_use_content: "ConverseApiToolUseContent"):
-        return AgentToolUseContentModel(
+    def from_tool_use_content(cls, tool_use_content: ToolUseBlockOutputTypeDef) -> Self:
+        return cls(
             tool_use_id=tool_use_content["toolUseId"],
             name=tool_use_content["name"],
             input=tool_use_content["input"],
         )
 
-
-class AgentToolResultModelContentModel(BaseModel):
-    json_: dict | None  # `json` is a reserved keyword on pydantic
-    text: str | None
-
     @classmethod
-    def from_tool_result_content(
-        cls, tool_result_content: "ConverseApiToolResultContent"
-    ):
-        return AgentToolResultModelContentModel(
-            json_=(
-                tool_result_content["json"] if "json" in tool_result_content else None
-            ),
-            text=tool_result_content["text"] if "text" in tool_result_content else None,
+    def from_tool_use_content_body(cls, body: ToolUseContentBody) -> Self:
+        return cls(
+            tool_use_id=body.tool_use_id,
+            name=body.name,
+            input=body.input,
         )
 
+    def to_tool_use_content_body(self) -> ToolUseContentBody:
+        return ToolUseContentBody(
+            tool_use_id=self.tool_use_id,
+            name=self.name,
+            input=self.input,
+        )
 
-class AgentToolResultModel(BaseModel):
+    def to_tool_use_for_converse(self) -> ToolUseBlockTypeDef:
+        return {
+            "toolUseId": self.tool_use_id,
+            "name": self.name,
+            "input": self.input,
+        }
+
+
+class ToolUseContentModel(BaseModel):
+    content_type: Literal["toolUse"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    body: ToolUseContentModelBody
+
+    @classmethod
+    def from_tool_use_content(cls, content: ToolUseContent) -> Self:
+        return cls(
+            content_type="toolUse",
+            body=ToolUseContentModelBody.from_tool_use_content_body(body=content.body)
+        )
+
+    def to_content(self) -> Content:
+        return ToolUseContent(
+            content_type="toolUse",
+            body=self.body.to_tool_use_content_body(),
+        )
+
+    def to_contents_for_converse(self) -> list[ContentBlockTypeDef]:
+        return [
+            {
+                "toolUse": self.body.to_tool_use_for_converse(),
+            },
+        ]
+
+
+class TextToolResultModel(BaseModel):
+    text: str
+
+    @classmethod
+    def from_text_tool_result(cls, tool_result: TextToolResult) -> Self:
+        return cls(
+            text=tool_result.text,
+        )
+
+    def to_tool_result(self) -> ToolResult:
+        return TextToolResult(
+            text=self.text,
+        )
+
+    def to_content_for_converse(self) -> ToolResultContentBlockOutputTypeDef:
+        return {
+            "text": self.text,
+        }
+
+
+class JsonToolResultModel(BaseModel):
+    json_: dict[str, JsonValue] = Field(alias="json")  # `json` is a reserved keyword on pydantic
+
+    @classmethod
+    def from_json_tool_result(cls, tool_result: JsonToolResult) -> Self:
+        return cls(
+            json=tool_result.json_,
+        )
+
+    def to_tool_result(self) -> ToolResult:
+        return JsonToolResult(
+            json=self.json_,
+        )
+
+    def to_content_for_converse(self) -> ToolResultContentBlockOutputTypeDef:
+        return {
+            "json": self.json_,
+        }
+
+
+class ImageToolResultModel(BaseModel):
+    format: ImageFormatType
+    image: Base64EncodedBytes
+
+    @classmethod
+    def from_image_tool_result(cls, tool_result: ImageToolResult) -> Self:
+        return cls(
+            format=tool_result.format,
+            image=tool_result.image,
+        )
+
+    def to_tool_result(self) -> ToolResult:
+        return ImageToolResult(
+            format=self.format,
+            image=self.image,
+        )
+
+    def to_content_for_converse(self) -> ToolResultContentBlockOutputTypeDef:
+        return {
+            "image": {
+                "format": self.format,
+                "source": {
+                    "bytes": self.image,
+                },
+            },
+        }
+
+
+class DocumentToolResultModel(BaseModel):
+    format: DocumentFormatType
+    name: str
+    document: Base64EncodedBytes
+
+    @classmethod
+    def from_document_tool_result(cls, tool_result: DocumentToolResult) -> Self:
+        return cls(
+            format=tool_result.format,
+            name=tool_result.name,
+            document=tool_result.document,
+        )
+
+    def to_tool_result(self) -> ToolResult:
+        return DocumentToolResult(
+            format=self.format,
+            name=self.name,
+            document=self.document,
+        )
+
+    def to_content_for_converse(self) -> ToolResultContentBlockOutputTypeDef:
+        return {
+            "document": {
+                "format": self.format,
+                "name": self.name,
+                "source": {
+                    "bytes": self.document,
+                },
+            },
+        }
+
+
+ToolResultModel = TextToolResultModel | JsonToolResultModel | ImageToolResultModel | DocumentToolResultModel
+
+
+def tool_result_model_from_tool_result(tool_result: ToolResult) -> ToolResultModel:
+    if isinstance(tool_result, TextToolResult):
+        return TextToolResultModel.from_text_tool_result(tool_result=tool_result)
+
+    elif isinstance(tool_result, JsonToolResult):
+        return JsonToolResultModel.from_json_tool_result(tool_result=tool_result)
+
+    elif isinstance(tool_result, ImageToolResult):
+        return ImageToolResultModel.from_image_tool_result(tool_result=tool_result)
+
+    elif isinstance(tool_result, DocumentToolResult):
+        return DocumentToolResultModel.from_document_tool_result(tool_result=tool_result)
+
+    else:
+        raise ValueError(f'Unknown tool result type')
+
+
+def tool_result_model_from_tool_result_content(content: ToolResultContentBlockOutputTypeDef) -> ToolResultModel:
+    if "text" in content:
+        return TextToolResultModel(text=content["text"])
+
+    elif "json" in content:
+        return JsonToolResultModel(json=content["json"])
+
+    elif "image" in content:
+        return ImageToolResultModel(
+            format=content["image"]["format"],
+            image=content["image"]["source"]["bytes"] if "bytes" in content["image"]["source"] else b"",
+        )
+
+    elif "document" in content:
+        return DocumentToolResultModel(
+            format=content["document"]["format"],
+            name=content["document"]["name"],
+            document=content["document"]["source"]["bytes"] if "bytes" in content["document"]["source"] else b"",
+        )
+
+    else:
+        raise ValueError(f'Unknown tool result type')
+
+
+class ToolResultContentModelBody(BaseModel):
     tool_use_id: str
-    content: AgentToolResultModelContentModel
-    status: str
+    content: ToolResultModel
+    status: Literal["error", "success"]
 
     @classmethod
-    def from_tool_result(cls, tool_result: "ConverseApiToolResult"):
-        return AgentToolResultModel(
+    def from_tool_result(cls, tool_result: ConverseApiToolResult) -> Self:
+        return cls(
             tool_use_id=tool_result["toolUseId"],
-            content=AgentToolResultModelContentModel.from_tool_result_content(
-                tool_result["content"]
-            ),
-            status=tool_result["status"] if "status" in tool_result else "",
+            content=tool_result_model_from_tool_result_content(content=tool_result["content"]),
+            status=tool_result["status"],
+        )
+
+    @classmethod
+    def from_tool_result_content_body(cls, body: ToolResultContentBody) -> Self:
+        return cls(
+            tool_use_id=body.tool_use_id,
+            content=tool_result_model_from_tool_result(tool_result=body.content),
+            status=body.status,
+        )
+
+    def to_tool_result_for_converse(self) -> ToolResultBlockTypeDef:
+        return {
+            "toolUseId": self.tool_use_id,
+            "status": self.status,
+            "content": [
+                self.content.to_content_for_converse()
+            ],
+        }
+
+    def to_tool_result_content_body(self) -> ToolResultContentBody:
+        return ToolResultContentBody(
+            tool_use_id=self.tool_use_id,
+            content=self.content.to_tool_result(),
+            status=self.status,
         )
 
 
-class AgentContentModel(BaseModel):
-    content_type: Literal["text", "toolUse", "toolResult"]
-    body: str | AgentToolUseContentModel | AgentToolResultModel
+class ToolResultContentModel(BaseModel):
+    content_type: Literal["toolResult"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    body: ToolResultContentModelBody
+
+    @classmethod
+    def from_tool_result_content(cls, content: ToolResultContent) -> Self:
+        return cls(
+            content_type="toolResult",
+            body=ToolResultContentModelBody.from_tool_result_content_body(content.body),
+        )
+
+    def to_content(self) -> Content:
+        return ToolResultContent(
+            content_type="toolResult",
+            body=self.body.to_tool_result_content_body(),
+        )
+
+    def to_contents_for_converse(self) -> list[ContentBlockTypeDef]:
+        return [
+            {
+                "toolResult": self.body.to_tool_result_for_converse(),
+            },
+        ]
+
+
+ContentModel = Annotated[
+    TextContentModel | ImageContentModel | AttachmentContentModel | ToolUseContentModel | ToolResultContentModel,
+    Discriminator("content_type"),
+]
+
+def content_model_from_content(content: Content) -> ContentModel:
+    if isinstance(content, TextContent):
+        return TextContentModel.from_text_content(content=content)
+
+    elif isinstance(content, ImageContent):
+        return ImageContentModel.from_image_content(content=content)
+
+    elif isinstance(content, AttachmentContent):
+        return AttachmentContentModel.from_attachment_content(content=content)
+
+    elif isinstance(content, ToolUseContent):
+        return ToolUseContentModel.from_tool_use_content(content=content)
+
+    elif isinstance(content, ToolResultContent):
+        return ToolResultContentModel.from_tool_result_content(content=content)
+
+    else:
+        raise ValueError(f'Unknown content type')
 
 
 class AgentMessageModel(BaseModel):
     role: str
-    content: list[AgentContentModel]
+    content: list[ContentModel]
 
     @classmethod
-    def from_message_model(cls, message: "MessageModel"):
+    def from_message_model(cls, message: MessageModel):
         return AgentMessageModel(
-            role=message.role,  # type: ignore
-            content=[
-                AgentContentModel(
-                    content_type=content.content_type,  # type: ignore
-                    body=content.body,
-                )
-                for content in message.content
-            ],
+            role=message.role,
+            content=message.content,
         )
 
 
@@ -119,23 +506,38 @@ class MessageModel(BaseModel):
     children: list[str]
     parent: str | None
     create_time: float
-    feedback: FeedbackModel | None
-    used_chunks: list[ChunkModel] | None
+    feedback: FeedbackModel | None = None
+    used_chunks: list[ChunkModel] | None = None
     thinking_log: list[AgentMessageModel] | None = Field(
-        None, description="Only available for agent."
+        default=None, description="Only available for agent."
     )
+
+    @field_validator("thinking_log", mode="before")
+    @classmethod
+    def validate_thinking_log(cls, v: Any) -> list | None:
+        if type(v) == list:
+            return v
+
+        else:
+            # For backward compatibility
+            return None
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def validate_content(cls, v: Any) -> list:
+        if type(v) == list:
+            return v
+
+        else:
+            # For backward compatibility
+            return [v]
 
     @classmethod
     def from_message_input(cls, message_input: MessageInput):
         return MessageModel(
             role=message_input.role,
             content=[
-                ContentModel(
-                    content_type=content.content_type,
-                    media_type=content.media_type,
-                    body=content.body,
-                    file_name=content.file_name,
-                )
+                content_model_from_content(content=content)
                 for content in message_input.content
             ],
             model=message_input.model,

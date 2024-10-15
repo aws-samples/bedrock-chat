@@ -31,10 +31,15 @@ export type AgentToolUseContent = {
   input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
-export type AgentToolResultContent = {
-  json_: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type AgentToolResultTextContent = {
   text: string;
 };
+
+export type AgentToolResultJsonContent = {
+  json: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
+
+export type AgentToolResultContent = AgentToolResultTextContent | AgentToolResultJsonContent;
 
 export type AgentToolResult = {
   toolUseId: string;

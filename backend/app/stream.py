@@ -1,16 +1,18 @@
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, TypedDict
 
-from app.bedrock import ConverseApiRequest, calculate_price, get_model_id
+from app.bedrock import calculate_price, get_model_id
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
-from pydantic import BaseModel
+from mypy_boto3_bedrock_runtime.type_defs import (
+    ConverseStreamRequestRequestTypeDef,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class OnStopInput(BaseModel):
+class OnStopInput(TypedDict):
     full_token: str
     stop_reason: str
     input_token_count: int
@@ -51,24 +53,12 @@ class ConverseApiStreamHandler:
         self.on_stop = on_stop
         return self
 
-    def run(self, args: ConverseApiRequest):
+    def run(self, args: ConverseStreamRequestRequestTypeDef):
         client = get_bedrock_runtime_client()
         response = None
         try:
-            base_args = {
-                "modelId": args["model_id"],
-                "messages": args["messages"],
-                "inferenceConfig": args["inference_config"],
-                "system": args["system"],
-                # for topK
-                "additionalModelRequestFields": args["additional_model_request_fields"],
-            }
-
-            if "guardrailConfig" in args:
-                base_args["guardrailConfig"] = args["guardrailConfig"]  # type: ignore
-
             logger.info(f"args for converse_stream: {args}")
-            response = client.converse_stream(**base_args)
+            response = client.converse_stream(**args)
         except Exception as e:
             logger.error(f"Error: {e}")
             raise e

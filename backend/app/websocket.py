@@ -12,17 +12,16 @@ from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.auth import verify_token
 from app.bedrock import (
-    ConverseApiRequest,
     ConverseApiToolResult,
     compose_args_for_converse_api,
 )
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import (
-    AgentToolUseContentModel,
     ChunkModel,
-    ContentModel,
     ConversationModel,
     MessageModel,
+    TextContentModel,
+    ToolUseContentModel,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import ChatInput
@@ -69,15 +68,15 @@ def on_stop(
 ) -> None:
     if chat_input.continue_generate:
         # For continue generate
-        conversation.message_map[conversation.last_message_id].content[
-            0
-        ].body += arg.full_token  # type: ignore[operator]
+        content = conversation.message_map[conversation.last_message_id].content[0]
+        if isinstance(content, TextContentModel):
+            content.body += arg["full_token"]
     else:
         used_chunks = None
         if bot and bot.display_retrieved_chunks:
             if len(search_results) > 0:
                 used_chunks = []
-                for r in filter_used_results(arg.full_token, search_results):
+                for r in filter_used_results(arg["full_token"], search_results):
                     content_type, source_link = get_source_link(r.source)
                     used_chunks.append(
                         ChunkModel(
@@ -93,11 +92,9 @@ def on_stop(
         message = MessageModel(
             role="assistant",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    body=arg.full_token,
-                    media_type=None,
-                    file_name=None,
+                    body=arg["full_token"],
                 )
             ],
             model=chat_input.message.model,
@@ -112,13 +109,13 @@ def on_stop(
         conversation.message_map[user_msg_id].children.append(assistant_msg_id)
         conversation.last_message_id = assistant_msg_id
 
-    conversation.total_price += arg.price
+    conversation.total_price += arg["price"]
 
-    conversation.should_continue = arg.stop_reason == "max_tokens"
+    conversation.should_continue = arg["stop_reason"] == "max_tokens"
     # Store conversation before finish streaming so that front-end can avoid 404 issue
     store_conversation(user_id, conversation)
     last_data_to_send = json.dumps(
-        dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
+        dict(status="STREAMING_END", completion="", stop_reason=arg["stop_reason"])
     ).encode("utf-8")
     gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
@@ -130,7 +127,7 @@ def on_agent_thinking(
     assert agent_log[-1].role == "assistant"
     to_send = dict()
     for c in agent_log[-1].content:
-        assert type(c.body) == AgentToolUseContentModel
+        assert type(c) == ToolUseContentModel
         to_send[c.body.tool_use_id] = {
             "name": c.body.name,
             "input": c.body.input,
@@ -147,7 +144,7 @@ def on_agent_tool_result(
 ):
     to_send = {
         "toolUseId": tool_result["toolUseId"],
-        "status": tool_result["status"],  # type: ignore
+        "status": tool_result["status"],
         "content": tool_result["content"],
     }
     data_to_send = json.dumps(dict(status="AGENT_TOOL_RESULT", result=to_send)).encode(
@@ -170,11 +167,13 @@ def on_agent_stop(
     message = MessageModel(
         role="assistant",
         content=[
-            ContentModel(
+            TextContentModel(
                 content_type="text",
-                body=arg.last_response["output"]["message"]["content"][0]["text"],  # type: ignore
-                media_type=None,
-                file_name=None,
+                body=arg["last_response"]["output"]["message"]["content"][0]["text"] \
+                    if "message" in arg["last_response"]["output"] \
+                        and len(arg["last_response"]["output"]["message"]["content"]) > 0 \
+                        and "text" in arg["last_response"]["output"]["message"]["content"][0] \
+                    else "",
             )
         ],
         model=chat_input.message.model,
@@ -183,19 +182,19 @@ def on_agent_stop(
         create_time=get_current_time(),
         feedback=None,
         used_chunks=None,
-        thinking_log=arg.thinking_conversation,
+        thinking_log=arg["thinking_conversation"],
     )
     conversation.message_map[assistant_msg_id] = message
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
-    conversation.total_price += arg.price
+    conversation.total_price += arg["price"]
 
     # Agent not support continue generate
-    # conversation.should_continue = arg.stop_reason == "max_tokens"
+    # conversation.should_continue = arg["stop_reason"] == "max_tokens"
 
     store_conversation(user_id, conversation)
     last_data_to_send = json.dumps(
-        dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
+        dict(status="STREAMING_END", completion="", stop_reason=arg["stop_reason"])
     ).encode("utf-8")
     gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
@@ -210,18 +209,25 @@ def process_chat_input(
         user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
     except RecordNotFoundError:
         if chat_input.bot_id:
-            gatewayapi.post_to_connection(
-                ConnectionId=connection_id,
-                Data=json.dumps(
+            return {
+                "statusCode": 404,
+                "body": json.dumps(
                     dict(
                         status="ERROR",
-                        reason="bot_not_found",
+                        reason=f"bot {chat_input.bot_id} not found.",
                     )
-                ).encode("utf-8"),
-            )
-            return {"statusCode": 404, "body": f"bot {chat_input.bot_id} not found."}
+                ),
+            }
         else:
-            return {"statusCode": 400, "body": "Invalid request."}
+            return {
+                "statusCode": 400,
+                "body": json.dumps(
+                    dict(
+                        status="ERROR",
+                        reason="Invalid request.",
+                    )
+                ),
+            }
 
     if bot and bot.is_agent_enabled():
         logger.info("Bot has agent tools. Using agent for response.")
@@ -252,10 +258,10 @@ def process_chat_input(
         )
         message_map = conversation.message_map
         messages = trace_to_root(
-            node_id=conversation.message_map[user_msg_id].parent,
+            node_id=message_map[user_msg_id].parent,
             message_map=message_map,
         )
-        messages.append(chat_input.message)  # type: ignore
+        messages.append(message_map[user_msg_id])
         _ = runner.run(messages)
 
         return {"statusCode": 200, "body": "Message sent."}
@@ -274,8 +280,10 @@ def process_chat_input(
 
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
-        query: str = conversation.message_map[user_msg_id].content[-1].body  # type: ignore[assignment]
-        search_results = search_related_docs(bot=bot, query=query)
+        content = conversation.message_map[user_msg_id].content[-1]
+        search_results = search_related_docs(bot=bot, query=content.body) \
+            if isinstance(content, TextContentModel) \
+            else []
         logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
@@ -299,7 +307,7 @@ def process_chat_input(
         message_map=message_map,
     )
     if not chat_input.continue_generate:
-        messages.append(chat_input.message)  # type: ignore
+        messages.append(message_map[user_msg_id])
 
     # Guardrails
     guardrail = bot.bedrock_guardrails if bot else None
@@ -343,7 +351,12 @@ def process_chat_input(
         logger.error(f"Failed to run stream handler: {e}")
         return {
             "statusCode": 500,
-            "body": f"Failed to run stream handler: {e}",
+            "body": json.dumps(
+                dict(
+                    status="ERROR",
+                    reason=f"Failed to run stream handler: {e}",
+                )
+            ),
         }
 
     # Update bot last used time
@@ -392,7 +405,16 @@ def handler(event, context):
                 decoded = verify_token(token)
             except Exception as e:
                 logger.error(f"Invalid token: {e}")
-                return {"statusCode": 403, "body": "Invalid token."}
+                return {
+                    "statusCode": 403,
+                    "body": json.dumps(
+                        dict(
+                            status="ERROR",
+                            reason="Invalid token.",
+                        )
+                    ),
+                }
+
             user_id = decoded["sub"]
 
             # Store user id
@@ -471,8 +493,10 @@ def handler(event, context):
     except Exception as e:
         logger.error(f"Operation failed: {e}")
         logger.error("".join(traceback.format_tb(e.__traceback__)))
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id,
-            Data=json.dumps({"status": "ERROR", "reason": str(e)}).encode("utf-8"),
-        )
-        return {"statusCode": 500, "body": str(e)}
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "status": "ERROR",
+                "reason": str(e),
+            }),
+        }

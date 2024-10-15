@@ -81,8 +81,8 @@ class TestAgentTool(unittest.TestCase):
             arg4=["test"],
         )
         result = self.tool.run(arg)
-        self.assertEqual(result.body, "test")
-        self.assertEqual(result.succeeded, True)
+        self.assertEqual(result["body"], "test")
+        self.assertEqual(result["succeeded"], True)
 
 
 if __name__ == "__main__":

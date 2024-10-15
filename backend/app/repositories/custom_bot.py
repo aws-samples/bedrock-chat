@@ -436,12 +436,10 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
-        generation_params=GenerationParamsModel(
-            **(
-                item["GenerationParams"]
-                if "GenerationParams" in item
-                else DEFAULT_GENERATION_CONFIG
-            )
+        generation_params=GenerationParamsModel.model_validate(
+            item["GenerationParams"]
+            if "GenerationParams" in item
+            else DEFAULT_GENERATION_CONFIG
         ),
         agent=(
             AgentModel(**item["AgentData"])
@@ -514,12 +512,10 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
         owner_user_id=item["PK"],
-        generation_params=GenerationParamsModel(
-            **(
-                item["GenerationParams"]
-                if "GenerationParams" in item
-                else DEFAULT_GENERATION_CONFIG
-            )
+        generation_params=GenerationParamsModel.model_validate(
+            item["GenerationParams"]
+            if "GenerationParams" in item
+            else DEFAULT_GENERATION_CONFIG
         ),
         agent=(
             AgentModel(**item["AgentData"])

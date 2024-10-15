@@ -1,11 +1,11 @@
 import sys
+import base64
 import unittest
 
 sys.path.append(".")
 
 
 from app.repositories.conversation import (
-    ContentModel,
     ConversationModel,
     MessageModel,
     RecordNotFoundError,
@@ -23,11 +23,13 @@ from app.repositories.custom_bot import (
     store_bot,
 )
 from app.repositories.models.conversation import (
-    AgentContentModel,
     AgentMessageModel,
-    AgentToolUseContentModel,
     ChunkModel,
     FeedbackModel,
+    TextContentModel,
+    ImageContentModel,
+    ToolUseContentModel,
+    ToolUseContentModelBody,
 )
 from app.repositories.models.custom_bot import (
     AgentModel,
@@ -49,7 +51,7 @@ from botocore.exceptions import ClientError
 #             message_map={
 #                 "a": MessageModel(
 #                     role="user",
-#                     content=ContentModel(content_type="text", body="Hello"),
+#                     content=TextContentModel(content_type="text", body="Hello"),
 #                     model="model",
 #                     children=["x", "y"],
 #                     parent="z",
@@ -67,7 +69,7 @@ from botocore.exceptions import ClientError
 #             message_map={
 #                 "a": MessageModel(
 #                     role="user",
-#                     content=ContentModel(content_type="text", body="Hello"),
+#                     content=TextContentModel(content_type="text", body="Hello"),
 #                     model="model",
 #                     children=["x", "y"],
 #                     parent="z",
@@ -131,17 +133,14 @@ class TestConversationRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=[
-                        ContentModel(
+                        TextContentModel(
                             content_type="text",
                             body="Hello",
-                            media_type=None,
-                            file_name=None,
                         ),
-                        ContentModel(
+                        ImageContentModel(
                             content_type="image",
-                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
                             media_type="image/png",
-                            file_name=None,
                         ),
                     ],
                     model="claude-instant-v1",
@@ -161,9 +160,9 @@ class TestConversationRepository(unittest.TestCase):
                         AgentMessageModel(
                             role="agent",
                             content=[
-                                AgentContentModel(
+                                ToolUseContentModel(
                                     content_type="toolUse",
-                                    body=AgentToolUseContentModel(
+                                    body=ToolUseContentModelBody(
                                         tool_use_id="xyz1234",
                                         name="internet_search",
                                         input={
@@ -208,7 +207,6 @@ class TestConversationRepository(unittest.TestCase):
             content[1].body,
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
         )
-        self.assertEqual(content[1].media_type, "image/png")
         self.assertEqual(message_map["a"].model, "claude-instant-v1")
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
@@ -279,12 +277,10 @@ class TestConversationRepository(unittest.TestCase):
             f"msg_{i}": MessageModel(
                 role="user",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="This is a large message."
                         * 1000,  # Repeating to make it large
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model="claude-instant-v1",
@@ -335,7 +331,6 @@ class TestConversationRepository(unittest.TestCase):
             self.assertEqual(len(message.content), 1)
             self.assertEqual(message.content[0].content_type, "text")
             self.assertEqual(message.content[0].body, "This is a large message." * 1000)
-            self.assertEqual(message.content[0].media_type, None)
             self.assertEqual(message.model, "claude-instant-v1")
             self.assertEqual(message.children, [])
             self.assertEqual(message.parent, None)
@@ -363,17 +358,14 @@ class TestConversationBotRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=[
-                        ContentModel(
+                        TextContentModel(
                             content_type="text",
                             body="Hello",
-                            media_type=None,
-                            file_name=None,
                         ),
-                        ContentModel(
+                        ImageContentModel(
                             content_type="image",
-                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
                             media_type="image/png",
-                            file_name=None,
                         ),
                     ],
                     model="claude-instant-v1",
@@ -398,17 +390,14 @@ class TestConversationBotRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=[
-                        ContentModel(
+                        TextContentModel(
                             content_type="text",
                             body="Hello",
-                            media_type=None,
-                            file_name=None,
                         ),
-                        ContentModel(
+                        ImageContentModel(
                             content_type="image",
-                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
                             media_type="image/png",
-                            file_name=None,
                         ),
                     ],
                     model="claude-instant-v1",

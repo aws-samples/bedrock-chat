@@ -1,4 +1,5 @@
 import { setup, assign } from 'xstate';
+import { AgentToolResultContent } from '../../../@types/conversation';
 
 export type AgentToolsProps = {
   // Note: key is toolUseId
@@ -6,7 +7,7 @@ export type AgentToolsProps = {
     name: string;
     status: AgentToolState;
     input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-    content?: { text: string };
+    content?: AgentToolResultContent;
   };
 };
 
@@ -32,7 +33,7 @@ export type AgentEvent =
       type: 'tool-result';
       toolUseId: string;
       status: AgentToolState;
-      content: { text: string };
+      content: AgentToolResultContent;
     }
   | { type: 'goodbye' };
 

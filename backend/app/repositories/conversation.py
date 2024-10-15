@@ -1,9 +1,7 @@
 import json
 import logging
 import os
-from datetime import datetime
 from decimal import Decimal as decimal
-from functools import wraps
 
 import boto3
 from app.repositories.common import (
@@ -14,14 +12,11 @@ from app.repositories.common import (
     decompose_conv_id,
 )
 from app.repositories.models.conversation import (
-    ChunkModel,
-    ContentModel,
     ConversationMeta,
     ConversationModel,
     FeedbackModel,
     MessageModel,
 )
-from app.utils import get_current_time
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -57,10 +52,7 @@ def store_conversation(
         item_params["BotId"] = conversation.bot_id
 
     message_map = {
-        k: {
-            **v.model_dump(),
-            "content": [c.model_dump() for c in v.content],
-        }
+        k: v.model_dump(by_alias=True)
         for k, v in conversation.message_map.items()
     }
     message_map_size = len(json.dumps(message_map).encode("utf-8"))
@@ -81,16 +73,14 @@ def store_conversation(
         # Store only `system` attribute in DynamoDB
         item_params["MessageMap"] = json.dumps(
             {
-                k: v.model_dump()
-                for k, v in conversation.message_map.items()
+                k: v
+                for k, v in message_map.items()
                 if k == "system"
             }
         )
     else:
         item_params["IsLargeMessage"] = False
-        item_params["MessageMap"] = json.dumps(
-            {k: v.model_dump() for k, v in conversation.message_map.items()}
-        )
+        item_params["MessageMap"] = json.dumps(message_map)
 
     response = table.put_item(
         Item=item_params,
@@ -184,59 +174,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         title=item["Title"],
         total_price=item.get("TotalPrice", 0),
         message_map={
-            k: MessageModel(
-                role=v["role"],
-                content=(
-                    [
-                        ContentModel(
-                            content_type=c["content_type"],
-                            body=c["body"],
-                            media_type=c["media_type"],
-                            file_name=c.get("file_name", None),
-                        )
-                        for c in v["content"]
-                    ]
-                    if type(v["content"]) == list
-                    else [
-                        # For backward compatibility
-                        ContentModel(
-                            content_type=v["content"]["content_type"],
-                            body=v["content"]["body"],
-                            media_type=None,
-                            file_name=None,
-                        )
-                    ]
-                ),
-                model=v["model"],
-                children=v["children"],
-                parent=v["parent"],
-                create_time=float(v["create_time"]),
-                feedback=(
-                    FeedbackModel(
-                        thumbs_up=v["feedback"]["thumbs_up"],
-                        category=v["feedback"]["category"],
-                        comment=v["feedback"]["comment"],
-                    )
-                    if v.get("feedback")
-                    else None
-                ),
-                used_chunks=(
-                    [
-                        ChunkModel(
-                            content=c["content"],
-                            content_type=(
-                                c["content_type"] if "content_type" in c else "s3"
-                            ),
-                            source=c["source"],
-                            rank=c["rank"],
-                        )
-                        for c in v["used_chunks"]
-                    ]
-                    if v.get("used_chunks")
-                    else None
-                ),
-                thinking_log=v.get("thinking_log"),
-            )
+            k: MessageModel.model_validate(v)
             for k, v in message_map.items()
         },
         last_message_id=item["LastMessageId"],

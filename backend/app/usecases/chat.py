@@ -19,9 +19,10 @@ from app.repositories.conversation import (
 from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
     ChunkModel,
-    ContentModel,
     ConversationModel,
     MessageModel,
+    TextContentModel,
+    content_model_from_content,
 )
 from app.repositories.models.custom_bot import (
     BotAliasModel,
@@ -33,12 +34,12 @@ from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
     Chunk,
-    Content,
     Conversation,
     FeedbackOutput,
     MessageOutput,
     RelatedDocumentsOutput,
     type_model_name,
+    TextContent,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_current_time, is_running_on_lambda
@@ -86,11 +87,9 @@ def prepare_conversation(
             "system": MessageModel(
                 role="system",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
-                        media_type=None,
                         body="",
-                        file_name=None,
                     )
                 ],
                 model=chat_input.message.model,
@@ -111,11 +110,9 @@ def prepare_conversation(
             initial_message_map["instruction"] = MessageModel(
                 role="instruction",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
-                        media_type=None,
                         body=bot.instruction,
-                        file_name=None,
                     )
                 ],
                 model=chat_input.message.model,
@@ -186,12 +183,7 @@ def prepare_conversation(
         new_message = MessageModel(
             role=chat_input.message.role,
             content=[
-                ContentModel(
-                    content_type=c.content_type,
-                    media_type=c.media_type,
-                    body=c.body,
-                    file_name=c.file_name,
-                )
+                content_model_from_content(content=c)
                 for c in chat_input.message.content
             ],
             model=chat_input.message.model,
@@ -236,13 +228,13 @@ def insert_knowledge(
     if len(search_results) == 0:
         return conversation
 
-    inserted_prompt = build_rag_prompt(conversation, search_results, display_citation)
-    logger.info(f"Inserted prompt: {inserted_prompt}")
-
     conversation_with_context = deepcopy(conversation)
-    conversation_with_context.message_map["instruction"].content[
-        0
-    ].body = inserted_prompt
+    content = conversation_with_context.message_map["instruction"].content[0]
+    if isinstance(content, TextContentModel):
+        inserted_prompt = build_rag_prompt(conversation, search_results, display_citation)
+        logger.info(f"Inserted prompt: {inserted_prompt}")
+
+        content.body = inserted_prompt
 
     return conversation_with_context
 
@@ -275,13 +267,15 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             node_id=conversation.message_map[user_msg_id].parent,
             message_map=message_map,
         )
-        messages.append(chat_input.message)  # type: ignore
+        messages.append(message_map[user_msg_id])
         result = runner.run(messages)
-        reply_txt = result.last_response["output"]["message"]["content"][0].get(
-            "text", ""
-        )
-        price = result.price
-        thinking_log = result.thinking_conversation
+        reply_txt = result["last_response"]["output"]["message"]["content"][0]["text"] \
+            if "message" in result["last_response"]["output"] \
+                and len(result["last_response"]["output"]["message"]["content"]) > 0 \
+                and "text" in result["last_response"]["output"]["message"]["content"][0] \
+            else ""
+        price = result["price"]
+        thinking_log = result["thinking_conversation"]
 
         # Agent does not support continued generation
         conversation.should_continue = False
@@ -292,18 +286,20 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
             # Fetch most related documents from vector store
             # NOTE: Currently embedding not support multi-modal. For now, use the last content.
-            query: str = conversation.message_map[user_msg_id].content[-1].body  # type: ignore[assignment]
+            content = conversation.message_map[user_msg_id].content[-1]
+            if isinstance(content, TextContentModel):
+                query: str = content.body
 
-            search_results = search_related_docs(bot=bot, query=query)
-            logger.info(f"Search results from vector store: {search_results}")
+                search_results = search_related_docs(bot=bot, query=query)
+                logger.info(f"Search results from vector store: {search_results}")
 
-            # Insert contexts to instruction
-            conversation_with_context = insert_knowledge(
-                conversation,
-                search_results,
-                display_citation=bot.display_retrieved_chunks,
-            )
-            message_map = conversation_with_context.message_map
+                # Insert contexts to instruction
+                conversation_with_context = insert_knowledge(
+                    conversation,
+                    search_results,
+                    display_citation=bot.display_retrieved_chunks,
+                )
+                message_map = conversation_with_context.message_map
 
         messages = trace_to_root(
             node_id=conversation.message_map[user_msg_id].parent,
@@ -333,7 +329,11 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             guardrail=guardrail,
         )
         converse_response = call_converse_api(args)
-        reply_txt = converse_response["output"]["message"]["content"][0].get("text", "")
+        reply_txt = converse_response["output"]["message"]["content"][0]["text"] \
+            if "message" in converse_response["output"] \
+                and len(converse_response["output"]["message"]["content"]) > 0 \
+                and "text" in converse_response["output"]["message"]["content"][0] \
+            else ""
         reply_txt = reply_txt.rstrip()
 
         # Used chunks for RAG generation
@@ -364,8 +364,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     message = MessageModel(
         role="assistant",
         content=[
-            ContentModel(
-                content_type="text", body=reply_txt, media_type=None, file_name=None
+            TextContentModel(
+                content_type="text",
+                body=reply_txt,
             )
         ],
         model=chat_input.message.model,
@@ -378,9 +379,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
 
     if chat_input.continue_generate:
-        conversation.message_map[conversation.last_message_id].content[
-            0
-        ].body += reply_txt  # type: ignore[union-attr]
+        content = conversation.message_map[conversation.last_message_id].content[0]
+        if isinstance(content, TextContentModel):
+            content.body += reply_txt
     else:
         conversation.message_map[assistant_msg_id] = message
 
@@ -404,12 +405,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         message=MessageOutput(
             role=message.role,
             content=[
-                Content(
-                    content_type=c.content_type,
-                    body=c.body,
-                    media_type=c.media_type,
-                    file_name=None,
-                )
+                c.to_content()
                 for c in message.content
             ],
             model=message.model,
@@ -466,11 +462,9 @@ def propose_conversation_title(
     new_message = MessageModel(
         role="user",
         content=[
-            ContentModel(
+            TextContentModel(
                 content_type="text",
                 body=PROMPT,
-                media_type=None,
-                file_name=None,
             )
         ],
         model=model,
@@ -489,7 +483,11 @@ def propose_conversation_title(
         model=model,
     )
     response = call_converse_api(args)
-    reply_txt = response["output"]["message"]["content"][0].get("text", "")
+    reply_txt = response["output"]["message"]["content"][0]["text"] \
+        if "message" in response["output"] \
+            and len(response["output"]["message"]["content"]) > 0 \
+            and "text" in response["output"]["message"]["content"][0] \
+        else ""
 
     return reply_txt
 
@@ -501,12 +499,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         message_id: MessageOutput(
             role=message.role,
             content=[
-                Content(
-                    content_type=c.content_type,
-                    body=c.body,
-                    media_type=c.media_type,
-                    file_name=c.file_name,
-                )
+                c.to_content()
                 for c in message.content
             ],
             model=message.model,
@@ -572,11 +565,13 @@ def fetch_related_documents(
         return []
 
     _, bot = fetch_bot(user_id, chat_input.bot_id)
-    if not bot.display_retrieved_chunks:
+    if not bot.has_knowledge() or not bot.display_retrieved_chunks:
         return None
 
-    query: str = chat_input.message.content[-1].body  # type: ignore[assignment]
-    chunks = search_related_docs(bot=bot, query=query)
+    content = chat_input.message.content[-1]
+    chunks = search_related_docs(bot=bot, query=content.body) \
+        if isinstance(content, TextContent) \
+        else []
 
     documents = []
     for chunk in chunks:

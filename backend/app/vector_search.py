@@ -8,6 +8,9 @@ from app.repositories.models.custom_bot import BotModel
 from app.utils import generate_presigned_url, get_bedrock_agent_client
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
+from mypy_boto3_bedrock_runtime.type_defs import (
+    GuardrailConverseContentBlockTypeDef,
+)
 
 logger = logging.getLogger(__name__)
 agent_client = get_bedrock_agent_client()
@@ -22,9 +25,9 @@ class SearchResult(BaseModel):
 
 def to_guardrails_grounding_source(
     search_results: list[SearchResult],
-) -> dict:
+) -> GuardrailConverseContentBlockTypeDef:
     """Convert search results to Guardrails Grounding source format."""
-    grounding_source = {
+    grounding_source: GuardrailConverseContentBlockTypeDef = {
         "text": {
             "text": "\n\n".join(x.content for x in search_results),
             "qualifiers": ["grounding_source"],
@@ -79,7 +82,7 @@ def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
-    assert bot.bedrock_knowledge_base is not None
+    assert bot.bedrock_knowledge_base is not None and bot.bedrock_knowledge_base.knowledge_base_id is not None
     if bot.bedrock_knowledge_base.search_params.search_type == "semantic":
         search_type = "SEMANTIC"
     elif bot.bedrock_knowledge_base.search_params.search_type == "hybrid":

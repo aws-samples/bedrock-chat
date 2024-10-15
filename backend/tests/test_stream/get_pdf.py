@@ -4,7 +4,7 @@ import os
 import requests
 
 
-def get_pdf_info(url) -> tuple[str, str]:
+def get_pdf_info(url) -> tuple[str, bytes]:
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -14,14 +14,12 @@ def get_pdf_info(url) -> tuple[str, str]:
         else:
             filename = os.path.basename(url)
 
-        body = response.content
-
-        return filename, base64.b64encode(body).decode("utf-8").strip()
+        return filename, response.content
     else:
         raise Exception(f"Failed to fetch PDF from {url}")
 
 
-def get_aws_overview() -> tuple[str, str]:
+def get_aws_overview() -> tuple[str, bytes]:
     # Get the AWS Activate General 4 PDF as base64 encoded string
     URL = "https://aws-startup.s3.ap-northeast-1.amazonaws.com/Activate/AWS_Activate_General_4.pdf"
     return get_pdf_info(URL)

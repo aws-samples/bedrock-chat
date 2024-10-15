@@ -8,7 +8,6 @@ from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CO
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
-from app.utils import convert_dict_keys_to_camel_case
 from app.vector_search import SearchResult, search_related_docs
 from pydantic import BaseModel, Field, root_validator
 
@@ -108,7 +107,7 @@ class KnowledgeToolInput(BaseModel):
 
 def search_knowledge(
     tool_input: KnowledgeToolInput, bot: BotModel | None, model: type_model_name | None
-) -> str:
+) -> dict:
     assert bot is not None
     assert model is not None
 
@@ -121,10 +120,10 @@ def search_knowledge(
             **DEFAULT_GENERATION_CONFIG,
             **(
                 {
-                    "maxTokens": generation_params.max_tokens,
+                    "max_tokens": generation_params.max_tokens,
                     "temperature": generation_params.temperature,
-                    "topP": generation_params.top_p,
-                    "stopSequences": generation_params.stop_sequences,
+                    "top_p": generation_params.top_p,
+                    "stop_sequences": generation_params.stop_sequences,
                 }
                 if generation_params
                 else {}
@@ -145,7 +144,7 @@ def search_knowledge(
         context_prompt = _format_search_results(search_results)
         response = call_converse_api(
             {
-                "model_id": get_model_id(model),
+                "modelId": get_model_id(model),
                 "messages": [
                     {
                         "role": "user",
@@ -158,9 +157,13 @@ def search_knowledge(
                         ],
                     }
                 ],
-                "inference_config": convert_dict_keys_to_camel_case(inference_config),
-                "additional_model_request_fields": additional_model_request_fields,
-                "stream": False,
+                "inferenceConfig": {
+                    'maxTokens': inference_config['max_tokens'],
+                    'temperature': inference_config['temperature'],
+                    'topP': inference_config['top_p'],
+                    'stopSequences': inference_config['stop_sequences'],
+                },
+                "additionalModelRequestFields": additional_model_request_fields,
                 "system": [],
             }
         )
@@ -169,15 +172,13 @@ def search_knowledge(
         )
         for content_block in message_content:
             if "text" in content_block:
-                return json.dumps(
-                    {
-                        "output": content_block["text"],
-                        "search_result": [
-                            {"content": r.content, "source": r.source, "rank": r.rank}
-                            for r in search_results
-                        ],
-                    }
-                )
+                return {
+                    "output": content_block["text"],
+                    "search_result": [
+                        {"content": r.content, "source": r.source, "rank": r.rank}
+                        for r in search_results
+                    ],
+                }
             else:
                 raise ValueError(f"Unexpected content block: {content_block}")
     except Exception as e:
@@ -185,12 +186,10 @@ def search_knowledge(
         raise e
 
     # Should not reach here
-    return json.dumps(
-        {
-            "output": "No output",
-            "search_result": [],
-        }
-    )
+    return {
+        "output": "No output",
+        "search_result": [],
+    }
 
 
 def create_knowledge_tool(bot: BotModel, model: type_model_name) -> AgentTool:

@@ -1,20 +1,27 @@
-from typing import Any, Callable, Generic, TypeVar, get_args, get_origin
+from typing import Any, Callable, Generic, TypeVar, TypedDict
 
-from app.bedrock import ConverseApiToolSpec
+from app.repositories.models.conversation import ToolResultModel
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
 from pydantic import BaseModel
+from mypy_boto3_bedrock_runtime.type_defs import (
+    ToolSpecificationTypeDef,
+    ToolResultContentBlockOutputTypeDef,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
 
-class RunResult(BaseModel):
+class RunResult(TypedDict):
     succeeded: bool
-    body: str
+    body: ToolResultContentBlockOutputTypeDef
 
 
 class InvalidToolError(Exception):
     pass
+
+
+AgentResultType = str | dict | ToolResultModel
 
 
 class AgentTool(Generic[T]):
@@ -23,7 +30,7 @@ class AgentTool(Generic[T]):
         name: str,
         description: str,
         args_schema: type[T],
-        function: Callable[[T, BotModel | None, type_model_name | None], str],
+        function: Callable[[T, BotModel | None, type_model_name | None], AgentResultType],
         bot: BotModel | None = None,
         model: type_model_name | None = None,
     ):
@@ -38,16 +45,26 @@ class AgentTool(Generic[T]):
         """Converts the Pydantic model to a JSON schema."""
         return self.args_schema.model_json_schema()
 
-    def to_converse_spec(self) -> ConverseApiToolSpec:
-        inputSchema = {"json": self._generate_input_schema()}
-
-        return ConverseApiToolSpec(
-            name=self.name, description=self.description, inputSchema=inputSchema
+    def to_converse_spec(self) -> ToolSpecificationTypeDef:
+        return ToolSpecificationTypeDef(
+            name=self.name,
+            description=self.description,
+            inputSchema={
+                "json": self._generate_input_schema()
+            },
         )
 
     def run(self, arg: T) -> RunResult:
         try:
             res = self.function(arg, self.bot, self.model)
-            return RunResult(succeeded=True, body=res)
+            if isinstance(res, str):
+                return RunResult(succeeded=True, body={"text": res})
+
+            elif isinstance(res, dict):
+                return RunResult(succeeded=True, body={"json": res})
+
+            else:
+                return RunResult(succeeded=True, body=res.to_content_for_converse())
+
         except Exception as e:
-            return RunResult(succeeded=False, body=str(e))
+            return RunResult(succeeded=False, body={"text": str(e)})

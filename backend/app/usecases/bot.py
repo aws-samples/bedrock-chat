@@ -5,6 +5,7 @@ from typing import Literal
 from app.agents.utils import get_available_tools, get_tool_by_name
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
+from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -134,8 +135,14 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         filenames = bot_input.knowledge.filenames
 
-    generation_params = (
-        bot_input.generation_params.model_dump()
+    generation_params: GenerationParamsDict = (
+        {
+            "max_tokens": bot_input.generation_params.max_tokens,
+            "top_k": bot_input.generation_params.top_k,
+            "top_p": bot_input.generation_params.top_p,
+            "temperature": bot_input.generation_params.temperature,
+            "stop_sequences": bot_input.generation_params.stop_sequences,
+        }
         if bot_input.generation_params
         else DEFAULT_GENERATION_CONFIG
     )
@@ -165,7 +172,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             public_bot_id=None,
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
-            generation_params=GenerationParamsModel(**generation_params),  # type: ignore
+            generation_params=GenerationParamsModel(**generation_params),
             agent=agent,
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
@@ -290,8 +297,14 @@ def modify_owned_bot(
             + modify_input.knowledge.unchanged_filenames
         )
 
-    generation_params = (
-        modify_input.generation_params.model_dump()
+    generation_params: GenerationParamsDict = (
+        {
+            "max_tokens": modify_input.generation_params.max_tokens,
+            "top_k": modify_input.generation_params.top_k,
+            "top_p": modify_input.generation_params.top_p,
+            "temperature": modify_input.generation_params.temperature,
+            "stop_sequences": modify_input.generation_params.stop_sequences,
+        }
         if modify_input.generation_params
         else DEFAULT_GENERATION_CONFIG
     )

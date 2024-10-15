@@ -7,7 +7,12 @@ import unittest
 
 import boto3
 from app.bedrock import compose_args_for_converse_api
-from app.repositories.models.conversation import ContentModel, MessageModel
+from app.repositories.models.conversation import (
+    TextContentModel,
+    ImageContentModel,
+    AttachmentContentModel,
+    MessageModel,
+)
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.stream import ConverseApiStreamHandler, OnStopInput
@@ -21,10 +26,10 @@ def on_stream(x: str) -> None:
 
 
 def on_stop(x: OnStopInput) -> None:
-    print(f"Stop reason: {x.stop_reason}")
-    print(f"Price: {x.price}")
-    print(f"Input token count: {x.input_token_count}")
-    print(f"Output token count: {x.output_token_count}")
+    print(f"Stop reason: {x['stop_reason']}")
+    print(f"Price: {x['price']}")
+    print(f"Input token count: {x['input_token_count']}")
+    print(f"Output token count: {x['output_token_count']}")
 
 
 class TestConverseApiStreamHandler(unittest.TestCase):
@@ -54,11 +59,9 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello, World!",
-                    file_name=None,
                 )
             ],
             model=self.MODEL,
@@ -75,11 +78,9 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello!",
-                    file_name=None,
                 )
             ],
             model=self.MODEL,
@@ -98,11 +99,9 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello!",
-                    file_name=None,
                 )
             ],
             model=self.MODEL,
@@ -127,23 +126,19 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                ImageContentModel(
                     content_type="image",
                     media_type="image/png",
                     body=get_aws_logo(),
-                    file_name="image.png",
                 ),
-                ContentModel(
+                ImageContentModel(
                     content_type="image",
                     media_type="image/png",
                     body=get_cdk_logo(),
-                    file_name=None,
                 ),
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Explain the images.",
-                    file_name=None,
                 ),
             ],
             model=self.MODEL,
@@ -162,17 +157,14 @@ class TestConverseApiStreamHandler(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                AttachmentContentModel(
                     content_type="attachment",
-                    media_type=None,
                     body=body,
                     file_name=file_name,
                 ),
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="要約して",
-                    file_name=None,
                 ),
             ],
             model=self.MODEL,
@@ -242,11 +234,9 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
         message = MessageModel(
             role="user",
             content=[
-                ContentModel(
+                TextContentModel(
                     content_type="text",
-                    media_type=None,
                     body="Hello, World!",
-                    file_name=None,
                 )
             ],
             model=self.MODEL,

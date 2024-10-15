@@ -22,7 +22,7 @@ from app.repositories.custom_bot import (
     update_bot_visibility,
 )
 from app.repositories.models.conversation import (
-    ContentModel,
+    TextContentModel,
     ConversationModel,
     MessageModel,
 )
@@ -30,7 +30,9 @@ from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
-    Content,
+    TextContent,
+    ImageContent,
+    AttachmentContent,
     MessageInput,
     type_model_name,
 )
@@ -60,11 +62,9 @@ class TestTraceToRoot(unittest.TestCase):
             "user_1": MessageModel(
                 role="user",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="user_1",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -78,11 +78,9 @@ class TestTraceToRoot(unittest.TestCase):
             "bot_1": MessageModel(
                 role="assistant",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="bot_1",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -96,11 +94,9 @@ class TestTraceToRoot(unittest.TestCase):
             "user_2": MessageModel(
                 role="user",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="user_2",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -114,11 +110,9 @@ class TestTraceToRoot(unittest.TestCase):
             "bot_2": MessageModel(
                 role="assistant",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="bot_2",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -132,11 +126,9 @@ class TestTraceToRoot(unittest.TestCase):
             "user_3a": MessageModel(
                 role="user",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="user_3a",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -150,11 +142,9 @@ class TestTraceToRoot(unittest.TestCase):
             "user_3b": MessageModel(
                 role="user",
                 content=[
-                    ContentModel(
+                    TextContentModel(
                         content_type="text",
                         body="user_3b",
-                        media_type=None,
-                        file_name="test",
                     )
                 ],
                 model=MODEL,
@@ -190,11 +180,9 @@ class TestStartChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="あなたの名前は何ですか？",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -238,8 +226,9 @@ class TestStartChat(unittest.TestCase):
     #         message=MessageInput(
     #             role="user",
     #             content=[
-    #                 Content(
-    #                     content_type="text", body=body, media_type=None, file_name=None
+    #                 TextContent(
+    #                     content_type="text",
+    #                     body=body,
     #                 )
     #             ],
     #             model=MISTRAL_MODEL,
@@ -288,17 +277,14 @@ class TestAttachmentChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    AttachmentContent(
                         content_type="attachment",
                         body=body,
-                        media_type=None,
                         file_name=file_name,
                     ),
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="Summarize the document.",
-                        media_type=None,
-                        file_name=None,
                     ),
                 ],
                 model=MODEL,
@@ -323,18 +309,15 @@ class TestMultimodalChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    ImageContent(
                         content_type="image",
                         # AWS Logo image
                         body=get_aws_logo(),
                         media_type="image/png",
-                        file_name=None,
                     ),
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="Explain the image",
-                        media_type=None,
-                        file_name=None,
                     ),
                 ],
                 model="claude-v3-sonnet",  # Specify v3 model
@@ -370,11 +353,9 @@ class TestContinueChat(unittest.TestCase):
                     "1-user": MessageModel(
                         role="user",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="こんにちは",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -388,11 +369,9 @@ class TestContinueChat(unittest.TestCase):
                     "1-assistant": MessageModel(
                         role="assistant",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="はい、こんにちは。どうしましたか?",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -415,11 +394,9 @@ class TestContinueChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="あなたの名前は？",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -465,11 +442,9 @@ class TestRegenerateChat(unittest.TestCase):
                     "a-1": MessageModel(
                         role="user",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="こんにちはを英語で",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -483,11 +458,9 @@ class TestRegenerateChat(unittest.TestCase):
                     "a-2": MessageModel(
                         role="assistant",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="Hello!",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -501,11 +474,9 @@ class TestRegenerateChat(unittest.TestCase):
                     "b-1": MessageModel(
                         role="user",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="こんにちはを中国語で",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -519,11 +490,9 @@ class TestRegenerateChat(unittest.TestCase):
                     "b-2": MessageModel(
                         role="assistant",
                         content=[
-                            ContentModel(
+                            TextContentModel(
                                 content_type="text",
                                 body="你好!",
-                                media_type=None,
-                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -547,11 +516,9 @@ class TestRegenerateChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="では、おやすみなさいはなんと言う？",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -575,11 +542,9 @@ class TestRegenerateChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="では、おやすみなさいはなんと言う？",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -608,12 +573,10 @@ class TestProposeTitle(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         # body="Australian famous site seeing place",
                         body="日本の有名な料理を3つ教えて",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -683,11 +646,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="こんにちは",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -711,11 +672,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="自己紹介して",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -734,11 +693,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="こんばんは",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -761,11 +718,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="こんにちは",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -785,11 +740,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="自己紹介して",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -811,11 +764,9 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="君の名は？",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=MODEL,
@@ -863,11 +814,9 @@ class TestAgentChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         body="Today's amazon stock price?",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=self.model,
@@ -956,12 +905,10 @@ class TestGuardrailChat(unittest.TestCase):
             message=MessageInput(
                 role="user",
                 content=[
-                    Content(
+                    TextContent(
                         content_type="text",
                         # Sexual content
                         body="Which bust do you like, A cup, B cup, C cup, D cup, or E cup?",
-                        media_type=None,
-                        file_name=None,
                     )
                 ],
                 model=self.model,
@@ -1012,11 +959,9 @@ class TestInsertKnowledge(unittest.TestCase):
                 "instruction": MessageModel(
                     role="bot",
                     content=[
-                        ContentModel(
+                        TextContentModel(
                             content_type="text",
                             body=create_test_instruction_template("俺様風の口調で"),
-                            media_type=None,
-                            file_name=None,
                         )
                     ],
                     model=MODEL,
@@ -1030,11 +975,9 @@ class TestInsertKnowledge(unittest.TestCase):
                 "1-user": MessageModel(
                     role="user",
                     content=[
-                        ContentModel(
+                        TextContentModel(
                             content_type="text",
                             body="Serverlessのメリットを説明して",
-                            media_type=None,
-                            file_name=None,
                         )
                     ],
                     model=MODEL,
