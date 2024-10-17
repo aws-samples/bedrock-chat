@@ -284,8 +284,16 @@ def process_chat_input(
         )
         message_map = conversation_with_context.message_map
 
+    # Leaf node id
+    # If `continue_generate` is True, note that new message is not added to the message map.
+    node_id = ""
+    if chat_input.continue_generate:
+        node_id = chat_input.message.parent_message_id
+    else:
+        node_id = conversation.message_map[user_msg_id].parent
+
     messages = trace_to_root(
-        node_id=conversation.message_map[user_msg_id].parent,
+        node_id=node_id,
         message_map=message_map,
     )
     if not chat_input.continue_generate:
