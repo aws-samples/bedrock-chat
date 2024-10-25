@@ -83,13 +83,6 @@ class BedrockKnowledgeBaseInput(BaseSchema):
         | NoneParams
     )
     search_params: SearchParams
-    # max_tokens: int | None = None
-    # overlap_percentage: int | None = None
-    # overlap_tokens: int | None = None
-    # max_parent_token_size: int | None = None
-    # max_child_token_size: int | None = None
-    # buffer_size: int | None = None
-    # breakpoint_percentile_threshold: int | None = None
     knowledge_base_id: str | None = None
 
 
@@ -104,12 +97,5 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
         | NoneParams
     )
     search_params: SearchParams
-    # max_tokens: int | None = None
-    # overlap_percentage: int | None = None
-    # overlap_tokens: int | None = None
-    # max_parent_token_size: int | None = None
-    # max_child_token_size: int | None = None
-    # buffer_size: int | None = None
-    # breakpoint_percentile_threshold: int | None = None
     knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None

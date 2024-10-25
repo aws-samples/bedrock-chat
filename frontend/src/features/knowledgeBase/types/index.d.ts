@@ -2,19 +2,7 @@ export type BedrockKnowledgeBase = {
   knowledgeBaseId: string | null;
   dataSourceIds?: string[]; // only present after bot is ready
   embeddingsModel: EmbeddingsModel;
-  // chunkingStrategy: ChunkingStrategy;
   chunkingConfiguration: ChunkingConfiguration;
-  // fixedchunkingParams: FixedSizeParams | null; // null when chunkingStrategy isn't 'fixed_size'
-  // hierarchicalchunkingParams: HierarchicalParams | null; // null when chunkingStrategy isn't 'hierarchical'
-  // semanticchunkingParams: SemanticParams | null; // null when chunkingStrategy isn't 'semantic'
-  // chunkingParams: FixedSizeParams | HierarchicalParams | SemanticParams | null; // null when chunkingStrategy is 'default' or 'none'
-  // maxTokens: number | null; // null when chunkingStrategy isn't 'fixed_size'
-  // overlapPercentage: number | null; // null when chunkingStrategy isn't 'fixed_size'
-  // overlapTokens: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  // maxParentTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  // maxChildTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  // bufferSize: number | null; // null when chunkingStrategy isn't 'semantic'
-  // breakpointPercentileThreshold: number | null; // null when chunkingStrategy isn't 'semantic'
   openSearch: OpenSearchParams;
   searchParams: SearchParams;
 };
