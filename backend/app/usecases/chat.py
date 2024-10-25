@@ -449,6 +449,7 @@ def propose_conversation_title(
         "claude-v3-opus",
         "claude-v3-sonnet",
         "claude-v3.5-sonnet",
+        "claude-v3.5-sonnet-v2",
         "claude-v3-haiku",
         "mistral-7b-instruct",
         "mixtral-8x7b-instruct",

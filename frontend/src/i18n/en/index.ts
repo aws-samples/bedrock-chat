@@ -15,6 +15,39 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: 'Admin Only',
     },
+    model: {
+      haiku3: {
+        label: 'Claude 3 (Haiku)',
+        description:
+          'Fastest and most compact model for near-instant responsiveness.',
+      },
+      sonnet3: {
+        label: 'Claude 3 (Sonnet)',
+        description: 'Balance of intelligence and speed.',
+      },
+      'sonnet3-5': {
+        label: 'Claude 3.5 (Sonnet) v1',
+        description: 'Most intelligent model.',
+      },
+      'sonnet3-5-v2': {
+        label: 'Claude 3.5 (Sonnet) v2',
+        description:
+          "Upgraded Claude 3.5 (Sonnet) v1. This model builds on its predecessor's strengths at the same cost.",
+      },
+      opus3: {
+        label: 'Claude 3 (Opus)',
+        description: 'Powerful model for highly complex tasks.',
+      },
+      mistral7b: {
+        label: 'Mistral 7B',
+      },
+      mistral8x7b: {
+        label: 'Mixtral-8x7B',
+      },
+      mistralLarge: {
+        label: 'Mistral Large',
+      },
+    },
     agent: {
       label: 'Agent',
       help: {

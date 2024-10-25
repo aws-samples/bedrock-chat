@@ -18,6 +18,38 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: '管理者用',
     },
+    model: {
+      haiku3: {
+        label: 'Claude 3 (Haiku)',
+        description: '最速かつ最もコンパクトなモデルで、ほぼ瞬時の応答性を実現',
+      },
+      sonnet3: {
+        label: 'Claude 3 (Sonnet)',
+        description: '賢さとスピードのバランスが取れたモデル',
+      },
+      'sonnet3-5': {
+        label: 'Claude 3.5 (Sonnet) v1',
+        description: '最も賢いモデル',
+      },
+      'sonnet3-5-v2': {
+        label: 'Claude 3.5 (Sonnet) v2',
+        description:
+          'Claude 3.5 (Sonnet) v1 をアップグレードしたモデルであり、同じコストで前モデルの長所を強化',
+      },
+      opus3: {
+        label: 'Claude 3 (Opus)',
+        description: '非常に複雑なタスクに対応するパワフルなモデル',
+      },
+      mistral7b: {
+        label: 'Mistral 7B',
+      },
+      mistral8x7b: {
+        label: 'Mixtral-8x7B',
+      },
+      mistralLarge: {
+        label: 'Mistral Large',
+      },
+    },
     agent: {
       label: 'エージェント',
       help: {
