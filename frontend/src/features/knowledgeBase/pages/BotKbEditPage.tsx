@@ -544,21 +544,21 @@ const BotKbEditPage: React.FC = () => {
     (value: EmbeddingsModel) => {
       setEmbeddingsModel(value);
       // Update maxTokens based on the selected embeddings model
-      if (chunkingStrategy == 'fixed_size') {
-        const maxEdge = EDGE_FIXED_CHUNK_PARAMS.maxTokens.MAX[value];
+      const maxEdgeFixed = EDGE_FIXED_CHUNK_PARAMS.maxTokens.MAX[value];
+      const maxEdgeSemantic = EDGE_SEMANTIC_CHUNK_PARAMS.maxTokens.MAX[value];
+      if (chunkingStrategy == 'fixed_size' && fixedSizeParams.maxTokens > maxEdgeFixed) {
         setFixedSizeParams((params) => ({
           ...params,
-          maxTokens: maxEdge,
+          maxTokens: maxEdgeFixed,
         }))
-      } else if (chunkingStrategy == 'semantic') {
-        const maxEdge = EDGE_SEMANTIC_CHUNK_PARAMS.maxTokens.MAX[value];
+      } else if (chunkingStrategy == 'semantic' && semanticParams.maxTokens > maxEdgeSemantic) {
         setSemanticParams((params) => ({
           ...params,
-          maxTokens: maxEdge,
+          maxTokens: maxEdgeSemantic,
         }))
       }
     },
-    [fixedSizeParams.maxTokens, semanticParams.maxTokens]
+    [chunkingStrategy, fixedSizeParams.maxTokens, semanticParams.maxTokens]
   );
 
   const onClickBack = useCallback(() => {
