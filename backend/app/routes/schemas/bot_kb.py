@@ -4,7 +4,13 @@ from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
 # Ref: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_ChunkingConfiguration.html
-type_kb_chunking_strategy = Literal["default", "fixed_size", "hierarchical" , "semantic", "none"]
+type_kb_chunking_strategy = Literal[
+    "default",
+    "fixed_size",
+    "hierarchical",
+    "semantic",
+    "none",
+]
 type_kb_embeddings_model = Literal["titan_v2", "cohere_multilingual_v3"]
 type_kb_search_type = Literal["hybrid", "semantic"]
 
@@ -38,32 +44,72 @@ class OpenSearchParams(BaseSchema):
     analyzer: AnalyzerParams | None
 
 
-class BedrockKnowledgeBaseInput(BaseSchema):
-    embeddings_model: type_kb_embeddings_model
-    open_search: OpenSearchParams
-    chunking_strategy: type_kb_chunking_strategy
-    search_params: SearchParams
+class DefaultParams(BaseSchema):
+    chunking_strategy: type_kb_chunking_strategy = "default"
+
+
+class FixedSizeParams(BaseSchema):
+    chunking_strategy: type_kb_chunking_strategy = "fixed_size"
     max_tokens: int | None = None
     overlap_percentage: int | None = None
+
+
+class HierarchicalParams(BaseSchema):
+    chunking_strategy: type_kb_chunking_strategy = "hierarchical"
     overlap_tokens: int | None = None
     max_parent_token_size: int | None = None
     max_child_token_size: int | None = None
+
+
+class SemanticParams(BaseSchema):
+    chunking_strategy: type_kb_chunking_strategy = "semantic"
+    max_tokens: int | None = None
     buffer_size: int | None = None
     breakpoint_percentile_threshold: int | None = None
+
+
+class NoneParams(BaseSchema):
+    chunking_strategy: type_kb_chunking_strategy = "none"
+
+
+class BedrockKnowledgeBaseInput(BaseSchema):
+    embeddings_model: type_kb_embeddings_model
+    open_search: OpenSearchParams
+    chunking_configuration: (
+        DefaultParams
+        | FixedSizeParams
+        | HierarchicalParams
+        | SemanticParams
+        | NoneParams
+    )
+    search_params: SearchParams
+    # max_tokens: int | None = None
+    # overlap_percentage: int | None = None
+    # overlap_tokens: int | None = None
+    # max_parent_token_size: int | None = None
+    # max_child_token_size: int | None = None
+    # buffer_size: int | None = None
+    # breakpoint_percentile_threshold: int | None = None
     knowledge_base_id: str | None = None
 
 
 class BedrockKnowledgeBaseOutput(BaseSchema):
     embeddings_model: type_kb_embeddings_model
     open_search: OpenSearchParams
-    chunking_strategy: type_kb_chunking_strategy
+    chunking_configuration: (
+        DefaultParams
+        | FixedSizeParams
+        | HierarchicalParams
+        | SemanticParams
+        | NoneParams
+    )
     search_params: SearchParams
-    max_tokens: int | None = None
-    overlap_percentage: int | None = None
-    overlap_tokens: int | None = None
-    max_parent_token_size: int | None = None
-    max_child_token_size: int | None = None
-    buffer_size: int | None = None
-    breakpoint_percentile_threshold: int | None = None
+    # max_tokens: int | None = None
+    # overlap_percentage: int | None = None
+    # overlap_tokens: int | None = None
+    # max_parent_token_size: int | None = None
+    # max_child_token_size: int | None = None
+    # buffer_size: int | None = None
+    # breakpoint_percentile_threshold: int | None = None
     knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None

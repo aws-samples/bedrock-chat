@@ -53,14 +53,14 @@ export const getChunkingStrategy = (
       }
       return ChunkingStrategy.FIXED_SIZE;
     case "hierarchical":
-        if (options?.overlapTokens && options?.maxParentTokenSize && options?.maxChildTokenSize) {
-          return ChunkingStrategy.hierarchical({
-            overlapTokens: options.overlapTokens,
-            maxParentTokenSize: options.maxParentTokenSize,
-            maxChildTokenSize: options.maxChildTokenSize
-          });
-        } 
-        return embeddingsModel === 'titan_v2' ? ChunkingStrategy.HIERARCHICAL_TITAN : ChunkingStrategy.HIERARCHICAL_COHERE;
+      if (options?.overlapTokens && options?.maxParentTokenSize && options?.maxChildTokenSize) {
+        return ChunkingStrategy.hierarchical({
+          overlapTokens: options.overlapTokens,
+          maxParentTokenSize: options.maxParentTokenSize,
+          maxChildTokenSize: options.maxChildTokenSize
+        });
+      }
+      return embeddingsModel === 'titan_v2' ? ChunkingStrategy.HIERARCHICAL_TITAN : ChunkingStrategy.HIERARCHICAL_COHERE;
     case "semantic":
       if (options?.maxTokens && options?.bufferSize && options?.breakpointPercentileThreshold) {
         return ChunkingStrategy.semantic({

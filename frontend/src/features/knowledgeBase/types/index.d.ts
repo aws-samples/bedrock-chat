@@ -2,14 +2,19 @@ export type BedrockKnowledgeBase = {
   knowledgeBaseId: string | null;
   dataSourceIds?: string[]; // only present after bot is ready
   embeddingsModel: EmbeddingsModel;
-  chunkingStrategy: ChunkingStrategy;
-  maxTokens: number | null; // null when chunkingStrategy isn't 'fixed_size'
-  overlapPercentage: number | null; // null when chunkingStrategy isn't 'fixed_size'
-  overlapTokens: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  maxParentTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  maxChildTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
-  bufferSize: number | null; // null when chunkingStrategy isn't 'semantic'
-  breakpointPercentileThreshold: number | null; // null when chunkingStrategy isn't 'semantic'
+  // chunkingStrategy: ChunkingStrategy;
+  chunkingConfiguration: ChunkingConfiguration;
+  // fixedchunkingParams: FixedSizeParams | null; // null when chunkingStrategy isn't 'fixed_size'
+  // hierarchicalchunkingParams: HierarchicalParams | null; // null when chunkingStrategy isn't 'hierarchical'
+  // semanticchunkingParams: SemanticParams | null; // null when chunkingStrategy isn't 'semantic'
+  // chunkingParams: FixedSizeParams | HierarchicalParams | SemanticParams | null; // null when chunkingStrategy is 'default' or 'none'
+  // maxTokens: number | null; // null when chunkingStrategy isn't 'fixed_size'
+  // overlapPercentage: number | null; // null when chunkingStrategy isn't 'fixed_size'
+  // overlapTokens: number | null; // null when chunkingStrategy isn't 'hierarchical'
+  // maxParentTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
+  // maxChildTokenSize: number | null; // null when chunkingStrategy isn't 'hierarchical'
+  // bufferSize: number | null; // null when chunkingStrategy isn't 'semantic'
+  // breakpointPercentileThreshold: number | null; // null when chunkingStrategy isn't 'semantic'
   openSearch: OpenSearchParams;
   searchParams: SearchParams;
 };
@@ -18,12 +23,42 @@ export type EmbeddingsModel = 'titan_v2' | 'cohere_multilingual_v3';
 
 export type ChunkingStrategy = 'default' | 'fixed_size' | 'hierarchical' | 'semantic' | 'none';
 
+export type ChunkingConfiguration = DefaultParams | FixedSizeParams | HierarchicalParams | SemanticParams | NoneParams;
+
 export type OpenSearchParams = {
   analyzer: {
     characterFilters: CharacterFilter[];
     tokenizer: Tokenizer;
     tokenFilters: TokenFilter[];
   } | null;
+};
+
+export type DefaultParams = {
+  chunkingStrategy: 'default';
+};
+
+export type FixedSizeParams = {
+  chunkingStrategy: 'fixed_size';
+  maxTokens: number;
+  overlapPercentage: number;
+};
+
+export type HierarchicalParams = {
+  chunkingStrategy: 'hierarchical';
+  overlapTokens: number;
+  maxParentTokenSize: number;
+  maxChildTokenSize: number;
+};
+
+export type SemanticParams = {
+  chunkingStrategy: 'semantic';
+  maxTokens: number;
+  bufferSize: number;
+  breakpointPercentileThreshold: number;
+};
+
+export type NoneParams = {
+  chunkingStrategy: 'none';
 };
 
 export type CharacterFilter = 'icu_normalizer'; // static

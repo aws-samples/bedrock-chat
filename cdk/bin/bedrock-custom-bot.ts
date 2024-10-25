@@ -50,8 +50,8 @@ console.log("existingS3Urls: ", existingS3Urls);
 
 const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
 
-const maxTokens: number | undefined = knowledgeBase.max_tokens
-  ? Number(knowledgeBase.max_tokens.N)
+const maxTokens: number | undefined = knowledgeBase.chunking_configuration.M.max_tokens
+  ? Number(knowledgeBase.chunking_configuration.M.max_tokens.N)
   : undefined;
 const instruction: string | undefined = knowledgeBase.instruction
   ? knowledgeBase.instruction.S
@@ -59,23 +59,23 @@ const instruction: string | undefined = knowledgeBase.instruction
 const analyzer = knowledgeBase.open_search.M.analyzer.M
   ? getAnalyzer(knowledgeBase.open_search.M.analyzer.M)
   : undefined;
-const overlapPercentage: number | undefined = knowledgeBase.overlap_percentage
-  ? Number(knowledgeBase.overlap_percentage.N)
+const overlapPercentage: number | undefined = knowledgeBase.chunking_configuration.M.overlap_percentage
+  ? Number(knowledgeBase.chunking_configuration.M.overlap_percentage.N)
   : undefined;
-const overlapTokens: number | undefined = knowledgeBase.overlap_tokens
-  ? Number(knowledgeBase.overlap_tokens.N)
+const overlapTokens: number | undefined = knowledgeBase.chunking_configuration.M.overlap_tokens
+  ? Number(knowledgeBase.chunking_configuration.M.overlap_tokens.N)
   : undefined;
-const maxParentTokenSize: number | undefined = knowledgeBase.max_parent_token_size
-  ? Number(knowledgeBase.max_parent_token_size.N)
+const maxParentTokenSize: number | undefined = knowledgeBase.chunking_configuration.M.max_parent_token_size
+  ? Number(knowledgeBase.chunking_configuration.M.max_parent_token_size.N)
   : undefined;
-const maxChildTokenSize: number | undefined = knowledgeBase.max_child_token_size
-  ? Number(knowledgeBase.max_child_token_size.N)
+const maxChildTokenSize: number | undefined = knowledgeBase.chunking_configuration.M.max_child_token_size
+  ? Number(knowledgeBase.chunking_configuration.M.max_child_token_size.N)
   : undefined;
-const bufferSize: number | undefined = knowledgeBase.buffer_size
-  ? Number(knowledgeBase.buffer_size.N)
+const bufferSize: number | undefined = knowledgeBase.chunking_configuration.M.buffer_size
+  ? Number(knowledgeBase.chunking_configuration.M.buffer_size.N)
   : undefined;
-const breakpointPercentileThreshold: number | undefined = knowledgeBase.breakpoint_percentile_threshold
-  ? Number(knowledgeBase.breakpoint_percentile_threshold.N)
+const breakpointPercentileThreshold: number | undefined = knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold
+  ? Number(knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold.N)
   : undefined;
 const is_guardrail_enabled: boolean | undefined =
   guardrails.is_guardrail_enabled
@@ -109,7 +109,7 @@ const guardrailVersion: number | undefined = guardrails.guardrail_version
   ? Number(guardrails.guardrail_version.N)
   : undefined;
 const chunkingStrategy = getChunkingStrategy(
-  knowledgeBase.chunking_strategy.S,
+  knowledgeBase.chunking_configuration.M.chunking_strategy.S,
   knowledgeBase.embeddings_model.S,
   {
     maxTokens,

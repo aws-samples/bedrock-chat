@@ -24,17 +24,52 @@ class OpenSearchParamsModel(BaseModel):
     analyzer: AnalyzerParamsModel | None
 
 
-class BedrockKnowledgeBaseModel(BaseModel):
-    embeddings_model: type_kb_embeddings_model
-    open_search: OpenSearchParamsModel
-    chunking_strategy: type_kb_chunking_strategy
-    search_params: SearchParamsModel
+class DefaultParamsModel(BaseModel):
+    chunking_strategy: type_kb_chunking_strategy = "default"
+
+
+class FixedSizeParamsModel(BaseModel):
+    chunking_strategy: type_kb_chunking_strategy = "fixed_size"
     max_tokens: int | None = None
     overlap_percentage: int | None = None
+
+
+class HierarchicalParamsModel(BaseModel):
+    chunking_strategy: type_kb_chunking_strategy = "hierarchical"
     overlap_tokens: int | None = None
     max_parent_token_size: int | None = None
     max_child_token_size: int | None = None
+
+
+class SemanticParamsModel(BaseModel):
+    chunking_strategy: type_kb_chunking_strategy = "semantic"
+    max_tokens: int | None = None
     buffer_size: int | None = None
     breakpoint_percentile_threshold: int | None = None
+
+
+class NoneParamsModel(BaseModel):
+    chunking_strategy: type_kb_chunking_strategy = "none"
+
+
+class BedrockKnowledgeBaseModel(BaseModel):
+    embeddings_model: type_kb_embeddings_model
+    open_search: OpenSearchParamsModel
+    # chunking_strategy: type_kb_chunking_strategy
+    chunking_configuration: (
+        DefaultParamsModel
+        | FixedSizeParamsModel
+        | HierarchicalParamsModel
+        | SemanticParamsModel
+        | NoneParamsModel
+    )
+    search_params: SearchParamsModel
+    # max_tokens: int | None = None
+    # overlap_percentage: int | None = None
+    # overlap_tokens: int | None = None
+    # max_parent_token_size: int | None = None
+    # max_child_token_size: int | None = None
+    # buffer_size: int | None = None
+    # breakpoint_percentile_threshold: int | None = None
     knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
