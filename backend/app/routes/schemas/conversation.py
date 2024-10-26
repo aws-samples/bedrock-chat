@@ -126,7 +126,7 @@ ToolResult = TextToolResult | JsonToolResult | ImageToolResult | DocumentToolRes
 
 class ToolResultContentBody(BaseSchema):
     tool_use_id: str
-    content: ToolResult
+    content: list[ToolResult]
     status: Literal["error", "success"]
 
 

@@ -399,14 +399,27 @@ def tool_result_model_from_tool_result_content(content: ToolResultContentBlockOu
 
 class ToolResultContentModelBody(BaseModel):
     tool_use_id: str
-    content: ToolResultModel
+    content: list[ToolResultModel]
     status: Literal["error", "success"]
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def validate_content(cls, v: Any) -> list:
+        if type(v) == list:
+            return v
+
+        else:
+            # For backward compatibility
+            return [v]
 
     @classmethod
     def from_tool_result(cls, tool_result: ConverseApiToolResult) -> Self:
         return cls(
             tool_use_id=tool_result["toolUseId"],
-            content=tool_result_model_from_tool_result_content(content=tool_result["content"]),
+            content=[
+                tool_result_model_from_tool_result_content(content=content)
+                for content in tool_result["content"]
+            ],
             status=tool_result["status"],
         )
 
@@ -414,7 +427,10 @@ class ToolResultContentModelBody(BaseModel):
     def from_tool_result_content_body(cls, body: ToolResultContentBody) -> Self:
         return cls(
             tool_use_id=body.tool_use_id,
-            content=tool_result_model_from_tool_result(tool_result=body.content),
+            content=[
+                tool_result_model_from_tool_result(tool_result=tool_result)
+                for tool_result in body.content
+            ],
             status=body.status,
         )
 
@@ -423,14 +439,18 @@ class ToolResultContentModelBody(BaseModel):
             "toolUseId": self.tool_use_id,
             "status": self.status,
             "content": [
-                self.content.to_content_for_converse()
+                content.to_content_for_converse()
+                for content in self.content
             ],
         }
 
     def to_tool_result_content_body(self) -> ToolResultContentBody:
         return ToolResultContentBody(
             tool_use_id=self.tool_use_id,
-            content=self.content.to_tool_result(),
+            content=[
+                content.to_tool_result()
+                for content in self.content
+            ],
             status=self.status,
         )
 

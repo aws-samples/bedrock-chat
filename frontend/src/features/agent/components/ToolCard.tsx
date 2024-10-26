@@ -42,7 +42,7 @@ type ToolCardProps = {
   name: string;
   status: AgentToolState;
   input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-  content?: AgentToolResultContent;
+  content?: AgentToolResultContent[];
 };
 
 const ToolCard: React.FC<ToolCardProps> = ({
@@ -82,19 +82,19 @@ const ToolCard: React.FC<ToolCardProps> = ({
   }, [toggleContentExpand, toolUseId]);
 
   // Convert output content text to JSON object if possible.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let displayContent: any = null;
-  if (content) {
-    if ("text" in content) {
+  const displayContent = content?.flatMap(c => {
+    if ("text" in c) {
       try {
-        displayContent = JSON.parse(content.text);
+        return [JSON.parse(c.text)];
       } catch (e) {
-        displayContent = content;
+        return [c.text];
       }
-    } else if ("json" in content) {
-      displayContent = content.json;
+    } else if ("json" in content[0]) {
+      return [content[0].json];
+    } else {
+      return [];
     }
-  }
+  })
 
   return (
     <div className={twMerge('relative', className)}>
@@ -176,15 +176,15 @@ const ToolCard: React.FC<ToolCardProps> = ({
               )}>
               {displayContent ? (
                 <div className="ml-4 mt-2 text-sm">
-                  {typeof displayContent === 'object' ? (
+                  {displayContent.length !== 1 || typeof displayContent[0] === 'object' ? (
                     // Render as JSON tree if the content is an object. Otherwise, render as a string.
                     <JSONTree
-                      data={displayContent}
+                      data={displayContent.length === 1 ? displayContent[0] : displayContent}
                       theme={THEME}
                       invertTheme={false} // disable dark theme
                     />
                   ) : (
-                    <p>{String(displayContent)}</p>
+                    <p>{String(displayContent[0])}</p>
                   )}
                 </div>
               ) : null}

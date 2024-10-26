@@ -7,7 +7,7 @@ export type AgentToolsProps = {
     name: string;
     status: AgentToolState;
     input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-    content?: AgentToolResultContent;
+    content?: AgentToolResultContent[];
   };
 };
 
@@ -33,7 +33,7 @@ export type AgentEvent =
       type: 'tool-result';
       toolUseId: string;
       status: AgentToolState;
-      content: AgentToolResultContent;
+      content: AgentToolResultContent[];
     }
   | { type: 'goodbye' };
 

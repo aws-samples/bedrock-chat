@@ -40,7 +40,7 @@ client = get_bedrock_runtime_client()
 
 class ConverseApiToolResult(TypedDict):
     toolUseId: str
-    content: ToolResultContentBlockOutputTypeDef
+    content: list[ToolResultContentBlockOutputTypeDef]
     status: Literal["error", "success"]
 
 

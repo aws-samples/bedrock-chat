@@ -43,7 +43,7 @@ export type AgentToolResultContent = AgentToolResultTextContent | AgentToolResul
 
 export type AgentToolResult = {
   toolUseId: string;
-  content: AgentToolResultContent;
+  content: AgentToolResultContent[];
   status: 'success' | 'error';
 };
 

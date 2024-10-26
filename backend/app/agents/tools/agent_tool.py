@@ -14,14 +14,14 @@ T = TypeVar("T", bound=BaseModel)
 
 class RunResult(TypedDict):
     succeeded: bool
-    body: ToolResultContentBlockOutputTypeDef
+    body: list[ToolResultContentBlockOutputTypeDef]
 
 
 class InvalidToolError(Exception):
     pass
 
 
-AgentResultType = str | dict | ToolResultModel
+AgentResultType = str | dict | ToolResultModel | list[str | dict | ToolResultModel]
 
 
 class AgentTool(Generic[T]):
@@ -58,13 +58,27 @@ class AgentTool(Generic[T]):
         try:
             res = self.function(arg, self.bot, self.model)
             if isinstance(res, str):
-                return RunResult(succeeded=True, body={"text": res})
+                return RunResult(succeeded=True, body=[{"text": res}])
 
             elif isinstance(res, dict):
-                return RunResult(succeeded=True, body={"json": res})
+                return RunResult(succeeded=True, body=[{"json": res}])
+
+            elif isinstance(res, list):
+                return RunResult(succeeded=True, body=[
+                    {
+                        "text": result,
+                    }
+                    if isinstance(result, str) else
+                    {
+                        "json": result
+                    }
+                    if isinstance(result, dict) else
+                    result.to_content_for_converse()
+                    for result in res
+                ])
 
             else:
-                return RunResult(succeeded=True, body=res.to_content_for_converse())
+                return RunResult(succeeded=True, body=[res.to_content_for_converse()])
 
         except Exception as e:
-            return RunResult(succeeded=False, body={"text": str(e)})
+            return RunResult(succeeded=False, body=[{"text": str(e)}])

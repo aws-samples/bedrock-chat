@@ -37,7 +37,7 @@ class InternetSearchInput(BaseModel):
 
 def internet_search(
     tool_input: InternetSearchInput, bot: BotModel | None, model: type_model_name | None
-) -> str:
+) -> list:
     query = tool_input.query
     time_limit = tool_input.time_limit
     country = tool_input.country
@@ -56,7 +56,7 @@ def internet_search(
             max_results=MAX_RESULTS,
             backend=BACKEND,
         )
-    return json.dumps(res)
+    return res
 
 
 internet_search_tool = AgentTool(
