@@ -77,7 +77,7 @@ export const EDGE_FIXED_CHUNK_PARAMS = {
   },
   overlapPercentage: {
     MAX: 99,
-    MIN: 0,
+    MIN: 1,
     STEP: 1,
   },
 };

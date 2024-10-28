@@ -45,7 +45,7 @@ export const getChunkingStrategy = (
     case "default":
       return ChunkingStrategy.DEFAULT;
     case "fixed_size":
-      if (options?.maxTokens && options?.overlapPercentage) {
+      if (options?.maxTokens !== undefined && options?.overlapPercentage !== undefined) {
         return ChunkingStrategy.fixedSize({
           maxTokens: options.maxTokens,
           overlapPercentage: options.overlapPercentage
@@ -53,7 +53,7 @@ export const getChunkingStrategy = (
       }
       return ChunkingStrategy.FIXED_SIZE;
     case "hierarchical":
-      if (options?.overlapTokens && options?.maxParentTokenSize && options?.maxChildTokenSize) {
+      if (options?.overlapTokens !== undefined && options?.maxParentTokenSize !== undefined && options?.maxChildTokenSize !== undefined) {
         return ChunkingStrategy.hierarchical({
           overlapTokens: options.overlapTokens,
           maxParentTokenSize: options.maxParentTokenSize,
@@ -62,7 +62,7 @@ export const getChunkingStrategy = (
       }
       return embeddingsModel === 'titan_v2' ? ChunkingStrategy.HIERARCHICAL_TITAN : ChunkingStrategy.HIERARCHICAL_COHERE;
     case "semantic":
-      if (options?.maxTokens && options?.bufferSize && options?.breakpointPercentileThreshold) {
+      if (options?.maxTokens !== undefined && options?.bufferSize !== undefined && options?.breakpointPercentileThreshold !== undefined) {
         return ChunkingStrategy.semantic({
           maxTokens: options.maxTokens,
           bufferSize: options.bufferSize,

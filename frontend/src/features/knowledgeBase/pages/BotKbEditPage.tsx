@@ -865,12 +865,20 @@ const BotKbEditPage: React.FC = () => {
       bedrockKnowledgeBase: {
         knowledgeBaseId,
         embeddingsModel,
-        chunkingConfiguration:
-          chunkingStrategy == 'default' ? { chunkingStrategy: 'default' } :
-            chunkingStrategy == 'fixed_size' ? fixedSizeParams :
-              chunkingStrategy == 'hierarchical' ? hierarchicalParams :
-                chunkingStrategy == 'semantic' ? semanticParams :
-                  { chunkingStrategy: 'none' },
+        chunkingConfiguration: (() => {
+          switch (chunkingStrategy) {
+            case 'default':
+              return { chunkingStrategy: 'default' };
+            case 'fixed_size':
+              return fixedSizeParams;
+            case 'hierarchical':
+              return hierarchicalParams;
+            case 'semantic':
+              return semanticParams;
+            default:
+              return { chunkingStrategy: 'none' };
+          }
+        })(),
         openSearch: openSearchParams,
         searchParams: searchParams,
       },
@@ -972,12 +980,20 @@ const BotKbEditPage: React.FC = () => {
         bedrockKnowledgeBase: {
           knowledgeBaseId,
           embeddingsModel,
-          chunkingConfiguration:
-            chunkingStrategy == 'default' ? { chunkingStrategy: 'default' } :
-              chunkingStrategy == 'fixed_size' ? fixedSizeParams :
-                chunkingStrategy == 'hierarchical' ? hierarchicalParams :
-                  chunkingStrategy == 'semantic' ? semanticParams :
-                    { chunkingStrategy: 'none' },
+          chunkingConfiguration: (() => {
+            switch (chunkingStrategy) {
+              case 'default':
+                return { chunkingStrategy: 'default' };
+              case 'fixed_size':
+                return fixedSizeParams;
+              case 'hierarchical':
+                return hierarchicalParams;
+              case 'semantic':
+                return semanticParams;
+              default:
+                return { chunkingStrategy: 'none' };
+            }
+          })(),
           openSearch: openSearchParams,
           searchParams: searchParams,
         },
