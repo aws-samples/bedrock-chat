@@ -31,7 +31,7 @@ from mypy_boto3_bedrock_runtime.type_defs import (
 
 class OnStopInput(TypedDict):
     thinking_conversation: list[AgentMessageModel]
-    last_response: ConverseResponseTypeDef
+    full_token: str
     stop_reason: str
     input_token_count: int
     output_token_count: int
@@ -46,7 +46,6 @@ class AgentRunner:
         model: type_model_name,
         on_thinking: Optional[Callable[[list[AgentMessageModel]], None]] = None,
         on_tool_result: Optional[Callable[[ConverseApiToolResult], None]] = None,
-        on_stop: Optional[Callable[[OnStopInput], None]] = None,
     ):
         self.bot = bot
         self.tools = {tool.name: tool for tool in tools}
@@ -55,7 +54,6 @@ class AgentRunner:
         self.model_id = get_model_id(model)
         self.on_thinking = on_thinking
         self.on_tool_result = on_tool_result
-        self.on_stop = on_stop
         self.total_input_tokens = 0
         self.total_output_tokens = 0
 
@@ -119,7 +117,11 @@ class AgentRunner:
 
         stop_input = OnStopInput(
             thinking_conversation=conv,
-            last_response=response,
+            full_token=response["output"]["message"]["content"][0]["text"] \
+                if "message" in response["output"] \
+                    and len(response["output"]["message"]["content"]) > 0 \
+                    and "text" in response["output"]["message"]["content"][0] \
+                else "",
             stop_reason=response["stopReason"],
             input_token_count=self.total_input_tokens,
             output_token_count=self.total_output_tokens,
@@ -127,10 +129,6 @@ class AgentRunner:
                 self.model, self.total_input_tokens, self.total_output_tokens
             ),
         )
-
-        if self.on_stop:
-            self.on_stop(stop_input)
-
         return stop_input
 
     def _call_converse_api(

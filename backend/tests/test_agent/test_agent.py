@@ -109,7 +109,6 @@ class TestAgentRunner(unittest.TestCase):
             model=model,
             on_thinking=on_thinking,
             on_tool_result=on_tool_result,
-            on_stop=on_stop,
         )
         self.model: type_model_name = model
 
@@ -131,6 +130,8 @@ class TestAgentRunner(unittest.TestCase):
             thinking_log=None,
         )
         res = self.runner.run(messages=[message])
+        on_stop(res)
+
         print("====================================")
         pprint(res)
 

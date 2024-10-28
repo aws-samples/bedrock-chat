@@ -19,6 +19,7 @@ from app.routes.schemas.conversation import (
 )
 from app.usecases.chat import (
     chat,
+    chat_output_from_message,
     fetch_conversation,
     fetch_related_documents,
     propose_conversation_title,
@@ -40,7 +41,8 @@ def post_message(request: Request, chat_input: ChatInput):
     """Send chat message"""
     current_user: User = request.state.current_user
 
-    output = chat(user_id=current_user.id, chat_input=chat_input)
+    conversation, message = chat(user_id=current_user.id, chat_input=chat_input)
+    output = chat_output_from_message(conversation=conversation, message=message)
     return output
 
 

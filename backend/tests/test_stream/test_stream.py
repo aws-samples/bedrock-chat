@@ -38,7 +38,7 @@ class TestConverseApiStreamHandler(unittest.TestCase):
 
     def setUp(self) -> None:
         self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
-        self.stream_handler.bind(on_stream=on_stream, on_stop=on_stop)
+        self.stream_handler.bind(on_stream=on_stream)
 
     def _run(self, message, instruction=None, generation_params=None, guardrail=None):
         args = compose_args_for_converse_api(
@@ -50,10 +50,10 @@ class TestConverseApiStreamHandler(unittest.TestCase):
             grounding_source=None,
             guardrail=guardrail,
         )
-        for _ in self.stream_handler.run(
+        result = self.stream_handler.run(
             args=args,
-        ):
-            pass
+        )
+        on_stop(result)
 
     def test_run(self):
         message = MessageModel(
@@ -184,7 +184,7 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
 
     def setUp(self) -> None:
         self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
-        self.stream_handler.bind(on_stream=on_stream, on_stop=on_stop)
+        self.stream_handler.bind(on_stream=on_stream)
 
         # Note that the region must be the same as the one used in the bedrock client
         # https://github.com/aws/aws-sdk-js-v3/issues/6482
@@ -225,10 +225,10 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
             grounding_source=None,
             guardrail=guardrail,
         )
-        for _ in self.stream_handler.run(
+        result = self.stream_handler.run(
             args=args,
-        ):
-            pass
+        )
+        on_stop(result)
 
     def test_run_with_guardrail(self):
         message = MessageModel(

@@ -1,4 +1,3 @@
-import base64
 import sys
 
 from ulid import ULID
@@ -8,7 +7,6 @@ import unittest
 from pprint import pprint
 
 import boto3
-from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,
@@ -29,7 +27,6 @@ from app.repositories.models.conversation import (
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import (
     ChatInput,
-    ChatOutput,
     TextContent,
     ImageContent,
     AttachmentContent,
@@ -38,6 +35,7 @@ from app.routes.schemas.conversation import (
 )
 from app.usecases.chat import (
     chat,
+    chat_output_from_message,
     fetch_conversation,
     insert_knowledge,
     propose_conversation_title,
@@ -192,7 +190,8 @@ class TestStartChat(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         self.output = output
 
         pprint(output.model_dump())
@@ -238,7 +237,8 @@ class TestStartChat(unittest.TestCase):
     #         bot_id=None,
     #         continue_generate=False,
     #     )
-    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+    #     conversation, message = chat(user_id="user1", chat_input=chat_input)
+    #     output = chat_output_from_message(conversation=conversation, message=message)
     #     self.output = output
 
     #     pprint(output.model_dump())
@@ -294,7 +294,8 @@ class TestAttachmentChat(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         pprint(output.model_dump())
         self.output = output
 
@@ -331,7 +332,8 @@ class TestMultimodalChat(unittest.TestCase):
         print(message.content[0].body)
         print(type(message.content[0].body))
 
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         # Check the output whether the explanation is about aws logo
         pprint(output.model_dump())
         self.output = output
@@ -406,7 +408,8 @@ class TestContinueChat(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
+        conversation, message = chat(user_id=self.user_id, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         self.output = output
 
         pprint(output.model_dump())
@@ -529,7 +532,8 @@ class TestRegenerateChat(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
+        conversation, message = chat(user_id=self.user_id, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         self.output = output
 
         pprint(output.model_dump())  # English
@@ -555,7 +559,8 @@ class TestRegenerateChat(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
+        conversation, message = chat(user_id=self.user_id, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         self.output = output
 
         pprint(output.model_dump())  # Chinese
@@ -586,13 +591,15 @@ class TestProposeTitle(unittest.TestCase):
             bot_id=None,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output)
         self.output = output
 
         # chat_input.conversation_id = "test_conversation_mistral_id"
         # chat_input.message.model = MISTRAL_MODEL
-        # mistral_output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        # conversation, message = chat(user_id="user1", chat_input=chat_input)
+        # mistral_output = chat_output_from_message(conversation=conversation, message=message)
         # self.mistral_output = mistral_output
         # print(mistral_output)
 
@@ -658,7 +665,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output)
 
         conv = find_conversation_by_id("user1", output.conversation_id)
@@ -684,7 +692,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output)
 
         # Edit first message
@@ -705,7 +714,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
 
         conv = find_conversation_by_id("user1", output.conversation_id)
         self.assertEqual(len(conv.message_map["system"].children), 1)
@@ -730,7 +740,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="public1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
 
         print(output)
 
@@ -752,7 +763,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output)
 
         # Delete alias
@@ -776,7 +788,8 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        conversation, message = chat(user_id="user1", chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
 
         conv = fetch_conversation("user1", output.conversation_id)
         # Assert that instruction is not included
@@ -826,7 +839,8 @@ class TestAgentChat(unittest.TestCase):
             bot_id=self.bot_id,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id=self.user_name, chat_input=chat_input)
+        conversation, message = chat(user_id=self.user_name, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output.message.content[0].body)
 
         conv = find_conversation_by_id(self.user_name, output.conversation_id)
@@ -918,7 +932,8 @@ class TestGuardrailChat(unittest.TestCase):
             bot_id=self.bot_id,
             continue_generate=False,
         )
-        output: ChatOutput = chat(user_id=self.user_name, chat_input=chat_input)
+        conversation, message = chat(user_id=self.user_name, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
         print(output.message.content[0].body)
 
         # Must be blocked

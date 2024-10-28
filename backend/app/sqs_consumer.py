@@ -2,17 +2,8 @@ import json
 
 from app.routes.schemas.conversation import (
     ChatInput,
-    ChatOutput,
-    Conversation,
-    MessageOutput,
 )
-from app.routes.schemas.published_api import (
-    ChatInputWithoutBotId,
-    ChatOutputWithoutBotId,
-)
-from app.usecases.chat import chat, fetch_conversation
-from app.user import User
-from fastapi import APIRouter, HTTPException, Request
+from app.usecases.chat import chat, chat_output_from_message
 
 
 def handler(event, context):
@@ -24,7 +15,8 @@ def handler(event, context):
         chat_input = ChatInput(**message_body)
         user_id = f"PUBLISHED_API#{chat_input.bot_id}"
 
-        chat_result = chat(user_id=user_id, chat_input=chat_input)
+        conversation, message = chat(user_id=user_id, chat_input=chat_input)
+        chat_result = chat_output_from_message(conversation=conversation, message=message)
         print(chat_result)
 
     return {"statusCode": 200, "body": json.dumps("Processing completed")}
