@@ -62,6 +62,7 @@ export const getChunkingStrategy = (
       }
       return embeddingsModel === 'titan_v2' ? ChunkingStrategy.HIERARCHICAL_TITAN : ChunkingStrategy.HIERARCHICAL_COHERE;
     case "semantic":
+      // Check that it is not explicitly undefined because bufferSize is set to 0, it will be created with the default value even if other parameters changed.
       if (options?.maxTokens !== undefined && options?.bufferSize !== undefined && options?.breakpointPercentileThreshold !== undefined) {
         return ChunkingStrategy.semantic({
           maxTokens: options.maxTokens,

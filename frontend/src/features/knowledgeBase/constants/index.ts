@@ -66,6 +66,8 @@ export const DEFAULT_FIXED_CHUNK_PARAMS: FixedSizeParams = {
   overlapPercentage: 20,
 };
 
+// Fixed size chunking valid range
+// Ref: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_FixedSizeChunkingConfiguration.html 
 export const EDGE_FIXED_CHUNK_PARAMS = {
   maxTokens: {
     MAX: {
@@ -89,6 +91,8 @@ export const DEFAULT_HIERARCHICAL_CHUNK_PARAMS: HierarchicalParams = {
   maxChildTokenSize: 300,
 };
 
+// Hierarchical chunking valid range
+// Ref: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_HierarchicalChunkingConfiguration.html
 export const EDGE_HIERARCHICAL_CHUNK_PARAMS = {
   overlapTokens: {
     MIN: 1,
@@ -119,6 +123,8 @@ export const DEFAULT_SEMANTIC_CHUNK_PARAMS: SemanticParams = {
   breakpointPercentileThreshold: 95,
 };
 
+// Semantic chunking valid range
+// Ref: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_SemanticChunkingConfiguration.html
 export const EDGE_SEMANTIC_CHUNK_PARAMS = {
   maxTokens: {
     MAX: {
