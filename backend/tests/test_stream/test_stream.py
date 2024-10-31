@@ -6,7 +6,6 @@ sys.path.append(".")
 import unittest
 
 import boto3
-from app.bedrock import compose_args_for_converse_api
 from app.repositories.models.conversation import (
     TextContentModel,
     ImageContentModel,
@@ -36,22 +35,16 @@ class TestConverseApiStreamHandler(unittest.TestCase):
     MODEL = "claude-v3-sonnet"
     # MODEL = "mistral-7b-instruct"
 
-    def setUp(self) -> None:
-        self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
-        self.stream_handler.bind(on_stream=on_stream)
-
     def _run(self, message, instruction=None, generation_params=None, guardrail=None):
-        args = compose_args_for_converse_api(
-            [message],
-            self.MODEL,
+        self.stream_handler = ConverseApiStreamHandler(
+            model=self.MODEL,
             instruction=instruction,
-            stream=True,
             generation_params=generation_params,
-            grounding_source=None,
             guardrail=guardrail,
+            on_stream=on_stream,
         )
         result = self.stream_handler.run(
-            args=args,
+            messages=[message],
         )
         on_stop(result)
 
@@ -183,9 +176,6 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
     # MODEL = "mistral-7b-instruct"
 
     def setUp(self) -> None:
-        self.stream_handler = ConverseApiStreamHandler.from_model(model=self.MODEL)  # type: ignore
-        self.stream_handler.bind(on_stream=on_stream)
-
         # Note that the region must be the same as the one used in the bedrock client
         # https://github.com/aws/aws-sdk-js-v3/issues/6482
         self.bedrock_client = boto3.client("bedrock", region_name="us-east-1")
@@ -216,17 +206,15 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
             print(f"Error deleting guardrail: {e}")
 
     def _run(self, message, instruction=None, generation_params=None, guardrail=None):
-        args = compose_args_for_converse_api(
-            [message],
-            self.MODEL,
+        self.stream_handler = ConverseApiStreamHandler(
+            model=self.MODEL,
             instruction=instruction,
-            stream=True,
             generation_params=generation_params,
-            grounding_source=None,
             guardrail=guardrail,
+            on_stream=on_stream,
         )
         result = self.stream_handler.run(
-            args=args,
+            messages=[message],
         )
         on_stop(result)
 

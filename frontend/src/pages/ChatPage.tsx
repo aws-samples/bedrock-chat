@@ -37,7 +37,6 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
-import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
 import { AgentState } from '../features/agent/xstates/agentThink';
 import { SyncStatus } from '../constants';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
@@ -519,43 +518,25 @@ const ChatPage: React.FC = () => {
           </div>
         )}
 
-        {bot?.hasAgent ? (
-          <TextInputChatContent
-            disabledSend={postingMessage || hasError}
-            disabledRegenerate={postingMessage || hasError}
-            disabled={disabledInput}
-            placeholder={
-              disabledInput
-                ? t('bot.label.notAvailableBotInputMessage')
-                : undefined
-            }
-            canRegenerate={messages.length > 1}
-            isLoading={postingMessage}
-            onSend={onSend}
-            onRegenerate={onRegenerate}
-            ref={focusInputRef}
-          />
-        ) : (
-          <InputChatContent
-            dndMode={dndMode}
-            disabledSend={postingMessage || hasError}
-            disabledRegenerate={postingMessage || hasError}
-            disabledContinue={postingMessage || hasError}
-            disabled={disabledInput}
-            placeholder={
-              disabledInput
-                ? t('bot.label.notAvailableBotInputMessage')
-                : undefined
-            }
-            canRegenerate={messages.length > 1}
-            canContinue={getShouldContinue()}
-            isLoading={postingMessage}
-            onSend={onSend}
-            onRegenerate={onRegenerate}
-            continueGenerate={onContinueGenerate}
-            ref={focusInputRef}
-          />
-        )}
+        <InputChatContent
+          dndMode={dndMode}
+          disabledSend={postingMessage || hasError}
+          disabledRegenerate={postingMessage || hasError}
+          disabledContinue={postingMessage || hasError}
+          disabled={disabledInput}
+          placeholder={
+            disabledInput
+              ? t('bot.label.notAvailableBotInputMessage')
+              : undefined
+          }
+          canRegenerate={messages.length > 1}
+          canContinue={getShouldContinue()}
+          isLoading={postingMessage}
+          onSend={onSend}
+          onRegenerate={onRegenerate}
+          continueGenerate={onContinueGenerate}
+          ref={focusInputRef}
+        />
       </div>
       <BottomHelper />
     </div>

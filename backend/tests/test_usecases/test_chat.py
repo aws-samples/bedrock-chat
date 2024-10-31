@@ -7,6 +7,8 @@ import unittest
 from pprint import pprint
 
 import boto3
+from app.agents.tools.internet_search import internet_search_tool
+from app.bedrock import ConverseApiToolResult
 from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,
@@ -24,6 +26,13 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
+from app.repositories.models.custom_bot import (
+    AgentModel,
+    AgentToolModel,
+    BotModel,
+    GenerationParamsModel,
+    KnowledgeModel,
+)
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import (
     ChatInput,
@@ -33,6 +42,7 @@ from app.routes.schemas.conversation import (
     MessageInput,
     type_model_name,
 )
+from app.stream import OnStopInput, OnThinking
 from app.usecases.chat import (
     chat,
     chat_output_from_message,
@@ -840,6 +850,127 @@ class TestAgentChat(unittest.TestCase):
             continue_generate=False,
         )
         conversation, message = chat(user_id=self.user_name, chat_input=chat_input)
+        output = chat_output_from_message(conversation=conversation, message=message)
+        print(output.message.content[0].body)
+
+        conv = find_conversation_by_id(self.user_name, output.conversation_id)
+        # Assert if thinking log is not empty
+        assistant_message = conv.message_map[conv.last_message_id]
+        self.assertIsNotNone(assistant_message.thinking_log)
+        print("Thinking log: ", assistant_message.thinking_log)
+
+
+def on_thinking(to_send: OnThinking):
+    print("====================================")
+    print("Thinking...")
+    print("====================================")
+    pprint(to_send)
+
+
+def on_tool_result(tool_result: ConverseApiToolResult):
+    print("====================================")
+    print("Tool Result...")
+    print("====================================")
+    to_send = {
+        "toolUseId": tool_result["toolUseId"],
+        "status": tool_result["status"],  # type: ignore
+        "content": tool_result["content"]["text"][:10],  # type: ignore
+    }
+    pprint(to_send["toolUseId"])
+    pprint(to_send["status"])
+
+
+def on_stop(on_stop_input: OnStopInput):
+    print("====================================")
+    print("Stop...")
+    print("====================================")
+    pprint(on_stop_input)
+
+
+class TestInternetSearchAgent(unittest.TestCase):
+    user_name = "dummy"
+    bot_id = "dummy"
+    model: type_model_name = "claude-v3-sonnet"
+
+    def setUp(self) -> None:
+        private_bot = BotModel(
+            id=self.bot_id,
+            title="Japanese Dishes",
+            description="Japanese Delicious Dishes",
+            instruction="",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            # Pinned
+            is_pinned=True,
+            public_bot_id=None,
+            owner_user_id=self.user_name,
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(
+                        name=internet_search_tool.name,
+                        description=internet_search_tool.description,
+                    )
+                ],
+            ),
+            knowledge=KnowledgeModel(
+                source_urls=[""],
+                sitemap_urls=[""],
+                filenames=[
+                    "Ramen.pdf",
+                    "Sushi.pdf",
+                    "Yakiniku.pdf",
+                ],
+                s3_urls=[],
+            ),
+            display_retrieved_chunks=True,
+            sync_status="RUNNING",
+            sync_status_reason="reason",
+            sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
+            published_api_codebuild_id=None,
+            conversation_quick_starters=[],
+            bedrock_knowledge_base=None,
+            bedrock_guardrails=None,
+        )
+        store_bot(self.user_name, private_bot)
+
+    def tearDown(self) -> None:
+        delete_bot_by_id(self.user_name, self.bot_id)
+        delete_conversation_by_user_id(self.user_name)
+
+    def test_internet_search_agent(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    TextContent(
+                        content_type="text",
+                        body="今日の東京の天気?あと宮崎の天気も。並列処理して",
+                    ),
+                ],
+                model=self.model,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=self.bot_id,
+            continue_generate=False,
+        )
+        conversation, message = chat(
+            user_id=self.user_name,
+            chat_input=chat_input,
+            on_thinking=on_thinking,
+            on_tool_result=on_tool_result,
+            on_stop=on_stop,
+        )
         output = chat_output_from_message(conversation=conversation, message=message)
         print(output.message.content[0].body)
 

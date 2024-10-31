@@ -80,7 +80,7 @@ class TestAgentTool(unittest.TestCase):
             arg3=1,
             arg4=["test"],
         )
-        result = self.tool.run(arg)
+        result = self.tool.run(tool_use_id="dummy", input=arg.model_dump())
         self.assertEqual(result["body"], "test")
         self.assertEqual(result["succeeded"], True)
 

@@ -1,10 +1,11 @@
 import logging
 import os
 
+from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-from app.repositories.models.conversation import ContentModel, MessageModel
+from app.repositories.models.conversation import AgentMessageModel, ContentModel
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -49,13 +50,13 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
 
 
 def compose_args_for_converse_api(
-    messages: list[MessageModel],
+    messages: list[AgentMessageModel],
     model: type_model_name,
     instruction: str | None = None,
-    stream: bool = False,
     generation_params: GenerationParamsModel | None = None,
-    grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
     guardrail: BedrockGuardrailsModel | None = None,
+    grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
+    tools: dict[str, AgentTool] | None = None,
 ) -> ConverseStreamRequestRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         if c.content_type == "text":
@@ -120,9 +121,18 @@ def compose_args_for_converse_api(
             "trace": "enabled",
         }
 
-        if stream:
-            # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
-            args["guardrailConfig"]["streamProcessingMode"] = "async"
+        # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
+        args["guardrailConfig"]["streamProcessingMode"] = "async"
+
+    if tools:
+        args["toolConfig"] = {
+            "tools": [
+                {
+                    "toolSpec": tool.to_converse_spec(),
+                }
+                for tool in tools.values()
+            ],
+        }
 
     return args
 

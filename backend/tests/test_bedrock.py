@@ -10,7 +10,7 @@ from pprint import pprint
 from unittest.mock import patch
 
 from app.bedrock import call_converse_api, compose_args_for_converse_api, get_model_id
-from app.repositories.models.conversation import TextContentModel, MessageModel
+from app.repositories.models.conversation import AgentMessageModel, TextContentModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 
@@ -50,7 +50,7 @@ class TestGetModelId(unittest.TestCase):
 
 class TestCallConverseApi(unittest.TestCase):
     def test_call_converse_api(self):
-        message = MessageModel(
+        message = AgentMessageModel(
             role="user",
             content=[
                 TextContentModel(
@@ -58,20 +58,10 @@ class TestCallConverseApi(unittest.TestCase):
                     body="Hello, World!",
                 )
             ],
-            model=MODEL,
-            children=[],
-            parent=None,
-            create_time=0,
-            feedback=None,
-            used_chunks=None,
-            thinking_log=None,
         )
         arg = compose_args_for_converse_api(
             [message],
             MODEL,
-            instruction=None,
-            stream=False,
-            generation_params=None,
         )
 
         response = call_converse_api(arg)
@@ -127,7 +117,7 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
             print(f"Error deleting guardrail: {e}")
 
     def test_call_converse_api_with_guardrails(self):
-        message = MessageModel(
+        message = AgentMessageModel(
             role="user",
             content=[
                 TextContentModel(
@@ -135,21 +125,10 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
                     body="Hello, World!",
                 )
             ],
-            model=MODEL,
-            children=[],
-            parent=None,
-            create_time=0,
-            feedback=None,
-            used_chunks=None,
-            thinking_log=None,
         )
         arg = compose_args_for_converse_api(
             [message],
             MODEL,
-            instruction=None,
-            stream=False,
-            generation_params=None,
-            grounding_source=None,
             guardrail=self.guardrail,
         )
 

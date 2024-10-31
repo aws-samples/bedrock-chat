@@ -3,7 +3,7 @@ from typing import Any, Callable, Generic, TypeVar, TypedDict
 from app.repositories.models.conversation import ToolResultModel
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel
+from pydantic import BaseModel, JsonValue
 from mypy_boto3_bedrock_runtime.type_defs import (
     ToolSpecificationTypeDef,
     ToolResultContentBlockOutputTypeDef,
@@ -13,6 +13,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class RunResult(TypedDict):
+    tool_use_id: str
     succeeded: bool
     body: list[ToolResultContentBlockOutputTypeDef]
 
@@ -54,31 +55,52 @@ class AgentTool(Generic[T]):
             },
         )
 
-    def run(self, arg: T) -> RunResult:
+    def run(self, tool_use_id: str, input: dict[str, JsonValue]) -> RunResult:
         try:
+            arg = self.args_schema.model_validate(input)
             res = self.function(arg, self.bot, self.model)
             if isinstance(res, str):
-                return RunResult(succeeded=True, body=[{"text": res}])
+                return RunResult(
+                    tool_use_id=tool_use_id,
+                    succeeded=True,
+                    body=[{"text": res}],
+                )
 
             elif isinstance(res, dict):
-                return RunResult(succeeded=True, body=[{"json": res}])
+                return RunResult(
+                    tool_use_id=tool_use_id,
+                    succeeded=True,
+                    body=[{"json": res}],
+                )
 
             elif isinstance(res, list):
-                return RunResult(succeeded=True, body=[
-                    {
-                        "text": result,
-                    }
-                    if isinstance(result, str) else
-                    {
-                        "json": result
-                    }
-                    if isinstance(result, dict) else
-                    result.to_content_for_converse()
-                    for result in res
-                ])
+                return RunResult(
+                    tool_use_id=tool_use_id,
+                    succeeded=True,
+                    body=[
+                        {
+                            "text": result,
+                        }
+                        if isinstance(result, str) else
+                        {
+                            "json": result
+                        }
+                        if isinstance(result, dict) else
+                        result.to_content_for_converse()
+                        for result in res
+                    ],
+                )
 
             else:
-                return RunResult(succeeded=True, body=[res.to_content_for_converse()])
+                return RunResult(
+                    tool_use_id=tool_use_id,
+                    succeeded=True,
+                    body=[res.to_content_for_converse()],
+                )
 
         except Exception as e:
-            return RunResult(succeeded=False, body=[{"text": str(e)}])
+            return RunResult(
+                tool_use_id=tool_use_id,
+                succeeded=False,
+                body=[{"text": str(e)}],
+            )

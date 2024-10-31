@@ -6,18 +6,13 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from app.agents.agent import AgentMessageModel
-from app.agents.agent import OnStopInput as AgentOnStopInput
 from app.auth import verify_token
 from app.bedrock import (
     ConverseApiToolResult,
 )
 from app.repositories.conversation import RecordNotFoundError
-from app.repositories.models.conversation import (
-    ToolUseContentModel,
-)
 from app.routes.schemas.conversation import ChatInput
-from app.stream import OnStopInput
+from app.stream import OnStopInput, OnThinking
 from app.usecases.chat import (
     chat,
 )
@@ -32,78 +27,64 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def on_stream(token: str, gatewayapi, connection_id: str) -> None:
+def on_stream(token: str, gatewayapi, connection_id: str):
     # Send completion
-    data_to_send = json.dumps(dict(status="STREAMING", completion=token)).encode(
-        "utf-8"
-    )
-    gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
-
-
-def on_fetching_knowledge(gatewayapi, connection_id: str) -> None:
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(
-            dict(
-                status="FETCHING_KNOWLEDGE",
-            )
-        ).encode("utf-8"),
+        Data=json.dumps(dict(
+            status="STREAMING",
+            completion=token,
+        )).encode("utf-8"),
     )
 
 
-def on_stop(
-    arg: OnStopInput,
-    gatewayapi,
-    connection_id: str,
-) -> None:
-    last_data_to_send = json.dumps(
-        dict(status="STREAMING_END", completion="", stop_reason=arg["stop_reason"])
-    ).encode("utf-8")
-    gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
-
-
-def on_agent_thinking(
-    agent_log: list[AgentMessageModel], gatewayapi, connection_id: str
-):
-    assert len(agent_log) > 0
-    assert agent_log[-1].role == "assistant"
-    to_send = dict()
-    for c in agent_log[-1].content:
-        assert type(c) == ToolUseContentModel
-        to_send[c.body.tool_use_id] = {
-            "name": c.body.name,
-            "input": c.body.input,
-        }
-
-    data_to_send = json.dumps(dict(status="AGENT_THINKING", log=to_send)).encode(
-        "utf-8"
+def on_fetching_knowledge(gatewayapi, connection_id: str):
+    gatewayapi.post_to_connection(
+        ConnectionId=connection_id,
+        Data=json.dumps(dict(
+            status="FETCHING_KNOWLEDGE",
+        )).encode("utf-8"),
     )
-    gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
 
-def on_agent_tool_result(
-    tool_result: ConverseApiToolResult, gatewayapi, connection_id: str
-):
-    to_send = {
-        "toolUseId": tool_result["toolUseId"],
-        "status": tool_result["status"],
-        "content": tool_result["content"],
-    }
-    data_to_send = json.dumps(dict(status="AGENT_TOOL_RESULT", result=to_send)).encode(
-        "utf-8"
+def on_stop(arg: OnStopInput, gatewayapi, connection_id: str):
+    gatewayapi.post_to_connection(
+        ConnectionId=connection_id,
+        Data=json.dumps(dict(
+            status="STREAMING_END",
+            completion="",
+            stop_reason=arg["stop_reason"],
+        )).encode("utf-8"),
     )
-    gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
 
-def on_agent_stop(
-    arg: AgentOnStopInput,
-    gatewayapi,
-    connection_id: str,
-):
-    last_data_to_send = json.dumps(
-        dict(status="STREAMING_END", completion="", stop_reason=arg["stop_reason"])
-    ).encode("utf-8")
-    gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
+def on_agent_thinking(log: OnThinking, gatewayapi, connection_id: str):
+    gatewayapi.post_to_connection(
+        ConnectionId=connection_id,
+        Data=json.dumps(dict(
+            status="AGENT_THINKING",
+            log={
+                log["tool_use_id"]: {
+                    "name": log["name"],
+                    "input": log["input"],
+                },
+            },
+        )).encode("utf-8"),
+    )
+
+
+def on_agent_tool_result(tool_result: ConverseApiToolResult, gatewayapi, connection_id: str):
+    gatewayapi.post_to_connection(
+        ConnectionId=connection_id,
+        Data=json.dumps(dict(
+            status="AGENT_TOOL_RESULT",
+            result={
+                "toolUseId": tool_result["toolUseId"],
+                "status": tool_result["status"],
+                "content": tool_result["content"],
+            },
+        )).encode("utf-8"),
+    )
 
 
 def process_chat_input(
@@ -126,11 +107,6 @@ def process_chat_input(
             on_thinking=lambda log: on_agent_thinking(log, gatewayapi, connection_id),
             on_tool_result=lambda result: on_agent_tool_result(
                 result, gatewayapi, connection_id
-            ),
-            on_stop_agent=lambda arg: on_agent_stop(
-                arg,
-                gatewayapi,
-                connection_id,
             ),
         )
 

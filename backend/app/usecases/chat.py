@@ -2,7 +2,6 @@ import logging
 from copy import deepcopy
 from typing import Literal, Callable
 
-from app.agents.agent import AgentRunner, OnStopInput as OnStopAgent
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import (
@@ -23,7 +22,9 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
     TextContentModel,
-    content_model_from_content,
+    ToolUseContentModel,
+    ToolResultContentModel,
+    ToolResultContentModelBody,
 )
 from app.repositories.models.custom_bot import (
     BotAliasModel,
@@ -42,9 +43,9 @@ from app.routes.schemas.conversation import (
     type_model_name,
     TextContent,
 )
-from app.stream import ConverseApiStreamHandler, OnStopInput
+from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_current_time, is_running_on_lambda
+from app.utils import get_current_time
 from app.vector_search import (
     SearchResult,
     filter_used_results,
@@ -176,43 +177,49 @@ def prepare_conversation(
         )
 
     # Append user chat input to the conversation
-    if chat_input.message.message_id:
-        message_id = chat_input.message.message_id
-    else:
-        message_id = str(ULID())
-    # If the "Generate continue" button is pressed, a new_message is not generated.
     if not chat_input.continue_generate:
-        new_message = MessageModel(
-            role=chat_input.message.role,
-            content=[
-                content_model_from_content(content=c)
-                for c in chat_input.message.content
-            ],
-            model=chat_input.message.model,
-            children=[],
-            parent=parent_id,
-            create_time=current_time,
-            feedback=None,
-            used_chunks=None,
-            thinking_log=None,
-        )
+        new_message = MessageModel.from_message_input(chat_input.message)
+        new_message.parent = parent_id
+        new_message.create_time = current_time
+
+        if chat_input.message.message_id:
+            message_id = chat_input.message.message_id
+        else:
+            message_id = str(ULID())
+
         conversation.message_map[message_id] = new_message
         conversation.message_map[parent_id].children.append(message_id)  # type: ignore
+
+    # If the "Generate continue" button is pressed, a new_message is not generated.
+    else:
+        message_id = conversation.message_map[conversation.last_message_id].parent
+        assert(message_id is not None)
 
     return (message_id, conversation, bot)
 
 
 def trace_to_root(
     node_id: str | None, message_map: dict[str, MessageModel]
-) -> list[MessageModel]:
+) -> list[AgentMessageModel]:
     """Trace message map from leaf node to root node."""
-    result = []
+    result: list[AgentMessageModel] = []
     if not node_id or node_id == "system":
         node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
     while current_node:
-        result.append(current_node)
+        result.append(AgentMessageModel.from_message_model(message=current_node))
+        if current_node.thinking_log:
+            result.extend(
+                log
+                for log in reversed(current_node.thinking_log)
+                if any(
+                    isinstance(content, ToolUseContentModel)
+                        or isinstance(content, ToolResultContentModel)
+                    for content in log.content
+                )
+            )
+
         parent_id = current_node.parent
         if parent_id is None:
             break
@@ -247,77 +254,25 @@ def chat(
     on_stream: Callable[[str], None] | None = None,
     on_fetching_knowledge: Callable[[], None] | None = None,
     on_stop: Callable[[OnStopInput], None] | None = None,
-    on_thinking: Callable[[list[AgentMessageModel]], None] | None = None,
+    on_thinking: Callable[[OnThinking], None] | None = None,
     on_tool_result: Callable[[ConverseApiToolResult], None] | None = None,
-    on_stop_agent: Callable[[OnStopAgent], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
-    if bot and bot.is_agent_enabled():
-        logger.info("Bot has agent tools. Using agent for response.")
-        tools = [get_tool_by_name(t.name) for t in bot.agent.tools]
+    tools = {
+        t.name: get_tool_by_name(t.name)
+        for t in bot.agent.tools
+    } if bot and bot.is_agent_enabled() else {}
 
-        if bot.has_knowledge():
+    message_map = conversation.message_map
+    search_results: list[SearchResult] = []
+    if bot and bot.has_knowledge():
+        if bot.is_agent_enabled():
             # Add knowledge tool
             knowledge_tool = create_knowledge_tool(bot, chat_input.message.model)
-            tools.append(knowledge_tool)
+            tools[knowledge_tool.name] = knowledge_tool
 
-        runner = AgentRunner(
-            bot=bot,
-            tools=tools,
-            model=chat_input.message.model,
-            on_thinking=on_thinking,
-            on_tool_result=on_tool_result,
-        )
-        message_map = conversation.message_map
-        messages = trace_to_root(
-            node_id=conversation.message_map[user_msg_id].parent,
-            message_map=message_map,
-        )
-        messages.append(message_map[user_msg_id])
-        result = runner.run(messages)
-
-        # Append entire completion as the last message
-        # Issue id for new assistant message
-        assistant_msg_id = str(ULID())
-        message = MessageModel(
-            role="assistant",
-            content=[
-                TextContentModel(
-                    content_type="text",
-                    body=result["full_token"],
-                )
-            ],
-            model=chat_input.message.model,
-            children=[],
-            parent=user_msg_id,
-            create_time=get_current_time(),
-            feedback=None,
-            used_chunks=None,
-            thinking_log=result["thinking_conversation"],
-        )
-
-        conversation.message_map[assistant_msg_id] = message
-
-        # Append children to parent
-        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-        conversation.last_message_id = assistant_msg_id
-        conversation.total_price += result["price"]
-
-        # Agent does not support continued generation
-        # conversation.should_continue = arg["stop_reason"] == "max_tokens"
-
-        # Store updated conversation
-        store_conversation(user_id, conversation)
-
-        if on_stop_agent:
-            on_stop_agent(result)
-
-    else:
-        message_map = conversation.message_map
-        search_results = []
-        if bot and bot.has_knowledge() and is_running_on_lambda():
-            # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
+        else:
             if on_fetching_knowledge:
                 on_fetching_knowledge()
 
@@ -336,106 +291,176 @@ def chat(
                 )
                 message_map = conversation_with_context.message_map
 
-        # Leaf node id
-        # If `continue_generate` is True, note that new message is not added to the message map.
-        node_id = (
-            chat_input.message.parent_message_id
-            if chat_input.continue_generate
-            else conversation.message_map[user_msg_id].parent
+    # Leaf node id
+    # If `continue_generate` is True, note that new message is not added to the message map.
+    node_id = (
+        chat_input.message.parent_message_id
+        if chat_input.continue_generate
+        else message_map[user_msg_id].parent
+    )
+    if node_id is None:
+        raise ValueError("parent_message_id or parent is None")
+
+    messages = trace_to_root(
+        node_id=node_id,
+        message_map=message_map,
+    )
+
+    continue_generate = chat_input.continue_generate
+
+    if continue_generate:
+        message_for_continue_generate = AgentMessageModel.from_message_model(
+            message=message_map[conversation.last_message_id],
         )
-        if node_id is None:
-            raise ValueError("parent_message_id or parent is None")
 
-        messages = trace_to_root(
-            node_id=node_id,
-            message_map=message_map,
+    else:
+        messages.append(AgentMessageModel.from_message_model(
+            message=message_map[user_msg_id]),
         )
+        message_for_continue_generate = None
 
-        if not chat_input.continue_generate:
-            messages.append(MessageModel.from_message_input(chat_input.message))
+    instruction: str | None = (
+        message_map["instruction"].content[0].body
+        if "instruction" in message_map
+        else None  # type: ignore[union-attr]
+    )
 
-        # Guardrails
-        guardrail = bot.bedrock_guardrails if bot else None
-        grounding_source = None
-        if guardrail and guardrail.is_guardrail_enabled:
-            grounding_source = to_guardrails_grounding_source(search_results)
+    generation_params = bot.generation_params if bot else None
 
-        # Create payload to invoke Bedrock
-        args = compose_args_for_converse_api(
+    # Guardrails
+    guardrail = bot.bedrock_guardrails if bot else None
+    grounding_source = None
+    if guardrail and guardrail.is_guardrail_enabled:
+        grounding_source = to_guardrails_grounding_source(search_results)
+
+    stream_handler = ConverseApiStreamHandler(
+        model=chat_input.message.model,
+        instruction=instruction,
+        generation_params=generation_params,
+        guardrail=guardrail,
+        grounding_source=grounding_source,
+        tools=tools,
+        on_stream=on_stream,
+        on_thinking=on_thinking,
+    )
+
+    thinking_log: list[AgentMessageModel] = []
+    while True:
+        result = stream_handler.run(
             messages=messages,
-            model=chat_input.message.model,
-            instruction=(
-                message_map["instruction"].content[0].body
-                if "instruction" in message_map
-                else None  # type: ignore[union-attr]
-            ),
-            generation_params=(bot.generation_params if bot else None),
-            grounding_source=grounding_source,
-            guardrail=guardrail,
+            message_for_continue_generate=message_for_continue_generate,
         )
-        stream_handler = ConverseApiStreamHandler(
-            model=chat_input.message.model,
-            on_stream=on_stream,
-        )
-        result = stream_handler.run(args)
 
-        if chat_input.continue_generate:
-            # For continue generate
-            message = conversation.message_map[conversation.last_message_id]
-            content = message.content[0]
-            if isinstance(content, TextContentModel):
-                content.body += result["full_token"]
-        else:
-            used_chunks = None
-            # Used chunks for RAG generation
-            if bot and bot.display_retrieved_chunks and is_running_on_lambda():
-                if len(search_results) > 0:
-                    used_chunks = []
-                    for r in filter_used_results(result["full_token"], search_results):
-                        content_type, source_link = get_source_link(r.source)
-                        used_chunks.append(
-                            ChunkModel(
-                                content=r.content,
-                                content_type=content_type,
-                                source=source_link,
-                                rank=r.rank,
-                            )
+        message = result["message"]
+        stop_reason = result["stop_reason"]
+
+        # Used chunks for RAG generation
+        used_chunks: list[ChunkModel] | None = None
+        if bot and bot.display_retrieved_chunks:
+            if not bot.is_agent_enabled() and len(search_results) > 0:
+                reply_txt = message.content[0].body \
+                    if len(message.content) > 0 \
+                        and isinstance(message.content[0], TextContentModel) \
+                    else ""
+
+                used_chunks = []
+                for r in filter_used_results(reply_txt, search_results):
+                    content_type, source_link = get_source_link(r.source)
+                    used_chunks.append(
+                        ChunkModel(
+                            content=r.content,
+                            content_type=content_type,
+                            source=source_link,
+                            rank=r.rank,
                         )
+                    )
 
-            # Append entire completion as the last message
+        message.used_chunks = used_chunks
+
+        conversation.total_price += result["price"]
+        conversation.should_continue = stop_reason == "max_tokens"
+
+        if stop_reason != "tool_use":
+            message.parent = user_msg_id
+
+            if len(thinking_log) > 0:
+                message.thinking_log = thinking_log
+
+            if chat_input.continue_generate:
+                # For continue generate
+                if len(thinking_log) == 0:
+                    assistant_msg_id = conversation.last_message_id
+                    conversation.message_map[assistant_msg_id] = message
+                    break
+
+                else:
+                    old_assistant_msg_id = conversation.last_message_id
+                    conversation.message_map[user_msg_id].children.remove(old_assistant_msg_id)
+                    del conversation.message_map[old_assistant_msg_id]
+
             # Issue id for new assistant message
             assistant_msg_id = str(ULID())
-            message = MessageModel(
-                role="assistant",
-                content=[
-                    TextContentModel(
-                        content_type="text",
-                        body=result["full_token"],
-                    )
-                ],
-                model=chat_input.message.model,
-                children=[],
-                parent=user_msg_id,
-                create_time=get_current_time(),
-                feedback=None,
-                used_chunks=used_chunks,
-                thinking_log=None,
-            )
-
             conversation.message_map[assistant_msg_id] = message
 
             # Append children to parent
             conversation.message_map[user_msg_id].children.append(assistant_msg_id)
             conversation.last_message_id = assistant_msg_id
+            break
 
-        conversation.total_price += result["price"]
+        tool_use_message = AgentMessageModel.from_message_model(message=message)
+        if continue_generate:
+            messages[-1] = tool_use_message
 
-        conversation.should_continue = result["stop_reason"] == "max_tokens"
-        # Store conversation before finish streaming so that front-end can avoid 404 issue
-        store_conversation(user_id, conversation)
+            continue_generate = False
+            message_for_continue_generate = None
 
-        if on_stop:
-            on_stop(result)
+        else:
+            messages.append(tool_use_message)
+
+        thinking_log.append(tool_use_message)
+
+        tool_use_contents = [
+            content
+            for content in tool_use_message.content
+            if isinstance(content, ToolUseContentModel)
+        ]
+
+        tool_results: list[ConverseApiToolResult] = []
+        for content in tool_use_contents:
+            tool = tools[content.body.name]
+            run_result = tool.run(
+                tool_use_id=content.body.tool_use_id,
+                input=content.body.input,
+            )
+
+            tool_result = ConverseApiToolResult(
+                toolUseId=run_result["tool_use_id"],
+                content=run_result["body"],
+                status="success" if run_result["succeeded"] else "error",
+            )
+            tool_results.append(tool_result)
+
+            if on_tool_result:
+                on_tool_result(tool_result)
+
+        tool_result_message = AgentMessageModel(
+            role="user",
+            content=[
+                ToolResultContentModel(
+                    content_type="toolResult",
+                    body=ToolResultContentModelBody.from_tool_result(result),
+                )
+                for result in tool_results
+            ],
+        )
+        messages.append(tool_result_message)
+        thinking_log.append(tool_result_message)
+
+    # Store conversation before finish streaming so that front-end can avoid 404 issue
+    store_conversation(user_id, conversation)
+
+    if on_stop:
+        on_stop(result)
 
     # Update bot last used time
     if chat_input.bot_id:
@@ -505,7 +530,7 @@ def propose_conversation_title(
     )
 
     # Append message to generate title
-    new_message = MessageModel(
+    new_message = AgentMessageModel(
         role="user",
         content=[
             TextContentModel(
@@ -513,19 +538,20 @@ def propose_conversation_title(
                 body=PROMPT,
             )
         ],
-        model=model,
-        children=[],
-        parent=conversation.last_message_id,
-        create_time=get_current_time(),
-        feedback=None,
-        used_chunks=None,
-        thinking_log=None,
     )
     messages.append(new_message)
 
     # Invoke Bedrock
     args = compose_args_for_converse_api(
-        messages=messages,
+        messages=[
+            message
+            for message in messages
+            if not any(
+                isinstance(content, ToolUseContentModel)
+                    or isinstance(content, ToolResultContentModel)
+                for content in message.content
+            )
+        ],
         model=model,
     )
     response = call_converse_api(args)
