@@ -28,7 +28,8 @@ def on_stop(x: OnStopInput) -> None:
 
 
 class TestConverseApiStreamHandler(unittest.TestCase):
-    MODEL = "claude-v3-sonnet"
+    # MODEL = "claude-v3-sonnet"
+    MODEL = "claude-v3.5-haiku"
     # MODEL = "mistral-7b-instruct"
 
     def setUp(self) -> None:

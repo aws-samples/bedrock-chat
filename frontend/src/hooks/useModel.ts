@@ -46,6 +46,12 @@ const useModel = () => {
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
+            modelId: 'claude-v3.5-haiku',
+            label: t('model.haiku3-5.label'),
+            description: t('model.haiku3-5.description'),
+            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+          },
+          {
             modelId: 'claude-v3-sonnet',
             label: t('model.sonnet3.label'),
             description: t('model.sonnet3.description'),

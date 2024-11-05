@@ -21,7 +21,8 @@ const translation = {
     model: {
       haiku3: {
         label: 'Claude 3 (Haiku)',
-        description: '最速かつ最もコンパクトなモデルで、ほぼ瞬時の応答性を実現',
+        description:
+          '旧バージョンで、スピードとコンパクトさを最適化しており、ほぼ瞬時の応答を提供',
       },
       sonnet3: {
         label: 'Claude 3 (Sonnet)',
@@ -29,12 +30,17 @@ const translation = {
       },
       'sonnet3-5': {
         label: 'Claude 3.5 (Sonnet) v1',
-        description: '最も賢いモデル',
+        description:
+          'Claude 3.5の初期バージョン。幅広いタスクに対応しますが、v2の方が精度が向上',
       },
       'sonnet3-5-v2': {
         label: 'Claude 3.5 (Sonnet) v2',
         description:
-          'Claude 3.5 (Sonnet) v1 をアップグレードしたモデルであり、同じコストで前モデルの長所を強化',
+          'Claude 3.5の最新バージョン。v1をさらに強化し、より高い精度とパフォーマンスを提供',
+      },
+      'haiku3-5': {
+        label: 'Claude 3.5 (Haiku)',
+        description: 'Haiku最新バージョン。精度を保ち、高速な応答を実現',
       },
       opus3: {
         label: 'Claude 3 (Opus)',
@@ -598,15 +604,15 @@ const translation = {
         label: 'チャンク間のオーバーラップの割合',
         hint: 'チャンク間でオーバーラップするトークンのおおよその割合を設定します。',
       },
-      overlapTokens:{
+      overlapTokens: {
         label: 'チャンク間のオーバラップトークン数',
         hint: '同じレイヤー内のチャンク間でオーバラップするトークンの数',
       },
-      maxParentTokenSize:{
+      maxParentTokenSize: {
         label: '親トークンの最大サイズ',
         hint: 'チャンクが親レイヤーに含めることができるトークンの最大数',
       },
-      maxChildTokenSize:{
+      maxChildTokenSize: {
         label: '子トークンの最大サイズ',
         hint: 'チャンクが子レイヤーに含めることができるトークンの最大数',
       },
@@ -614,7 +620,7 @@ const translation = {
         label: 'バッファサイズ',
         hint: '埋め込み作成に追加される周囲の文の数を定義します。バッファサイズが 1 の場合、3つの文 (現在、前、次の文) が結合されて埋め込まれます。',
       },
-      breakpointPercentileThreshold:{
+      breakpointPercentileThreshold: {
         label: 'ブレークポイントパーセンタイルしきい値',
         hint: '文間にブレークポイントを描画するための文の距離/類似性のパーセンタイルしきい値を設定します。',
       },
@@ -674,7 +680,8 @@ const translation = {
           'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
       },
       parentTokenRange: {
-        message: '親トークンのサイズは子トークンのサイズより大きくする必要があります',
+        message:
+          '親トークンのサイズは子トークンのサイズより大きくする必要があります',
       },
       quickStarter: {
         message: 'タイトルと入力例は、どちらも入力してください。',

@@ -308,6 +308,7 @@ def get_model_id(
         "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
         "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
         "claude-v3.5-sonnet-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "claude-v3.5-haiku": "anthropic.claude-3-5-haiku-20241022-v1:0",
         "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
         "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
         "mistral-large": "mistral.mistral-large-2402-v1:0",
@@ -320,6 +321,7 @@ def get_model_id(
         "claude-v3-opus",
         "claude-v3.5-sonnet",
         "claude-v3.5-sonnet-v2",
+        "claude-v3.5-haiku",
     }
 
     supported_region_prefixes = {

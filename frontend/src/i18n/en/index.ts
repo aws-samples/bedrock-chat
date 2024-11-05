@@ -19,7 +19,7 @@ const translation = {
       haiku3: {
         label: 'Claude 3 (Haiku)',
         description:
-          'Fastest and most compact model for near-instant responsiveness.',
+          'Previous version optimized for speed and compactness, providing near-instant responsiveness.',
       },
       sonnet3: {
         label: 'Claude 3 (Sonnet)',
@@ -27,12 +27,18 @@ const translation = {
       },
       'sonnet3-5': {
         label: 'Claude 3.5 (Sonnet) v1',
-        description: 'Most intelligent model.',
+        description:
+          'An earlier version of Claude 3.5. Supports a wide range of tasks, but v2 offers improved accuracy.',
       },
       'sonnet3-5-v2': {
         label: 'Claude 3.5 (Sonnet) v2',
         description:
-          "Upgraded Claude 3.5 (Sonnet) v1. This model builds on its predecessor's strengths at the same cost.",
+          'The latest version of Claude 3.5. An enhanced model that builds on v1 with higher accuracy and performance.',
+      },
+      'haiku3-5': {
+        label: 'Claude 3.5 (Haiku)',
+        description:
+          'The latest version, offering even faster responsiveness and improved capabilities over Haiku 3.',
       },
       opus3: {
         label: 'Claude 3 (Opus)',
@@ -601,15 +607,15 @@ How would you categorize this email?`,
         label: 'Overlap Percentage between Chunks',
         hint: 'Parent chunk overlap depends on the child token size and child percentage overlap you specify.',
       },
-      overlapTokens:{
+      overlapTokens: {
         label: 'Overlap Tokens',
         hint: 'The number of tokens to repeat across chunks in the same layer',
       },
-      maxParentTokenSize:{
+      maxParentTokenSize: {
         label: 'Max Parent Token Size',
         hint: 'The maximum number of tokens that a chunk can contain in Parent layer',
       },
-      maxChildTokenSize:{
+      maxChildTokenSize: {
         label: 'Max Child Token Size',
         hint: 'The maximum number of tokens that a chunk can contain in Child layer',
       },
@@ -617,7 +623,7 @@ How would you categorize this email?`,
         label: 'Buffer Size',
         hint: 'the number of surrounding sentences to be added for embeddings creation. A buffer size of 1 results in 3 sentences (current, previous and next sentence) to be combined and embedded',
       },
-      breakpointPercentileThreshold:{
+      breakpointPercentileThreshold: {
         label: 'Breakpoint percentile threshold',
         hint: 'The percentile threshold of sentence distance/dissimilarity to draw breakpoints between sentences.',
       },
