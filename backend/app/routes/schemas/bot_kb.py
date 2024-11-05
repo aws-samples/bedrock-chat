@@ -95,6 +95,7 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
         | HierarchicalParams
         | SemanticParams
         | NoneParams
+        | None
     )
     search_params: SearchParams
     knowledge_base_id: str | None = None

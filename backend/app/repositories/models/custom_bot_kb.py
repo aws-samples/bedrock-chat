@@ -61,6 +61,7 @@ class BedrockKnowledgeBaseModel(BaseModel):
         | HierarchicalParamsModel
         | SemanticParamsModel
         | NoneParamsModel
+        | None
     )
     search_params: SearchParamsModel
     knowledge_base_id: str | None = None
