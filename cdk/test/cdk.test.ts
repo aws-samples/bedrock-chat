@@ -54,6 +54,7 @@ describe("Bedrock Chat Stack Test", () => {
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
         useStandbyReplicas: false,
+        enableBedrockCrossRegionInference: false,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -123,6 +124,7 @@ describe("Bedrock Chat Stack Test", () => {
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
         useStandbyReplicas: false,
+        enableBedrockCrossRegionInference: false,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -182,6 +184,7 @@ describe("Bedrock Chat Stack Test", () => {
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
       useStandbyReplicas: false,
+      enableBedrockCrossRegionInference: false,
     });
     const template = Template.fromStack(stack);
 
