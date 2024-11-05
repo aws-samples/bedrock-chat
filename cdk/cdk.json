@@ -68,6 +68,7 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "enableRagReplicas": true
+    "enableRagReplicas": true,
+    "enableBedrockCrossRegionInference": true
   }
 }

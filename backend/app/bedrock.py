@@ -16,13 +16,17 @@ from app.utils import convert_dict_keys_to_camel_case, get_bedrock_runtime_clien
 from typing_extensions import NotRequired, TypedDict, no_type_check
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "false") == "true"
 DEFAULT_GENERATION_CONFIG = (
     DEFAULT_MISTRAL_GENERATION_CONFIG
     if ENABLE_MISTRAL
     else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
+ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
+    os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false") == "true"
 )
 
 client = get_bedrock_runtime_client()
@@ -108,9 +112,7 @@ def compose_args(
     stream: bool = False,
     generation_params: GenerationParamsModel | None = None,
 ) -> dict:
-    logger.warn(
-        "compose_args is deprecated. Use compose_args_for_converse_api instead."
-    )
+    logger.warn("compose_args is deprecated. Use compose_args_for_converse_api instead.")
     return dict(
         compose_args_for_converse_api(
             messages, model, instruction, stream, generation_params
@@ -159,11 +161,7 @@ def compose_args_for_converse_api(
             if role == "user" and guardrail and guardrail.grounding_threshold > 0:
                 return [
                     {"guardContent": grounding_source},
-                    {
-                        "guardContent": {
-                            "text": {"text": c.body, "qualifiers": ["query"]}
-                        }
-                    },
+                    {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
                 ]
             elif role == "assistant":
                 return [{"text": c.body if isinstance(c.body, str) else None}]
@@ -290,25 +288,59 @@ def calculate_price(
     return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
 
 
-def get_model_id(model: type_model_name) -> str:
+def get_model_id(
+    model: type_model_name,
+    enable_cross_region: bool = ENABLE_BEDROCK_CROSS_REGION_INFERENCE,
+    bedrock_region: str = BEDROCK_REGION,
+) -> str:
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
-    if model == "claude-v2":
-        return "anthropic.claude-v2:1"
-    elif model == "claude-instant-v1":
-        return "anthropic.claude-instant-v1"
-    elif model == "claude-v3-sonnet":
-        return "anthropic.claude-3-sonnet-20240229-v1:0"
-    elif model == "claude-v3-haiku":
-        return "anthropic.claude-3-haiku-20240307-v1:0"
-    elif model == "claude-v3-opus":
-        return "anthropic.claude-3-opus-20240229-v1:0"
-    elif model == "claude-v3.5-sonnet":
-        return "anthropic.claude-3-5-sonnet-20240620-v1:0"
-    elif model == "claude-v3.5-sonnet-v2":
-        return "anthropic.claude-3-5-sonnet-20241022-v2:0"
-    elif model == "mistral-7b-instruct":
-        return "mistral.mistral-7b-instruct-v0:2"
-    elif model == "mixtral-8x7b-instruct":
-        return "mistral.mixtral-8x7b-instruct-v0:1"
-    elif model == "mistral-large":
-        return "mistral.mistral-large-2402-v1:0"
+    base_model_ids = {
+        "claude-v2": "anthropic.claude-v2:1",
+        "claude-instant-v1": "anthropic.claude-instant-v1",
+        "claude-v3-sonnet": "anthropic.claude-3-sonnet-20240229-v1:0",
+        "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
+        "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
+        "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        "claude-v3.5-sonnet-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
+        "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
+        "mistral-large": "mistral.mistral-large-2402-v1:0",
+    }
+
+    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html
+    cross_region_inference_models = {
+        "claude-v3-sonnet",
+        "claude-v3-haiku",
+        "claude-v3-opus",
+        "claude-v3.5-sonnet",
+        "claude-v3.5-sonnet-v2",
+    }
+
+    supported_region_prefixes = {
+        "us-east-1": "us",
+        "us-west-2": "us",
+        "eu-west-1": "eu",
+        "eu-central-1": "eu",
+        "eu-west-3": "eu",
+    }
+
+    base_model_id = base_model_ids.get(model)
+    if not base_model_id:
+        raise ValueError(f"Unsupported model: {model}")
+
+    model_id = base_model_id
+    if enable_cross_region and model in cross_region_inference_models:
+        region_prefix = supported_region_prefixes.get(bedrock_region)
+        if region_prefix:
+            model_id = f"{region_prefix}.{base_model_id}"
+            logger.info(
+                f"Using cross-region model ID: {model_id} for model '{model}' in region '{BEDROCK_REGION}'"
+            )
+        else:
+            logger.warning(
+                f"Region '{bedrock_region}' does not support cross-region inference for model '{model}'."
+            )
+    else:
+        logger.info(f"Using local model ID: {model_id} for model '{model}'")
+
+    return model_id
