@@ -564,6 +564,7 @@ def propose_conversation_title(
             )
         ],
         model=model,
+        stream=False,
     )
     response = call_converse_api(args)
     reply_txt = (

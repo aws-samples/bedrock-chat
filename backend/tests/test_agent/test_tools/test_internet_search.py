@@ -14,7 +14,7 @@ class TestInternetSearchTool(unittest.TestCase):
         country = "jp-jp"
         arg = InternetSearchInput(query=query, time_limit=time_limit, country=country)
         response = internet_search_tool.run(tool_use_id="dummy", input=arg.model_dump())
-        self.assertIsInstance(response["body"], str)
+        self.assertIsInstance(response["body"], list)
         self.assertTrue(response["succeeded"])
         print(response)
 

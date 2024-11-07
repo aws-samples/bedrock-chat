@@ -57,7 +57,7 @@ class TestKnowledgeTool(unittest.TestCase):
         arg = KnowledgeToolInput(query="What are delicious Japanese dishes?")
         tool = create_knowledge_tool(bot, model="claude-v3-sonnet")
         response = tool.run(tool_use_id="dummy", input=arg.model_dump())
-        self.assertIsInstance(response["body"], str)
+        self.assertIsInstance(response["body"], list)
         self.assertTrue(response["succeeded"])
         print(response)
 

@@ -62,6 +62,7 @@ class TestCallConverseApi(unittest.TestCase):
         arg = compose_args_for_converse_api(
             [message],
             MODEL,
+            stream=False,
         )
 
         response = call_converse_api(arg)
@@ -130,6 +131,7 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
             [message],
             MODEL,
             guardrail=self.guardrail,
+            stream=False,
         )
 
         pprint(arg)

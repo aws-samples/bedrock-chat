@@ -58,6 +58,7 @@ def compose_args_for_converse_api(
     guardrail: BedrockGuardrailsModel | None = None,
     grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
     tools: dict[str, AgentTool] | None = None,
+    stream: bool = True,
 ) -> ConverseStreamRequestRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         if c.content_type == "text":
@@ -129,8 +130,9 @@ def compose_args_for_converse_api(
             "trace": "enabled",
         }
 
-        # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
-        args["guardrailConfig"]["streamProcessingMode"] = "async"
+        if stream:
+            # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
+            args["guardrailConfig"]["streamProcessingMode"] = "async"
 
     if tools:
         args["toolConfig"] = {
