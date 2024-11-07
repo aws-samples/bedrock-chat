@@ -31,59 +31,71 @@ def on_stream(token: str, gatewayapi, connection_id: str):
     # Send completion
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(dict(
-            status="STREAMING",
-            completion=token,
-        )).encode("utf-8"),
+        Data=json.dumps(
+            dict(
+                status="STREAMING",
+                completion=token,
+            )
+        ).encode("utf-8"),
     )
 
 
 def on_fetching_knowledge(gatewayapi, connection_id: str):
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(dict(
-            status="FETCHING_KNOWLEDGE",
-        )).encode("utf-8"),
+        Data=json.dumps(
+            dict(
+                status="FETCHING_KNOWLEDGE",
+            )
+        ).encode("utf-8"),
     )
 
 
 def on_stop(arg: OnStopInput, gatewayapi, connection_id: str):
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(dict(
-            status="STREAMING_END",
-            completion="",
-            stop_reason=arg["stop_reason"],
-        )).encode("utf-8"),
+        Data=json.dumps(
+            dict(
+                status="STREAMING_END",
+                completion="",
+                stop_reason=arg["stop_reason"],
+            )
+        ).encode("utf-8"),
     )
 
 
 def on_agent_thinking(log: OnThinking, gatewayapi, connection_id: str):
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(dict(
-            status="AGENT_THINKING",
-            log={
-                log["tool_use_id"]: {
-                    "name": log["name"],
-                    "input": log["input"],
+        Data=json.dumps(
+            dict(
+                status="AGENT_THINKING",
+                log={
+                    log["tool_use_id"]: {
+                        "name": log["name"],
+                        "input": log["input"],
+                    },
                 },
-            },
-        )).encode("utf-8"),
+            )
+        ).encode("utf-8"),
     )
 
 
-def on_agent_tool_result(tool_result: ConverseApiToolResult, gatewayapi, connection_id: str):
+def on_agent_tool_result(
+    tool_result: ConverseApiToolResult, gatewayapi, connection_id: str
+):
     gatewayapi.post_to_connection(
         ConnectionId=connection_id,
-        Data=json.dumps(dict(
-            status="AGENT_TOOL_RESULT",
-            result={
-                "toolUseId": tool_result["toolUseId"],
-                "status": tool_result["status"],
-                "content": tool_result["content"],
-            },
-        )).encode("utf-8"),
+        Data=json.dumps(
+            dict(
+                status="AGENT_TOOL_RESULT",
+                result={
+                    "toolUseId": tool_result["toolUseId"],
+                    "status": tool_result["status"],
+                    "content": tool_result["content"],
+                },
+            )
+        ).encode("utf-8"),
     )
 
 
@@ -98,7 +110,10 @@ def process_chat_input(
             user_id=user_id,
             chat_input=chat_input,
             on_stream=lambda token: on_stream(token, gatewayapi, connection_id),
-            on_fetching_knowledge=lambda: on_fetching_knowledge(gatewayapi, connection_id),
+            on_fetching_knowledge=lambda: on_fetching_knowledge(
+                gatewayapi,
+                connection_id,
+            ),
             on_stop=lambda arg: on_stop(
                 arg,
                 gatewayapi,
@@ -275,8 +290,10 @@ def handler(event, context):
         logger.error("".join(traceback.format_tb(e.__traceback__)))
         return {
             "statusCode": 500,
-            "body": json.dumps({
-                "status": "ERROR",
-                "reason": str(e),
-            }),
+            "body": json.dumps(
+                {
+                    "status": "ERROR",
+                    "reason": str(e),
+                }
+            ),
         }

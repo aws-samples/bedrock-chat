@@ -82,7 +82,10 @@ def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
-    assert bot.bedrock_knowledge_base is not None and bot.bedrock_knowledge_base.knowledge_base_id is not None
+    assert (
+        bot.bedrock_knowledge_base is not None
+        and bot.bedrock_knowledge_base.knowledge_base_id is not None
+    )
     if bot.bedrock_knowledge_base.search_params.search_type == "semantic":
         search_type = "SEMANTIC"
     elif bot.bedrock_knowledge_base.search_params.search_type == "hybrid":

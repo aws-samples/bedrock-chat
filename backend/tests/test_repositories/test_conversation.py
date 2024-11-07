@@ -139,7 +139,9 @@ class TestConversationRepository(unittest.TestCase):
                         ),
                         ImageContentModel(
                             content_type="image",
-                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                            body=base64.b64decode(
+                                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+                            ),
                             media_type="image/png",
                         ),
                     ],
@@ -364,7 +366,9 @@ class TestConversationBotRepository(unittest.TestCase):
                         ),
                         ImageContentModel(
                             content_type="image",
-                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                            body=base64.b64decode(
+                                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+                            ),
                             media_type="image/png",
                         ),
                     ],
@@ -396,7 +400,9 @@ class TestConversationBotRepository(unittest.TestCase):
                         ),
                         ImageContentModel(
                             content_type="image",
-                            body=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                            body=base64.b64decode(
+                                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+                            ),
                             media_type="image/png",
                         ),
                     ],

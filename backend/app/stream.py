@@ -72,15 +72,21 @@ class _Exception(TypedDict):
     message: str | None
 
 
-def _is_text_content(content: _PartialTextContent | _PartialToolUseContent) -> TypeGuard[_PartialTextContent]:
+def _is_text_content(
+    content: _PartialTextContent | _PartialToolUseContent,
+) -> TypeGuard[_PartialTextContent]:
     return "text" in content
 
 
-def _is_tool_use_content(content: _PartialTextContent | _PartialToolUseContent) -> TypeGuard[_PartialToolUseContent]:
+def _is_tool_use_content(
+    content: _PartialTextContent | _PartialToolUseContent,
+) -> TypeGuard[_PartialToolUseContent]:
     return "tool_use" in content
 
 
-def _content_model_from_partial_content(content: _PartialTextContent | _PartialToolUseContent) -> ContentModel:
+def _content_model_from_partial_content(
+    content: _PartialTextContent | _PartialToolUseContent,
+) -> ContentModel:
     if _is_text_content(content=content):
         return TextContentModel(
             content_type="text",
@@ -93,15 +99,17 @@ def _content_model_from_partial_content(content: _PartialTextContent | _PartialT
             body=ToolUseContentModelBody(
                 tool_use_id=content["tool_use"]["tool_use_id"],
                 name=content["tool_use"]["name"],
-                input=json.loads(content["tool_use"]["input"] or '{}'),
+                input=json.loads(content["tool_use"]["input"] or "{}"),
             ),
         )
 
     else:
-        raise ValueError(f'Unknown content type')
+        raise ValueError(f"Unknown content type")
 
 
-def _content_model_to_partial_content(content: ContentModel) -> _PartialTextContent | _PartialToolUseContent:
+def _content_model_to_partial_content(
+    content: ContentModel,
+) -> _PartialTextContent | _PartialToolUseContent:
     if isinstance(content, TextContentModel):
         return {
             "text": content.body,
@@ -117,7 +125,7 @@ def _content_model_to_partial_content(content: ContentModel) -> _PartialTextCont
         }
 
     else:
-        raise ValueError(f'Unknown content type')
+        raise ValueError(f"Unknown content type")
 
 
 class ConverseApiStreamHandler:
@@ -173,10 +181,16 @@ class ConverseApiStreamHandler:
 
             current_message = _PartialMessage(
                 role="assistant",
-                contents={
-                    index: _content_model_to_partial_content(content=content)
-                    for index, content in enumerate(message_for_continue_generate.content)
-                } if message_for_continue_generate is not None else {},
+                contents=(
+                    {
+                        index: _content_model_to_partial_content(content=content)
+                        for index, content in enumerate(
+                            message_for_continue_generate.content
+                        )
+                    }
+                    if message_for_continue_generate is not None
+                    else {}
+                ),
             )
             current_errors: list[_Exception] = []
             stop_reason: StopReasonType = "end_turn"
@@ -204,7 +218,7 @@ class ConverseApiStreamHandler:
                                 "input": "",
                             }
                         }
-                        current_message['contents'][index] = tool_use_content
+                        current_message["contents"][index] = tool_use_content
 
                 elif "contentBlockDelta" in event:
                     content_block_delta = event["contentBlockDelta"]
@@ -222,33 +236,35 @@ class ConverseApiStreamHandler:
                         if index in current_message["contents"]:
                             content = current_message["contents"][index]
                             if _is_text_content(content=content):
-                                content['text'] += text
+                                content["text"] += text
 
                         else:
                             text_content: _PartialTextContent = {
-                                'text': text,
+                                "text": text,
                             }
-                            current_message['contents'][index] = text_content
+                            current_message["contents"][index] = text_content
 
                         if self.on_stream:
                             self.on_stream(text)
 
-                elif 'contentBlockStop' in event:
-                    content_block_stop = event['contentBlockStop']
-                    index = content_block_stop['contentBlockIndex']
-                    content = current_message['contents'][index]
+                elif "contentBlockStop" in event:
+                    content_block_stop = event["contentBlockStop"]
+                    index = content_block_stop["contentBlockIndex"]
+                    content = current_message["contents"][index]
                     if _is_tool_use_content(content=content):
-                        tool_use = content['tool_use']
-                        tool_use_id = tool_use['tool_use_id']
-                        tool_name = tool_use['name']
-                        input = json.loads(tool_use['input'] or '{}')
+                        tool_use = content["tool_use"]
+                        tool_use_id = tool_use["tool_use_id"]
+                        tool_name = tool_use["name"]
+                        input = json.loads(tool_use["input"] or "{}")
 
                         if self.on_thinking:
-                            self.on_thinking({
-                                "tool_use_id": tool_use_id,
-                                "name": tool_name,
-                                "input": input,
-                            })
+                            self.on_thinking(
+                                {
+                                    "tool_use_id": tool_use_id,
+                                    "name": tool_name,
+                                    "input": input,
+                                }
+                            )
 
                 elif "messageStop" in event:
                     stop_reason = event["messageStop"]["stopReason"]
@@ -259,54 +275,64 @@ class ConverseApiStreamHandler:
                     input_token_count = usage["inputTokens"]
                     output_token_count = usage["outputTokens"]
 
-                elif 'modelStreamErrorException' in event:
-                    exception = event['modelStreamErrorException']
-                    message = exception.get('message')
-                    original_status_code = exception.get('originalStatusCode')
-                    original_message = exception.get('originalMessage')
-                    current_errors.append({
-                        'code': 'ModelStreamErrorException',
-                        'message': f'{message} (Original = {original_status_code}: {original_message})'
-                    })
+                elif "modelStreamErrorException" in event:
+                    exception = event["modelStreamErrorException"]
+                    message = exception.get("message")
+                    original_status_code = exception.get("originalStatusCode")
+                    original_message = exception.get("originalMessage")
+                    current_errors.append(
+                        {
+                            "code": "ModelStreamErrorException",
+                            "message": f"{message} (Original = {original_status_code}: {original_message})",
+                        }
+                    )
 
-                elif 'throttlingException' in event:
-                    exception = event['throttlingException']
-                    message = exception.get('message')
-                    current_errors.append({
-                        'code': 'ThrottlingException',
-                        'message': message,
-                    })
+                elif "throttlingException" in event:
+                    exception = event["throttlingException"]
+                    message = exception.get("message")
+                    current_errors.append(
+                        {
+                            "code": "ThrottlingException",
+                            "message": message,
+                        }
+                    )
 
-                elif 'internalServerException' in event:
-                    exception = event['internalServerException']
-                    message = exception.get('message')
-                    current_errors.append({
-                        'code': 'InternalServerException',
-                        'message': message,
-                    })
+                elif "internalServerException" in event:
+                    exception = event["internalServerException"]
+                    message = exception.get("message")
+                    current_errors.append(
+                        {
+                            "code": "InternalServerException",
+                            "message": message,
+                        }
+                    )
 
-                elif 'serviceUnavailableException' in event:
-                    exception = event['serviceUnavailableException']
-                    message = exception.get('message')
-                    current_errors.append({
-                        'code': 'ServiceUnavailableException',
-                        'message': message,
-                    })
+                elif "serviceUnavailableException" in event:
+                    exception = event["serviceUnavailableException"]
+                    message = exception.get("message")
+                    current_errors.append(
+                        {
+                            "code": "ServiceUnavailableException",
+                            "message": message,
+                        }
+                    )
 
-                elif 'validationException' in event:
-                    exception = event['validationException']
-                    message = exception.get('message')
-                    current_errors.append({
-                        'code': 'ValidationException',
-                        'message': message,
-                    })
+                elif "validationException" in event:
+                    exception = event["validationException"]
+                    message = exception.get("message")
+                    current_errors.append(
+                        {
+                            "code": "ValidationException",
+                            "message": message,
+                        }
+                    )
 
             # Append entire completion as the last message
             message = MessageModel(
                 role="assistant",
                 content=[
                     _content_model_from_partial_content(content=content)
-                    for _, content in sorted(current_message['contents'].items())
+                    for _, content in sorted(current_message["contents"].items())
                 ],
                 model=self.model,
                 children=[],
@@ -317,9 +343,7 @@ class ConverseApiStreamHandler:
                 thinking_log=None,
             )
 
-            price = calculate_price(
-                self.model, input_token_count, output_token_count
-            )
+            price = calculate_price(self.model, input_token_count, output_token_count)
 
             result = OnStopInput(
                 message=message,

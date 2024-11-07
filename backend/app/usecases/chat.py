@@ -192,7 +192,10 @@ def prepare_conversation(
 
     # If the "Generate continue" button is pressed, a new_message is not generated.
     else:
-        message_id = conversation.message_map[conversation.last_message_id].parent or "instruction"
+        message_id = (
+            conversation.message_map[conversation.last_message_id].parent
+            or "instruction"
+        )
 
     return (message_id, conversation, bot)
 
@@ -214,7 +217,7 @@ def trace_to_root(
                 for log in reversed(current_node.thinking_log)
                 if any(
                     isinstance(content, ToolUseContentModel)
-                        or isinstance(content, ToolResultContentModel)
+                    or isinstance(content, ToolResultContentModel)
                     for content in log.content
                 )
             )
@@ -239,7 +242,11 @@ def insert_knowledge(
     conversation_with_context = deepcopy(conversation)
     content = conversation_with_context.message_map["instruction"].content[0]
     if isinstance(content, TextContentModel):
-        inserted_prompt = build_rag_prompt(conversation, search_results, display_citation)
+        inserted_prompt = build_rag_prompt(
+            conversation,
+            search_results,
+            display_citation,
+        )
         logger.info(f"Inserted prompt: {inserted_prompt}")
 
         content.body = inserted_prompt
@@ -258,10 +265,11 @@ def chat(
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
-    tools = {
-        t.name: get_tool_by_name(t.name)
-        for t in bot.agent.tools
-    } if bot and bot.is_agent_enabled() else {}
+    tools = (
+        {t.name: get_tool_by_name(t.name) for t in bot.agent.tools}
+        if bot and bot.is_agent_enabled()
+        else {}
+    )
 
     message_map = conversation.message_map
     search_results: list[SearchResult] = []
@@ -313,8 +321,8 @@ def chat(
         )
 
     else:
-        messages.append(AgentMessageModel.from_message_model(
-            message=message_map[user_msg_id]),
+        messages.append(
+            AgentMessageModel.from_message_model(message=message_map[user_msg_id]),
         )
         message_for_continue_generate = None
 
@@ -357,10 +365,12 @@ def chat(
         used_chunks: list[ChunkModel] | None = None
         if bot and bot.display_retrieved_chunks:
             if not bot.is_agent_enabled() and len(search_results) > 0:
-                reply_txt = message.content[0].body \
-                    if len(message.content) > 0 \
-                        and isinstance(message.content[0], TextContentModel) \
+                reply_txt = (
+                    message.content[0].body
+                    if len(message.content) > 0
+                    and isinstance(message.content[0], TextContentModel)
                     else ""
+                )
 
                 used_chunks = []
                 for r in filter_used_results(reply_txt, search_results):
@@ -394,7 +404,9 @@ def chat(
 
                 else:
                     old_assistant_msg_id = conversation.last_message_id
-                    conversation.message_map[user_msg_id].children.remove(old_assistant_msg_id)
+                    conversation.message_map[user_msg_id].children.remove(
+                        old_assistant_msg_id
+                    )
                     del conversation.message_map[old_assistant_msg_id]
 
             # Issue id for new assistant message
@@ -470,16 +482,16 @@ def chat(
     return conversation, message
 
 
-def chat_output_from_message(conversation: ConversationModel, message: MessageModel) -> ChatOutput:
+def chat_output_from_message(
+    conversation: ConversationModel,
+    message: MessageModel,
+) -> ChatOutput:
     return ChatOutput(
         conversation_id=conversation.id,
         create_time=conversation.create_time,
         message=MessageOutput(
             role=message.role,
-            content=[
-                c.to_content()
-                for c in message.content
-            ],
+            content=[c.to_content() for c in message.content],
             model=message.model,
             children=message.children,
             parent=message.parent,
@@ -547,18 +559,20 @@ def propose_conversation_title(
             for message in messages
             if not any(
                 isinstance(content, ToolUseContentModel)
-                    or isinstance(content, ToolResultContentModel)
+                or isinstance(content, ToolResultContentModel)
                 for content in message.content
             )
         ],
         model=model,
     )
     response = call_converse_api(args)
-    reply_txt = response["output"]["message"]["content"][0]["text"] \
-        if "message" in response["output"] \
-            and len(response["output"]["message"]["content"]) > 0 \
-            and "text" in response["output"]["message"]["content"][0] \
+    reply_txt = (
+        response["output"]["message"]["content"][0]["text"]
+        if "message" in response["output"]
+        and len(response["output"]["message"]["content"]) > 0
+        and "text" in response["output"]["message"]["content"][0]
         else ""
+    )
 
     return reply_txt
 
@@ -569,10 +583,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
     message_map = {
         message_id: MessageOutput(
             role=message.role,
-            content=[
-                c.to_content()
-                for c in message.content
-            ],
+            content=[c.to_content() for c in message.content],
             model=message.model,
             children=message.children,
             parent=message.parent,
@@ -640,9 +651,11 @@ def fetch_related_documents(
         return None
 
     content = chat_input.message.content[-1]
-    chunks = search_related_docs(bot=bot, query=content.body) \
-        if isinstance(content, TextContent) \
+    chunks = (
+        search_related_docs(bot=bot, query=content.body)
+        if isinstance(content, TextContent)
         else []
+    )
 
     documents = []
     for chunk in chunks:

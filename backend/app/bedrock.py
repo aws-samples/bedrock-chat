@@ -61,7 +61,12 @@ def compose_args_for_converse_api(
 ) -> ConverseStreamRequestRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         if c.content_type == "text":
-            if role == "user" and guardrail and guardrail.grounding_threshold > 0 and grounding_source:
+            if (
+                role == "user"
+                and guardrail
+                and guardrail.grounding_threshold > 0
+                and grounding_source
+            ):
                 return [
                     {"guardContent": grounding_source},
                     {
@@ -140,7 +145,9 @@ def compose_args_for_converse_api(
     return args
 
 
-def call_converse_api(args: ConverseStreamRequestRequestTypeDef) -> ConverseResponseTypeDef:
+def call_converse_api(
+    args: ConverseStreamRequestRequestTypeDef,
+) -> ConverseResponseTypeDef:
     client = get_bedrock_runtime_client()
 
     return client.converse(**args)

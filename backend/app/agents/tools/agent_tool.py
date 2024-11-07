@@ -31,7 +31,10 @@ class AgentTool(Generic[T]):
         name: str,
         description: str,
         args_schema: type[T],
-        function: Callable[[T, BotModel | None, type_model_name | None], AgentResultType],
+        function: Callable[
+            [T, BotModel | None, type_model_name | None],
+            AgentResultType,
+        ],
         bot: BotModel | None = None,
         model: type_model_name | None = None,
     ):
@@ -50,9 +53,7 @@ class AgentTool(Generic[T]):
         return ToolSpecificationTypeDef(
             name=self.name,
             description=self.description,
-            inputSchema={
-                "json": self._generate_input_schema()
-            },
+            inputSchema={"json": self._generate_input_schema()},
         )
 
     def run(self, tool_use_id: str, input: dict[str, JsonValue]) -> RunResult:
@@ -78,15 +79,15 @@ class AgentTool(Generic[T]):
                     tool_use_id=tool_use_id,
                     succeeded=True,
                     body=[
-                        {
-                            "text": result,
-                        }
-                        if isinstance(result, str) else
-                        {
-                            "json": result
-                        }
-                        if isinstance(result, dict) else
-                        result.to_content_for_converse()
+                        (
+                            {"text": result}
+                            if isinstance(result, str)
+                            else (
+                                {"json": result}
+                                if isinstance(result, dict)
+                                else result.to_content_for_converse()
+                            )
+                        )
                         for result in res
                     ],
                 )

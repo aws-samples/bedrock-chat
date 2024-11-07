@@ -21,7 +21,7 @@ def decode_base64_string(value: Any) -> bytes:
         return base64.b64decode(value)
 
     else:
-        raise ValueError(f'Invalid value type: {type(value)}')
+        raise ValueError(f"Invalid value type: {type(value)}")
 
 
 Base64EncodedBytes = Annotated[

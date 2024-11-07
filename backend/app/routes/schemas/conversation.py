@@ -107,7 +107,9 @@ class TextToolResult(BaseSchema):
 
 
 class JsonToolResult(BaseSchema):
-    json_: dict[str, JsonValue] = Field(alias="json")  # `json` is a reserved keyword on pydantic
+    json_: dict[str, JsonValue] = Field(
+        alias="json"
+    )  # `json` is a reserved keyword on pydantic
 
 
 class ImageToolResult(BaseSchema):
@@ -151,10 +153,7 @@ class AgentMessage(BaseSchema):
     def from_model(cls, model: "AgentMessageModel"):
         return AgentMessage(
             role=model.role,
-            content=[
-                content.to_content()
-                for content in model.content
-            ],
+            content=[content.to_content() for content in model.content],
         )
 
 

@@ -52,8 +52,7 @@ def store_conversation(
         item_params["BotId"] = conversation.bot_id
 
     message_map = {
-        k: v.model_dump(by_alias=True)
-        for k, v in conversation.message_map.items()
+        k: v.model_dump(by_alias=True) for k, v in conversation.message_map.items()
     }
     message_map_size = len(json.dumps(message_map).encode("utf-8"))
     logger.info(f"Message map size: {message_map_size}")
@@ -72,11 +71,7 @@ def store_conversation(
         )
         # Store only `system` attribute in DynamoDB
         item_params["MessageMap"] = json.dumps(
-            {
-                k: v
-                for k, v in message_map.items()
-                if k == "system"
-            }
+            {k: v for k, v in message_map.items() if k == "system"}
         )
     else:
         item_params["IsLargeMessage"] = False
@@ -173,10 +168,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         create_time=float(item["CreateTime"]),
         title=item["Title"],
         total_price=item.get("TotalPrice", 0),
-        message_map={
-            k: MessageModel.model_validate(v)
-            for k, v in message_map.items()
-        },
+        message_map={k: MessageModel.model_validate(v) for k, v in message_map.items()},
         last_message_id=item["LastMessageId"],
         bot_id=item["BotId"] if "BotId" in item else None,
         should_continue=item.get("ShouldContinue", False),

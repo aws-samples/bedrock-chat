@@ -25,7 +25,7 @@ from app.routes.schemas.conversation import (
     ImageToolResult,
     DocumentToolResult,
     ToolResultContentBody,
-    ToolResultContent
+    ToolResultContent,
 )
 from pydantic import BaseModel, Field, field_validator, Discriminator, JsonValue
 from mypy_boto3_bedrock_runtime.type_defs import (
@@ -100,14 +100,18 @@ class ImageContentModel(BaseModel):
         # e.g. "image/png" -> "png"
         format = self.media_type.split("/")[1] if self.media_type else "unknown"
 
-        return [
-            {
-                "image": {
-                    "format": format,
-                    "source": {"bytes": self.body},
+        return (
+            [
+                {
+                    "image": {
+                        "format": format,
+                        "source": {"bytes": self.body},
+                    },
                 },
-            },
-        ] if _is_converse_supported_image_format(format) else []
+            ]
+            if _is_converse_supported_image_format(format)
+            else []
+        )
 
 
 def _is_converse_supported_document_format(ext: str) -> TypeGuard[DocumentFormatType]:
@@ -166,15 +170,19 @@ class AttachmentContentModel(BaseModel):
         # e.g. "document.txt" -> "document"
         name = Path(self.file_name).stem
 
-        return [
-            {
-                "document": {
-                    "format": format,
-                    "name": _convert_to_valid_file_name(name),
-                    "source": {"bytes": self.body},
+        return (
+            [
+                {
+                    "document": {
+                        "format": format,
+                        "name": _convert_to_valid_file_name(name),
+                        "source": {"bytes": self.body},
+                    },
                 },
-            },
-        ] if _is_converse_supported_document_format(format) else []
+            ]
+            if _is_converse_supported_document_format(format)
+            else []
+        )
 
 
 class FeedbackModel(BaseModel):
@@ -236,7 +244,7 @@ class ToolUseContentModel(BaseModel):
     def from_tool_use_content(cls, content: ToolUseContent) -> Self:
         return cls(
             content_type="toolUse",
-            body=ToolUseContentModelBody.from_tool_use_content_body(body=content.body)
+            body=ToolUseContentModelBody.from_tool_use_content_body(body=content.body),
         )
 
     def to_content(self) -> Content:
@@ -274,7 +282,9 @@ class TextToolResultModel(BaseModel):
 
 
 class JsonToolResultModel(BaseModel):
-    json_: dict[str, JsonValue] = Field(alias="json")  # `json` is a reserved keyword on pydantic
+    json_: dict[str, JsonValue] = Field(
+        alias="json"
+    )  # `json` is a reserved keyword on pydantic
 
     @classmethod
     def from_json_tool_result(cls, tool_result: JsonToolResult) -> Self:
@@ -353,7 +363,12 @@ class DocumentToolResultModel(BaseModel):
         }
 
 
-ToolResultModel = TextToolResultModel | JsonToolResultModel | ImageToolResultModel | DocumentToolResultModel
+ToolResultModel = (
+    TextToolResultModel
+    | JsonToolResultModel
+    | ImageToolResultModel
+    | DocumentToolResultModel
+)
 
 
 def tool_result_model_from_tool_result(tool_result: ToolResult) -> ToolResultModel:
@@ -367,13 +382,17 @@ def tool_result_model_from_tool_result(tool_result: ToolResult) -> ToolResultMod
         return ImageToolResultModel.from_image_tool_result(tool_result=tool_result)
 
     elif isinstance(tool_result, DocumentToolResult):
-        return DocumentToolResultModel.from_document_tool_result(tool_result=tool_result)
+        return DocumentToolResultModel.from_document_tool_result(
+            tool_result=tool_result
+        )
 
     else:
-        raise ValueError(f'Unknown tool result type')
+        raise ValueError(f"Unknown tool result type")
 
 
-def tool_result_model_from_tool_result_content(content: ToolResultContentBlockOutputTypeDef) -> ToolResultModel:
+def tool_result_model_from_tool_result_content(
+    content: ToolResultContentBlockOutputTypeDef,
+) -> ToolResultModel:
     if "text" in content:
         return TextToolResultModel(text=content["text"])
 
@@ -383,18 +402,26 @@ def tool_result_model_from_tool_result_content(content: ToolResultContentBlockOu
     elif "image" in content:
         return ImageToolResultModel(
             format=content["image"]["format"],
-            image=content["image"]["source"]["bytes"] if "bytes" in content["image"]["source"] else b"",
+            image=(
+                content["image"]["source"]["bytes"]
+                if "bytes" in content["image"]["source"]
+                else b""
+            ),
         )
 
     elif "document" in content:
         return DocumentToolResultModel(
             format=content["document"]["format"],
             name=content["document"]["name"],
-            document=content["document"]["source"]["bytes"] if "bytes" in content["document"]["source"] else b"",
+            document=(
+                content["document"]["source"]["bytes"]
+                if "bytes" in content["document"]["source"]
+                else b""
+            ),
         )
 
     else:
-        raise ValueError(f'Unknown tool result type')
+        raise ValueError(f"Unknown tool result type")
 
 
 class ToolResultContentModelBody(BaseModel):
@@ -438,19 +465,13 @@ class ToolResultContentModelBody(BaseModel):
         return {
             "toolUseId": self.tool_use_id,
             "status": self.status,
-            "content": [
-                content.to_content_for_converse()
-                for content in self.content
-            ],
+            "content": [content.to_content_for_converse() for content in self.content],
         }
 
     def to_tool_result_content_body(self) -> ToolResultContentBody:
         return ToolResultContentBody(
             tool_use_id=self.tool_use_id,
-            content=[
-                content.to_tool_result()
-                for content in self.content
-            ],
+            content=[content.to_tool_result() for content in self.content],
             status=self.status,
         )
 
@@ -483,9 +504,14 @@ class ToolResultContentModel(BaseModel):
 
 
 ContentModel = Annotated[
-    TextContentModel | ImageContentModel | AttachmentContentModel | ToolUseContentModel | ToolResultContentModel,
+    TextContentModel
+    | ImageContentModel
+    | AttachmentContentModel
+    | ToolUseContentModel
+    | ToolResultContentModel,
     Discriminator("content_type"),
 ]
+
 
 def content_model_from_content(content: Content) -> ContentModel:
     if isinstance(content, TextContent):
@@ -504,7 +530,7 @@ def content_model_from_content(content: Content) -> ContentModel:
         return ToolResultContentModel.from_tool_result_content(content=content)
 
     else:
-        raise ValueError(f'Unknown content type')
+        raise ValueError(f"Unknown content type")
 
 
 class AgentMessageModel(BaseModel):
