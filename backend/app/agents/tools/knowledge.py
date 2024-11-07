@@ -9,6 +9,10 @@ from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
 from app.vector_search import SearchResult, search_related_docs
+
+from mypy_boto3_bedrock_runtime.type_defs import (
+    InferenceConfigurationTypeDef,
+)
 from pydantic import BaseModel, Field, root_validator
 
 ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
@@ -116,22 +120,29 @@ def search_knowledge(
 
     try:
         generation_params = bot.generation_params if bot else None
-        inference_config = {
-            **DEFAULT_GENERATION_CONFIG,
-            **(
-                {
-                    "max_tokens": generation_params.max_tokens,
-                    "temperature": generation_params.temperature,
-                    "top_p": generation_params.top_p,
-                    "stop_sequences": generation_params.stop_sequences,
-                }
-                if generation_params
-                else {}
-            ),
-        }
-        # `top_k` is configured in `additional_model_request_fields` instead of `inference_config`
-        additional_model_request_fields = {"top_k": inference_config["top_k"]}
-        del inference_config["top_k"]
+        inference_config: InferenceConfigurationTypeDef
+        if generation_params:
+            inference_config = {
+                "maxTokens": generation_params.max_tokens,
+                "temperature": generation_params.temperature,
+                "topP": generation_params.top_p,
+                "stopSequences": generation_params.stop_sequences,
+            }
+            # `top_k` is configured in `additional_model_request_fields` instead of `inference_config`
+            additional_model_request_fields = {
+                "top_k": generation_params.top_k,
+            }
+
+        else:
+            inference_config = {
+                "maxTokens": DEFAULT_GENERATION_CONFIG["max_tokens"],
+                "temperature": DEFAULT_GENERATION_CONFIG["temperature"],
+                "topP": DEFAULT_GENERATION_CONFIG["top_p"],
+                "stopSequences": DEFAULT_GENERATION_CONFIG["stop_sequences"],
+            }
+            additional_model_request_fields = {
+                "top_k": DEFAULT_GENERATION_CONFIG["top_k"],
+            }
 
         search_results = search_related_docs(
             bot,
@@ -157,12 +168,7 @@ def search_knowledge(
                         ],
                     }
                 ],
-                "inferenceConfig": {
-                    'maxTokens': inference_config['max_tokens'],
-                    'temperature': inference_config['temperature'],
-                    'topP': inference_config['top_p'],
-                    'stopSequences': inference_config['stop_sequences'],
-                },
+                "inferenceConfig": inference_config,
                 "additionalModelRequestFields": additional_model_request_fields,
                 "system": [],
             }

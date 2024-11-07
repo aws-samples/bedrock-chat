@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Callable, TypedDict
+from typing import Callable, TypedDict, TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool
 from app.bedrock import calculate_price, compose_args_for_converse_api
@@ -72,14 +72,22 @@ class _Exception(TypedDict):
     message: str | None
 
 
-def content_model_from_partial_content(content: _PartialTextContent | _PartialToolUseContent) -> ContentModel:
-    if "text" in content:
+def _is_text_content(content: _PartialTextContent | _PartialToolUseContent) -> TypeGuard[_PartialTextContent]:
+    return "text" in content
+
+
+def _is_tool_use_content(content: _PartialTextContent | _PartialToolUseContent) -> TypeGuard[_PartialToolUseContent]:
+    return "tool_use" in content
+
+
+def _content_model_from_partial_content(content: _PartialTextContent | _PartialToolUseContent) -> ContentModel:
+    if _is_text_content(content=content):
         return TextContentModel(
             content_type="text",
             body=content["text"].rstrip(),
         )
 
-    elif "tool_use" in content:
+    elif _is_tool_use_content(content=content):
         return ToolUseContentModel(
             content_type="toolUse",
             body=ToolUseContentModelBody(
@@ -93,7 +101,7 @@ def content_model_from_partial_content(content: _PartialTextContent | _PartialTo
         raise ValueError(f'Unknown content type')
 
 
-def content_model_to_partial_content(content: ContentModel) -> _PartialTextContent | _PartialToolUseContent:
+def _content_model_to_partial_content(content: ContentModel) -> _PartialTextContent | _PartialToolUseContent:
     if isinstance(content, TextContentModel):
         return {
             "text": content.body,
@@ -166,7 +174,7 @@ class ConverseApiStreamHandler:
             current_message = _PartialMessage(
                 role="assistant",
                 contents={
-                    index: content_model_to_partial_content(content=content)
+                    index: _content_model_to_partial_content(content=content)
                     for index, content in enumerate(message_for_continue_generate.content)
                 } if message_for_continue_generate is not None else {},
             )
@@ -206,14 +214,14 @@ class ConverseApiStreamHandler:
                         input = delta["toolUse"]["input"]
                         if index in current_message["contents"]:
                             content = current_message["contents"][index]
-                            if "tool_use" in content:
+                            if _is_tool_use_content(content=content):
                                 content["tool_use"]["input"] += input
 
                     elif "text" in delta:
                         text = delta["text"]
                         if index in current_message["contents"]:
                             content = current_message["contents"][index]
-                            if "text" in content:
+                            if _is_text_content(content=content):
                                 content['text'] += text
 
                         else:
@@ -229,7 +237,7 @@ class ConverseApiStreamHandler:
                     content_block_stop = event['contentBlockStop']
                     index = content_block_stop['contentBlockIndex']
                     content = current_message['contents'][index]
-                    if 'tool_use' in content:
+                    if _is_tool_use_content(content=content):
                         tool_use = content['tool_use']
                         tool_use_id = tool_use['tool_use_id']
                         tool_name = tool_use['name']
@@ -297,7 +305,7 @@ class ConverseApiStreamHandler:
             message = MessageModel(
                 role="assistant",
                 content=[
-                    content_model_from_partial_content(content=content)
+                    _content_model_from_partial_content(content=content)
                     for _, content in sorted(current_message['contents'].items())
                 ],
                 model=self.model,

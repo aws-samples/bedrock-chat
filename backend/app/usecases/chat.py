@@ -192,8 +192,7 @@ def prepare_conversation(
 
     # If the "Generate continue" button is pressed, a new_message is not generated.
     else:
-        message_id = conversation.message_map[conversation.last_message_id].parent
-        assert(message_id is not None)
+        message_id = conversation.message_map[conversation.last_message_id].parent or "instruction"
 
     return (message_id, conversation, bot)
 
@@ -320,9 +319,9 @@ def chat(
         message_for_continue_generate = None
 
     instruction: str | None = (
-        message_map["instruction"].content[0].body
+        message_map["instruction"].content[0].body  # type: ignore
         if "instruction" in message_map
-        else None  # type: ignore[union-attr]
+        else None
     )
 
     generation_params = bot.generation_params if bot else None
