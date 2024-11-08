@@ -82,19 +82,21 @@ const ToolCard: React.FC<ToolCardProps> = ({
   }, [toggleContentExpand, toolUseId]);
 
   // Convert output content text to JSON object if possible.
-  const displayContent = content?.flatMap(c => {
-    if ("text" in c) {
-      try {
-        return [JSON.parse(c.text)];
-      } catch (e) {
-        return [c.text];
+  const displayContent = content
+    ?.map((c) => {
+      if ('text' in c) {
+        try {
+          return JSON.parse(c.text);
+        } catch (e) {
+          return c.text;
+        }
+      } else if ('json' in c) {
+        return c.json;
+      } else {
+        return null;
       }
-    } else if ("json" in content[0]) {
-      return [content[0].json];
-    } else {
-      return [];
-    }
-  })
+    })
+    .filter(Boolean); // Omit null | undefined values
 
   return (
     <div className={twMerge('relative', className)}>
@@ -176,10 +178,15 @@ const ToolCard: React.FC<ToolCardProps> = ({
               )}>
               {displayContent ? (
                 <div className="ml-4 mt-2 text-sm">
-                  {displayContent.length !== 1 || typeof displayContent[0] === 'object' ? (
+                  {displayContent.length !== 1 ||
+                  typeof displayContent[0] === 'object' ? (
                     // Render as JSON tree if the content is an object. Otherwise, render as a string.
                     <JSONTree
-                      data={displayContent.length === 1 ? displayContent[0] : displayContent}
+                      data={
+                        displayContent.length === 1
+                          ? displayContent[0]
+                          : displayContent
+                      }
                       theme={THEME}
                       invertTheme={false} // disable dark theme
                     />
