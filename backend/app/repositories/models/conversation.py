@@ -45,7 +45,7 @@ class TextContentModel(BaseModel):
     content_type: Literal["text"]
     body: str = Field(
         ...,
-        description="Body string. If content_type is image or attachment, it should be base64 encoded.",
+        description="Text string.",
     )
 
     @classmethod
@@ -78,7 +78,7 @@ class ImageContentModel(BaseModel):
     media_type: str
     body: Base64EncodedBytes = Field(
         ...,
-        description="Body string. If content_type is image or attachment, it should be base64 encoded.",
+        description="Image bytes.",
     )
 
     @classmethod
@@ -144,7 +144,7 @@ class AttachmentContentModel(BaseModel):
     content_type: Literal["attachment"]
     body: Base64EncodedBytes = Field(
         ...,
-        description="Body string. If content_type is image or attachment, it should be base64 encoded.",
+        description="Attachment file bytes.",
     )
     file_name: str
 
