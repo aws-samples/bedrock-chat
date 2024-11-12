@@ -100,6 +100,10 @@ const translation = {
           name: 'Internet Search',
           description: 'Search the internet for information.',
         },
+        knowledge_base_tool: {
+          name: 'Retrieve Knowledge',
+          description: 'Retrieve information from knowledge.',
+        },
       },
     },
     bot: {

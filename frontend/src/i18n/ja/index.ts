@@ -102,6 +102,10 @@ const translation = {
           name: 'インターネット検索',
           description: 'インターネットで情報を検索します。',
         },
+        knowledge_base_tool: {
+          name: 'ナレッジの取得',
+          description: 'ナレッジから情報を取得します。',
+        },
       },
     },
     bot: {

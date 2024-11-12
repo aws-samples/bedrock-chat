@@ -26,8 +26,7 @@ import AgentToolList from '../features/agent/components/AgentToolList';
 import { AgentToolsProps } from '../features/agent/xstates/agentThink';
 
 type Props = BaseProps & {
-  isAgentThinking: boolean;
-  tools?: AgentToolsProps;
+  tools?: AgentToolsProps[];
   chatContent?: DisplayMessageContent;
   relatedDocuments?: RelatedDocument[];
   onChangeMessageId?: (messageId: string) => void;
@@ -140,19 +139,16 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'assistant' && (
             <div className="flex flex-col">
-              {props.isAgentThinking ? (
-                <AgentToolList tools={props.tools ?? {}} isRunning={true} />
-              ) : (
-                <>
-                  {chatContent.thinkingLog && (
+              {props.tools != null && (
+                props.tools.length === 0 ? (
+                  <AgentToolList tools={{ tools: {} }} />
+                ) : (
+                  props.tools.map((tools, index) => (
                     <div className="mb-3 mt-0">
-                      <AgentToolList
-                        tools={props.tools ?? {}}
-                        isRunning={false}
-                      />
+                      <AgentToolList key={index} tools={tools} />
                     </div>
-                  )}
-                </>
+                  ))
+                )
               )}
             </div>
           )}

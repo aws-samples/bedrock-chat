@@ -1,14 +1,20 @@
 import { setup, assign } from 'xstate';
+import { produce } from 'immer';
 import { AgentToolResultContent } from '../../../@types/conversation';
 
 export type AgentToolsProps = {
-  // Note: key is toolUseId
-  [key: string]: {
-    name: string;
-    status: AgentToolState;
-    input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-    content?: AgentToolResultContent[];
+  thought?: string;
+  tools: {
+    // Note: key is toolUseId
+    [key: string]: AgentToolUse;
   };
+};
+
+export type AgentToolUse = {
+  name: string;
+  status: AgentToolState;
+  input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  content?: AgentToolResultContent[];
 };
 
 export const AgentState = {
@@ -23,6 +29,10 @@ export type AgentState = (typeof AgentState)[keyof typeof AgentState];
 
 export type AgentEvent =
   | { type: 'wakeup' }
+  | {
+      type: 'thought';
+      thought: string;
+    }
   | {
       type: 'go-on';
       toolUseId: string;
@@ -42,52 +52,71 @@ export type AgentEventKeys = AgentEvent['type'];
 export const agentThinkingState = setup({
   types: {
     context: {} as {
-      tools: AgentToolsProps;
+      tools: AgentToolsProps[];
     },
     events: {} as AgentEvent,
   },
   actions: {
     reset: assign({
-      tools: () => ({}),
+      tools: () => ([]),
+    }),
+    updateThought: assign({
+      tools: ({ context, event }) => produce(context.tools, draft => {
+        if (event.type === 'thought') {
+          if (draft.length > 0 && draft[draft.length - 1].thought == null) {
+            draft[draft.length - 1].thought = event.thought;
+          } else {
+            draft.push({
+              thought: event.thought,
+              tools: {},
+            });
+          }
+        }
+      }),
     }),
     addTool: assign({
-      tools: ({ context, event }) => {
+      tools: ({ context, event }) => produce(context.tools, draft => {
         if (event.type === 'go-on') {
-          return {
-            ...context.tools,
-            [event.toolUseId]: {
+          if (draft.length > 0) {
+            draft[draft.length - 1].tools[event.toolUseId] = {
               name: event.name,
               input: event.input,
-              status: 'running' as AgentToolState,
-            },
-          };
+              status: 'running',
+            };
+          } else {
+            draft.push({
+              tools: {
+                [event.toolUseId]: {
+                  name: event.name,
+                  input: event.input,
+                  status: 'running',
+                },
+              },
+            });
+          }
         }
-        return context.tools;
-      },
+      }),
     }),
     updateToolResult: assign({
-      tools: ({ context, event }) => {
+      tools: ({ context, event }) => produce(context.tools, draft => {
         if (event.type === 'tool-result') {
           // Update status and content of the tool
-          return {
-            ...context.tools,
-            [event.toolUseId]: {
-              ...context.tools[event.toolUseId],
-              status: event.status,
-              content: event.content,
-            },
-          };
+          draft.forEach(tool => {
+            if (event.toolUseId in tool.tools) {
+              tool.tools[event.toolUseId].status = event.status;
+              tool.tools[event.toolUseId].content = event.content;
+            }
+          });
         }
-        return context.tools;
-      },
+      }),
     }),
     close: assign({
-      tools: () => ({}),
+      tools: () => ([]),
     }),
   },
 }).createMachine({
   context: {
-    tools: {},
+    tools: [],
     areAllToolsSuccessful: false,
   },
   initial: 'sleeping',
@@ -102,6 +131,9 @@ export const agentThinkingState = setup({
     },
     thinking: {
       on: {
+        'thought': {
+          actions: 'updateThought',
+        },
         'go-on': {
           actions: 'addTool',
         },

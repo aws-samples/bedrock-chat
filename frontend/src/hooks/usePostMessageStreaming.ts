@@ -94,6 +94,14 @@ const usePostMessageStreaming = create<{
                   dispatch(i18next.t('bot.label.retrievingKnowledge'));
                   break;
                 case PostStreamingStatus.AGENT_THINKING:
+                  if (completion.length > 0) {
+                    dispatch('');
+                    thinkingDispatch({
+                      type: 'thought',
+                      thought: completion,
+                    });
+                    completion = '';
+                  }
                   Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
                     const typedToolInfo = toolInfo as {
                       name: string;
@@ -117,14 +125,8 @@ const usePostMessageStreaming = create<{
                   break;
                 case PostStreamingStatus.STREAMING:
                   if (data.completion || data.completion === '') {
-                    if (
-                      completion.endsWith(i18next.t('app.chatWaitingSymbol'))
-                    ) {
-                      completion = completion.slice(0, -1);
-                    }
-                    completion +=
-                      data.completion + i18next.t('app.chatWaitingSymbol');
-                    dispatch(completion);
+                    completion += data.completion;
+                    dispatch(completion + i18next.t('app.chatWaitingSymbol'));
                   }
                   break;
                 case PostStreamingStatus.STREAMING_END:
@@ -132,10 +134,7 @@ const usePostMessageStreaming = create<{
                     type: 'goodbye',
                   });
 
-                  if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
-                    completion = completion.slice(0, -1);
-                    dispatch(completion);
-                  }
+                  dispatch(completion);
                   ws.close();
                   break;
                 case PostStreamingStatus.ERROR:

@@ -349,7 +349,6 @@ const ChatPage: React.FC = () => {
 
     return (
       <ChatMessage
-        isAgentThinking={isAgentThinking}
         tools={tools}
         chatContent={message}
         relatedDocuments={relatedDocuments}

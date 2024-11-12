@@ -1,54 +1,8 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { TextInputChatContent } from './TextInputChatContent';
 import { AvailableTools } from './AvailableTools';
 import { AgentTool } from '../types';
 import ToolCard from './ToolCard';
 import AgentToolList from './AgentToolList';
-import { AgentToolState } from '../xstates/agentThink';
-
-export const InputChatContent = () => (
-  <TextInputChatContent
-    canRegenerate={false}
-    isLoading={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-  />
-);
-
-export const InputChatContentLoading = () => (
-  <TextInputChatContent
-    disabledSend={true}
-    disabledRegenerate={true}
-    canRegenerate={false}
-    isLoading={true}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-  />
-);
-
-export const InputChatContentDisabled = () => {
-  const { t } = useTranslation();
-  return (
-    <TextInputChatContent
-      canRegenerate={false}
-      isLoading={false}
-      disabled={true}
-      placeholder={t('bot.label.notAvailableBotInputMessage')}
-      onSend={() => {}}
-      onRegenerate={() => {}}
-    />
-  );
-};
-
-export const InputChatContentWithRegenerate = () => (
-  <TextInputChatContent
-    canRegenerate={true}
-    isLoading={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-  />
-);
 
 export const Tools = () => {
   const availableTools: AgentTool[] = [
@@ -74,6 +28,10 @@ export const Tools = () => {
     },
     {
       name: 'internet_search',
+      description: '',
+    },
+    {
+      name: 'knowledge_base_tool',
       description: '',
     },
   ];
@@ -117,60 +75,77 @@ export const ToolCardError = () => (
   />
 );
 
-export const ToolCardList = () => {
-  const tools = {
-    tool1: {
-      name: 'internet_search',
-      status: 'running' as AgentToolState,
-      input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
-    },
-    tool2: {
-      name: 'internet_search',
-      status: 'success' as AgentToolState,
-      input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
-      content: [
-        {
-          text: "search result 1",
+export const ToolListRunning = () => {
+  return <AgentToolList
+    tools={{
+      tools: {
+        tool1: {
+          name: 'internet_search',
+          status: 'running',
+          input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
         },
-        {
-          text: "search result 2",
+        tool2: {
+          name: 'database_query',
+          status: 'success',
+          input: { query: 'SELECT * FROM table' },
+          // Pass the content as stringified JSON
+          content: [{
+            text: '{"result": "success", "data": "some data"}',
+          }],
         },
-        {
-          text: "search result 3",
+        tool3: {
+          name: 'API Call',
+          status: 'running',
+          input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
         },
-      ],
-    },
-    tool3: {
-      name: 'database_query',
-      status: 'success' as AgentToolState,
-      input: { query: 'SELECT * FROM table' },
-      // Pass the content as stringified JSON
-      content: [{
-        text: '{"result": "success", "data": "some data"}',
-      }],
-    },
-    tool4: {
-      name: 'database_query',
-      status: 'success' as AgentToolState,
-      input: { query: 'SELECT * FROM table' },
-      // Pass the content as stringified JSON
-      content: [{
-        json: {
-          result: "success",
-          data: "some data",
-        },
-      }],
-    },
-    tool5: {
-      name: 'API Call',
-      status: 'error' as AgentToolState,
-      input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
-      // Pass the content as simple string
-      content: [{
-        text: 'Error! Connection Timeout',
-      }],
-    },
-  };
+      },
+    }}
+  />;
+};
 
-  return <AgentToolList tools={tools} isRunning={true} />;
+export const ToolList = () => {
+  return <AgentToolList
+    tools={{
+      thought: '東京の天気について以下のことがわかりました。\n- search result 1\n- search result 2\n- search result 3',
+      tools: {
+        tool1: {
+          name: 'internet_search',
+          status: 'success',
+          input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
+          content: [
+            {
+              text: "search result 1",
+            },
+            {
+              text: "search result 2",
+            },
+            {
+              text: "search result 3",
+            },
+          ],
+        },
+        tool2: {
+          name: 'database_query',
+          status: 'success',
+          input: { query: 'SELECT * FROM table' },
+          // Pass the content as stringified JSON
+          content: [{
+            json: {
+              result: "success",
+              data: "some data",
+            },
+          }],
+        },
+        tool3: {
+          name: 'API Call',
+          status: 'error',
+          input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
+          // Pass the content as simple string
+          content: [{
+            text: 'Error! Connection Timeout',
+          }],
+        },
+      },
+    }}
+  />;
 };

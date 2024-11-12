@@ -11,11 +11,34 @@ export type Model =
   | 'mistral-7b-instruct'
   | 'mixtral-8x7b-instruct'
   | 'mistral-large';
-export type Content = {
-  contentType: 'text' | 'image' | 'attachment';
+
+export type Content = TextContent | ImageContent | AttachmentContent;
+
+export type TextContent = {
+  contentType: 'text';
+  body: string;
+};
+
+export type ImageContent = {
+  contentType: 'image';
   mediaType?: string;
+  body: string;
+};
+
+export type AttachmentContent = {
+  contentType: 'attachment';
   fileName?: string;
   body: string;
+};
+
+export type ToolUseContent = {
+  contentType: 'toolUse';
+  body: ToolUseContentBody;
+};
+
+export type ToolResultContent = {
+  contentType: 'toolResult';
+  body: ToolResultContentBody;
 };
 
 export type UsedChunk = {
@@ -25,7 +48,7 @@ export type UsedChunk = {
   rank: number;
 };
 
-export type AgentToolUseContent = {
+export type ToolUseContentBody = {
   toolUseId: string;
   name: string;
   input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -41,19 +64,16 @@ export type AgentToolResultJsonContent = {
 
 export type AgentToolResultContent = AgentToolResultTextContent | AgentToolResultJsonContent;
 
-export type AgentToolResult = {
+export type ToolResultContentBody = {
   toolUseId: string;
   content: AgentToolResultContent[];
   status: 'success' | 'error';
 };
 
-export type AgentContent = {
-  contentType: 'toolUse' | 'toolResult' | 'text';
-  body: AgentToolUseContent | AgentToolResult | string;
-};
+export type AgentContent = TextContent | ToolUseContent | ToolResultContent;
 
 export type AgentMessage = {
-  role: string;
+  role: Role;
   content: AgentContent[];
 };
 

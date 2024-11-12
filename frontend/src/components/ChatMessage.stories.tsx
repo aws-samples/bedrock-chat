@@ -1,5 +1,6 @@
 import ChatMessage from './ChatMessage';
 import { DisplayMessageContent } from '../@types/conversation';
+import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
 
 export const Conversation = () => {
   const messages: DisplayMessageContent[] = [
@@ -70,7 +71,6 @@ export const Conversation = () => {
             message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
           }`}>
           <ChatMessage
-            isAgentThinking={false}
             chatContent={message}
             relatedDocuments={message.usedChunks?.map((chunk) => ({
               chunkBody: chunk.content,
@@ -78,6 +78,213 @@ export const Conversation = () => {
               sourceLink: chunk.source,
               rank: chunk.rank,
             }))}
+          />
+
+          <div className="w-full border-b border-aws-squid-ink/10"></div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+export const ConversationThinking = () => {
+  const messages: DisplayMessageContent[] = [
+    {
+      id: '1',
+      role: 'user',
+      content: [
+        {
+          contentType: 'text',
+          body: "Check tomorrow's weather and suggest places to go with my family.",
+        },
+      ],
+      model: 'claude-v3.5-sonnet',
+      feedback: null,
+      usedChunks: null,
+      parent: null,
+      children: [],
+      sibling: [],
+      thinkingLog: null,
+    },
+    {
+      id: '2',
+      role: 'assistant',
+      content: [
+        {
+          contentType: 'text',
+          body: '',
+        },
+      ],
+      model: 'claude-v3.5-sonnet',
+      feedback: null,
+      usedChunks: null,
+      parent: null,
+      children: [],
+      sibling: [],
+      thinkingLog: [],
+    },
+  ];
+  return (
+    <>
+      {messages?.map((message, idx) => (
+        <div
+          key={idx}
+          className={`${
+            message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+          }`}>
+          <ChatMessage
+            chatContent={message}
+            relatedDocuments={message.usedChunks?.map((chunk) => ({
+              chunkBody: chunk.content,
+              contentType: chunk.contentType,
+              sourceLink: chunk.source,
+              rank: chunk.rank,
+            }))}
+            tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
+          />
+
+          <div className="w-full border-b border-aws-squid-ink/10"></div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+export const ConversationWithAgnet = () => {
+  const messages: DisplayMessageContent[] = [
+    {
+      id: '1',
+      role: 'user',
+      content: [
+        {
+          contentType: 'text',
+          body: "Check tomorrow's weather and suggest places to go with my family.",
+        },
+      ],
+      model: 'claude-v3.5-sonnet',
+      feedback: null,
+      usedChunks: null,
+      parent: null,
+      children: [],
+      sibling: [],
+      thinkingLog: null,
+    },
+    {
+      id: '2',
+      role: 'assistant',
+      content: [
+        {
+          contentType: 'text',
+          body: 'I recommend going to an amusement park.',
+        },
+      ],
+      model: 'claude-v3.5-sonnet',
+      feedback: null,
+      usedChunks: null,
+      parent: null,
+      children: [],
+      sibling: [],
+      thinkingLog: [
+        {
+          role: 'assistant',
+          content: [
+            {
+              contentType: 'text',
+              body: "Use tools to check tomorrow's weather.",
+            },
+            {
+              contentType: 'toolUse',
+              body: {
+                toolUseId: 'tool1',
+                name: 'get_weather',
+                input: {},
+              },
+            },
+          ],
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              contentType: 'toolResult',
+              body: {
+                toolUseId: 'tool1',
+                content: [
+                  {
+                    json: {
+                      weather: 'Clear skies',
+                    },
+                  },
+                ],
+                status: 'success',
+              },
+            },
+          ],
+        },
+        {
+          role: 'assistant',
+          content: [
+            {
+              contentType: 'text',
+              body: "Tomorrow's weather will be clear skies. ",
+            },
+            {
+              contentType: 'toolUse',
+              body: {
+                toolUseId: 'tool2',
+                name: 'internet_search',
+                input: {
+                  country: 'en-us',
+                  query: 'recommendation family leisure places clear weather',
+                  time_limit: 'd',
+                },
+              },
+            },
+          ],
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              contentType: 'toolResult',
+              body: {
+                toolUseId: 'tool2',
+                content: [
+                  {
+                    'text': 'amusement park',
+                  },
+                  {
+                    'text': 'athletic field',
+                  },
+                  {
+                    'text': 'beach',
+                  },
+                ],
+                status: 'success',
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ];
+  return (
+    <>
+      {messages?.map((message, idx) => (
+        <div
+          key={idx}
+          className={`${
+            message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+          }`}>
+          <ChatMessage
+            chatContent={message}
+            relatedDocuments={message.usedChunks?.map((chunk) => ({
+              chunkBody: chunk.content,
+              contentType: chunk.contentType,
+              sourceLink: chunk.source,
+              rank: chunk.rank,
+            }))}
+            tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
           />
 
           <div className="w-full border-b border-aws-squid-ink/10"></div>
