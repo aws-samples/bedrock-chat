@@ -67,11 +67,6 @@ class _PartialMessage(TypedDict):
     contents: dict[int, _PartialTextContent | _PartialToolUseContent]
 
 
-class _Exception(TypedDict):
-    code: str
-    message: str | None
-
-
 def _is_text_content(
     content: _PartialTextContent | _PartialToolUseContent,
 ) -> TypeGuard[_PartialTextContent]:
@@ -192,7 +187,7 @@ class ConverseApiStreamHandler:
                     else {}
                 ),
             )
-            current_errors: list[_Exception] = []
+            current_errors: list[Exception] = []
             stop_reason: StopReasonType = "end_turn"
             input_token_count = 0
             output_token_count = 0
@@ -281,51 +276,85 @@ class ConverseApiStreamHandler:
                     original_status_code = exception.get("originalStatusCode")
                     original_message = exception.get("originalMessage")
                     current_errors.append(
-                        {
-                            "code": "ModelStreamErrorException",
-                            "message": f"{message} (Original = {original_status_code}: {original_message})",
-                        }
+                        client.exceptions.ModelStreamErrorException(
+                            error_response={
+                                "Error": {
+                                    "Code": "ModelStreamErrorException",
+                                    "Message": message,
+                                    "OriginalStatusCode": original_status_code,
+                                    "OriginalMessage": original_message,
+                                },
+                            },
+                            operation_name="ConverseStream",
+                        )
                     )
 
                 elif "throttlingException" in event:
                     exception = event["throttlingException"]
                     message = exception.get("message")
                     current_errors.append(
-                        {
-                            "code": "ThrottlingException",
-                            "message": message,
-                        }
+                        client.exceptions.ThrottlingException(
+                            error_response={
+                                "Error": {
+                                    "Code": "ThrottlingException",
+                                    "Message": message,
+                                },
+                            },
+                            operation_name="ConverseStream",
+                        )
                     )
 
                 elif "internalServerException" in event:
                     exception = event["internalServerException"]
                     message = exception.get("message")
                     current_errors.append(
-                        {
-                            "code": "InternalServerException",
-                            "message": message,
-                        }
+                        client.exceptions.InternalServerException(
+                            error_response={
+                                "Error": {
+                                    "Code": "InternalServerException",
+                                    "Message": message,
+                                },
+                            },
+                            operation_name="ConverseStream",
+                        )
                     )
 
                 elif "serviceUnavailableException" in event:
                     exception = event["serviceUnavailableException"]
                     message = exception.get("message")
                     current_errors.append(
-                        {
-                            "code": "ServiceUnavailableException",
-                            "message": message,
-                        }
+                        client.exceptions.ServiceUnavailableException(
+                            error_response={
+                                "Error": {
+                                    "Code": "ServiceUnavailableException",
+                                    "Message": message,
+                                },
+                            },
+                            operation_name="ConverseStream",
+                        )
                     )
 
                 elif "validationException" in event:
                     exception = event["validationException"]
                     message = exception.get("message")
                     current_errors.append(
-                        {
-                            "code": "ValidationException",
-                            "message": message,
-                        }
+                        client.exceptions.ValidationException(
+                            error_response={
+                                "Error": {
+                                    "Code": "ValidationException",
+                                    "Message": message,
+                                },
+                            },
+                            operation_name="ConverseStream",
+                        )
                     )
+
+            if len(current_errors) > 0:
+                if len(current_errors) == 1:
+                    raise current_errors[0]
+
+                else:
+                    raise ExceptionGroup("Exceptions in ConverseStream", current_errors)
 
             # Append entire completion as the last message
             message = MessageModel(
