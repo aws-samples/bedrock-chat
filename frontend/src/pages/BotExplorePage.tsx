@@ -150,7 +150,7 @@ const BotExplorePage: React.FC = () => {
             <div className="mt-2 border-b border-gray"></div>
 
             <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
-              <div className="min-w-[480px]">
+              <div className="h-full min-w-[480px]">
                 {myBots?.length === 0 && (
                   <div className="flex size-full items-center justify-center italic text-dark-gray">
                     {t('bot.label.noBots')}
@@ -260,7 +260,7 @@ const BotExplorePage: React.FC = () => {
             </div>
             <div className="mt-2 border-b border-gray"></div>
             <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
-              <div className="min-w-[480px]">
+              <div className="h-full min-w-[480px]">
                 {recentlyUsedSharedBots?.length === 0 && (
                   <div className="flex size-full items-center justify-center italic text-dark-gray">
                     {t('bot.label.noBotsRecentlyUsed')}
