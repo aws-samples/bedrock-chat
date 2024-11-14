@@ -14,6 +14,7 @@ import KnowledgeFileUploader from '../../../components/KnowledgeFileUploader';
 import GenerationConfig from '../../../components/GenerationConfig';
 import Select from '../../../components/Select';
 import { BotFile, ConversationQuickStarter } from '../../../@types/bot';
+import { ParsingModel } from '../types';
 
 import { ulid } from 'ulid';
 import {
@@ -121,6 +122,7 @@ const BotKbEditPage: React.FC = () => {
   const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0);
   const [guardrailArn, setGuardrailArn] = useState<string>('');
   const [guardrailVersion, setGuardrailVersion] = useState<string>('');
+  const [parsingModel, setParsingModel] = useState<ParsingModel | undefined>(undefined);
 
   const embeddingsModelOptions: {
     label: string;
@@ -172,6 +174,28 @@ const BotKbEditPage: React.FC = () => {
         description: t('knowledgeBaseSettings.chunkingStrategy.none.hint'),
       },
     ];
+  
+  const parsingModelOptions: {
+    label: string;
+    value: ParsingModel;
+    description: string;
+  }[] = [
+    {
+      label: t('knowledgeBaseSettings.parsingModel.none.label'),
+      value: 'disabled',
+      description: t('knowledgeBaseSettings.parsingModel.none.hint'),
+    },
+    {
+      label: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet.label'),
+      value: 'anthropic.claude-3-sonnet-v1',
+      description: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet.hint'),
+    },
+    {
+      label: t('knowledgeBaseSettings.parsingModel.claude_3_haiku.label'),
+      value: 'anthropic.claude-3-haiku-v1',
+      description: t('knowledgeBaseSettings.parsingModel.claude_3_haiku.hint'),
+    },
+  ];
 
   const [fixedSizeParams, setFixedSizeParams] = useState<FixedSizeParams>(
     DEFAULT_FIXED_CHUNK_PARAMS
@@ -366,6 +390,7 @@ const BotKbEditPage: React.FC = () => {
               ? bot.bedrockGuardrails.relevanceThreshold
               : 0
           );
+          setParsingModel(bot.bedrockKnowledgeBase.parsingModel);
         })
         .finally(() => {
           setIsLoading(false);
@@ -881,6 +906,7 @@ const BotKbEditPage: React.FC = () => {
         })(),
         openSearch: openSearchParams,
         searchParams: searchParams,
+        parsingModel,
       },
       bedrockGuardrails: {
         isGuardrailEnabled:
@@ -942,6 +968,7 @@ const BotKbEditPage: React.FC = () => {
     misconductThreshold,
     groundingThreshold,
     relevanceThreshold,
+    parsingModel,
   ]);
 
   const onClickEdit = useCallback(() => {
@@ -996,6 +1023,7 @@ const BotKbEditPage: React.FC = () => {
           })(),
           openSearch: openSearchParams,
           searchParams: searchParams,
+          parsingModel,
         },
         bedrockGuardrails: {
           isGuardrailEnabled:
@@ -1063,6 +1091,7 @@ const BotKbEditPage: React.FC = () => {
     relevanceThreshold,
     guardrailArn,
     guardrailVersion,
+    parsingModel,
   ]);
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);
@@ -1351,6 +1380,18 @@ const BotKbEditPage: React.FC = () => {
                     options={embeddingsModelOptions}
                     onChange={(val) => {
                       onChangeEmbeddingsModel(val as EmbeddingsModel);
+                    }}
+                    disabled={!isNewBot}
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <Select
+                    label={t('bot.label.selectParsingModel')}
+                    value={parsingModel || 'disabled'}
+                    options={parsingModelOptions}
+                    onChange={(val) => {
+                      setParsingModel(val as ParsingModel);
                     }}
                     disabled={!isNewBot}
                   />

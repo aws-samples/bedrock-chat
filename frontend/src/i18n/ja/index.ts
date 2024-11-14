@@ -644,6 +644,25 @@ const translation = {
         token_filter: 'トークンフィルター:',
         not_specified: '指定なし',
       },
+      advancedParsing: {
+        label: '高度なドキュメント解析機能',
+        description: 'ドキュメントの高度なドキュメント解析機能に使用するモデルを選択してください。'
+      },
+      parsingModel: {
+        label: '高度なパースモデル',
+        none: {
+          label: 'なし',
+          hint: 'ドキュメントの高度な解析機能は適用されません。',
+        },
+        claude_3_sonnet: {
+          label: 'Claude 3 Sonnet',
+          hint: 'Claude 3 Sonnetを使用してドキュメントの高度な解析を行います。',
+        },
+        claude_3_haiku: {
+          label: 'Claude 3 Haiku',
+          hint: 'Claude 3 Haikuを使用してドキュメントの高度な解析を行います。',
+        }
+      }
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',

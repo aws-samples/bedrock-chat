@@ -36,6 +36,21 @@ export const getEmbeddingModel = (
   }
 };
 
+export const getParsingModel = (
+  parsingModel: string
+): BedrockFoundationModel | undefined => {
+  switch (parsingModel) {
+    case "anthropic.claude-3-sonnet-v1":
+      return BedrockFoundationModel.ANTHROPIC_CLAUDE_SONNET_V1_0;
+    case "anthropic.claude-3-haiku-v1":
+      return BedrockFoundationModel.ANTHROPIC_CLAUDE_HAIKU_V1_0;
+    case "disabled":
+      return undefined
+    default:
+      throw new Error(`Unknown parsing model: ${parsingModel}`);
+  }
+}
+
 export const getChunkingStrategy = (
   chunkingStrategy: string,
   embeddingsModel: string,

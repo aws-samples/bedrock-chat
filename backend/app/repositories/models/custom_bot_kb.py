@@ -5,6 +5,7 @@ from app.routes.schemas.bot_kb import (
     type_os_character_filter,
     type_os_token_filter,
     type_os_tokenizer,
+    type_kb_parsing_model,
 )
 from pydantic import BaseModel
 
@@ -66,3 +67,4 @@ class BedrockKnowledgeBaseModel(BaseModel):
     search_params: SearchParamsModel
     knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
+    parsing_model: type_kb_parsing_model = "disabled"

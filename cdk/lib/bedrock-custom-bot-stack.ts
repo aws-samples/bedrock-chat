@@ -16,6 +16,10 @@ import {
 import {
   S3DataSource,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/s3-data-source";
+import {
+  ParsingStategy
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/parsing";
+
 import { KnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { aws_bedrock as bedrock } from "aws-cdk-lib";
 
@@ -41,6 +45,7 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly ownerUserId: string;
   readonly botId: string;
   readonly embeddingsModel: BedrockFoundationModel;
+  readonly parsingModel?: BedrockFoundationModel;
   readonly bedrockClaudeChatDocumentBucketName: string;
   readonly chunkingStrategy: ChunkingStrategy;
   readonly existingS3Urls: string[];
@@ -102,6 +107,9 @@ export class BedrockCustomBotStack extends Stack {
         knowledgeBase: kb,
         dataSourceName: bucket.bucketName,
         chunkingStrategy: props.chunkingStrategy,
+        parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
+          parsingModel: props.parsingModel.asIModel(this),
+        }) : undefined,
         inclusionPrefixes: inclusionPrefixes,
       });
     });

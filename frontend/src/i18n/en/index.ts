@@ -120,6 +120,7 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
+        selectParsingModel: 'Select Parsing Model',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
@@ -647,6 +648,25 @@ How would you categorize this email?`,
         token_filter: 'Token Filter:',
         not_specified: 'Not specified',
       },
+      advancedParsing: {
+        label: 'Advanced Parsing',
+        description: 'Select a model to use for advanced document parsing capabilities.'
+      },
+      parsingModel: {
+        label: 'Advanced Parsing Model',
+        none: {
+          label: 'Disabled',
+          hint: 'No advanced parsing will be applied.',
+        },
+        claude_3_sonnet: {
+          label: 'Claude 3 Sonnet',
+          hint: 'Use Claude 3 Sonnet for advanced document parsing.',
+        },
+        claude_3_haiku: {
+          label: 'Claude 3 Haiku',
+          hint: 'Use Claude 3 Haiku for advanced document parsing.',
+        }
+      }
     },
     error: {
       answerResponse: 'An error occurred while responding.',

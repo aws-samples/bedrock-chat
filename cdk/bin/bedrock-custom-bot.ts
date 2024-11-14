@@ -5,6 +5,7 @@ import {
   getEmbeddingModel,
   getChunkingStrategy,
   getAnalyzer,
+  getParsingModel,
 } from "../lib/utils/bedrock-knowledge-base-args";
 
 const app = new cdk.App();
@@ -49,7 +50,7 @@ console.log("guardrails: ", guardrails);
 console.log("existingS3Urls: ", existingS3Urls);
 
 const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
-
+const parsingModel = getParsingModel(knowledgeBase.parsing_model.S)
 const maxTokens: number | undefined = knowledgeBase.chunking_configuration.M.max_tokens
   ? Number(knowledgeBase.chunking_configuration.M.max_tokens.N)
   : undefined;
@@ -135,6 +136,7 @@ console.log("misconductThreshold: ", misconductThreshold);
 console.log("relevanceThreshold: ", relevanceThreshold);
 console.log("guardrailArn: ", guardrailArn);
 console.log("guardrailVersion: ", guardrailVersion);
+console.log("parsingModel: ", parsingModel);
 
 if (analyzer) {
   console.log(
@@ -158,6 +160,7 @@ const bedrockCustomBotStack = new BedrockCustomBotStack(
     ownerUserId,
     botId,
     embeddingsModel,
+    parsingModel,
     bedrockClaudeChatDocumentBucketName:
       BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME,
     chunkingStrategy,
