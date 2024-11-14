@@ -9,9 +9,13 @@ import { VectorCollectionStandbyReplicas } from "@cdklabs/generative-ai-cdk-cons
 import * as s3 from "aws-cdk-lib/aws-s3";
 import {
   BedrockFoundationModel,
-  ChunkingStrategy,
-  S3DataSource,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
+import {
+  ChunkingStrategy,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
+import {
+  S3DataSource,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/s3-data-source";
 import { KnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { aws_bedrock as bedrock } from "aws-cdk-lib";
 
@@ -98,8 +102,6 @@ export class BedrockCustomBotStack extends Stack {
         knowledgeBase: kb,
         dataSourceName: bucket.bucketName,
         chunkingStrategy: props.chunkingStrategy,
-        maxTokens: props.maxTokens,
-        overlapPercentage: props.overlapPercentage,
         inclusionPrefixes: inclusionPrefixes,
       });
     });

@@ -15,6 +15,45 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: 'Admin Only',
     },
+    model: {
+      haiku3: {
+        label: 'Claude 3 (Haiku)',
+        description:
+          'Previous version optimized for speed and compactness, providing near-instant responsiveness.',
+      },
+      sonnet3: {
+        label: 'Claude 3 (Sonnet)',
+        description: 'Balance of intelligence and speed.',
+      },
+      'sonnet3-5': {
+        label: 'Claude 3.5 (Sonnet) v1',
+        description:
+          'An earlier version of Claude 3.5. Supports a wide range of tasks, but v2 offers improved accuracy.',
+      },
+      'sonnet3-5-v2': {
+        label: 'Claude 3.5 (Sonnet) v2',
+        description:
+          'The latest version of Claude 3.5. An enhanced model that builds on v1 with higher accuracy and performance.',
+      },
+      'haiku3-5': {
+        label: 'Claude 3.5 (Haiku)',
+        description:
+          'The latest version, offering even faster responsiveness and improved capabilities over Haiku 3.',
+      },
+      opus3: {
+        label: 'Claude 3 (Opus)',
+        description: 'Powerful model for highly complex tasks.',
+      },
+      mistral7b: {
+        label: 'Mistral 7B',
+      },
+      mistral8x7b: {
+        label: 'Mixtral-8x7B',
+      },
+      mistralLarge: {
+        label: 'Mistral Large',
+      },
+    },
     agent: {
       label: 'Agent',
       help: {
@@ -456,6 +495,16 @@ How would you categorize this email?`,
           "When the chunk size is too small, contextual information can be lost, and when it's too large, different contextual information may exist within the same chunk, potentially reducing search accuracy.",
         chunkOverlap:
           'By specifying chunk overlap, you can preserve contextual information around chunk boundaries. Increasing the chunk size can sometimes improve search accuracy. However, be aware that increasing the chunk overlap can lead to higher computational costs.',
+        overlapTokens:
+          'You configure the number of tokens to overlap, or repeat across adjacent chunks. For example, if you set overlap tokens to 60, the last 60 tokens in the first chunk are also included at the beginning of the second chunk.',
+        maxParentTokenSize:
+          'You are able to define the parent chunk size. During retrieval, the system initially retrieves child chunks, but replaces them with broader parent chunks so as to provide the model with more comprehensive context',
+        maxChildTokenSize:
+          'You are able to define the child chunk size. During retrieval, the system initially retrieves child chunks, but replaces them with broader parent chunks so as to provide the model with more comprehensive context',
+        bufferSize:
+          'This parameter can influence how much text is examined together to determine the boundaries of each chunk, impacting the granularity and coherence of the resulting chunks. A larger buffer size might capture more context but can also introduce noise, while a smaller buffer size might miss important context but ensures more precise chunking.',
+        breakpointPercentileThreshold:
+          'A higher threshold requires sentences to be more distinguishable in order to be split into different chunks. A higher threshold results in fewer chunks and typically larger average chunk size.',
       },
       alert: {
         sync: {
@@ -537,6 +586,14 @@ How would you categorize this email?`,
           label: 'Fixed-size chunking',
           hint: 'Splits text into your set approximate token size.',
         },
+        hierarchical: {
+          label: 'hierarchical chunking',
+          hint: 'Splits text into nested structures of child and parent chunks.',
+        },
+        semantic: {
+          label: 'semantic chunking',
+          hint: 'Splits text into meaningful chunks to enhance understanding and information retrieval.',
+        },
         none: {
           label: 'No chunking',
           hint: 'Documents will not be split.',
@@ -549,6 +606,26 @@ How would you categorize this email?`,
       chunkingOverlapPercentage: {
         label: 'Overlap Percentage between Chunks',
         hint: 'Parent chunk overlap depends on the child token size and child percentage overlap you specify.',
+      },
+      overlapTokens: {
+        label: 'Overlap Tokens',
+        hint: 'The number of tokens to repeat across chunks in the same layer',
+      },
+      maxParentTokenSize: {
+        label: 'Max Parent Token Size',
+        hint: 'The maximum number of tokens that a chunk can contain in Parent layer',
+      },
+      maxChildTokenSize: {
+        label: 'Max Child Token Size',
+        hint: 'The maximum number of tokens that a chunk can contain in Child layer',
+      },
+      bufferSize: {
+        label: 'Buffer Size',
+        hint: 'the number of surrounding sentences to be added for embeddings creation. A buffer size of 1 results in 3 sentences (current, previous and next sentence) to be combined and embedded',
+      },
+      breakpointPercentileThreshold: {
+        label: 'Breakpoint percentile threshold',
+        hint: 'The percentile threshold of sentence distance/dissimilarity to draw breakpoints between sentences.',
       },
       opensearchAnalyzer: {
         label: 'Analyzer (Tokenization, Normalization)',
@@ -605,6 +682,9 @@ How would you categorize this email?`,
       },
       chunkOverlapLessThanChunkSize: {
         message: 'Chunk overlap must be set to less than Chunk size',
+      },
+      parentTokenRange: {
+        message: 'Parent token size should be larger than child token size',
       },
       quickStarter: {
         message: 'Please input both Title and Conversation Example.',

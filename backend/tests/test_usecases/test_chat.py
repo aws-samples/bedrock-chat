@@ -282,8 +282,7 @@ class TestAttachmentChat(unittest.TestCase):
 
     def test_chat(self):
         file_name, body = get_aws_overview()
-        body = base64.b64encode(body).decode("utf-8")
-        file_name = "test.md"
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(

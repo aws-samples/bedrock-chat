@@ -158,9 +158,6 @@ class TestConverseApiStreamHandler(unittest.TestCase):
 
     def test_run_with_attachment(self):
         file_name, body = get_aws_overview()
-        body = base64.b64encode(body).decode("utf-8")
-        # body = get_test_markdown()
-        file_name = "test.md"
 
         message = MessageModel(
             role="user",

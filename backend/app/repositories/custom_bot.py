@@ -470,7 +470,14 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(**item["BedrockKnowledgeBase"])
+            BedrockKnowledgeBaseModel(
+                **{
+                    **item["BedrockKnowledgeBase"],
+                    "chunking_configuration": item["BedrockKnowledgeBase"].get(
+                        "chunking_configuration", None
+                    ),
+                }
+            )
             if "BedrockKnowledgeBase" in item
             else None
         ),
@@ -541,7 +548,14 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(**item["BedrockKnowledgeBase"])
+            BedrockKnowledgeBaseModel(
+                **{
+                    **item["BedrockKnowledgeBase"],
+                    "chunking_configuration": item["BedrockKnowledgeBase"].get(
+                        "chunking_configuration", None
+                    ),
+                }
+            )
             if "BedrockKnowledgeBase" in item
             else None
         ),

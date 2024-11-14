@@ -2,14 +2,13 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> [!Warning]
-> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ### Watch Overview and Installation on YouTube
 
-[![Overview](https://img.youtube.com/vi/EfgyAblrEQA/0.jpg)](https://youtu.be/EfgyAblrEQA?si=cxxYxF6m0n85AoHb)
+[![Overview](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
 
 ### Basic Conversation
 
@@ -65,7 +64,7 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 
 ## 🚀 Super-easy Deployment
 
-- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3.5 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
+- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3.5 Sonnet`, `Anthropic / Claude 3.5 Sonnet v2`, `Anthropic / Claude 3.5 Haiku`, `Amazon / Titan Text Embeddings V2` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>
@@ -280,6 +279,14 @@ This is an account/region-level setting, affecting the entire application rather
 
 > [!Note]
 > As of June 2024, Amazon OpenSearch Serverless supports 0.5 OCU, lowering entry costs for small-scale workloads. Production deployments can start with 2 OCUs, while dev/test workloads can use 1 OCU. OpenSearch Serverless automatically scales based on workload demands. For more detail, visit [announcement](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+
+### Cross-region inference
+
+[Cross-region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) allows Amazon Bedrock to dynamically route model inference requests across multiple AWS regions, enhancing throughput and resilience during peak demand periods. To configure, edit `cdk.json`.
+
+```json
+"enableBedrockCrossRegionInference": true
+```
 
 ### Local Development
 
