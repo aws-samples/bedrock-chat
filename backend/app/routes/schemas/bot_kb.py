@@ -13,7 +13,9 @@ type_kb_chunking_strategy = Literal[
 ]
 type_kb_embeddings_model = Literal["titan_v2", "cohere_multilingual_v3"]
 type_kb_search_type = Literal["hybrid", "semantic"]
-type_kb_parsing_model = Literal["anthropic.claude-3-sonnet-v1", "anthropic.claude-3-haiku-v1", "disabled"]
+type_kb_parsing_model = Literal[
+    "anthropic.claude-3-sonnet-v1", "anthropic.claude-3-haiku-v1", "disabled"
+]
 
 # OpenSearch Serverless Analyzer
 # Ref: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-genref.html
