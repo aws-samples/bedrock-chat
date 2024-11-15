@@ -23,6 +23,7 @@
   "dependencies": {
     "@aws-cdk/aws-glue-alpha": "^2.155.0-alpha.0",
     "@aws-cdk/aws-lambda-python-alpha": "^2.155.0-alpha.0",
+    "@aws-sdk/util-dynamodb": "^3.693.0",
     "@cdklabs/generative-ai-cdk-constructs": "^0.1.274",
     "aws-cdk-lib": "^2.162.1",
     "cdk-aws-lambda-powertools-layer": "^3.7.0",

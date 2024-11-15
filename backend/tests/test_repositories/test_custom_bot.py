@@ -78,6 +78,7 @@ class TestCustomBotRepository(unittest.TestCase):
                     overlap_percentage=0,
                 ),
                 parsing_model="anthropic.claude-3-sonnet-v1",
+                web_crawling_scope="DEFAULT",
             ),
             bedrock_guardrails=BedrockGuardrailsModel(
                 is_guardrail_enabled=True,

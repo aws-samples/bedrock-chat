@@ -122,6 +122,38 @@ class BotModifyInput(BaseSchema):
             or len(self.knowledge.deleted_filenames) > 0
         )
 
+    def has_update_source_urls(self, current_bot_model: BotModel) -> bool:
+        return self.knowledge is not None and (
+            len(self.knowledge.source_urls) > 0
+            and (
+                set(self.knowledge.source_urls)
+                != set(current_bot_model.knowledge.source_urls)
+            )
+        )
+
+    def modified_crawling_scope(self, current_bot_model: BotModel) -> bool:
+        if self.bedrock_knowledge_base is None or current_bot_model.bedrock_knowledge_base is None:
+            return False
+        return (
+            self.bedrock_knowledge_base.web_crawling_scope
+            != current_bot_model.bedrock_knowledge_base.web_crawling_scope
+        )
+
+    def modified_crawling_filters(self, current_bot_model: BotModel) -> bool:
+        if (
+            self.bedrock_knowledge_base is None
+            or current_bot_model.bedrock_knowledge_base is None
+            or self.bedrock_knowledge_base.web_crawling_filters is None
+            or current_bot_model.bedrock_knowledge_base.web_crawling_filters is None
+        ):
+            return False
+        return (
+            set(self.bedrock_knowledge_base.web_crawling_filters.exclude_patterns)
+            != set(current_bot_model.bedrock_knowledge_base.web_crawling_filters.exclude_patterns)
+            or set(self.bedrock_knowledge_base.web_crawling_filters.include_patterns)
+            != set(current_bot_model.bedrock_knowledge_base.web_crawling_filters.include_patterns)
+        )
+
     def guardrails_update_required(self, current_bot_model: BotModel) -> bool:
         # Check if self.bedrock_guardrails is None
         if not self.bedrock_guardrails:
@@ -152,6 +184,15 @@ class BotModifyInput(BaseSchema):
 
     def is_embedding_required(self, current_bot_model: BotModel) -> bool:
         if self.has_update_files():
+            return True
+
+        if self.has_update_source_urls(current_bot_model):
+            return True
+
+        if self.modified_crawling_scope(current_bot_model):
+            return True
+
+        if self.modified_crawling_filters(current_bot_model):
             return True
 
         if self.knowledge is not None and current_bot_model.has_knowledge():

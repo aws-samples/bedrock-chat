@@ -54,7 +54,7 @@ const translation = {
         knowledge: {
           overview:
             'Indem man dem Bot eine externe Wissensbasis zur Verfügung stellt, wird er in die Lage versetzt, mit Daten umzugehen, für die er nicht vorher trainiert wurde.',
-          url: 'Die Informationen aus der angegebenen URL werden als Wissensbasis verwendet. Wenn Sie die URL eines YouTube-Videos angeben, wird das Transkript dieses Videos als Wissensbasis verwendet.',
+          url: 'Die Informationen aus der angegebenen URL werden als Wissensbasis verwendet.',
           sitemap:
             'Durch die Angabe der Sitemap URL werden die Informationen, die durch automatisches Scraping von Websites gewonnen werden, als Wissensbasis verwendet.',
           file: 'Die hochgeladenen Dateien werden als Wissensbasis verwendet.',

@@ -158,7 +158,7 @@ const translation = {
         knowledge: {
           overview:
             '外部の情報をボットに提供することで、事前学習していないデータを扱えるようになります。',
-          url: 'URLを指定すると、そのURLの情報がナレッジとして利用されます。YouTube の動画の URL を設定すると、その動画の字幕がナレッジとして利用されます。',
+          url: 'URLを指定すると、そのURLの情報がナレッジとして利用されます。',
           s3url:
             'S3 の URI を入力し、S3 をデータソースとして追加します。最大 4 件追加できます。Bedrock利用リージョンと同じアカウント・同じリージョンに存在するバケットのみ対応しています。',
           sitemap:
@@ -662,6 +662,32 @@ const translation = {
           label: 'Claude 3 Haiku',
           hint: 'Claude 3 Haikuを使用してドキュメントの高度な解析を行います。',
         }
+      },
+      webCrawlerConfig: {
+        title: 'Webクローラーの設定',
+        crawlingScope: {
+          label: 'スコープ',
+          default:{
+            label: 'デフォルト',
+            hint: 'クロールを、同じホストに属し、同じ初期URLパスを持つウェブページに制限します。例えば、シードURLが "https://aws.amazon.com/bedrock/" の場合、このパスとこのパスから派生するウェブページのみがクロールされます。例えば "https://aws.amazon.com/bedrock/agents/" などです。"https://aws.amazon.com/ec2/" のような兄弟URLはクロールされません。'
+          },
+          subdomains: {
+            label: 'サブドメイン',
+            hint: 'シードURLと同じプライマリドメインを持つすべてのウェブページのクロールを含めます。例えば、シードURLが "https://aws.amazon.com/bedrock/" の場合、"amazon.com" を含むすべてのウェブページがクロールされます。"https://www.amazon.com" のようなページも含まれます。'
+          },
+          hostOnly: {
+            label: 'ホストオンリー',
+            hint: 'クロールを同じホストに属するウェブページに制限します。例えば、シードURLが "https://aws.amazon.com/bedrock/" の場合、"https://docs.aws.amazon.com" のようなウェブページもクロールされます。"https://aws.amazon.com/ec2" のようなページも含まれます。'
+          }
+        },
+        includePatterns: {
+          label: 'Include Patterns',
+          hint: 'ウェブクロールに含めるパターンを指定します。これらのパターンに一致するURLのみがクロールされます。',
+        },
+        excludePatterns: {
+          label: 'Exclude Patterns',
+          hint: 'ウェブクロールから除外するパターンを指定します。これらのパターンに一致するURLはクロールされません。',
+        },
       }
     },
     error: {

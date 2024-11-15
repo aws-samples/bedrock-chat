@@ -117,7 +117,7 @@ const translation = {
         knowledge: {
           overview:
             'Al proporcionar conocimiento externo al bot, se vuelve capaz de manejar datos con los que no ha sido preentrenado.',
-          url: 'La información de la URL especificada será utilizada como Conocimiento. Si configuras la URL de un video de YouTube, la transcripción de ese video será utilizada como Conocimiento.',
+          url: 'La información de la URL especificada será utilizada como Conocimiento.',
           s3url:
             'Al ingresar la URI de S3, puedes agregar S3 como una fuente de datos. Puedes agregar hasta 4 fuentes. Solo soporta buckets que existan en la misma cuenta y región que Bedrock.',
           sitemap:

@@ -319,6 +319,9 @@ describe("Bedrock Knowledge Base Stack", () => {
       instruction,
       analyzer,
       overlapPercentage,
+      sourceUrls: knowledge.source_urls.L.map(
+        (sourceUrl: any) => sourceUrl.S
+      )
     });
 
     return Template.fromStack(stack);

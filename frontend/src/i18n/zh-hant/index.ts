@@ -58,7 +58,7 @@ const translation = {
         knowledge: {
           overview:
             '透過向 Bot 提供外部知識，它就能夠回答那些不包括在預訓練資料的問題。',
-          url: '透過 URL 指定網頁內容作為知識。如果您設定 YouTube 影片的 URL，該影片的文字記錄將作為知識。',
+          url: '透過 URL 指定網頁內容作為知識。',
           sitemap:
             '透過指定網站的 sitemap URL，Bot 將自動抓取 sitemap 中的網頁資訊作為知識。',
           file: '上傳的檔案將作為知識。',
