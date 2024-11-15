@@ -646,7 +646,8 @@ const translation = {
       },
       advancedParsing: {
         label: '高度なドキュメント解析機能',
-        description: 'ドキュメントの高度なドキュメント解析機能に使用するモデルを選択してください。'
+        description: 'ドキュメントの高度なドキュメント解析機能に使用するモデルを選択してください。',
+        hint: '構造が損なわれていないPDF内の表など、サポートされている文書形式の標準テキスト以外の解析に適しています。生成AIを使用した解析のために追加のコストが発生します。'
       },
       parsingModel: {
         label: '高度なパースモデル',
@@ -654,13 +655,13 @@ const translation = {
           label: 'なし',
           hint: 'ドキュメントの高度な解析機能は適用されません。',
         },
-        claude_3_sonnet: {
-          label: 'Claude 3 Sonnet',
-          hint: 'Claude 3 Sonnetを使用してドキュメントの高度な解析を行います。',
+        claude_3_sonnet_v1: {
+          label: 'Claude 3 Sonnet v1',
+          hint: 'Claude 3 Sonnet v1を使用してドキュメントの高度な解析を行います。',
         },
-        claude_3_haiku: {
-          label: 'Claude 3 Haiku',
-          hint: 'Claude 3 Haikuを使用してドキュメントの高度な解析を行います。',
+        claude_3_haiku_v1: {
+          label: 'Claude 3 Haiku v1',
+          hint: 'Claude 3 Haiku v1を使用してドキュメントの高度な解析を行います。',
         }
       }
     },

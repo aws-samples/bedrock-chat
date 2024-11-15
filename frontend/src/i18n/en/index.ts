@@ -120,7 +120,6 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
-        selectParsingModel: 'Select Parsing Model',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
@@ -650,7 +649,8 @@ How would you categorize this email?`,
       },
       advancedParsing: {
         label: 'Advanced Parsing',
-        description: 'Select a model to use for advanced document parsing capabilities.'
+        description: 'Select a model to use for advanced document parsing capabilities.',
+        hint: 'Suitable for parsing more than standard text in supported document formats, including tables within PDFs with their structure intact. Additional costs are incurred for parsing using generative AI.'
       },
       parsingModel: {
         label: 'Advanced Parsing Model',
@@ -658,13 +658,13 @@ How would you categorize this email?`,
           label: 'Disabled',
           hint: 'No advanced parsing will be applied.',
         },
-        claude_3_sonnet: {
-          label: 'Claude 3 Sonnet',
-          hint: 'Use Claude 3 Sonnet for advanced document parsing.',
+        claude_3_sonnet_v1: {
+          label: 'Claude 3 Sonnet v1',
+          hint: 'Use Claude 3 Sonnet v1 for advanced document parsing.',
         },
-        claude_3_haiku: {
-          label: 'Claude 3 Haiku',
-          hint: 'Use Claude 3 Haiku for advanced document parsing.',
+        claude_3_haiku_v1: {
+          label: 'Claude 3 Haiku v1',
+          hint: 'Use Claude 3 Haiku v1 for advanced document parsing.',
         }
       }
     },

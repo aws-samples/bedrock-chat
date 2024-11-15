@@ -186,14 +186,14 @@ const BotKbEditPage: React.FC = () => {
       description: t('knowledgeBaseSettings.parsingModel.none.hint'),
     },
     {
-      label: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet.label'),
+      label: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet_v1.label'),
       value: 'anthropic.claude-3-sonnet-v1',
-      description: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet.hint'),
+      description: t('knowledgeBaseSettings.parsingModel.claude_3_sonnet_v1.hint'),
     },
     {
-      label: t('knowledgeBaseSettings.parsingModel.claude_3_haiku.label'),
+      label: t('knowledgeBaseSettings.parsingModel.claude_3_haiku_v1.label'),
       value: 'anthropic.claude-3-haiku-v1',
-      description: t('knowledgeBaseSettings.parsingModel.claude_3_haiku.hint'),
+      description: t('knowledgeBaseSettings.parsingModel.claude_3_haiku_v1.hint'),
     },
   ];
 
@@ -1387,7 +1387,7 @@ const BotKbEditPage: React.FC = () => {
 
                 <div className="mt-3">
                   <Select
-                    label={t('bot.label.selectParsingModel')}
+                    label={t('knowledgeBaseSettings.advancedParsing.label')}
                     value={parsingModel || 'disabled'}
                     options={parsingModelOptions}
                     onChange={(val) => {
@@ -1395,6 +1395,9 @@ const BotKbEditPage: React.FC = () => {
                     }}
                     disabled={!isNewBot}
                   />
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('knowledgeBaseSettings.advancedParsing.hint')}
+                  </div>
                 </div>
 
                 <div className="mt-3">
