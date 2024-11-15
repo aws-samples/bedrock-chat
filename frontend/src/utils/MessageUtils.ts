@@ -1,4 +1,4 @@
-import { DisplayMessageContent, MessageMap } from '../@types/conversation';
+import { DisplayMessageContent, MessageMap, RelatedDocument, UsedChunk } from '../@types/conversation';
 
 export const convertMessageMapToArray = (
   messageMap: MessageMap,
@@ -110,4 +110,28 @@ export const convertMessageMapToArray = (
   }
 
   return messageArray;
+};
+
+export const convertUsedChunkToRelatedDocument = (usedChunk: UsedChunk): RelatedDocument => {
+  switch(usedChunk.contentType) {
+    case 's3': {
+      return {
+        content: {
+          text: usedChunk.content,
+        },
+        sourceId: usedChunk.rank.toString(),
+        sourceName: decodeURIComponent(usedChunk.source.split('?')[0].split('/').pop() ?? ''),
+        sourceLink: usedChunk.source,
+      };
+    }
+    default: {
+      return {
+        content: {
+          text: usedChunk.content,
+        },
+        sourceId: usedChunk.rank.toString(),
+        sourceLink: usedChunk.source,
+      };
+    }
+  }
 };

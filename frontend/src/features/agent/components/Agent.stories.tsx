@@ -77,6 +77,7 @@ export const ToolCardError = () => (
 
 export const ToolListRunning = () => {
   return <AgentToolList
+    messageId="dummy"
     tools={{
       tools: {
         tool1: {
@@ -105,8 +106,9 @@ export const ToolListRunning = () => {
 
 export const ToolList = () => {
   return <AgentToolList
+    messageId="dummy"
     tools={{
-      thought: '東京の天気について以下のことがわかりました。\n- search result 1\n- search result 2\n- search result 3',
+      thought: '東京の天気について以下のことがわかりました。\n- search result 1[^tool1@0]\n- search result 2[^tool1@1]\n- search result 3[^tool1@2]',
       tools: {
         tool1: {
           name: 'internet_search',
@@ -146,6 +148,40 @@ export const ToolList = () => {
           }],
         },
       },
+    }}
+    getRelatedDocument={async (sourceId) => {
+      switch(sourceId) {
+        case 'tool1@0': {
+          return {
+            content: {
+              text: 'search result 1',
+            },
+            sourceId: 'tool1@0',
+            sourceName: 'internet_search',
+          };
+        }
+        case 'tool1@1': {
+          return {
+            content: {
+              text: 'search result 2',
+            },
+            sourceId: 'tool1@1',
+            sourceName: 'internet_search',
+          };
+        }
+        case 'tool1@2': {
+          return {
+            content: {
+              text: 'search result 3',
+            },
+            sourceId: 'tool1@2',
+            sourceName: 'internet_search',
+          };
+        }
+        default: {
+          return undefined;
+        }
+      }
     }}
   />;
 };

@@ -87,10 +87,10 @@ export type MessageContent = {
 };
 
 export type RelatedDocument = {
-  chunkBody: string;
-  contentType: 's3' | 'url' | 'youtube';
-  sourceLink: string;
-  rank: number;
+  content: AgentToolResultContent;
+  sourceId: string;
+  sourceName?: string;
+  sourceLink?: string;
 };
 
 export type DisplayMessageContent = MessageContent & {
@@ -114,16 +114,6 @@ export type PostMessageResponse = {
   createTime: number;
   message: MessageContent;
 };
-
-export type GetRelatedDocumentsRequest = {
-  conversationId: string;
-  message: MessageContent & {
-    parentMessageId: null | string;
-  };
-  botId: string;
-};
-
-export type GetRelatedDocumentsResponse = RelatedDocument[] | null;
 
 export type ConversationMeta = {
   id: string;

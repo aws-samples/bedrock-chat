@@ -46,6 +46,7 @@ import {
   PutFeedbackRequest,
 } from '../@types/conversation';
 import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
+import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -72,7 +73,7 @@ const ChatPage: React.FC = () => {
     getPostedModel,
     loadingConversation,
     getShouldContinue,
-    getRelatedDocuments,
+    relatedDocuments,
     giveFeedback,
   } = useChat();
 
@@ -315,6 +316,7 @@ const ChatPage: React.FC = () => {
 
   const ChatMessageWithRelatedDocuments: React.FC<{
     chatContent: DisplayMessageContent;
+    isStreaming: boolean;
     onChangeMessageId?: (messageId: string) => void;
     onSubmit?: (messageId: string, content: string) => void;
     onSubmitFeedback?: (
@@ -323,20 +325,23 @@ const ChatPage: React.FC = () => {
     ) => void;
   }> = React.memo((props) => {
     const { chatContent: message } = props;
-    const relatedDocuments = (() => {
+    const getRelatedDocumentCallback = useCallback(async (sourceId: string) => {
       if (message.usedChunks) {
         // usedChunks is available for existing messages
-        return message.usedChunks.map((chunk) => ({
-          chunkBody: chunk.content,
-          contentType: chunk.contentType,
-          sourceLink: chunk.source,
-          rank: chunk.rank,
-        }));
+        const chunk = message.usedChunks.find((chunk) => chunk.rank.toString() === sourceId);
+        if (chunk == null) {
+          return undefined;
+        }
+        return convertUsedChunkToRelatedDocument(chunk);
       } else {
         // For new messages, get related documents from the api
-        return getRelatedDocuments(message.id);
+        const relatedDocument = relatedDocuments?.find(document => document.sourceId === sourceId);
+        if (relatedDocument == null) {
+          return relatedDocuments?.find(document => document.sourceId === `${message.id}@${sourceId}`);
+        }
+        return relatedDocument;
       }
-    })();
+    }, [message.usedChunks, message.id]);
 
     const isAgentThinking = [AgentState.THINKING, AgentState.LEAVING].some(
       (v) => v == agentThinking.value
@@ -351,7 +356,8 @@ const ChatPage: React.FC = () => {
       <ChatMessage
         tools={tools}
         chatContent={message}
-        relatedDocuments={relatedDocuments}
+        isStreaming={props.isStreaming}
+        getRelatedDocument={!props.isStreaming ? getRelatedDocumentCallback : undefined}
         onChangeMessageId={props.onChangeMessageId}
         onSubmit={props.onSubmit}
         onSubmitFeedback={props.onSubmitFeedback}
@@ -443,7 +449,7 @@ const ChatPage: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {messages?.map((message, idx) => (
+                  {messages?.map((message, idx, array) => (
                     <div
                       key={idx}
                       className={`${
@@ -451,6 +457,7 @@ const ChatPage: React.FC = () => {
                       }`}>
                       <ChatMessageWithRelatedDocuments
                         chatContent={message}
+                        isStreaming={postingMessage && idx + 1 === array.length}
                         onChangeMessageId={onChangeCurrentMessageId}
                         onSubmit={onSubmitEditedContent}
                         onSubmitFeedback={(messageId, feedback) => {

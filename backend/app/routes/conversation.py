@@ -3,6 +3,8 @@ from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,
     find_conversation_by_user_id,
+    find_related_documents_by_conversation_id,
+    find_related_document_by_id,
     update_feedback,
 )
 from app.repositories.models.conversation import FeedbackModel
@@ -15,13 +17,12 @@ from app.routes.schemas.conversation import (
     FeedbackOutput,
     NewTitleInput,
     ProposedTitle,
-    RelatedDocumentsOutput,
+    RelatedDocument,
 )
 from app.usecases.chat import (
     chat,
     chat_output_from_message,
     fetch_conversation,
-    fetch_related_documents,
     propose_conversation_title,
 )
 from app.user import User
@@ -46,20 +47,39 @@ def post_message(request: Request, chat_input: ChatInput):
     return output
 
 
-@router.post(
-    "/conversation/related-documents",
-    response_model=list[RelatedDocumentsOutput] | None,
+@router.get(
+    "/conversation/{conversation_id}/related-documents",
+    response_model=list[RelatedDocument],
 )
 def get_related_documents(
-    request: Request, chat_input: ChatInput
-) -> list[RelatedDocumentsOutput] | None:
-    """Get related documents
-    NOTE: POST method is used to avoid query string length limit.
-    If the bot prohibits displaying related documents, it will return `None`.
-    """
+    request: Request, conversation_id: str
+) -> list[RelatedDocument]:
+    """Get related documents"""
     current_user: User = request.state.current_user
-    output = fetch_related_documents(user_id=current_user.id, chat_input=chat_input)
-    return output
+
+    related_documents = find_related_documents_by_conversation_id(
+        user_id=current_user.id,
+        conversation_id=conversation_id,
+    )
+    return [related_document.to_schema() for related_document in related_documents]
+
+
+@router.get(
+    "/conversation/{conversation_id}/related-documents/{source_id}",
+    response_model=RelatedDocument,
+)
+def get_related_document(
+    request: Request, conversation_id: str, source_id: str
+) -> RelatedDocument:
+    """Get a related document"""
+    current_user: User = request.state.current_user
+
+    related_document = find_related_document_by_id(
+        user_id=current_user.id,
+        conversation_id=conversation_id,
+        source_id=source_id,
+    )
+    return related_document.to_schema()
 
 
 @router.get("/conversation/{conversation_id}", response_model=Conversation)

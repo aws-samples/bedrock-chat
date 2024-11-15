@@ -131,10 +131,9 @@ class ConverseApiStreamHandler:
     def __init__(
         self,
         model: type_model_name,
-        instruction: str | None = None,
+        instructions: list[str] = [],
         generation_params: GenerationParamsModel | None = None,
         guardrail: BedrockGuardrailsModel | None = None,
-        grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
         tools: dict[str, AgentTool] | None = None,
         on_stream: Callable[[str], None] | None = None,
         on_thinking: Callable[[OnThinking], None] | None = None,
@@ -145,10 +144,9 @@ class ConverseApiStreamHandler:
         :param on_stop: Callback function for stopping the stream.
         """
         self.model: type_model_name = model
-        self.instruction = instruction
+        self.instructions = instructions
         self.generation_params = generation_params
         self.guardrail = guardrail
-        self.grounding_source = grounding_source
         self.tools = tools
         self.on_stream = on_stream
         self.on_thinking = on_thinking
@@ -156,6 +154,7 @@ class ConverseApiStreamHandler:
     def run(
         self,
         messages: list[AgentMessageModel],
+        grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
         message_for_continue_generate: AgentMessageModel | None = None,
     ) -> OnStopInput:
         try:
@@ -163,10 +162,10 @@ class ConverseApiStreamHandler:
             args = compose_args_for_converse_api(
                 messages=messages,
                 model=self.model,
-                instruction=self.instruction,
+                instructions=self.instructions,
                 generation_params=self.generation_params,
                 guardrail=self.guardrail,
-                grounding_source=self.grounding_source,
+                grounding_source=grounding_source,
                 tools=self.tools,
             )
             logger.info(f"args for converse_stream: {args}")

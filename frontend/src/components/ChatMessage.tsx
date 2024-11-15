@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 import ChatMessageMarkdown from './ChatMessageMarkdown';
 import ButtonCopy from './ButtonCopy';
 import {
@@ -28,7 +29,8 @@ import { AgentToolsProps } from '../features/agent/xstates/agentThink';
 type Props = BaseProps & {
   tools?: AgentToolsProps[];
   chatContent?: DisplayMessageContent;
-  relatedDocuments?: RelatedDocument[];
+  isStreaming?: boolean;
+  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
   onSubmitFeedback?: (messageId: string, feedback: PutFeedbackRequest) => void;
@@ -39,8 +41,6 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-
-  const { relatedDocuments } = props;
 
   const [firstTextContent, setFirstTextContent] = useState(0);
 
@@ -97,7 +97,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
+    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3')}>
       <div className="col-start-1 lg:col-start-2 ">
         {(chatContent?.sibling.length ?? 0) > 1 && (
           <div className="flex items-center justify-start text-sm lg:justify-end">
@@ -141,11 +141,18 @@ const ChatMessage: React.FC<Props> = (props) => {
             <div className="flex flex-col">
               {props.tools != null && (
                 props.tools.length === 0 ? (
-                  <AgentToolList tools={{ tools: {} }} />
+                  <AgentToolList
+                    messageId={chatContent.id}
+                    tools={{ tools: {} }}
+                  />
                 ) : (
                   props.tools.map((tools, index) => (
-                    <div className="mb-3 mt-0">
-                      <AgentToolList key={index} tools={tools} />
+                    <div key={index} className="mb-3 mt-0">
+                      <AgentToolList
+                        messageId={chatContent.id}
+                        tools={tools}
+                        getRelatedDocument={props.getRelatedDocument}
+                      />
                     </div>
                   ))
                 )
@@ -276,7 +283,8 @@ const ChatMessage: React.FC<Props> = (props) => {
           )}
           {chatContent?.role === 'assistant' && (
             <ChatMessageMarkdown
-              relatedDocuments={relatedDocuments}
+              isStreaming={props.isStreaming}
+              getRelatedDocument={props.getRelatedDocument}
               messageId={chatContent.id}>
               {chatContent.content[0].body}
             </ChatMessageMarkdown>

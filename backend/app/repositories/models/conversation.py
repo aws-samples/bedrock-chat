@@ -26,6 +26,7 @@ from app.routes.schemas.conversation import (
     DocumentToolResult,
     ToolResultContentBody,
     ToolResultContent,
+    RelatedDocument,
 )
 from pydantic import BaseModel, Field, field_validator, Discriminator, JsonValue
 from mypy_boto3_bedrock_runtime.type_defs import (
@@ -443,10 +444,7 @@ class ToolResultContentModelBody(BaseModel):
     def from_tool_result(cls, tool_result: ConverseApiToolResult) -> Self:
         return cls(
             tool_use_id=tool_result["toolUseId"],
-            content=[
-                tool_result_model_from_tool_result_content(content=content)
-                for content in tool_result["content"]
-            ],
+            content=tool_result["result"],
             status=tool_result["status"],
         )
 
@@ -613,3 +611,46 @@ class ConversationMeta(BaseModel):
     create_time: float
     model: str
     bot_id: str | None
+
+
+class RelatedDocumentModel(BaseModel):
+    content: ToolResultModel
+    source_id: str
+    source_name: str | None = None
+    source_link: str | None = None
+
+    def to_tool_result_model(self, display_citation: bool) -> ToolResultModel:
+        if isinstance(self.content, TextToolResultModel):
+            if display_citation:
+                return JsonToolResultModel(
+                    json={
+                        "source_id": self.source_id,
+                        "content": self.content.text,
+                    },
+                )
+
+            else:
+                return self.content
+
+        elif isinstance(self.content, JsonToolResultModel):
+            if display_citation:
+                return JsonToolResultModel(
+                    json={
+                        "source_id": self.source_id,
+                        "content": self.content.json_,
+                    },
+                )
+
+            else:
+                return self.content
+
+        else:
+            return self.content
+
+    def to_schema(self) -> RelatedDocument:
+        return RelatedDocument(
+            content=self.content.to_tool_result(),
+            source_id=self.source_id,
+            source_name=self.source_name,
+            source_link=self.source_link,
+        )

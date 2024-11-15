@@ -1,0 +1,69 @@
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { JSONTree } from 'react-json-tree';
+
+import { RelatedDocument } from '../@types/conversation';
+
+const RelatedDocumentViewer: React.FC<{
+  relatedDocument: RelatedDocument;
+  onClick: () => void;
+}> = (props) => {
+  const { t } = useTranslation();
+
+  const content = useMemo(() => (
+    props.relatedDocument.content
+  ), [props.relatedDocument.content]);
+
+  const sourceName = useMemo(() => (
+    props.relatedDocument.sourceName
+  ), [props.relatedDocument.sourceName]);
+
+  const sourceLink = useMemo(() => (
+    props.relatedDocument.sourceLink
+  ), [props.relatedDocument.sourceLink]);
+
+  return (
+    <div
+      className="fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000"
+      onClick={props.onClick}>
+      <div
+        className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}>
+        {'text' in content && (
+          content.text.split('\n').map((s, idx) => (
+            <div key={idx}>{s}</div>
+          ))
+        )}
+        {'json' in content && (
+          <JSONTree
+            data={content.json}
+            invertTheme={false} // disable dark theme
+          />
+        )}
+
+        {(sourceName || sourceLink) && (
+          <div className="my-1 border-t pt-1 italic">
+            {t('bot.label.referenceLink')}:
+            {sourceLink ? (
+              <span
+                className="ml-1 cursor-pointer underline"
+                onClick={() => {
+                  window.open(sourceLink, '_blank');
+                }}>
+                {sourceName ?? sourceLink}
+              </span>
+            ) : (
+              <span className="ml-1">
+                {sourceName}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default RelatedDocumentViewer;

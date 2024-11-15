@@ -5,7 +5,11 @@ from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-from app.repositories.models.conversation import AgentMessageModel, ContentModel
+from app.repositories.models.conversation import (
+    AgentMessageModel,
+    ContentModel,
+    ToolResultModel,
+)
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -19,7 +23,6 @@ from mypy_boto3_bedrock_runtime.type_defs import (
     ContentBlockTypeDef,
     GuardrailConverseContentBlockTypeDef,
     InferenceConfigurationTypeDef,
-    ToolResultContentBlockOutputTypeDef,
 )
 from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
 
@@ -42,7 +45,7 @@ client = get_bedrock_runtime_client()
 
 class ConverseApiToolResult(TypedDict):
     toolUseId: str
-    content: list[ToolResultContentBlockOutputTypeDef]
+    result: list[ToolResultModel]
     status: Literal["error", "success"]
 
 
@@ -53,7 +56,7 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
 def compose_args_for_converse_api(
     messages: list[AgentMessageModel],
     model: type_model_name,
-    instruction: str | None = None,
+    instructions: list[str] = [],
     generation_params: GenerationParamsModel | None = None,
     guardrail: BedrockGuardrailsModel | None = None,
     grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
@@ -120,7 +123,11 @@ def compose_args_for_converse_api(
         "additionalModelRequestFields": additional_model_request_fields,
         "modelId": get_model_id(model),
         "messages": arg_messages,
-        "system": [{"text": instruction}] if instruction else [],
+        "system": [
+            {"text": instruction}
+            for instruction in instructions
+            if len(instruction) > 0
+        ],
     }
 
     if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:

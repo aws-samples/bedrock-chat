@@ -53,7 +53,7 @@ def generate_presigned_url(
     content_type: str | None = None,
     expiration=3600,
     client_method: Literal["put_object", "get_object"] = "put_object",
-):
+) -> str:
     # See: https://github.com/boto/boto3/issues/421#issuecomment-1849066655
     client = boto3.client(
         "s3",

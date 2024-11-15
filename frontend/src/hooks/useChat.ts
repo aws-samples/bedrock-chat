@@ -7,7 +7,6 @@ import {
   MessageMap,
   Model,
   PostMessageRequest,
-  RelatedDocument,
   Conversation,
   PutFeedbackRequest,
 } from '../@types/conversation';
@@ -56,9 +55,6 @@ const useChatState = create<{
   postingMessage: boolean;
   setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
-  relatedDocuments: {
-    [messageId: string]: RelatedDocument[];
-  };
   setMessages: (id: string, messageMap: MessageMap) => void;
   copyMessages: (fromId: string, toId: string) => void;
   pushMessage: (
@@ -73,11 +69,6 @@ const useChatState = create<{
     id: string,
     currentMessageId: string
   ) => DisplayMessageContent[];
-  setRelatedDocuments: (
-    messageId: string,
-    documents: RelatedDocument[]
-  ) => void;
-  moveRelatedDocuments: (fromMessageId: string, toMessageId: string) => void;
   currentMessageId: string;
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
@@ -104,7 +95,6 @@ const useChatState = create<{
       }));
     },
     chats: {},
-    relatedDocuments: {},
     setMessages: (id: string, messageMap: MessageMap) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
@@ -188,21 +178,6 @@ const useChatState = create<{
     getMessages: (id: string, currentMessageId: string) => {
       return convertMessageMapToArray(get().chats[id] ?? {}, currentMessageId);
     },
-    setRelatedDocuments: (messageId, documents) => {
-      set((state) => ({
-        relatedDocuments: produce(state.relatedDocuments, (draft) => {
-          draft[messageId] = documents;
-        }),
-      }));
-    },
-    moveRelatedDocuments: (fromId, toId) => {
-      set(() => ({
-        relatedDocuments: produce(get().relatedDocuments, (draft) => {
-          draft[toId] = get().relatedDocuments[fromId];
-          draft[fromId] = [];
-        }),
-      }));
-    },
     currentMessageId: '',
     setCurrentMessageId: (s: string) => {
       set(() => ({
@@ -262,9 +237,6 @@ const useChat = () => {
     isGeneratedTitle,
     setIsGeneratedTitle,
     getPostedModel,
-    relatedDocuments,
-    setRelatedDocuments,
-    moveRelatedDocuments,
     shouldUpdateMessages,
     getShouldContinue,
     setShouldContinue,
@@ -283,6 +255,13 @@ const useChat = () => {
   } = conversationApi.getConversation(conversationId);
   const { syncConversations } = useConversation();
 
+  const {
+    data: relatedDocuments,
+    mutate: reloadRelatedDocuments,
+    isLoading: loadingRelatedDocuments,
+    error: relatedDocumentsError,
+  } = conversationApi.getRelatedDocuments(conversationId);
+
   const messages = useMemo(() => {
     return getMessages(conversationId, currentMessageId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -299,9 +278,7 @@ const useChat = () => {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
       setModelId(getPostedModel());
-      if ((relatedDocuments[NEW_MESSAGE_ID.ASSISTANT]?.length ?? 0) > 0) {
-        moveRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, data.lastMessageId);
-      }
+      reloadRelatedDocuments();
     }
     if (data && data.shouldContinue !== getShouldContinue()) {
       setShouldContinue(data.shouldContinue);
@@ -444,7 +421,6 @@ const useChat = () => {
         }
         postStreaming({
           input,
-          hasKnowledge: bot?.hasKnowledge,
           dispatch: (c: string) => {
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
@@ -490,23 +466,6 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
-
-    // get related document (for RAG)
-    const documents: RelatedDocument[] = [];
-    if (input.botId) {
-      conversationApi
-        .getRelatedDocuments({
-          botId: input.botId,
-          conversationId: input.conversationId!,
-          message: input.message,
-        })
-        .then((res) => {
-          if (res.data) {
-            documents.push(...res.data);
-            setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
-          }
-        });
-    }
   };
 
   /**
@@ -660,23 +619,6 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
-
-    // get related document (for RAG)
-    const documents: RelatedDocument[] = [];
-    if (input.botId) {
-      conversationApi
-        .getRelatedDocuments({
-          botId: input.botId,
-          conversationId: input.conversationId!,
-          message: input.message,
-        })
-        .then((res) => {
-          if (res.data) {
-            documents.push(...res.data);
-            setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
-          }
-        });
-    }
   };
 
   const hasError = useMemo(() => {
@@ -731,9 +673,10 @@ const useChat = () => {
         });
       }
     },
-    getRelatedDocuments: (messageId: string) => {
-      return relatedDocuments[messageId] ?? [];
-    },
+    relatedDocuments,
+    reloadRelatedDocuments,
+    loadingRelatedDocuments,
+    relatedDocumentsError,
     giveFeedback: (messageId: string, feedback: PutFeedbackRequest) => {
       return feedbackApi
         .putFeedback(conversationId, messageId, feedback)

@@ -17,12 +17,7 @@ const usePostMessageStreaming = create<{
   }) => Promise<string>;
 }>(() => {
   return {
-    post: async ({ input, dispatch, hasKnowledge, thinkingDispatch }) => {
-      if (hasKnowledge) {
-        dispatch(i18next.t('bot.label.retrievingKnowledge'));
-      } else {
-        dispatch(i18next.t('app.chatWaitingSymbol'));
-      }
+    post: async ({ input, dispatch, thinkingDispatch }) => {
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
         ...input,
@@ -91,7 +86,7 @@ const usePostMessageStreaming = create<{
             if (data.status) {
               switch (data.status) {
                 case PostStreamingStatus.FETCHING_KNOWLEDGE:
-                  dispatch(i18next.t('bot.label.retrievingKnowledge'));
+                  dispatch(i18next.t('bot.label.retrievingKnowledge') + '\n');
                   break;
                 case PostStreamingStatus.AGENT_THINKING:
                   if (completion.length > 0) {
@@ -126,15 +121,13 @@ const usePostMessageStreaming = create<{
                 case PostStreamingStatus.STREAMING:
                   if (data.completion || data.completion === '') {
                     completion += data.completion;
-                    dispatch(completion + i18next.t('app.chatWaitingSymbol'));
+                    dispatch(completion);
                   }
                   break;
                 case PostStreamingStatus.STREAMING_END:
                   thinkingDispatch({
                     type: 'goodbye',
                   });
-
-                  dispatch(completion);
                   ws.close();
                   break;
                 case PostStreamingStatus.ERROR:
@@ -142,7 +135,8 @@ const usePostMessageStreaming = create<{
                   console.error(data);
                   throw new Error(i18next.t('error.predict.invalidResponse'));
                 default:
-                  dispatch(i18next.t('app.chatWaitingSymbol'));
+                  dispatch('');
+                  break;
               }
             } else {
               ws.close();

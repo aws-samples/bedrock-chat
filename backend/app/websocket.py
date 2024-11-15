@@ -92,7 +92,10 @@ def on_agent_tool_result(
                 result={
                     "toolUseId": tool_result["toolUseId"],
                     "status": tool_result["status"],
-                    "content": tool_result["content"],
+                    "content": [
+                        result.to_content_for_converse()
+                        for result in tool_result["result"]
+                    ],
                 },
             )
         ).encode("utf-8"),

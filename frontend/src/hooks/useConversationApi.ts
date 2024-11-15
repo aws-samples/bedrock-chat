@@ -2,10 +2,9 @@ import { MutatorCallback, useSWRConfig } from 'swr';
 import {
   Conversation,
   ConversationMeta,
-  GetRelatedDocumentsRequest,
-  GetRelatedDocumentsResponse,
   PostMessageRequest,
   PostMessageResponse,
+  RelatedDocument,
 } from '../@types/conversation';
 import useHttp from './useHttp';
 
@@ -38,13 +37,15 @@ const useConversationApi = () => {
         ...input,
       });
     },
-    getRelatedDocuments: (input: GetRelatedDocumentsRequest) => {
-      return http.post<GetRelatedDocumentsResponse>(
-        'conversation/related-documents',
-        {
-          ...input,
-        }
-      );
+    getRelatedDocuments: (conversationId?: string) => {
+      return http.get<RelatedDocument[]>(
+        !conversationId ? null : `conversation/${conversationId}/related-documents`, {
+        keepPreviousData: true,
+      });
+    },
+    getRelatedDocument: async (conversationId: string, sourceId: string) => {
+      const res = await http.getOnce<RelatedDocument>(`conversation/${conversationId}/related-documents/${sourceId}`);
+      return res.data;
     },
     deleteConversation: (conversationId: string) => {
       return http.delete(`conversation/${conversationId}`);

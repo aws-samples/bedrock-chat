@@ -1,7 +1,9 @@
 import logging
-from copy import deepcopy
-from typing import Literal, Callable
+from typing import Callable
 
+from app.agents.tools.agent_tool import (
+    agent_result_to_related_document,
+)
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import (
@@ -9,18 +11,19 @@ from app.bedrock import (
     call_converse_api,
     compose_args_for_converse_api,
 )
-from app.prompt import build_rag_prompt
+from app.prompt import build_rag_prompt, PROMPT_TO_CITE_TOOL_RESULTS
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
     store_conversation,
+    store_related_documents,
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
     AgentMessageModel,
-    ChunkModel,
     ConversationModel,
     MessageModel,
+    RelatedDocumentModel,
     TextContentModel,
     ToolUseContentModel,
     ToolResultContentModel,
@@ -39,17 +42,14 @@ from app.routes.schemas.conversation import (
     Conversation,
     FeedbackOutput,
     MessageOutput,
-    RelatedDocumentsOutput,
     type_model_name,
-    TextContent,
 )
 from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_current_time
 from app.vector_search import (
     SearchResult,
-    filter_used_results,
-    get_source_link,
+    search_result_to_related_document,
     search_related_docs,
     to_guardrails_grounding_source,
 )
@@ -230,30 +230,6 @@ def trace_to_root(
     return result[::-1]
 
 
-def insert_knowledge(
-    conversation: ConversationModel,
-    search_results: list[SearchResult],
-    display_citation: bool = True,
-) -> ConversationModel:
-    """Insert knowledge to the conversation."""
-    if len(search_results) == 0:
-        return conversation
-
-    conversation_with_context = deepcopy(conversation)
-    content = conversation_with_context.message_map["instruction"].content[0]
-    if isinstance(content, TextContentModel):
-        inserted_prompt = build_rag_prompt(
-            conversation,
-            search_results,
-            display_citation,
-        )
-        logger.info(f"Inserted prompt: {inserted_prompt}")
-
-        content.body = inserted_prompt
-
-    return conversation_with_context
-
-
 def chat(
     user_id: str,
     chat_input: ChatInput,
@@ -270,16 +246,32 @@ def chat(
         if bot and bot.is_agent_enabled()
         else {}
     )
+    display_citation = bot is not None and bot.display_retrieved_chunks
 
     message_map = conversation.message_map
-    search_results: list[SearchResult] = []
-    if bot and bot.has_knowledge():
-        if bot.is_agent_enabled():
-            # Add knowledge tool
-            knowledge_tool = create_knowledge_tool(bot, chat_input.message.model)
-            tools[knowledge_tool.name] = knowledge_tool
+    instructions: list[str] = (
+        [
+            content.body
+            for content in message_map["instruction"].content
+            if isinstance(content, TextContentModel)
+        ]
+        if "instruction" in message_map
+        else []
+    )
 
-        else:
+    related_documents: list[RelatedDocumentModel] = []
+    search_results: list[SearchResult] = []
+    if bot is not None:
+        if bot.is_agent_enabled():
+            if bot.has_knowledge():
+                # Add knowledge tool
+                knowledge_tool = create_knowledge_tool(bot, chat_input.message.model)
+                tools[knowledge_tool.name] = knowledge_tool
+
+            if display_citation:
+                instructions.append(PROMPT_TO_CITE_TOOL_RESULTS)
+
+        elif bot.has_knowledge():
             if on_fetching_knowledge:
                 on_fetching_knowledge()
 
@@ -291,12 +283,12 @@ def chat(
                 logger.info(f"Search results from vector store: {search_results}")
 
                 # Insert contexts to instruction
-                conversation_with_context = insert_knowledge(
-                    conversation,
-                    search_results,
-                    display_citation=bot.display_retrieved_chunks,
+                instructions.append(
+                    build_rag_prompt(
+                        search_results=search_results,
+                        display_citation=display_citation,
+                    )
                 )
-                message_map = conversation_with_context.message_map
 
     # Leaf node id
     # If `continue_generate` is True, note that new message is not added to the message map.
@@ -326,12 +318,6 @@ def chat(
         )
         message_for_continue_generate = None
 
-    instruction: str | None = (
-        message_map["instruction"].content[0].body  # type: ignore
-        if "instruction" in message_map
-        else None
-    )
-
     generation_params = bot.generation_params if bot else None
 
     # Guardrails
@@ -342,10 +328,9 @@ def chat(
 
     stream_handler = ConverseApiStreamHandler(
         model=chat_input.message.model,
-        instruction=instruction,
+        instructions=instructions,
         generation_params=generation_params,
         guardrail=guardrail,
-        grounding_source=grounding_source,
         tools=tools,
         on_stream=on_stream,
         on_thinking=on_thinking,
@@ -355,36 +340,12 @@ def chat(
     while True:
         result = stream_handler.run(
             messages=messages,
+            grounding_source=grounding_source,
             message_for_continue_generate=message_for_continue_generate,
         )
 
         message = result["message"]
         stop_reason = result["stop_reason"]
-
-        # Used chunks for RAG generation
-        used_chunks: list[ChunkModel] | None = None
-        if bot and bot.display_retrieved_chunks:
-            if not bot.is_agent_enabled() and len(search_results) > 0:
-                reply_txt = (
-                    message.content[0].body
-                    if len(message.content) > 0
-                    and isinstance(message.content[0], TextContentModel)
-                    else ""
-                )
-
-                used_chunks = []
-                for r in filter_used_results(reply_txt, search_results):
-                    content_type, source_link = get_source_link(r.source)
-                    used_chunks.append(
-                        ChunkModel(
-                            content=r.content,
-                            content_type=content_type,
-                            source=source_link,
-                            rank=r.rank,
-                        )
-                    )
-
-        message.used_chunks = used_chunks
 
         conversation.total_price += result["price"]
         conversation.should_continue = stop_reason == "max_tokens"
@@ -416,6 +377,15 @@ def chat(
             # Append children to parent
             conversation.message_map[user_msg_id].children.append(assistant_msg_id)
             conversation.last_message_id = assistant_msg_id
+
+            search_results_as_related_documents = [
+                search_result_to_related_document(
+                    search_result=result,
+                    source_id_base=assistant_msg_id,
+                )
+                for result in search_results
+            ]
+            related_documents.extend(search_results_as_related_documents)
             break
 
         tool_use_message = AgentMessageModel.from_message_model(message=message)
@@ -443,12 +413,43 @@ def chat(
                 tool_use_id=content.body.tool_use_id,
                 input=content.body.input,
             )
+            agent_result = run_result["result"]
+            agent_succeeded = run_result["succeeded"]
+
+            if isinstance(agent_result, list):
+                tool_result_as_related_documents = [
+                    agent_result_to_related_document(
+                        tool_name=content.body.name,
+                        res=result,
+                        source_id_base=content.body.tool_use_id,
+                        rank=rank,
+                    )
+                    for rank, result in enumerate(agent_result)
+                ]
+
+            else:
+                tool_result_as_related_documents = [
+                    agent_result_to_related_document(
+                        tool_name=content.body.name,
+                        res=agent_result,
+                        source_id_base=content.body.tool_use_id,
+                    )
+                ]
+
+            if agent_succeeded:
+                related_documents.extend(tool_result_as_related_documents)
 
             tool_result = ConverseApiToolResult(
                 toolUseId=run_result["tool_use_id"],
-                content=run_result["body"],
-                status="success" if run_result["succeeded"] else "error",
+                result=[
+                    related_document.to_tool_result_model(
+                        display_citation=display_citation,
+                    )
+                    for related_document in tool_result_as_related_documents
+                ],
+                status="success" if agent_succeeded else "error",
             )
+
             tool_results.append(tool_result)
 
             if on_tool_result:
@@ -469,6 +470,11 @@ def chat(
 
     # Store conversation before finish streaming so that front-end can avoid 404 issue
     store_conversation(user_id, conversation)
+    store_related_documents(
+        user_id=user_id,
+        conversation_id=conversation.id,
+        related_documents=related_documents,
+    )
 
     if on_stop:
         on_stop(result)
@@ -636,37 +642,3 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         should_continue=conversation.should_continue,
     )
     return output
-
-
-def fetch_related_documents(
-    user_id: str, chat_input: ChatInput
-) -> list[RelatedDocumentsOutput] | None:
-    """Retrieve related documents from vector store.
-    If `display_retrieved_chunks` is disabled, return None.
-    """
-    if not chat_input.bot_id:
-        return []
-
-    _, bot = fetch_bot(user_id, chat_input.bot_id)
-    if not bot.has_knowledge() or not bot.display_retrieved_chunks:
-        return None
-
-    content = chat_input.message.content[-1]
-    chunks = (
-        search_related_docs(bot=bot, query=content.body)
-        if isinstance(content, TextContent)
-        else []
-    )
-
-    documents = []
-    for chunk in chunks:
-        content_type, source_link = get_source_link(chunk.source)
-        documents.append(
-            RelatedDocumentsOutput(
-                chunk_body=chunk.content,
-                content_type=content_type,
-                source_link=source_link,
-                rank=chunk.rank,
-            )
-        )
-    return documents

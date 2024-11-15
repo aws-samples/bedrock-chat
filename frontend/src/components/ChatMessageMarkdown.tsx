@@ -8,7 +8,7 @@ import remarkBreaks from 'remark-breaks';
 import ButtonCopy from './ButtonCopy';
 import { RelatedDocument } from '../@types/conversation';
 import { twMerge } from 'tailwind-merge';
-import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 import { create } from 'zustand';
 import { produce } from 'immer';
 import rehypeExternalLinks, { Options } from 'rehype-external-links';
@@ -16,94 +16,74 @@ import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
 import { onlyText } from 'react-children-utilities';
+import RelatedDocumentViewer from './RelatedDocumentViewer';
 
 type Props = BaseProps & {
   children: string;
-  relatedDocuments?: RelatedDocument[];
+  isStreaming?: boolean;
+  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
   messageId: string;
 };
 
-const useMarkdownState = create<{
-  isOpenReference: {
-    [key: string]: boolean;
+const useRelatedDocumentsState = create<{
+  relatedDocuments: {
+    [key: string]: RelatedDocument;
   };
-  setIsOpenReference: (key: string, b: boolean) => void;
+  setRelatedDocument: (key: string, relatedDocument: RelatedDocument) => void;
+  resetRelatedDocument: (key: string) => void;
 }>((set, get) => ({
-  isOpenReference: {},
-  setIsOpenReference: (key, b) => {
+  relatedDocuments: {},
+  setRelatedDocument: (key, relatedDocument) => {
     set({
-      isOpenReference: produce(get().isOpenReference, (draft) => {
-        draft[key] = b;
+      relatedDocuments: produce(get().relatedDocuments, (draft) => {
+        draft[key] = relatedDocument;
+      }),
+    });
+  },
+  resetRelatedDocument: (key) => {
+    set({
+      relatedDocuments: produce(get().relatedDocuments, (draft) => {
+        delete draft[key];
       }),
     });
   },
 }));
 
 const RelatedDocumentLink: React.FC<{
-  relatedDocument?: RelatedDocument;
+  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
+  sourceId: string;
   linkId: string;
   children: ReactNode;
 }> = (props) => {
-  const { t } = useTranslation();
-  const { isOpenReference, setIsOpenReference } = useMarkdownState();
-
-  const linkUrl = useMemo(() => {
-    const url = props.relatedDocument?.sourceLink;
-    if (url) {
-      if (props.relatedDocument?.contentType === 's3') {
-        return decodeURIComponent(url.split('?')[0].split('/').pop() ?? '');
-      } else {
-        return url;
-      }
-    }
-    return '';
-  }, [props.relatedDocument?.contentType, props.relatedDocument?.sourceLink]);
+  const { relatedDocuments, setRelatedDocument, resetRelatedDocument } = useRelatedDocumentsState();
 
   return (
     <>
       <a
         className={twMerge(
           'mx-0.5 ',
-          props.relatedDocument
+          props.getRelatedDocument != null
             ? 'cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover'
             : 'cursor-not-allowed text-gray'
         )}
-        onClick={() => {
-          setIsOpenReference(props.linkId, !isOpenReference[props.linkId]);
+        onClick={async () => {
+          if (props.getRelatedDocument != null) {
+            const relatedDocument = await props.getRelatedDocument(props.sourceId);
+            if (relatedDocument != null) {
+              setRelatedDocument(props.linkId, relatedDocument);
+            }
+          }
         }}>
         {props.children}
       </a>
 
-      {props.relatedDocument && (
-        <div
-          className={twMerge(
-            isOpenReference[props.linkId] ? 'visible' : 'invisible',
-            'fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000'
-          )}
+      {relatedDocuments[props.linkId] && (
+        <RelatedDocumentViewer
+          relatedDocument={relatedDocuments[props.linkId]}
           onClick={() => {
-            setIsOpenReference(props.linkId, false);
-          }}>
-          <div
-            className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}>
-            {props.relatedDocument.chunkBody.split('\n').map((s, idx) => (
-              <div key={idx}>{s}</div>
-            ))}
-
-            <div className="my-1 border-t pt-1 italic">
-              {t('bot.label.referenceLink')}:
-              <span
-                className="ml-1 cursor-pointer underline"
-                onClick={() => {
-                  window.open(props.relatedDocument?.sourceLink, '_blank');
-                }}>
-                {linkUrl}
-              </span>
-            </div>
-          </div>
-        </div>
+            resetRelatedDocument(props.linkId);
+          }}
+        />
       )}
     </>
   );
@@ -112,16 +92,42 @@ const RelatedDocumentLink: React.FC<{
 const ChatMessageMarkdown: React.FC<Props> = ({
   className,
   children,
-  relatedDocuments,
+  isStreaming,
+  getRelatedDocument,
   messageId,
 }) => {
+  const sourceIds = useMemo(() => (
+    [...new Set(Array.from(
+      children.matchAll(/\[\^(?<sourceId>[\w!?/+\-_~=;.,*&@#$%]+?)\]/g),
+      match => match.groups!.sourceId,
+    ))]
+  ), [children]);
+
+  const chatWaitingSymbol = useMemo(() => i18next.t('app.chatWaitingSymbol'), []);
   const text = useMemo(() => {
-    const results = children.match(/\[\^(?<number>[\d])+?\]/g);
+    const textRemovedIncompleteCitation = children.replace(/\[\^[^\]]*?$/, '[^');
+    let textReplacedSourceId = textRemovedIncompleteCitation.replace(
+      /\[\^(?<sourceId>[\w!?/+\-_~=;.,*&@#$%]+?)\]/g,
+      (_, sourceId) => {
+        const index = sourceIds.indexOf(sourceId);
+        if (index === -1) {
+          return '';
+        }
+        return `[^${index + 1}]`
+      },
+    );
+
+    if (isStreaming) {
+      textReplacedSourceId += chatWaitingSymbol;
+    }
+
     // Default Footnote link is not shown, so set dummy
-    return results
-      ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
-      : children;
-  }, [children]);
+    if (sourceIds.length > 0) {
+      textReplacedSourceId += `\n${sourceIds.map((_, index) => `[^${index + 1}]: dummy`).join('\n')}`;
+    }
+
+    return textReplacedSourceId;
+  }, [children, isStreaming, sourceIds, chatWaitingSymbol]);
 
   const remarkPlugins = useMemo(() => {
     return [remarkGfm, remarkBreaks, remarkMath];
@@ -136,7 +142,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
 
   return (
     <ReactMarkdown
-      className={`${className ?? ''} prose max-w-full break-all`}
+      className={twMerge(className, 'prose max-w-full break-all')}
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -188,9 +194,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                       const docNo = Number.parseInt(
                         href.replace('#user-content-fn-', '')
                       );
-                      const doc = relatedDocuments?.filter(
-                        (doc) => doc.rank === docNo
-                      )[0];
+                      const sourceId = sourceIds[docNo - 1];
 
                       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       // @ts-ignore
@@ -199,7 +203,9 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                         <RelatedDocumentLink
                           key={`${idx}-${docNo}`}
                           linkId={`${messageId}-${idx}-${docNo}`}
-                          relatedDocument={doc}>
+                          getRelatedDocument={getRelatedDocument}
+                          sourceId={sourceId}
+                        >
                           [{refNo}]
                         </RelatedDocumentLink>
                       );

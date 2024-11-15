@@ -35,10 +35,10 @@ class TestConverseApiStreamHandler(unittest.TestCase):
     MODEL = "claude-v3-sonnet"
     # MODEL = "mistral-7b-instruct"
 
-    def _run(self, message, instruction=None, generation_params=None, guardrail=None):
+    def _run(self, message, instructions=[], generation_params=None, guardrail=None):
         self.stream_handler = ConverseApiStreamHandler(
             model=self.MODEL,
-            instruction=instruction,
+            instructions=instructions,
             generation_params=generation_params,
             guardrail=guardrail,
             on_stream=on_stream,
@@ -205,10 +205,10 @@ class TestConverseApiStreamHandlerGuardrail(unittest.TestCase):
         except Exception as e:
             print(f"Error deleting guardrail: {e}")
 
-    def _run(self, message, instruction=None, generation_params=None, guardrail=None):
+    def _run(self, message, instructions=[], generation_params=None, guardrail=None):
         self.stream_handler = ConverseApiStreamHandler(
             model=self.MODEL,
-            instruction=instruction,
+            instructions=instructions,
             generation_params=generation_params,
             guardrail=guardrail,
             on_stream=on_stream,

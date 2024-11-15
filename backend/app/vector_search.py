@@ -1,13 +1,15 @@
-import json
 import logging
-import re
-from typing import Any, Literal
+from typing import TypedDict
+from urllib.parse import urlparse
 
-from app.repositories.custom_bot import find_public_bot_by_id
+from app.repositories.models.conversation import (
+    RelatedDocumentModel,
+    TextToolResultModel,
+)
 from app.repositories.models.custom_bot import BotModel
 from app.utils import generate_presigned_url, get_bedrock_agent_client
+
 from botocore.exceptions import ClientError
-from pydantic import BaseModel
 from mypy_boto3_bedrock_runtime.type_defs import (
     GuardrailConverseContentBlockTypeDef,
 )
@@ -16,11 +18,26 @@ logger = logging.getLogger(__name__)
 agent_client = get_bedrock_agent_client()
 
 
-class SearchResult(BaseModel):
+class SearchResult(TypedDict):
     bot_id: str
     content: str
-    source: str
+    source_name: str
+    source_link: str
     rank: int
+
+
+def search_result_to_related_document(
+    search_result: SearchResult,
+    source_id_base: str,
+) -> RelatedDocumentModel:
+    return RelatedDocumentModel(
+        content=TextToolResultModel(
+            text=search_result["content"],
+        ),
+        source_id=f"{source_id_base}@{search_result['rank']}",
+        source_name=search_result["source_name"],
+        source_link=search_result["source_link"],
+    )
 
 
 def to_guardrails_grounding_source(
@@ -29,56 +46,11 @@ def to_guardrails_grounding_source(
     """Convert search results to Guardrails Grounding source format."""
     grounding_source: GuardrailConverseContentBlockTypeDef = {
         "text": {
-            "text": "\n\n".join(x.content for x in search_results),
+            "text": "\n\n".join(x["content"] for x in search_results),
             "qualifiers": ["grounding_source"],
         }
     }
     return grounding_source
-
-
-def filter_used_results(
-    generated_text: str, search_results: list[SearchResult]
-) -> list[SearchResult]:
-    """Filter the search results based on the citations in the generated text.
-    Note that the citations in the generated text are in the format of [^rank].
-    """
-    used_results: list[SearchResult] = []
-
-    try:
-        # Extract citations from the generated text
-        citations = [
-            citation.strip("[]^")
-            for citation in re.findall(r"\[\^(\d+)\]", generated_text)
-        ]
-    except Exception as e:
-        logger.error(f"Error extracting citations from the generated text: {e}")
-        return used_results
-
-    for result in search_results:
-        if str(result.rank) in citations:
-            used_results.append(result)
-
-    return used_results
-
-
-def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
-    if source.startswith("s3://"):
-        s3_path = source[5:]  # Remove "s3://" prefix
-        path_parts = s3_path.split("/", 1)
-        bucket_name = path_parts[0]
-        object_key = path_parts[1] if len(path_parts) > 1 else ""
-
-        source_link = generate_presigned_url(
-            bucket=bucket_name,
-            key=object_key,
-            client_method="get_object",
-        )
-        return "s3", source_link
-    elif source.startswith("http://") or source.startswith("https://"):
-        return "url", source
-    else:
-        # Assume source is a youtube video id
-        return "url", f"https://www.youtube.com/watch?v={source}"
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
@@ -117,8 +89,32 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                 .get("uri", "")
             )
 
+            url = urlparse(url=source)
+            if url.scheme == "s3":
+                source_name = url.path.split("/")[-1]
+                source_link = generate_presigned_url(
+                    bucket=url.netloc,
+                    key=url.path,
+                    client_method="get_object",
+                )
+
+            elif url.scheme == "http" or url.scheme == "https":
+                source_name = source
+                source_link = source
+
+            else:
+                # Assume source is a youtube video id
+                source_name = source
+                source_link = f"https://www.youtube.com/watch?v={source}"
+
             search_results.append(
-                SearchResult(rank=i, bot_id=bot.id, content=content, source=source)
+                SearchResult(
+                    rank=i,
+                    bot_id=bot.id,
+                    content=content,
+                    source_name=source_name,
+                    source_link=source_link,
+                )
             )
 
         return search_results

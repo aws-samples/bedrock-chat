@@ -50,6 +50,19 @@ def decompose_bot_alias_id(composed_alias_id: str):
     return composed_alias_id.split("#")[-1]
 
 
+def compose_related_document_source_id(
+    user_id: str,
+    conversation_id: str,
+    source_id: str,
+):
+    # Add user_id prefix for row level security to match with `LeadingKeys` condition
+    return f"{user_id}#RELATED_DOCUMENT#{conversation_id}#{source_id}"
+
+
+def decompose_related_document_source_id(composed_id: str):
+    return composed_id.split("#")[-1]
+
+
 def _get_aws_resource(service_name, user_id=None):
     """Get AWS resource with optional row-level access control for DynamoDB.
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html

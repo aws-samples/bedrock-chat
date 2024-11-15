@@ -1,6 +1,7 @@
 import ChatMessage from './ChatMessage';
 import { DisplayMessageContent } from '../@types/conversation';
 import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
+import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
 
 export const Conversation = () => {
   const messages: DisplayMessageContent[] = [
@@ -72,12 +73,16 @@ export const Conversation = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            relatedDocuments={message.usedChunks?.map((chunk) => ({
-              chunkBody: chunk.content,
-              contentType: chunk.contentType,
-              sourceLink: chunk.source,
-              rank: chunk.rank,
-            }))}
+            getRelatedDocument={async (sourceId) => {
+              if (message.usedChunks) {
+                const chunk = message.usedChunks.find((chunk) => chunk.rank.toString() === sourceId);
+                if (chunk != null) {
+                  return convertUsedChunkToRelatedDocument(chunk);
+                }
+              }
+
+              return undefined;
+            }}
           />
 
           <div className="w-full border-b border-aws-squid-ink/10"></div>
@@ -134,12 +139,6 @@ export const ConversationThinking = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            relatedDocuments={message.usedChunks?.map((chunk) => ({
-              chunkBody: chunk.content,
-              contentType: chunk.contentType,
-              sourceLink: chunk.source,
-              rank: chunk.rank,
-            }))}
             tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
           />
 
@@ -175,7 +174,7 @@ export const ConversationWithAgnet = () => {
       content: [
         {
           contentType: 'text',
-          body: 'I recommend going to an amusement park.',
+          body: 'I recommend going to an amusement park.[^tool2@0]',
         },
       ],
       model: 'claude-v3.5-sonnet',
@@ -226,7 +225,7 @@ export const ConversationWithAgnet = () => {
           content: [
             {
               contentType: 'text',
-              body: "Tomorrow's weather will be clear skies. ",
+              body: "Tomorrow's weather will be clear skies.[^tool1]\nSearch for recommended family leisure places on clear weather.",
             },
             {
               contentType: 'toolUse',
@@ -278,12 +277,34 @@ export const ConversationWithAgnet = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            relatedDocuments={message.usedChunks?.map((chunk) => ({
-              chunkBody: chunk.content,
-              contentType: chunk.contentType,
-              sourceLink: chunk.source,
-              rank: chunk.rank,
-            }))}
+            getRelatedDocument={async (sourceId) => {
+              switch(sourceId) {
+                case 'tool1': {
+                  return {
+                    content: {
+                      json: {
+                        weather: 'Clear skies',
+                      },
+                    },
+                    sourceId: 'tool1',
+                    sourceName: 'get_weather',
+                  };
+                }
+                case 'tool2@0': {
+                  return {
+                    content: {
+                      'text': 'amusement park',
+                    },
+                    sourceId: 'tool2@0',
+                    sourceName: 'Amusement park guidebook',
+                    sourceLink: 'http://example.com/guide.html',
+                  };
+                }
+                default: {
+                  return undefined;
+                }
+              }
+            }}
             tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
           />
 

@@ -5,12 +5,15 @@ import { AgentToolsProps } from '../xstates/agentThink';
 import { useTranslation } from 'react-i18next';
 import { PiCircleNotchBold } from 'react-icons/pi';
 import { getAgentName } from '../functions/formatDescription';
+import { RelatedDocument } from '../../../@types/conversation';
 
 type AgentToolListProps = {
+  messageId: string;
   tools: AgentToolsProps;
+  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
 };
 
-const AgentToolList: React.FC<AgentToolListProps> = ({tools}) => {
+const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, getRelatedDocument}) => {
   const { t } = useTranslation();
   const isRunning = (
     Object.keys(tools.tools).length === 0 ||
@@ -22,7 +25,10 @@ const AgentToolList: React.FC<AgentToolListProps> = ({tools}) => {
         <div className="flex items-center border-b border-gray p-2 last:border-b-0">
           {isRunning && <PiCircleNotchBold className="mr-2 animate-spin" />}
           {tools.thought ? (
-            <ChatMessageMarkdown messageId="">
+            <ChatMessageMarkdown
+              messageId={messageId}
+              getRelatedDocument={getRelatedDocument}
+            >
               {tools.thought}
             </ChatMessageMarkdown>
           ) : t('agent.progress.label')}
