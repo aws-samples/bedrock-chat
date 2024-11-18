@@ -34,7 +34,7 @@ There are several reasons for this change:
 
 We strongly recommend upgrading to v1.4 before moving to v2. In v1.4, you can use both pgvector and Knowledge Base bots, allowing a transition period to recreate your existing pgvector bots in Knowledge Base and verify they work as expected. Even if the RAG documents remain identical, note that the backend changes to OpenSearch may produce slightly different results, though generally similar, due to differences like k-NN algorithms.
 
-By setting `useBedrockKnowledgeBasesForRag` to true in `cdk.json`, you can create bots using Knowledge Bases. However, pgvector bots will become read-only, preventing the creation or editing of new pgvector bots.
+By setting `useBedrockKnowledgeBaseForRag` to true in `cdk.json`, you can create bots using Knowledge Bases. However, pgvector bots will become read-only, preventing the creation or editing of new pgvector bots.
 
 ![](../imgs/v1_to_v2_readonly_bot.png)
 
@@ -61,7 +61,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
       ```json
       {
         ...,
-        "useBedrockKnowledgeBasesForRag": true,
+        "useBedrockKnowledgeBaseForRag": true,
         ...
       }
       ```
