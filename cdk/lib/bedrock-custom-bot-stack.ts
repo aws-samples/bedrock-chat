@@ -51,7 +51,6 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly botId: string;
   readonly embeddingsModel: BedrockFoundationModel;
   readonly parsingModel?: BedrockFoundationModel;
-  readonly parsingModel?: BedrockFoundationModel;
   readonly bedrockClaudeChatDocumentBucketName: string;
   readonly chunkingStrategy: ChunkingStrategy;
   readonly existingS3Urls: string[];
@@ -116,9 +115,6 @@ export class BedrockCustomBotStack extends Stack {
         knowledgeBase: kb,
         dataSourceName: bucket.bucketName,
         chunkingStrategy: props.chunkingStrategy,
-        parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
-          parsingModel: props.parsingModel.asIModel(this),
-        }) : undefined,
         parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
           parsingModel: props.parsingModel.asIModel(this),
         }) : undefined,

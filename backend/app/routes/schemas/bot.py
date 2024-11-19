@@ -132,7 +132,10 @@ class BotModifyInput(BaseSchema):
         )
 
     def modified_crawling_scope(self, current_bot_model: BotModel) -> bool:
-        if self.bedrock_knowledge_base is None or current_bot_model.bedrock_knowledge_base is None:
+        if (
+            self.bedrock_knowledge_base is None
+            or current_bot_model.bedrock_knowledge_base is None
+        ):
             return False
         return (
             self.bedrock_knowledge_base.web_crawling_scope
@@ -147,11 +150,14 @@ class BotModifyInput(BaseSchema):
             or current_bot_model.bedrock_knowledge_base.web_crawling_filters is None
         ):
             return False
-        return (
-            set(self.bedrock_knowledge_base.web_crawling_filters.exclude_patterns)
-            != set(current_bot_model.bedrock_knowledge_base.web_crawling_filters.exclude_patterns)
-            or set(self.bedrock_knowledge_base.web_crawling_filters.include_patterns)
-            != set(current_bot_model.bedrock_knowledge_base.web_crawling_filters.include_patterns)
+        return set(
+            self.bedrock_knowledge_base.web_crawling_filters.exclude_patterns
+        ) != set(
+            current_bot_model.bedrock_knowledge_base.web_crawling_filters.exclude_patterns
+        ) or set(
+            self.bedrock_knowledge_base.web_crawling_filters.include_patterns
+        ) != set(
+            current_bot_model.bedrock_knowledge_base.web_crawling_filters.include_patterns
         )
 
     def guardrails_update_required(self, current_bot_model: BotModel) -> bool:

@@ -117,16 +117,10 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
             source = extract_source_from_retrieval_result(retrieval_result)
-            
+
             search_results.append(
-                SearchResult(
-                    rank=i,
-                    bot_id=bot.id,
-                    content=content,
-                    source=source
-                )
+                SearchResult(rank=i, bot_id=bot.id, content=content, source=source)
             )
-        
 
         return search_results
 
