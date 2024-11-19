@@ -650,21 +650,22 @@ How would you categorize this email?`,
       },
       advancedParsing: {
         label: 'Advanced Parsing',
-        description: 'Select a model to use for advanced document parsing capabilities.'
+        description: 'Select a model to use for advanced document parsing capabilities.',
+        hint: 'Suitable for parsing more than standard text in supported document formats, including tables within PDFs with their structure intact. Additional costs are incurred for parsing using generative AI.'
       },
       parsingModel: {
         label: 'Advanced Parsing Model',
         none: {
-          label: 'None',
+          label: 'Disabled',
           hint: 'No advanced parsing will be applied.',
         },
-        claude_3_sonnet: {
-          label: 'Claude 3 Sonnet',
-          hint: 'Use Claude 3 Sonnet for advanced document parsing.',
+        claude_3_sonnet_v1: {
+          label: 'Claude 3 Sonnet v1',
+          hint: 'Use Claude 3 Sonnet v1 for advanced document parsing.',
         },
-        claude_3_haiku: {
-          label: 'Claude 3 Haiku',
-          hint: 'Use Claude 3 Haiku for advanced document parsing.',
+        claude_3_haiku_v1: {
+          label: 'Claude 3 Haiku v1',
+          hint: 'Use Claude 3 Haiku v1 for advanced document parsing.',
         }
       },
       webCrawlerConfig: {
@@ -693,7 +694,6 @@ How would you categorize this email?`,
           hint: 'Specify patterns to exclude from web crawling. URLs matching these patterns will not be crawled.',
         },
       }
-      
     },
     error: {
       answerResponse: 'An error occurred while responding.',
