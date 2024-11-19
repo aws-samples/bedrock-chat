@@ -84,21 +84,32 @@ def on_agent_thinking(log: OnThinking, gatewayapi, connection_id: str):
 def on_agent_tool_result(
     tool_result: ConverseApiToolResult, gatewayapi, connection_id: str
 ):
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=json.dumps(
+    payload = json.dumps(
+        dict(
+            status="AGENT_TOOL_RESULT",
+            result={
+                "toolUseId": tool_result["toolUseId"],
+                "status": tool_result["status"],
+                "content": [
+                    result.to_content_for_converse() for result in tool_result["result"]
+                ],
+            },
+        )
+    ).encode("utf-8")
+    if len(payload) > 128 * 1024:
+        payload = json.dumps(
             dict(
                 status="AGENT_TOOL_RESULT",
                 result={
                     "toolUseId": tool_result["toolUseId"],
                     "status": tool_result["status"],
-                    "content": [
-                        result.to_content_for_converse()
-                        for result in tool_result["result"]
-                    ],
                 },
             )
-        ).encode("utf-8"),
+        ).encode("utf-8")
+
+    gatewayapi.post_to_connection(
+        ConnectionId=connection_id,
+        Data=payload,
     )
 
 

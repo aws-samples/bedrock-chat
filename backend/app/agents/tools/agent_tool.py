@@ -99,6 +99,7 @@ def agent_result_to_related_document(
 
     elif isinstance(res, dict):
         content = res.get("content")
+        source_id_from_result = res.get("source_id")
         source_name = res.get("source_name")
         source_link = res.get("source_link")
         return RelatedDocumentModel(
@@ -111,17 +112,13 @@ def agent_result_to_related_document(
                     json=content if isinstance(content, dict) else res,
                 )
             ),
-            source_id=source_id,
+            source_id=(
+                str(source_id_from_result)
+                if source_id_from_result is not None
+                else source_id
+            ),
             source_name=str(source_name) if source_name is not None else tool_name,
             source_link=str(source_link) if source_link is not None else None,
-        )
-
-    elif isinstance(res, JsonToolResultModel):
-        return agent_result_to_related_document(
-            tool_name=tool_name,
-            res=res.json_,
-            source_id_base=source_id_base,
-            rank=rank,
         )
 
     else:

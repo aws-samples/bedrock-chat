@@ -43,7 +43,7 @@ export type AgentEvent =
       type: 'tool-result';
       toolUseId: string;
       status: AgentToolState;
-      content: AgentToolResultContent[];
+      content?: AgentToolResultContent[];
     }
   | { type: 'goodbye' };
 
