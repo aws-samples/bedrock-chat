@@ -74,8 +74,8 @@ def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
     elif source.startswith("http://") or source.startswith("https://"):
         return "url", source
     else:
-        # Assume source is a youtube video id
-        return "url", f"https://www.youtube.com/watch?v={source}"
+        # Return the source as is for knowledge base references
+        return "url", source
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
@@ -102,18 +102,31 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             },
         )
 
+        def extract_source_from_retrieval_result(retrieval_result):
+            """Extract source URL/URI from retrieval result based on location type."""
+            location = retrieval_result.get("location", {})
+            location_type = location.get("type")
+
+            if location_type == "WEB":
+                return location.get("webLocation", {}).get("url", "")
+            elif location_type == "S3":
+                return location.get("s3Location", {}).get("uri", "")
+            return ""
+
         search_results = []
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
-            source = (
-                retrieval_result.get("location", {})
-                .get("s3Location", {})
-                .get("uri", "")
-            )
-
+            source = extract_source_from_retrieval_result(retrieval_result)
+            
             search_results.append(
-                SearchResult(rank=i, bot_id=bot.id, content=content, source=source)
+                SearchResult(
+                    rank=i,
+                    bot_id=bot.id,
+                    content=content,
+                    source=source
+                )
             )
+        
 
         return search_results
 
