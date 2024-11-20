@@ -139,7 +139,7 @@ export class BedrockCustomBotStack extends Stack {
         }
 
       });
-      new CfnOutput(this, 'webCrawlerDataSourceId', {
+      new CfnOutput(this, 'DataSourceIdWebCrawler', {
         value: webCrawlerDataSource.dataSourceId
       })
     }
