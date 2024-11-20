@@ -4,6 +4,9 @@ import os
 import traceback
 from datetime import datetime
 from decimal import Decimal as decimal
+from queue import SimpleQueue
+from threading import Thread
+from typing import BinaryIO, Literal, TypedDict
 
 import boto3
 from app.auth import verify_token
@@ -27,94 +30,149 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def on_stream(token: str, gatewayapi, connection_id: str):
-    # Send completion
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=json.dumps(
+class _NotifyCommand(TypedDict):
+    type: Literal["notify"]
+    payload: bytes | BinaryIO
+
+
+class _FinishCommand(TypedDict):
+    type: Literal["finish"]
+
+
+_Command = _NotifyCommand | _FinishCommand
+
+
+class NotificationSender:
+    def __init__(self, endpoint_url: str, connection_id: str) -> None:
+        self.commands = SimpleQueue[_Command]()
+        self.endpoint_url = endpoint_url
+        self.connection_id = connection_id
+
+    def run(self):
+        import boto3
+
+        gatewayapi = boto3.client(
+            "apigatewaymanagementapi",
+            endpoint_url=self.endpoint_url,
+        )
+
+        while True:
+            command = self.commands.get()
+            if command["type"] == "notify":
+                try:
+                    gatewayapi.post_to_connection(
+                        ConnectionId=self.connection_id,
+                        Data=command["payload"],
+                    )
+
+                except (
+                    gatewayapi.exceptions.GoneException,
+                    gatewayapi.exceptions.ForbiddenException,
+                ) as e:
+                    logger.error(
+                        f"Shutdown the notification sender due to an exception: {e}"
+                    )
+                    break
+
+                except Exception as e:
+                    logger.error(f"Failed to send notification: {e}")
+
+            elif command["type"] == "finish":
+                break
+
+    def finish(self):
+        self.commands.put(
+            {
+                "type": "finish",
+            }
+        )
+
+    def notify(self, payload: bytes | BinaryIO):
+        self.commands.put(
+            {
+                "type": "notify",
+                "payload": payload,
+            }
+        )
+
+    def on_stream(self, token: str):
+        # Send completion
+        payload = json.dumps(
             dict(
                 status="STREAMING",
                 completion=token,
             )
-        ).encode("utf-8"),
-    )
+        ).encode("utf-8")
 
+        self.notify(payload=payload)
 
-def on_fetching_knowledge(gatewayapi, connection_id: str):
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=json.dumps(
+    def on_fetching_knowledge(self):
+        payload = json.dumps(
             dict(
                 status="FETCHING_KNOWLEDGE",
             )
-        ).encode("utf-8"),
-    )
+        ).encode("utf-8")
 
+        self.notify(payload=payload)
 
-def on_stop(arg: OnStopInput, gatewayapi, connection_id: str):
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=json.dumps(
+    def on_stop(self, arg: OnStopInput):
+        payload = json.dumps(
             dict(
                 status="STREAMING_END",
                 completion="",
                 stop_reason=arg["stop_reason"],
             )
-        ).encode("utf-8"),
-    )
+        ).encode("utf-8")
 
+        self.notify(payload=payload)
 
-def on_agent_thinking(log: OnThinking, gatewayapi, connection_id: str):
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=json.dumps(
+    def on_agent_thinking(self, tool_use: OnThinking):
+        payload = json.dumps(
             dict(
                 status="AGENT_THINKING",
                 log={
-                    log["tool_use_id"]: {
-                        "name": log["name"],
-                        "input": log["input"],
+                    tool_use["tool_use_id"]: {
+                        "name": tool_use["name"],
+                        "input": tool_use["input"],
                     },
                 },
             )
-        ).encode("utf-8"),
-    )
+        ).encode("utf-8")
 
+        self.notify(payload=payload)
 
-def on_agent_tool_result(
-    tool_result: ConverseApiToolResult, gatewayapi, connection_id: str
-):
-    payload = json.dumps(
-        dict(
-            status="AGENT_TOOL_RESULT",
-            result={
-                "toolUseId": tool_result["toolUseId"],
-                "status": tool_result["status"],
-                "content": [
-                    result.to_content_for_converse() for result in tool_result["result"]
-                ],
-            },
-        )
-    ).encode("utf-8")
-    if len(payload) > 128 * 1024:
+    def on_agent_tool_result(self, tool_result: ConverseApiToolResult):
         payload = json.dumps(
             dict(
                 status="AGENT_TOOL_RESULT",
                 result={
                     "toolUseId": tool_result["toolUseId"],
                     "status": tool_result["status"],
+                    "content": [
+                        result.to_content_for_converse()
+                        for result in tool_result["result"]
+                    ],
                 },
             )
         ).encode("utf-8")
+        if len(payload) > 128 * 1024:
+            payload = json.dumps(
+                dict(
+                    status="AGENT_TOOL_RESULT",
+                    result={
+                        "toolUseId": tool_result["toolUseId"],
+                        "status": tool_result["status"],
+                    },
+                )
+            ).encode("utf-8")
 
-    gatewayapi.post_to_connection(
-        ConnectionId=connection_id,
-        Data=payload,
-    )
+        self.notify(payload=payload)
 
 
 def process_chat_input(
-    user_id: str, chat_input: ChatInput, gatewayapi, connection_id: str
+    user_id: str,
+    chat_input: ChatInput,
+    notificator: NotificationSender,
 ) -> dict:
     """Process chat input and send the message to the client."""
     logger.info(f"Received chat input: {chat_input}")
@@ -123,19 +181,18 @@ def process_chat_input(
         chat(
             user_id=user_id,
             chat_input=chat_input,
-            on_stream=lambda token: on_stream(token, gatewayapi, connection_id),
-            on_fetching_knowledge=lambda: on_fetching_knowledge(
-                gatewayapi,
-                connection_id,
+            on_stream=lambda token: notificator.on_stream(
+                token=token,
             ),
-            on_stop=lambda arg: on_stop(
-                arg,
-                gatewayapi,
-                connection_id,
+            on_fetching_knowledge=lambda: notificator.on_fetching_knowledge(),
+            on_stop=lambda arg: notificator.on_stop(
+                arg=arg,
             ),
-            on_thinking=lambda log: on_agent_thinking(log, gatewayapi, connection_id),
-            on_tool_result=lambda result: on_agent_tool_result(
-                result, gatewayapi, connection_id
+            on_thinking=lambda tool_use: notificator.on_agent_thinking(
+                tool_use=tool_use,
+            ),
+            on_tool_result=lambda result: notificator.on_agent_tool_result(
+                tool_result=result
             ),
         )
 
@@ -189,13 +246,21 @@ def handler(event, context):
     domain_name = event["requestContext"]["domainName"]
     stage = event["requestContext"]["stage"]
     endpoint_url = f"https://{domain_name}/{stage}"
-    gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
+    notificator = NotificationSender(
+        endpoint_url=endpoint_url,
+        connection_id=connection_id,
+    )
 
     now = datetime.now()
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = json.loads(event["body"])
     step = body.get("step")
 
+    notification_thread = Thread(
+        target=lambda: notificator.run(),
+        daemon=True,
+    )
+    notification_thread.start()
     try:
         # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
         # need to concatenate chunks and send as a single full message.
@@ -279,9 +344,9 @@ def handler(event, context):
             return process_chat_input(
                 user_id=user_id,
                 chat_input=chat_input,
-                gatewayapi=gatewayapi,
-                connection_id=connection_id,
+                notificator=notificator,
             )
+
         else:
             # Store the message part of full message
             # Zero is reserved for user id, so start from 1
@@ -311,3 +376,7 @@ def handler(event, context):
                 }
             ),
         }
+
+    finally:
+        notificator.finish()
+        notification_thread.join(timeout=60)
