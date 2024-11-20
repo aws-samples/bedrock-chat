@@ -95,7 +95,7 @@ class BedrockKnowledgeBaseInput(BaseSchema):
     knowledge_base_id: str | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
-    web_crawling_filters: WebCrawlingFilters | None = WebCrawlingFilters(
+    web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
         exclude_patterns=[], include_patterns=[]
     )
 
@@ -116,6 +116,6 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
     data_source_ids: list[str] | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
-    web_crawling_filters: WebCrawlingFilters | None = WebCrawlingFilters(
+    web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
         exclude_patterns=[], include_patterns=[]
     )

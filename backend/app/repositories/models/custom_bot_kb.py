@@ -7,7 +7,6 @@ from app.routes.schemas.bot_kb import (
     type_os_tokenizer,
     type_kb_parsing_model,
     type_kb_web_crawling_scope,
-    WebCrawlingFilters,
 )
 from pydantic import BaseModel
 
@@ -55,6 +54,11 @@ class NoneParamsModel(BaseModel):
     chunking_strategy: type_kb_chunking_strategy = "none"
 
 
+class WebCrawlingFilters(BaseModel):
+    exclude_patterns: list[str]
+    include_patterns: list[str]
+
+
 class BedrockKnowledgeBaseModel(BaseModel):
     embeddings_model: type_kb_embeddings_model
     open_search: OpenSearchParamsModel
@@ -71,6 +75,6 @@ class BedrockKnowledgeBaseModel(BaseModel):
     data_source_ids: list[str] | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
-    web_crawling_filters: WebCrawlingFilters | None = WebCrawlingFilters(
+    web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
         exclude_patterns=[], include_patterns=[]
     )

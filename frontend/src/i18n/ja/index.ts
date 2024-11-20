@@ -682,11 +682,11 @@ const translation = {
           }
         },
         includePatterns: {
-          label: 'Include Patterns',
+          label: 'ウェブクロールに含めるパターン',
           hint: 'ウェブクロールに含めるパターンを指定します。これらのパターンに一致するURLのみがクロールされます。',
         },
         excludePatterns: {
-          label: 'Exclude Patterns',
+          label: 'ウェブクロールに含めないパターン',
           hint: 'ウェブクロールから除外するパターンを指定します。これらのパターンに一致するURLはクロールされません。',
         },
       }
