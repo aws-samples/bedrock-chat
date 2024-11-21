@@ -123,10 +123,9 @@ export class BedrockCustomBotStack extends Stack {
     });
 
     // Add Web Crawler Data Sources
-    if (props.sourceUrls && props.sourceUrls.length > 0) {
+    if (props.sourceUrls.length > 0) {
       const webCrawlerDataSource = new WebCrawlerDataSource(this, 'WebCrawlerDataSource', {
         knowledgeBase: kb,
-        dataSourceName: 'webcrawler',
         sourceUrls: props.sourceUrls,
         chunkingStrategy: props.chunkingStrategy,
         parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({

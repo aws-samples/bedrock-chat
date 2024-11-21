@@ -71,8 +71,6 @@ def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
             client_method="get_object",
         )
         return "s3", source_link
-    elif source.startswith("http://") or source.startswith("https://"):
-        return "url", source
     else:
         # Return the source as is for knowledge base references
         return "url", source
