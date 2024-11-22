@@ -7,11 +7,14 @@ from app.repositories.models.conversation import (
     TextToolResultModel,
 )
 from app.repositories.models.custom_bot import BotModel
-from app.utils import generate_presigned_url, get_bedrock_agent_client
+from app.utils import get_bedrock_agent_client
 
 from botocore.exceptions import ClientError
 from mypy_boto3_bedrock_runtime.type_defs import (
     GuardrailConverseContentBlockTypeDef,
+)
+from mypy_boto3_bedrock_agent_runtime.type_defs import (
+    KnowledgeBaseRetrievalResultTypeDef,
 )
 
 logger = logging.getLogger(__name__)
@@ -80,42 +83,39 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             },
         )
 
+        def extract_source_from_retrieval_result(
+            retrieval_result: KnowledgeBaseRetrievalResultTypeDef,
+        ) -> tuple[str, str] | None:
+            """Extract source URL/URI from retrieval result based on location type."""
+            location = retrieval_result.get("location", {})
+            location_type = location.get("type")
+
+            if location_type == "WEB":
+                url = location.get("webLocation", {}).get("url", "")
+                return (url, url)
+
+            elif location_type == "S3":
+                uri = location.get("s3Location", {}).get("uri", "")
+                source_name = urlparse(url=uri).path.split("/")[-1]
+                return (source_name, uri)
+
+            return None
+
         search_results = []
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
-            source = (
-                retrieval_result.get("location", {})
-                .get("s3Location", {})
-                .get("uri", "")
-            )
+            source = extract_source_from_retrieval_result(retrieval_result)
 
-            url = urlparse(url=source)
-            if url.scheme == "s3":
-                source_name = url.path.split("/")[-1]
-                source_link = generate_presigned_url(
-                    bucket=url.netloc,
-                    key=url.path,
-                    client_method="get_object",
+            if source is not None:
+                search_results.append(
+                    SearchResult(
+                        rank=i,
+                        bot_id=bot.id,
+                        content=content,
+                        source_name=source[0],
+                        source_link=source[1],
+                    )
                 )
-
-            elif url.scheme == "http" or url.scheme == "https":
-                source_name = source
-                source_link = source
-
-            else:
-                # Assume source is a youtube video id
-                source_name = source
-                source_link = f"https://www.youtube.com/watch?v={source}"
-
-            search_results.append(
-                SearchResult(
-                    rank=i,
-                    bot_id=bot.id,
-                    content=content,
-                    source_name=source_name,
-                    source_link=source_link,
-                )
-            )
 
         return search_results
 

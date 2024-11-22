@@ -117,7 +117,7 @@ const translation = {
                 knowledge: {
                     overview:
                         'Ved å gi ekstern kunnskap til boten, blir den i stand til å håndtere data den ikke er forhåndstrent på.',
-                    url: 'Informasjonen fra den spesifiserte URL-en vil bli brukt som kunnskap. Hvis du angir URL-en til en YouTube-video, vil transkripsjonen av den videoen bli brukt som kunnskap.',
+                    url: 'Informasjonen fra den spesifiserte URL-en vil bli brukt som kunnskap.',
                     s3url:
                         'Ved å angi S3 URI kan du legge til S3 som en datakilde. Du kan legge til opptil 4 kilder. Det støtter kun bøtter som eksisterer i samme konto og samme region som distribusjonsdestinasjonen.',
                     sitemap:

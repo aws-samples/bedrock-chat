@@ -124,6 +124,7 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
+        selectParsingModel: 'Select Parsing Model',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
@@ -160,7 +161,7 @@ const translation = {
         knowledge: {
           overview:
             'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
-          url: 'The information from the specified URL will be used as Knowledge. If you set the URL of a YouTube video, the transcript of that video will be used as Knowledge.',
+          url: 'The information from the specified URL will be used as Knowledge.',
           s3url:
             'By entering the S3 URI, you can add S3 as a data source. You can add up to 4 sources. It only supports buckets that exist in the same account and the same region as bedrock region.',
           sitemap:
@@ -670,6 +671,32 @@ How would you categorize this email?`,
           label: 'Claude 3 Haiku v1',
           hint: 'Use Claude 3 Haiku v1 for advanced document parsing.',
         }
+      },
+      webCrawlerConfig: {
+        title: 'Web Crawler Config',
+        crawlingScope: {
+          label: 'Crawling Scope',
+          default: {
+            label: 'Default',
+            hint: 'Limit crawling to web pages that belong to the same host and with the same initial URL path. For example, with a seed URL of "https://aws.amazon.com/bedrock/" then only this path and web pages that extend from this path will be crawled, like "https://aws.amazon.com/bedrock/agents/". Sibling URLs like "https://aws.amazon.com/ec2/" are not crawled, for example.',
+          },
+          subdomains: {
+            label: 'Subdomains',
+            hint: 'Include crawling of any web page that has the same primary domain as the seed URL. For example, with a seed URL of "https://aws.amazon.com/bedrock/" then any web page that contains "amazon.com" will be crawled, like "https://www.amazon.com".',
+          },
+          hostOnly: {
+            label: 'Host Only',
+            hint: 'Limit crawling to web pages that belong to the same host. For example, with a seed URL of "https://aws.amazon.com/bedrock/", then web pages with "https://docs.aws.amazon.com" will also be crawled, like "https://aws.amazon.com/ec2".',
+          },
+        },
+        includePatterns: {
+          label: 'Include Patterns',
+          hint: 'Specify patterns to include in web crawling. Only URLs matching these patterns will be crawled.',
+        },
+        excludePatterns: {
+          label: 'Exclude Patterns',
+          hint: 'Specify patterns to exclude from web crawling. URLs matching these patterns will not be crawled.',
+        },
       }
     },
     error: {

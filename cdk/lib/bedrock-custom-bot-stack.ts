@@ -17,6 +17,11 @@ import {
   S3DataSource,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/s3-data-source";
 import {
+  WebCrawlerDataSource,
+  CrawlingScope,
+  CrawlingFilters,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import {
   ParsingStategy
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/parsing";
 
@@ -49,12 +54,15 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly bedrockClaudeChatDocumentBucketName: string;
   readonly chunkingStrategy: ChunkingStrategy;
   readonly existingS3Urls: string[];
+  readonly sourceUrls: string[];
   readonly maxTokens?: number;
   readonly instruction?: string;
   readonly analyzer?: Analyzer;
   readonly overlapPercentage?: number;
   readonly guardrail?: BedrockGuardrailProps;
   readonly useStandbyReplicas?: boolean;
+  readonly crawlingScope?: CrawlingScope;
+  readonly crawlingFilters?: CrawlingFilters;
 }
 
 export class BedrockCustomBotStack extends Stack {
@@ -113,6 +121,27 @@ export class BedrockCustomBotStack extends Stack {
         inclusionPrefixes: inclusionPrefixes,
       });
     });
+
+    // Add Web Crawler Data Sources
+    if (props.sourceUrls.length > 0) {
+      const webCrawlerDataSource = new WebCrawlerDataSource(this, 'WebCrawlerDataSource', {
+        knowledgeBase: kb,
+        sourceUrls: props.sourceUrls,
+        chunkingStrategy: props.chunkingStrategy,
+        parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
+          parsingModel: props.parsingModel.asIModel(this),
+        }) : undefined,
+        crawlingScope: props.crawlingScope,
+        filters: {
+          excludePatterns: props.crawlingFilters?.excludePatterns,
+          includePatterns: props.crawlingFilters?.includePatterns,
+        }
+
+      });
+      new CfnOutput(this, 'DataSourceIdWebCrawler', {
+        value: webCrawlerDataSource.dataSourceId
+      })
+    }
 
     if (props.guardrail?.is_guardrail_enabled == true) {
       // Use only parameters with a value greater than or equal to 0

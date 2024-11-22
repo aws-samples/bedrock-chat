@@ -6,13 +6,24 @@ export type BedrockKnowledgeBase = {
   openSearch: OpenSearchParams;
   searchParams: SearchParams;
   parsingModel?: ParsingModel;
+  webCrawlingScope?: WebCrawlingScope;
+  webCrawlingFilters?: WebCrawlingFilters;
 };
 
 export type EmbeddingsModel = 'titan_v2' | 'cohere_multilingual_v3';
 
 export type ParsingModel = 'anthropic.claude-3-sonnet-v1' | 'anthropic.claude-3-haiku-v1' | 'disabled';
 
+export type ParsingModel = 'anthropic.claude-3-sonnet-v1' | 'anthropic.claude-3-haiku-v1' | 'disabled';
+
 export type ChunkingStrategy = 'default' | 'fixed_size' | 'hierarchical' | 'semantic' | 'none';
+
+export type WebCrawlingScope = 'DEFAULT' | 'SUBDOMAINS' | 'HOST_ONLY';
+
+export type WebCrawlingFilters = {
+  excludePatterns: string[];
+  includePatterns: string[];
+};
 
 export type ChunkingConfiguration = DefaultParams | FixedSizeParams | HierarchicalParams | SemanticParams | NoneParams;
 

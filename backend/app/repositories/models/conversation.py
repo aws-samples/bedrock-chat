@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Any, Annotated, Self, TypeGuard
 from pathlib import Path
 import re
+from urllib.parse import urlparse
 
 if TYPE_CHECKING:
     from app.bedrock import (
@@ -28,6 +29,8 @@ from app.routes.schemas.conversation import (
     ToolResultContent,
     RelatedDocument,
 )
+from app.utils import generate_presigned_url
+
 from pydantic import BaseModel, Field, field_validator, Discriminator, JsonValue
 from mypy_boto3_bedrock_runtime.type_defs import (
     ContentBlockTypeDef,
@@ -647,10 +650,27 @@ class RelatedDocumentModel(BaseModel):
         else:
             return self.content
 
+    def get_source_link_for_schema(self) -> str | None:
+        if self.source_link is None:
+            return None
+
+        url = urlparse(url=self.source_link)
+        if url.scheme == "s3":
+            source_link = generate_presigned_url(
+                bucket=url.netloc,
+                key=url.path,
+                client_method="get_object",
+            )
+            return source_link
+
+        else:
+            # Return the source as is for knowledge base references
+            return self.source_link
+
     def to_schema(self) -> RelatedDocument:
         return RelatedDocument(
             content=self.content.to_tool_result(),
             source_id=self.source_id,
             source_name=self.source_name,
-            source_link=self.source_link,
+            source_link=self.get_source_link_for_schema(),
         )

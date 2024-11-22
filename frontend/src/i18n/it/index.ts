@@ -60,7 +60,7 @@ const translation = {
         knowledge: {
           overview:
             'Fornendo conoscenza esterna al Bot, il Bot diventa in grado di gestire dati su cui non è stato pre-addestrato.',
-          url: "Le informazioni dall'URL specificato verranno utilizzate come Apprendimento. Se imposti l'URL di un video di YouTube, la trascrizione di quel video verrà utilizzata come Apprendimento.",
+          url: "Le informazioni dall'URL specificato verranno utilizzate come Apprendimento.",
           sitemap:
             "Specificando l'URL della mappa del sito, le informazioni ottenute attraverso lo scraping automatico dei siti Web al suo interno verranno utilizzate come Apprendimento.",
           file: 'I file caricati verranno utilizzati come Apprendimento.',

@@ -16,6 +16,7 @@ type_kb_search_type = Literal["hybrid", "semantic"]
 type_kb_parsing_model = Literal[
     "anthropic.claude-3-sonnet-v1", "anthropic.claude-3-haiku-v1", "disabled"
 ]
+type_kb_web_crawling_scope = Literal["DEFAULT", "HOST_ONLY", "SUBDOMAINS"]
 
 # OpenSearch Serverless Analyzer
 # Ref: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-genref.html
@@ -75,6 +76,11 @@ class NoneParams(BaseSchema):
     chunking_strategy: type_kb_chunking_strategy = "none"
 
 
+class WebCrawlingFilters(BaseSchema):
+    exclude_patterns: list[str] = Field(default_factory=list)
+    include_patterns: list[str] = Field(default_factory=list)
+
+
 class BedrockKnowledgeBaseInput(BaseSchema):
     embeddings_model: type_kb_embeddings_model
     open_search: OpenSearchParams
@@ -88,6 +94,10 @@ class BedrockKnowledgeBaseInput(BaseSchema):
     search_params: SearchParams
     knowledge_base_id: str | None = None
     parsing_model: type_kb_parsing_model = "disabled"
+    web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
+    web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
+        exclude_patterns=[], include_patterns=[]
+    )
 
 
 class BedrockKnowledgeBaseOutput(BaseSchema):
@@ -105,3 +115,7 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
     knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
     parsing_model: type_kb_parsing_model = "disabled"
+    web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
+    web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
+        exclude_patterns=[], include_patterns=[]
+    )

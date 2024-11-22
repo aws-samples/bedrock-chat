@@ -1,3 +1,4 @@
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   BedrockFoundationModel,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
@@ -5,6 +6,10 @@ import {
   HierarchicalChunkingProps,
   ChunkingStrategy,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
+import {
+  CrawlingScope,
+  CrawlingFilters,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
 import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
 import {
   CharacterFilterType,
@@ -48,6 +53,40 @@ export const getParsingModel = (
       return undefined
     default:
       throw new Error(`Unknown parsing model: ${parsingModel}`);
+  }
+}
+
+export const getCrowlingScope = (
+  web_crawling_scope: string
+): CrawlingScope | undefined => {
+
+  switch(web_crawling_scope) {
+    case "DEFAULT":
+      return CrawlingScope.DEFAULT
+    case "HOST_ONLY":
+      return CrawlingScope.HOST_ONLY
+    case "SUBDOMAINS":
+      return CrawlingScope.SUBDOMAINS
+    default:
+      return undefined
+  }
+}
+
+export const getCrawlingFilters =(
+  web_crawling_filters: any
+): CrawlingFilters => {
+  const regularJson = unmarshall(web_crawling_filters);
+  console.log(`regularJson: ${JSON.stringify(regularJson)}`)
+
+  let excludePatterns = undefined
+  let includePatterns = undefined
+
+  if (regularJson.exclude_patterns.length > 0 && regularJson.exclude_patterns[0] != "") excludePatterns = regularJson.exclude_patterns
+  if (regularJson.include_patterns.length > 0 && regularJson.include_patterns[0] != "") includePatterns = regularJson.include_patterns
+
+  return {
+    excludePatterns,
+    includePatterns,
   }
 }
 

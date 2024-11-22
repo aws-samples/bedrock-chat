@@ -15,7 +15,6 @@ import GenerationConfig from '../../../components/GenerationConfig';
 import Select from '../../../components/Select';
 import { BotFile, ConversationQuickStarter } from '../../../@types/bot';
 import { ParsingModel } from '../types';
-
 import { ulid } from 'ulid';
 import {
   EDGE_GENERATION_PARAMS,
@@ -57,6 +56,7 @@ import {
   OpenSearchParams,
   SearchParams,
   SearchType,
+  WebCrawlingScope,
 } from '../types';
 
 const edgeGenerationParams =
@@ -108,6 +108,7 @@ const BotKbEditPage: React.FC = () => {
       example: '',
     },
   ]);
+  const [webCrawlingScope, setWebCrawlingScope] = useState<WebCrawlingScope>('DEFAULT');
 
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null); // Send null when creating a new bot
   const [embeddingsModel, setEmbeddingsModel] =
@@ -123,6 +124,13 @@ const BotKbEditPage: React.FC = () => {
   const [guardrailArn, setGuardrailArn] = useState<string>('');
   const [guardrailVersion, setGuardrailVersion] = useState<string>('');
   const [parsingModel, setParsingModel] = useState<ParsingModel | undefined>(undefined);
+  const [webCrawlingFilters, setWebCrawlingFilters] = useState<{
+    includePatterns: string[];
+    excludePatterns: string[];
+  }>({
+    includePatterns: [''],
+    excludePatterns: [''],
+  });
 
   const embeddingsModelOptions: {
     label: string;
@@ -142,6 +150,28 @@ const BotKbEditPage: React.FC = () => {
 
   const [chunkingStrategy, setChunkingStrategy] =
     useState<ChunkingStrategy>('default');
+
+  const webCrawlingScopeOptions: {
+    label: string;
+    value: WebCrawlingScope;
+    description: string;
+  }[] = [
+    {
+      label: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.default.label'),
+      value: 'DEFAULT',
+      description: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.default.hint'),
+    },
+    {
+      label: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.subdomains.label'),
+      value: 'SUBDOMAINS',
+      description: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.subdomains.hint'),
+    },
+    {
+      label: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.hostOnly.label'),
+      value: 'HOST_ONLY',
+      description: t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.hostOnly.hint'),
+    },
+  ];
 
   const chunkingStrategyOptions: {
     label: string;
@@ -282,6 +312,72 @@ const BotKbEditPage: React.FC = () => {
     return isNewBot ? ulid() : (paramsBotId ?? '');
   }, [isNewBot, paramsBotId]);
 
+  const onChangeIncludePattern = useCallback(
+    (pattern: string, idx: number) => {
+      setWebCrawlingFilters(
+        produce(webCrawlingFilters, (draft) => {
+          draft.includePatterns[idx] = pattern;
+        })
+      );
+    },
+    [webCrawlingFilters]
+  );
+
+  const onClickAddIncludePattern = useCallback(() => {
+    setWebCrawlingFilters(
+      produce(webCrawlingFilters, (draft) => {
+        draft.includePatterns.push('');
+      })
+    );
+  }, [webCrawlingFilters]);
+
+  const onClickRemoveIncludePattern = useCallback(
+    (idx: number) => {
+      setWebCrawlingFilters(
+        produce(webCrawlingFilters, (draft) => {
+          draft.includePatterns.splice(idx, 1);
+          if (draft.includePatterns.length === 0) {
+            draft.includePatterns.push('');
+          }
+        })
+      );
+    },
+    [webCrawlingFilters]
+  );
+
+  const onChangeExcludePattern = useCallback(
+    (pattern: string, idx: number) => {
+      setWebCrawlingFilters(
+        produce(webCrawlingFilters, (draft) => {
+          draft.excludePatterns[idx] = pattern;
+        })
+      );
+    },
+    [webCrawlingFilters]
+  );
+
+  const onClickAddExcludePattern = useCallback(() => {
+    setWebCrawlingFilters(
+      produce(webCrawlingFilters, (draft) => {
+        draft.excludePatterns.push('');
+      })
+    );
+  }, [webCrawlingFilters]);
+
+  const onClickRemoveExcludePattern = useCallback(
+    (idx: number) => {
+      setWebCrawlingFilters(
+        produce(webCrawlingFilters, (draft) => {
+          draft.excludePatterns.splice(idx, 1);
+          if (draft.excludePatterns.length === 0) {
+            draft.excludePatterns.push('');
+          }
+        })
+      );
+    },
+    [webCrawlingFilters]
+  );
+
   useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
@@ -391,6 +487,11 @@ const BotKbEditPage: React.FC = () => {
               : 0
           );
           setParsingModel(bot.bedrockKnowledgeBase.parsingModel);
+          setWebCrawlingScope(bot.bedrockKnowledgeBase.webCrawlingScope ?? 'DEFAULT');
+          setWebCrawlingFilters({
+            includePatterns: bot.bedrockKnowledgeBase.webCrawlingFilters?.includePatterns || [''],
+            excludePatterns: bot.bedrockKnowledgeBase.webCrawlingFilters?.excludePatterns || [''],
+          });
         })
         .finally(() => {
           setIsLoading(false);
@@ -433,6 +534,36 @@ const BotKbEditPage: React.FC = () => {
       );
     },
     [s3Urls]
+  );
+
+  const onChangeUrls = useCallback(
+    (url: string, idx: number) => {
+      setUrls(
+        produce(urls, (draft) => {
+          draft[idx] = url;
+        })
+      );
+    },
+    [urls]
+  );
+
+  const onClickAddUrls = useCallback(() => {
+    setUrls([...urls, '']);
+  }, [urls]);
+
+  const onClickRemoveUrls = useCallback(
+    (idx: number) => {
+      setUrls(
+        produce(urls, (draft) => {
+          draft.splice(idx, 1);
+          if (draft.length === 0) {
+            draft.push('');
+          }
+          return;
+        })
+      );
+    },
+    [urls]
   );
 
   const removeUnchangedFilenames = useCallback(
@@ -907,6 +1038,8 @@ const BotKbEditPage: React.FC = () => {
         openSearch: openSearchParams,
         searchParams: searchParams,
         parsingModel,
+        webCrawlingScope,
+        webCrawlingFilters,
       },
       bedrockGuardrails: {
         isGuardrailEnabled:
@@ -969,6 +1102,8 @@ const BotKbEditPage: React.FC = () => {
     groundingThreshold,
     relevanceThreshold,
     parsingModel,
+    webCrawlingScope,
+    webCrawlingFilters,
   ]);
 
   const onClickEdit = useCallback(() => {
@@ -1024,6 +1159,8 @@ const BotKbEditPage: React.FC = () => {
           openSearch: openSearchParams,
           searchParams: searchParams,
           parsingModel,
+          webCrawlingScope,
+          webCrawlingFilters,
         },
         bedrockGuardrails: {
           isGuardrailEnabled:
@@ -1092,6 +1229,8 @@ const BotKbEditPage: React.FC = () => {
     guardrailArn,
     guardrailVersion,
     parsingModel,
+    webCrawlingScope,
+    webCrawlingFilters,
   ]);
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);
@@ -1241,6 +1380,148 @@ const BotKbEditPage: React.FC = () => {
                       {t('button.add')}
                     </Button>
                   </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="font-semibold">{t('bot.label.url')}</div>
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('bot.help.knowledge.url')}
+                  </div>
+                  <div className="mt-2 flex w-full flex-col gap-1">
+                    {urls.map((url, idx) => (
+                      <div className="flex w-full gap-2" key={idx}>
+                        <InputText
+                          className="w-full"
+                          type="text"
+                          disabled={isLoading}
+                          value={url}
+                          placeholder="https://example.com"
+                          onChange={(s) => {
+                            onChangeUrls(s, idx);
+                          }}
+                          errorMessage={errorMessages[`urls-${idx}`]}
+                        />
+                        <ButtonIcon
+                          className="text-red"
+                          disabled={
+                            (urls.length === 1 && !url[0]) || isLoading
+                          }
+                          onClick={() => {
+                            onClickRemoveUrls(idx);
+                          }}>
+                          <PiTrash />
+                        </ButtonIcon>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <Button
+                      outlined
+                      icon={<PiPlus />}
+                      disabled={urls.length >= 10}
+                      onClick={onClickAddUrls}>
+                      {t('button.add')}
+                    </Button>
+                  </div>
+
+                  <ExpandableDrawerGroup
+                    isDefaultShow={false}
+                    label={t('knowledgeBaseSettings.webCrawlerConfig.title')}
+                    className="py-2">
+
+                    <div className="mt-3">
+                      <Select
+                        label={t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.label')}
+                        value={webCrawlingScope}
+                        options={webCrawlingScopeOptions}
+                        onChange={(val) => {
+                          setWebCrawlingScope(val as WebCrawlingScope);
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="font-semibold">{t('knowledgeBaseSettings.webCrawlerConfig.includePatterns.label')}</div>
+                      <div className="text-sm text-aws-font-color/50">
+                        {t('knowledgeBaseSettings.webCrawlerConfig.includePatterns.hint')}
+                      </div>
+                      <div className="mt-2 flex w-full flex-col gap-1">
+                        {webCrawlingFilters.includePatterns.map((pattern, idx) => (
+                          <div className="flex w-full gap-2" key={idx}>
+                            <InputText
+                              className="w-full"
+                              type="text"
+                              disabled={isLoading}
+                              value={pattern}
+                              placeholder=".*\.html$"
+                              onChange={(s) => {
+                                onChangeIncludePattern(s, idx);
+                              }}
+                            />
+                            <ButtonIcon
+                              className="text-red"
+                              disabled={
+                                (webCrawlingFilters.includePatterns.length === 1 && !pattern) || isLoading
+                              }
+                              onClick={() => {
+                                onClickRemoveIncludePattern(idx);
+                              }}>
+                              <PiTrash />
+                            </ButtonIcon>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2">
+                        <Button
+                          outlined
+                          icon={<PiPlus />}
+                          onClick={onClickAddIncludePattern}>
+                          {t('button.add')}
+                        </Button>
+                      </div>
+                    </div>
+                  
+                    <div className="mt-4">
+                      <div className="font-semibold">{t('knowledgeBaseSettings.webCrawlerConfig.excludePatterns.label')}</div>
+                      <div className="text-sm text-aws-font-color/50">
+                        {t('knowledgeBaseSettings.webCrawlerConfig.excludePatterns.hint')}
+                      </div>
+                      <div className="mt-2 flex w-full flex-col gap-1">
+                        {webCrawlingFilters.excludePatterns.map((pattern, idx) => (
+                          <div className="flex w-full gap-2" key={idx}>
+                            <InputText
+                              className="w-full"
+                              type="text"
+                              disabled={isLoading}
+                              value={pattern}
+                              placeholder=".*\.pdf$"
+                              onChange={(s) => {
+                                onChangeExcludePattern(s, idx);
+                              }}
+                            />
+                            <ButtonIcon
+                              className="text-red"
+                              disabled={
+                                (webCrawlingFilters.excludePatterns.length === 1 && !pattern) || isLoading
+                              }
+                              onClick={() => {
+                                onClickRemoveExcludePattern(idx);
+                              }}>
+                              <PiTrash />
+                            </ButtonIcon>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2">
+                        <Button
+                          outlined
+                          icon={<PiPlus />}
+                          onClick={onClickAddExcludePattern}>
+                          {t('button.add')}
+                        </Button>
+                      </div>
+                    </div>
+                  </ExpandableDrawerGroup>
                 </div>
 
                 <div className="mt-4">

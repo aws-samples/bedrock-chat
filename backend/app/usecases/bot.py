@@ -330,7 +330,7 @@ def modify_owned_bot(
     sync_status = (
         "QUEUED"
         if modify_input.is_embedding_required(bot)
-        or modify_input.guardrails_update_required(bot)
+        or modify_input.is_guardrails_update_required(bot)
         else "SUCCEEDED"
     )
 
