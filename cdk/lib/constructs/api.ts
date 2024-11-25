@@ -180,7 +180,7 @@ export class Api extends Construct {
       entry: path.join(__dirname, "../../../backend"),
       index: "app/main.py",
       bundling: {
-        assetExcludes: [".venv"],
+        assetExcludes: [...excludeDockerImage],
         buildArgs: { POETRY_VERSION: "1.8.3" },
       },
       runtime: Runtime.PYTHON_3_12,
