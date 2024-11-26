@@ -20,6 +20,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
 
@@ -98,6 +99,7 @@ export class BedrockChatStack extends cdk.Stack {
         }),
       ],
       destinationBucket: sourceBucket,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
     // CodeBuild used for api publication
     const apiPublishCodebuild = new ApiPublishCodebuild(

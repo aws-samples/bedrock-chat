@@ -2,6 +2,7 @@ import { Construct } from "constructs";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NagSuppressions } from "cdk-nag";
 
@@ -13,8 +14,11 @@ export class ApiPublishCodebuild extends Construct {
   public readonly project: codebuild.Project;
   constructor(scope: Construct, id: string, props: ApiPublishCodebuildProps) {
     super(scope, id);
-
     const sourceBucket = props.sourceBucket;
+
+    const logGroup = new logs.LogGroup(this, "LogGroup", {
+      retention: logs.RetentionDays.THREE_MONTHS,
+    });
     const project = new codebuild.Project(this, "Project", {
       source: codebuild.Source.s3({
         bucket: sourceBucket,
@@ -62,6 +66,12 @@ export class ApiPublishCodebuild extends Construct {
           },
         },
       }),
+      logging: {
+        cloudWatch: {
+          enabled: true,
+          logGroup,
+        },
+      },
     });
     sourceBucket.grantRead(project.role!);
 

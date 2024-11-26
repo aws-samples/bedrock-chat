@@ -17,7 +17,7 @@ import { Auth } from "./auth";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
@@ -205,6 +205,7 @@ export class Api extends Construct {
         ENABLE_MISTRAL: props.enableMistral.toString(),
       },
       role: handlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
 
     const api = new HttpApi(this, "Default", {

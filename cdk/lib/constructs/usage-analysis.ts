@@ -11,6 +11,7 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { aws_glue } from "aws-cdk-lib";
 import { Database } from "./database";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as logs from "aws-cdk-lib/aws-logs";
 
 export interface UsageAnalysisProps {
   sourceDatabase: Database;
@@ -239,6 +240,7 @@ export class UsageAnalysis extends Construct {
         BUCKET_NAME: ddbBucket.bucketName,
         TABLE_ARN: props.sourceDatabase.table.tableArn,
       },
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
     exportHandler.role?.addToPrincipalPolicy(
       new iam.PolicyStatement({

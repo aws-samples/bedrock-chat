@@ -10,6 +10,7 @@ import {
 } from "aws-cdk-lib/aws-cognito";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { Runtime, Code, SingletonFunction } from "aws-cdk-lib/aws-lambda";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 import { Construct } from "constructs";
@@ -220,6 +221,7 @@ export class Auth extends Construct {
             USER_POOL_ID: userPool.userPoolId,
             AUTO_JOIN_USER_GROUPS: JSON.stringify(props.autoJoinUserGroups),
           },
+          logRetention: logs.RetentionDays.THREE_MONTHS,
         }
       );
       addUserToGroupsFunction.addPermission("CognitoTrigger", {

@@ -77,6 +77,16 @@ export class Embedding extends Construct {
         resources: [`*`],
       })
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    )
 
     this._updateSyncStatusHandler = new DockerImageFunction(
       this,
@@ -102,6 +112,7 @@ export class Embedding extends Construct {
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
         },
         role: handlerRole,
+        logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
 
@@ -126,6 +137,7 @@ export class Embedding extends Construct {
         environment: {
           BEDROCK_REGION: props.bedrockRegion,
         },
+        logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
     this._StoreKnowledgeBaseIdHandler = new DockerImageFunction(
@@ -152,6 +164,7 @@ export class Embedding extends Construct {
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
         },
         role: handlerRole,
+        logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
     this._StoreGuardrailArnHandler = new DockerImageFunction(
@@ -178,6 +191,7 @@ export class Embedding extends Construct {
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
         },
         role: handlerRole,
+        logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
     return this;
@@ -537,6 +551,16 @@ export class Embedding extends Construct {
         resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
       })
     );
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    )
     props.database.grantStreamRead(removeHandlerRole);
     props.documentBucket.grantReadWrite(removeHandlerRole);
 
@@ -560,6 +584,7 @@ export class Embedding extends Construct {
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
       role: removeHandlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
     this._removalHandler.addEventSource(
       new DynamoEventSource(props.database, {

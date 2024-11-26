@@ -96,3 +96,6 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
 });
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);
+
+
+cdk.Annotations.of(chat).addWarning('CloudWatch log retention period will be reduced from indefinite to 3 months to optimize costs.');

@@ -10,6 +10,7 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { excludeDockerImage } from "./constants/docker";
 
 interface ApiPublishmentStackProps extends StackProps {
@@ -90,6 +91,7 @@ export class ApiPublishmentStack extends Stack {
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
       },
       role: handlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
 
     // Handler for SQS consumer
@@ -121,6 +123,7 @@ export class ApiPublishmentStack extends Stack {
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
         },
         role: handlerRole,
+        logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
     sqsConsumeHandler.addEventSource(
