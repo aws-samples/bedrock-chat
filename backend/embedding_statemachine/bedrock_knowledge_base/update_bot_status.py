@@ -81,8 +81,8 @@ def handler(event, context):
             pk = event["pk"]
             sk = event["sk"]
             sync_status = "FAILED"
-            sync_status_reason = str(ingestion_job["IngestionJob"]["FailureReasons"])
-            last_exec_id = ingestion_job["IngestionJob"]["IngestionJobId"]
+            sync_status_reason = str(ingestion_job["ingestionJob"]["failureReasons"])
+            last_exec_id = ingestion_job["ingestionJob"]["ingestionJobId"]
         else:
             pk = event["pk"]
             sk = event["sk"]
