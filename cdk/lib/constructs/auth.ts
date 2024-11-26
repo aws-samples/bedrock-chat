@@ -165,6 +165,7 @@ export class Auth extends Construct {
               props.allowedSignUpEmailDomains
             ),
           },
+          logRetention: logs.RetentionDays.THREE_MONTHS,
         }
       );
 

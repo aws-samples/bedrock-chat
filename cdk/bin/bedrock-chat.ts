@@ -5,6 +5,7 @@ import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identity-provider";
+import { LogRetentionChecker } from '../rules/logRetentionChecker';
 
 const app = new cdk.App();
 
@@ -97,5 +98,4 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);
 
-
-cdk.Annotations.of(chat).addWarning('CloudWatch log retention period will be reduced from indefinite to 3 months to optimize costs.');
+cdk.Aspects.of(chat).add(new LogRetentionChecker());

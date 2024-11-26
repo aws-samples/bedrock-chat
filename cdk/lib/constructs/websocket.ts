@@ -6,9 +6,7 @@ import {
   DockerImageCode,
   DockerImageFunction,
   IFunction,
-  Runtime,
 } from "aws-cdk-lib/aws-lambda";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
@@ -16,7 +14,7 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { excludeDockerImage } from "../constants/docker";
 
@@ -113,6 +111,7 @@ export class WebSocket extends Construct {
           props.enableBedrockCrossRegionInference.toString(),
       },
       role: handlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
     });
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
