@@ -3,20 +3,20 @@ import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 
 import {
-  DockerImageCode,
-  DockerImageFunction,
   IFunction,
+  Runtime,
+  SnapStartConf,
 } from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { excludeDockerImage } from "../constants/docker";
+import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
 export interface WebSocketProps {
   readonly database: ITable;
@@ -84,15 +84,14 @@ export class WebSocket extends Construct {
     props.largeMessageBucket.grantReadWrite(handlerRole);
     props.documentBucket.grantRead(handlerRole);
 
-    const handler = new DockerImageFunction(this, "Handler", {
-      code: DockerImageCode.fromImageAsset(
-        path.join(__dirname, "../../../backend"),
-        {
-          platform: Platform.LINUX_AMD64,
-          file: "lambda.Dockerfile",
-          exclude: [...excludeDockerImage],
-        }
-      ),
+    const handler =  new PythonFunction(this, "HandlerV2", {
+      entry: path.join(__dirname, "../../../backend"),
+      index: "app/websocket.py",
+      bundling: {
+        assetExcludes: [...excludeDockerImage],
+        buildArgs: { POETRY_VERSION: "1.8.3" },
+      },
+      runtime: Runtime.PYTHON_3_12,
       memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {
@@ -111,6 +110,7 @@ export class WebSocket extends Construct {
           props.enableBedrockCrossRegionInference.toString(),
       },
       role: handlerRole,
+      snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
       logRetention: logs.RetentionDays.THREE_MONTHS,
     });
 
@@ -118,14 +118,14 @@ export class WebSocket extends Construct {
       connectRouteOptions: {
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
-          handler
+          handler.currentVersion
         ),
       },
     });
     const route = webSocketApi.addRoute("$default", {
       integration: new WebSocketLambdaIntegration(
         "DefaultIntegration",
-        handler
+        handler.currentVersion
       ),
     });
     new apigwv2.WebSocketStage(this, "WebSocketStage", {
