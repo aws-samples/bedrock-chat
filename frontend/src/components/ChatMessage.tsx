@@ -162,26 +162,17 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
 
         <div className="ml-5 grow ">
-          {chatContent?.role === 'assistant' && (
+          {chatContent?.role === 'assistant' && tools != null && tools.length > 0 && (
             <div className="flex flex-col">
-              {tools != null && (
-                tools.length === 0 ? (
+              {tools.map((tools, index) => (
+                <div key={index} className="mb-3 mt-0">
                   <AgentToolList
                     messageId={chatContent.id}
-                    tools={{ tools: {} }}
+                    tools={tools}
+                    relatedDocuments={relatedDocuments}
                   />
-                ) : (
-                  tools.map((tools, index) => (
-                    <div key={index} className="mb-3 mt-0">
-                      <AgentToolList
-                        messageId={chatContent.id}
-                        tools={tools}
-                        relatedDocuments={relatedDocuments}
-                      />
-                    </div>
-                  ))
-                )
-              )}
+                </div>
+              ))}
             </div>
           )}
           {chatContent?.role === 'user' && !isEdit && (

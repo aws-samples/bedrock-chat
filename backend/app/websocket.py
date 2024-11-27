@@ -106,15 +106,6 @@ class NotificationSender:
 
         self.notify(payload=payload)
 
-    def on_fetching_knowledge(self):
-        payload = json.dumps(
-            dict(
-                status="FETCHING_KNOWLEDGE",
-            )
-        ).encode("utf-8")
-
-        self.notify(payload=payload)
-
     def on_stop(self, arg: OnStopInput):
         payload = json.dumps(
             dict(
@@ -185,7 +176,6 @@ def process_chat_input(
             on_stream=lambda token: notificator.on_stream(
                 token=token,
             ),
-            on_fetching_knowledge=lambda: notificator.on_fetching_knowledge(),
             on_stop=lambda arg: notificator.on_stop(
                 arg=arg,
             ),

@@ -37,7 +37,8 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
-import { AgentState } from '../features/agent/xstates/agentThink';
+import { AgentState, AgentToolsProps } from '../features/agent/xstates/agentThink';
+import { getRelatedDocumentsOfToolUse } from '../features/agent/utils/AgentUtils';
 import { SyncStatus } from '../constants';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
 import { useIsWindows } from '../hooks/useIsWindows';
@@ -324,24 +325,77 @@ const ChatPage: React.FC = () => {
   }> = React.memo((props) => {
     const { chatContent: message } = props;
 
-    const isAgentThinking = [AgentState.THINKING, AgentState.LEAVING].some(
-      (v) => v == agentThinking.value
-    );
+    const isAgentThinking = useMemo(() => (
+      [AgentState.THINKING, AgentState.LEAVING].some(v => (
+        v === agentThinking.value
+      ))
+    ), []);
+
+    const tools: AgentToolsProps[] | undefined = useMemo(() => {
+      if (isAgentThinking) {
+        if (agentThinking.context.tools.length > 0) {
+          return agentThinking.context.tools;
+        }
+
+        if (bot?.hasAgent) {
+          return [
+            {
+              thought: t('agent.progress.label'),
+              tools: {},
+            },
+          ];
+        }
+
+        if (bot?.hasKnowledge) {
+          return [
+            {
+              thought: t('bot.label.retrievingKnowledge'),
+              tools: {},
+            },
+          ];
+        }
+
+        return undefined;
+      } else {
+        if (bot?.hasAgent) {
+          return undefined;
+        }
+
+        if (bot?.hasKnowledge) {
+          const pseudoToolUseId = message.id;
+          const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(relatedDocuments, pseudoToolUseId);
+          if (relatedDocumentsOfVectorSearch != null && relatedDocumentsOfVectorSearch.length > 0) {
+            return [
+              {
+                tools: {
+                  [pseudoToolUseId]: {
+                    name: 'knowledge_base_tool',
+                    status: 'success',
+                    input: {},
+                    relatedDocuments: relatedDocumentsOfVectorSearch,
+                  },
+                },
+              },
+            ];
+          }
+        }
+
+        return undefined;
+      }
+    }, [isAgentThinking, message]);
+
+    const relatedDocumentsForCitation = useMemo(() => (
+      isAgentThinking
+        ? agentThinking.context.relatedDocuments
+        : relatedDocuments
+    ), [isAgentThinking]);
 
     return (
       <ChatMessage
-        tools={
-          isAgentThinking
-            ? agentThinking.context.tools
-            : undefined
-        }
+        tools={tools}
         chatContent={message}
         isStreaming={props.isStreaming}
-        relatedDocuments={
-          isAgentThinking
-            ? agentThinking.context.relatedDocuments
-            : relatedDocuments
-        }
+        relatedDocuments={relatedDocumentsForCitation}
         onChangeMessageId={props.onChangeMessageId}
         onSubmit={props.onSubmit}
         onSubmitFeedback={props.onSubmitFeedback}

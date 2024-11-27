@@ -80,7 +80,6 @@ export type Direction =
 export const PostStreamingStatus = {
   START: 'START',
   BODY: 'BODY',
-  FETCHING_KNOWLEDGE: 'FETCHING_KNOWLEDGE',
   STREAMING: 'STREAMING',
   STREAMING_END: 'STREAMING_END',
   AGENT_THINKING: 'AGENT_THINKING',

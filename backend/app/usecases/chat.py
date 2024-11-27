@@ -27,7 +27,6 @@ from app.repositories.models.conversation import (
     TextContentModel,
     ToolUseContentModel,
     ToolResultContentModel,
-    ToolResultContentModelBody,
 )
 from app.repositories.models.custom_bot import (
     BotAliasModel,
@@ -233,7 +232,6 @@ def chat(
     user_id: str,
     chat_input: ChatInput,
     on_stream: Callable[[str], None] | None = None,
-    on_fetching_knowledge: Callable[[], None] | None = None,
     on_stop: Callable[[OnStopInput], None] | None = None,
     on_thinking: Callable[[OnThinking], None] | None = None,
     on_tool_result: Callable[[ToolRunResult], None] | None = None,
@@ -271,15 +269,40 @@ def chat(
                 instructions.append(PROMPT_TO_CITE_TOOL_RESULTS)
 
         elif bot.has_knowledge():
-            if on_fetching_knowledge:
-                on_fetching_knowledge()
-
             # Fetch most related documents from vector store
             # NOTE: Currently embedding not support multi-modal. For now, use the last content.
             content = conversation.message_map[user_msg_id].content[-1]
             if isinstance(content, TextContentModel):
+                pseudo_tool_use_id = "new-message-assistant"
+
+                if on_thinking:
+                    on_thinking(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "name": "knowledge_base_tool",
+                            "input": {
+                                "query": content.body,
+                            },
+                        }
+                    )
+
                 search_results = search_related_docs(bot=bot, query=content.body)
                 logger.info(f"Search results from vector store: {search_results}")
+
+                if on_tool_result:
+                    on_tool_result(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "status": "success",
+                            "related_documents": [
+                                search_result_to_related_document(
+                                    search_result=result,
+                                    source_id_base=pseudo_tool_use_id,
+                                )
+                                for result in search_results
+                            ],
+                        }
+                    )
 
                 # Insert contexts to instruction
                 instructions.append(

@@ -85,9 +85,6 @@ const usePostMessageStreaming = create<{
 
             if (data.status) {
               switch (data.status) {
-                case PostStreamingStatus.FETCHING_KNOWLEDGE:
-                  dispatch(i18next.t('bot.label.retrievingKnowledge') + '\n');
-                  break;
                 case PostStreamingStatus.AGENT_THINKING:
                   if (completion.length > 0) {
                     dispatch('');
