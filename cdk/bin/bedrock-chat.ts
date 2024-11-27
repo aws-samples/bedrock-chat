@@ -5,7 +5,7 @@ import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identity-provider";
-import { LogRetentionChecker } from '../rules/logRetentionChecker';
+import { LogRetentionChecker } from "../rules/log-retention-checker";
 
 const app = new cdk.App();
 
