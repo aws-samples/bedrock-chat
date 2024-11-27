@@ -1,20 +1,19 @@
 import logging
 import os
+from typing import TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import (
-    AgentMessageModel,
+    SimpleMessageModel,
     ContentModel,
-    ToolResultModel,
 )
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
-from typing_extensions import Literal, TypedDict, TypeGuard
 
 from mypy_boto3_bedrock_runtime.type_defs import (
     ConverseStreamRequestRequestTypeDef,
@@ -43,18 +42,12 @@ ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
 client = get_bedrock_runtime_client()
 
 
-class ConverseApiToolResult(TypedDict):
-    toolUseId: str
-    result: list[ToolResultModel]
-    status: Literal["error", "success"]
-
-
 def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
     return role in ["user", "assistant"]
 
 
 def compose_args_for_converse_api(
-    messages: list[AgentMessageModel],
+    messages: list[SimpleMessageModel],
     model: type_model_name,
     instructions: list[str] = [],
     generation_params: GenerationParamsModel | None = None,

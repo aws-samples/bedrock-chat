@@ -10,8 +10,8 @@ from typing import BinaryIO, Literal, TypedDict
 
 import boto3
 from app.auth import verify_token
-from app.bedrock import (
-    ConverseApiToolResult,
+from app.agents.tools.agent_tool import (
+    ToolRunResult,
 )
 from app.repositories.conversation import RecordNotFoundError
 from app.routes.schemas.conversation import ChatInput
@@ -141,32 +141,33 @@ class NotificationSender:
 
         self.notify(payload=payload)
 
-    def on_agent_tool_result(self, tool_result: ConverseApiToolResult):
-        payload = json.dumps(
-            dict(
-                status="AGENT_TOOL_RESULT",
-                result={
-                    "toolUseId": tool_result["toolUseId"],
-                    "status": tool_result["status"],
-                    "content": [
-                        result.to_content_for_converse()
-                        for result in tool_result["result"]
-                    ],
-                },
-            )
-        ).encode("utf-8")
-        if len(payload) > 128 * 1024:
-            payload = json.dumps(
+    def on_agent_tool_result(self, run_result: ToolRunResult):
+        self.notify(
+            payload=json.dumps(
                 dict(
                     status="AGENT_TOOL_RESULT",
                     result={
-                        "toolUseId": tool_result["toolUseId"],
-                        "status": tool_result["status"],
+                        "toolUseId": run_result["tool_use_id"],
+                        "status": run_result["status"],
                     },
                 )
             ).encode("utf-8")
+        )
 
-        self.notify(payload=payload)
+        for related_document in run_result["related_documents"]:
+            self.notify(
+                payload=json.dumps(
+                    dict(
+                        status="AGENT_RELATED_DOCUMENT",
+                        result={
+                            "toolUseId": run_result["tool_use_id"],
+                            "relatedDocument": related_document.to_schema().model_dump(
+                                by_alias=True
+                            ),
+                        },
+                    )
+                ).encode("utf-8")
+            )
 
 
 def process_chat_input(
@@ -191,8 +192,8 @@ def process_chat_input(
             on_thinking=lambda tool_use: notificator.on_agent_thinking(
                 tool_use=tool_use,
             ),
-            on_tool_result=lambda result: notificator.on_agent_tool_result(
-                tool_result=result
+            on_tool_result=lambda run_result: notificator.on_agent_tool_result(
+                run_result=run_result
             ),
         )
 

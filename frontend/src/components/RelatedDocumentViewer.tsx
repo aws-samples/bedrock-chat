@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { JSONTree } from 'react-json-tree';
 
 import { RelatedDocument } from '../@types/conversation';
+import { getAgentName } from '../features/agent/functions/formatDescription';
 
 const RelatedDocumentViewer: React.FC<{
-  relatedDocument: RelatedDocument;
+  relatedDocument: Omit<RelatedDocument, 'sourceId'>;
   onClick: () => void;
 }> = (props) => {
   const { t } = useTranslation();
@@ -52,11 +53,11 @@ const RelatedDocumentViewer: React.FC<{
                 onClick={() => {
                   window.open(sourceLink, '_blank');
                 }}>
-                {sourceName ?? sourceLink}
+                {sourceName ? getAgentName(sourceName, t) : sourceLink}
               </span>
             ) : (
               <span className="ml-1">
-                {sourceName}
+                {getAgentName(sourceName!, t)}
               </span>
             )}
           </div>

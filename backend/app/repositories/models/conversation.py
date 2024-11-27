@@ -1,17 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Any, Annotated, Self, TypeGuard
+from typing import Literal, Any, Annotated, Self, TypedDict, TypeGuard
 from pathlib import Path
 import re
 from urllib.parse import urlparse
 
-if TYPE_CHECKING:
-    from app.bedrock import (
-        ConverseApiToolResult,
-    )
-
 from app.repositories.models.common import Base64EncodedBytes
 from app.routes.schemas.conversation import (
+    SimpleMessage,
     MessageInput,
     type_model_name,
     Content,
@@ -444,14 +440,6 @@ class ToolResultContentModelBody(BaseModel):
             return [v]
 
     @classmethod
-    def from_tool_result(cls, tool_result: ConverseApiToolResult) -> Self:
-        return cls(
-            tool_use_id=tool_result["toolUseId"],
-            content=tool_result["result"],
-            status=tool_result["status"],
-        )
-
-    @classmethod
     def from_tool_result_content_body(cls, body: ToolResultContentBody) -> Self:
         return cls(
             tool_use_id=body.tool_use_id,
@@ -534,15 +522,21 @@ def content_model_from_content(content: Content) -> ContentModel:
         raise ValueError(f"Unknown content type")
 
 
-class AgentMessageModel(BaseModel):
+class SimpleMessageModel(BaseModel):
     role: str
     content: list[ContentModel]
 
     @classmethod
     def from_message_model(cls, message: MessageModel):
-        return AgentMessageModel(
+        return SimpleMessageModel(
             role=message.role,
             content=message.content,
+        )
+
+    def to_schema(self) -> SimpleMessage:
+        return SimpleMessage(
+            role=self.role,
+            content=[content.to_content() for content in self.content],
         )
 
 
@@ -555,7 +549,7 @@ class MessageModel(BaseModel):
     create_time: float
     feedback: FeedbackModel | None = None
     used_chunks: list[ChunkModel] | None = None
-    thinking_log: list[AgentMessageModel] | None = Field(
+    thinking_log: list[SimpleMessageModel] | None = Field(
         default=None, description="Only available for agent."
     )
 

@@ -7,8 +7,7 @@ import unittest
 from pprint import pprint
 
 import boto3
-from app.agents.tools.internet_search import internet_search_tool
-from app.bedrock import ConverseApiToolResult
+from app.agents.tools.agent_tool import ToolRunResult
 from app.prompt import build_rag_prompt
 from app.repositories.conversation import (
     delete_conversation_by_id,
@@ -810,11 +809,11 @@ def on_thinking(to_send: OnThinking):
     pprint(to_send)
 
 
-def on_tool_result(tool_result: ConverseApiToolResult):
+def on_tool_result(run_result: ToolRunResult):
     print("====================================")
     print("Tool Result...")
     print("====================================")
-    pprint(tool_result)
+    pprint(run_result)
 
 
 def on_stop(on_stop_input: OnStopInput):

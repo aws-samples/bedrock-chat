@@ -5,7 +5,7 @@ from typing import Callable, TypedDict, TypeGuard
 from app.agents.tools.agent_tool import AgentTool
 from app.bedrock import calculate_price, compose_args_for_converse_api
 from app.repositories.models.conversation import (
-    AgentMessageModel,
+    SimpleMessageModel,
     ContentModel,
     MessageModel,
     TextContentModel,
@@ -153,9 +153,9 @@ class ConverseApiStreamHandler:
 
     def run(
         self,
-        messages: list[AgentMessageModel],
+        messages: list[SimpleMessageModel],
         grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
-        message_for_continue_generate: AgentMessageModel | None = None,
+        message_for_continue_generate: SimpleMessageModel | None = None,
     ) -> OnStopInput:
         try:
             # Create payload to invoke Bedrock

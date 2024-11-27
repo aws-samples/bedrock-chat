@@ -45,8 +45,6 @@ import {
   DisplayMessageContent,
   PutFeedbackRequest,
 } from '../@types/conversation';
-import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
-import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -325,39 +323,25 @@ const ChatPage: React.FC = () => {
     ) => void;
   }> = React.memo((props) => {
     const { chatContent: message } = props;
-    const getRelatedDocumentCallback = useCallback(async (sourceId: string) => {
-      if (message.usedChunks) {
-        // usedChunks is available for existing messages
-        const chunk = message.usedChunks.find((chunk) => chunk.rank.toString() === sourceId);
-        if (chunk == null) {
-          return undefined;
-        }
-        return convertUsedChunkToRelatedDocument(chunk);
-      } else {
-        // For new messages, get related documents from the api
-        const relatedDocument = relatedDocuments?.find(document => document.sourceId === sourceId);
-        if (relatedDocument == null) {
-          return relatedDocuments?.find(document => document.sourceId === `${message.id}@${sourceId}`);
-        }
-        return relatedDocument;
-      }
-    }, [message.usedChunks, message.id]);
 
     const isAgentThinking = [AgentState.THINKING, AgentState.LEAVING].some(
       (v) => v == agentThinking.value
     );
-    const tools = isAgentThinking
-      ? agentThinking.context.tools
-      : message.thinkingLog
-        ? convertThinkingLogToAgentToolProps(message.thinkingLog)
-        : undefined;
 
     return (
       <ChatMessage
-        tools={tools}
+        tools={
+          isAgentThinking
+            ? agentThinking.context.tools
+            : undefined
+        }
         chatContent={message}
         isStreaming={props.isStreaming}
-        getRelatedDocument={!props.isStreaming ? getRelatedDocumentCallback : undefined}
+        relatedDocuments={
+          isAgentThinking
+            ? agentThinking.context.relatedDocuments
+            : relatedDocuments
+        }
         onChangeMessageId={props.onChangeMessageId}
         onSubmit={props.onSubmit}
         onSubmitFeedback={props.onSubmitFeedback}

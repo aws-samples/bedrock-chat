@@ -70,11 +70,11 @@ export type ToolResultContentBody = {
   status: 'success' | 'error';
 };
 
-export type AgentContent = TextContent | ToolUseContent | ToolResultContent;
+export type SimpleMessageContent = TextContent | ToolUseContent | ToolResultContent;
 
-export type AgentMessage = {
+export type SimpleMessage = {
   role: Role;
-  content: AgentContent[];
+  content: SimpleMessageContent[];
 };
 
 export type MessageContent = {
@@ -83,7 +83,7 @@ export type MessageContent = {
   model: Model;
   feedback: null | Feedback;
   usedChunks: null | UsedChunk[];
-  thinkingLog: null | AgentMessage[];
+  thinkingLog: null | SimpleMessage[];
 };
 
 export type RelatedDocument = {

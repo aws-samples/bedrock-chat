@@ -1,7 +1,5 @@
 import ChatMessage from './ChatMessage';
 import { DisplayMessageContent } from '../@types/conversation';
-import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
-import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
 
 export const Conversation = () => {
   const messages: DisplayMessageContent[] = [
@@ -73,16 +71,6 @@ export const Conversation = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            getRelatedDocument={async (sourceId) => {
-              if (message.usedChunks) {
-                const chunk = message.usedChunks.find((chunk) => chunk.rank.toString() === sourceId);
-                if (chunk != null) {
-                  return convertUsedChunkToRelatedDocument(chunk);
-                }
-              }
-
-              return undefined;
-            }}
           />
 
           <div className="w-full border-b border-aws-squid-ink/10"></div>
@@ -139,7 +127,6 @@ export const ConversationThinking = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
           />
 
           <div className="w-full border-b border-aws-squid-ink/10"></div>
@@ -174,7 +161,7 @@ export const ConversationWithAgnet = () => {
       content: [
         {
           contentType: 'text',
-          body: 'I recommend going to an amusement park.[^tool2@0]',
+          body: 'I recommend going to an amusement park.[^tool2_cwa@0]',
         },
       ],
       model: 'claude-v3.5-sonnet',
@@ -194,7 +181,7 @@ export const ConversationWithAgnet = () => {
             {
               contentType: 'toolUse',
               body: {
-                toolUseId: 'tool1',
+                toolUseId: 'tool1_cwa',
                 name: 'get_weather',
                 input: {},
               },
@@ -207,11 +194,14 @@ export const ConversationWithAgnet = () => {
             {
               contentType: 'toolResult',
               body: {
-                toolUseId: 'tool1',
+                toolUseId: 'tool1_cwa',
                 content: [
                   {
                     json: {
-                      weather: 'Clear skies',
+                      source_id: 'tool1_cwa',
+                      content: {
+                        weather: 'Clear skies',
+                      },
                     },
                   },
                 ],
@@ -225,12 +215,12 @@ export const ConversationWithAgnet = () => {
           content: [
             {
               contentType: 'text',
-              body: "Tomorrow's weather will be clear skies.[^tool1]\nSearch for recommended family leisure places on clear weather.",
+              body: "Tomorrow's weather will be clear skies.[^tool1_cwa]\nSearch for recommended family leisure places on clear weather.",
             },
             {
               contentType: 'toolUse',
               body: {
-                toolUseId: 'tool2',
+                toolUseId: 'tool2_cwa',
                 name: 'internet_search',
                 input: {
                   country: 'en-us',
@@ -247,16 +237,25 @@ export const ConversationWithAgnet = () => {
             {
               contentType: 'toolResult',
               body: {
-                toolUseId: 'tool2',
+                toolUseId: 'tool2_cwa',
                 content: [
                   {
-                    'text': 'amusement park',
+                    json: {
+                      source_id: 'tool2_cwa@0',
+                      content: 'amusement park',
+                    },
                   },
                   {
-                    'text': 'athletic field',
+                    json: {
+                      source_id: 'tool2_cwa@1',
+                      content: 'athletic field',
+                    },
                   },
                   {
-                    'text': 'beach',
+                    json: {
+                      source_id: 'tool2_cwa@2',
+                      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+                    },
                   },
                 ],
                 status: 'success',
@@ -277,35 +276,41 @@ export const ConversationWithAgnet = () => {
           }`}>
           <ChatMessage
             chatContent={message}
-            getRelatedDocument={async (sourceId) => {
-              switch(sourceId) {
-                case 'tool1': {
-                  return {
-                    content: {
-                      json: {
-                        weather: 'Clear skies',
-                      },
-                    },
-                    sourceId: 'tool1',
-                    sourceName: 'get_weather',
-                  };
-                }
-                case 'tool2@0': {
-                  return {
-                    content: {
-                      'text': 'amusement park',
-                    },
-                    sourceId: 'tool2@0',
-                    sourceName: 'Amusement park guidebook',
-                    sourceLink: 'http://example.com/guide.html',
-                  };
-                }
-                default: {
-                  return undefined;
-                }
-              }
-            }}
-            tools={message.thinkingLog ? convertThinkingLogToAgentToolProps(message.thinkingLog) : undefined}
+            relatedDocuments={[
+              {
+                content: {
+                  json: {
+                    weather: 'Clear skies',
+                  },
+                },
+                sourceId: 'tool1_cwa',
+                sourceName: 'get_weather',
+              },
+              {
+                content: {
+                  text: 'amusement park',
+                },
+                sourceId: 'tool2_cwa@0',
+                sourceName: 'Amusement park Guidebook',
+                sourceLink: 'http://example.com/amusement_park_guidebook.html',
+              },
+              {
+                content: {
+                  text: 'athletic field',
+                },
+                sourceId: 'tool2_cwa@1',
+                sourceName: 'Athletic field Guidebook',
+                sourceLink: 'http://example.com/athletic_field_guidebook.html',
+              },
+              {
+                content: {
+                  text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+                },
+                sourceId: 'tool2_cwa@2',
+                sourceName: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+                sourceLink: 'http://example.com/lorem_ipsim.html?keyword=Lorem%20ipsum%20dolor%20sit%20amet%20consectetur%20adipiscing%20elit%20sed%20do%20eiusmod%20tempor%20incididunt%20ut%20labore%20et%20dolore%20magna%20aliqua',
+              },
+            ]}
           />
 
           <div className="w-full border-b border-aws-squid-ink/10"></div>

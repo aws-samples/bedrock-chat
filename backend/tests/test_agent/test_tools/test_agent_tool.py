@@ -5,6 +5,10 @@ import unittest
 from pprint import pprint
 
 from app.agents.tools.agent_tool import AgentTool
+from app.repositories.models.conversation import (
+    RelatedDocumentModel,
+    TextToolResultModel,
+)
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
 
@@ -87,8 +91,18 @@ class TestAgentTool(unittest.TestCase):
             arg4=["test"],
         )
         result = self.tool.run(tool_use_id="dummy", input=arg.model_dump())
-        self.assertEqual(result["result"], "test")
-        self.assertEqual(result["succeeded"], True)
+        self.assertEqual(
+            result["related_documents"],
+            [
+                RelatedDocumentModel(
+                    content=TextToolResultModel(
+                        text="test",
+                    ),
+                    source_id="dummy",
+                ),
+            ],
+        )
+        self.assertEqual(result["status"], "success")
 
 
 if __name__ == "__main__":

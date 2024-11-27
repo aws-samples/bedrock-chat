@@ -1,10 +1,12 @@
-from typing import Any, Callable, Generic, TypeVar, TypedDict
+from typing import Any, Callable, Generic, Literal, TypedDict, TypeVar
 
 from app.repositories.models.conversation import (
     ToolResultModel,
     TextToolResultModel,
     JsonToolResultModel,
     RelatedDocumentModel,
+    ToolResultContentModel,
+    ToolResultContentModelBody,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
@@ -16,13 +18,31 @@ from mypy_boto3_bedrock_runtime.type_defs import (
 T = TypeVar("T", bound=BaseModel)
 
 
-AgentResultType = str | dict | ToolResultModel
+ToolFunctionResult = str | dict | ToolResultModel
 
 
-class RunResult(TypedDict):
+class ToolRunResult(TypedDict):
     tool_use_id: str
-    succeeded: bool
-    result: AgentResultType | list[AgentResultType]
+    status: Literal["success", "error"]
+    related_documents: list[RelatedDocumentModel]
+
+
+def run_result_to_tool_result_content_model(
+    run_result: ToolRunResult, display_citation: bool
+) -> ToolResultContentModel:
+    return ToolResultContentModel(
+        content_type="toolResult",
+        body=ToolResultContentModelBody(
+            tool_use_id=run_result["tool_use_id"],
+            content=[
+                related_document.to_tool_result_model(
+                    display_citation=display_citation,
+                )
+                for related_document in run_result["related_documents"]
+            ],
+            status=run_result["status"],
+        ),
+    )
 
 
 class InvalidToolError(Exception):
@@ -37,7 +57,7 @@ class AgentTool(Generic[T]):
         args_schema: type[T],
         function: Callable[
             [T, BotModel | None, type_model_name | None],
-            AgentResultType | list[AgentResultType],
+            ToolFunctionResult | list[ToolFunctionResult],
         ],
         bot: BotModel | None = None,
         model: type_model_name | None = None,
@@ -60,27 +80,53 @@ class AgentTool(Generic[T]):
             inputSchema={"json": self._generate_input_schema()},
         )
 
-    def run(self, tool_use_id: str, input: dict[str, JsonValue]) -> RunResult:
+    def run(self, tool_use_id: str, input: dict[str, JsonValue]) -> ToolRunResult:
         try:
             arg = self.args_schema.model_validate(input)
             res = self.function(arg, self.bot, self.model)
-            return RunResult(
+            if isinstance(res, list):
+                related_documents = [
+                    _function_result_to_related_document(
+                        tool_name=self.name,
+                        res=result,
+                        source_id_base=tool_use_id,
+                        rank=rank,
+                    )
+                    for rank, result in enumerate(res)
+                ]
+
+            else:
+                related_documents = [
+                    _function_result_to_related_document(
+                        tool_name=self.name,
+                        res=res,
+                        source_id_base=tool_use_id,
+                    )
+                ]
+
+            return ToolRunResult(
                 tool_use_id=tool_use_id,
-                succeeded=True,
-                result=res,
+                status="success",
+                related_documents=related_documents,
             )
 
         except Exception as e:
-            return RunResult(
+            return ToolRunResult(
                 tool_use_id=tool_use_id,
-                succeeded=False,
-                result=str(e),
+                status="error",
+                related_documents=[
+                    _function_result_to_related_document(
+                        tool_name=self.name,
+                        res=str(e),
+                        source_id_base=tool_use_id,
+                    )
+                ],
             )
 
 
-def agent_result_to_related_document(
+def _function_result_to_related_document(
     tool_name: str,
-    res: AgentResultType,
+    res: ToolFunctionResult,
     source_id_base: str,
     rank: int | None = None,
 ) -> RelatedDocumentModel:

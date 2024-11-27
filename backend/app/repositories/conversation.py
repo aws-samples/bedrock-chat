@@ -318,7 +318,9 @@ def update_feedback(
         },
         UpdateExpression="set MessageMap = :m",
         ExpressionAttributeValues={
-            ":m": json.dumps({k: v.model_dump() for k, v in message_map.items()})
+            ":m": json.dumps(
+                {k: v.model_dump(by_alias=True) for k, v in message_map.items()}
+            )
         },
         ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         ReturnValues="UPDATED_NEW",

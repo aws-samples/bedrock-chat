@@ -2,12 +2,12 @@ import logging
 from typing import Callable
 
 from app.agents.tools.agent_tool import (
-    agent_result_to_related_document,
+    ToolRunResult,
+    run_result_to_tool_result_content_model,
 )
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import (
-    ConverseApiToolResult,
     call_converse_api,
     compose_args_for_converse_api,
 )
@@ -20,7 +20,7 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
-    AgentMessageModel,
+    SimpleMessageModel,
     ConversationModel,
     MessageModel,
     RelatedDocumentModel,
@@ -35,7 +35,6 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
 )
 from app.routes.schemas.conversation import (
-    AgentMessage,
     ChatInput,
     ChatOutput,
     Chunk,
@@ -202,15 +201,15 @@ def prepare_conversation(
 
 def trace_to_root(
     node_id: str | None, message_map: dict[str, MessageModel]
-) -> list[AgentMessageModel]:
+) -> list[SimpleMessageModel]:
     """Trace message map from leaf node to root node."""
-    result: list[AgentMessageModel] = []
+    result: list[SimpleMessageModel] = []
     if not node_id or node_id == "system":
         node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
     while current_node:
-        result.append(AgentMessageModel.from_message_model(message=current_node))
+        result.append(SimpleMessageModel.from_message_model(message=current_node))
         if current_node.thinking_log:
             result.extend(
                 log
@@ -237,7 +236,7 @@ def chat(
     on_fetching_knowledge: Callable[[], None] | None = None,
     on_stop: Callable[[OnStopInput], None] | None = None,
     on_thinking: Callable[[OnThinking], None] | None = None,
-    on_tool_result: Callable[[ConverseApiToolResult], None] | None = None,
+    on_tool_result: Callable[[ToolRunResult], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
@@ -308,13 +307,13 @@ def chat(
     continue_generate = chat_input.continue_generate
 
     if continue_generate:
-        message_for_continue_generate = AgentMessageModel.from_message_model(
+        message_for_continue_generate = SimpleMessageModel.from_message_model(
             message=message_map[conversation.last_message_id],
         )
 
     else:
         messages.append(
-            AgentMessageModel.from_message_model(message=message_map[user_msg_id]),
+            SimpleMessageModel.from_message_model(message=message_map[user_msg_id]),
         )
         message_for_continue_generate = None
 
@@ -336,7 +335,7 @@ def chat(
         on_thinking=on_thinking,
     )
 
-    thinking_log: list[AgentMessageModel] = []
+    thinking_log: list[SimpleMessageModel] = []
     while True:
         result = stream_handler.run(
             messages=messages,
@@ -388,7 +387,7 @@ def chat(
             related_documents.extend(search_results_as_related_documents)
             break
 
-        tool_use_message = AgentMessageModel.from_message_model(message=message)
+        tool_use_message = SimpleMessageModel.from_message_model(message=message)
         if continue_generate:
             messages[-1] = tool_use_message
 
@@ -406,63 +405,29 @@ def chat(
             if isinstance(content, ToolUseContentModel)
         ]
 
-        tool_results: list[ConverseApiToolResult] = []
+        run_results: list[ToolRunResult] = []
         for content in tool_use_contents:
             tool = tools[content.body.name]
             run_result = tool.run(
                 tool_use_id=content.body.tool_use_id,
                 input=content.body.input,
             )
-            agent_result = run_result["result"]
-            agent_succeeded = run_result["succeeded"]
+            run_results.append(run_result)
 
-            if isinstance(agent_result, list):
-                tool_result_as_related_documents = [
-                    agent_result_to_related_document(
-                        tool_name=content.body.name,
-                        res=result,
-                        source_id_base=content.body.tool_use_id,
-                        rank=rank,
-                    )
-                    for rank, result in enumerate(agent_result)
-                ]
-
-            else:
-                tool_result_as_related_documents = [
-                    agent_result_to_related_document(
-                        tool_name=content.body.name,
-                        res=agent_result,
-                        source_id_base=content.body.tool_use_id,
-                    )
-                ]
-
-            if agent_succeeded:
-                related_documents.extend(tool_result_as_related_documents)
-
-            tool_result = ConverseApiToolResult(
-                toolUseId=run_result["tool_use_id"],
-                result=[
-                    related_document.to_tool_result_model(
-                        display_citation=display_citation,
-                    )
-                    for related_document in tool_result_as_related_documents
-                ],
-                status="success" if agent_succeeded else "error",
-            )
-
-            tool_results.append(tool_result)
+            if run_result["status"] == "success":
+                related_documents.extend(run_result["related_documents"])
 
             if on_tool_result:
-                on_tool_result(tool_result)
+                on_tool_result(run_result)
 
-        tool_result_message = AgentMessageModel(
+        tool_result_message = SimpleMessageModel(
             role="user",
             content=[
-                ToolResultContentModel(
-                    content_type="toolResult",
-                    body=ToolResultContentModelBody.from_tool_result(result),
+                run_result_to_tool_result_content_model(
+                    run_result=result,
+                    display_citation=display_citation,
                 )
-                for result in tool_results
+                for result in run_results
             ],
         )
         messages.append(tool_result_message)
@@ -516,7 +481,7 @@ def chat_output_from_message(
                 else None
             ),
             thinking_log=(
-                [AgentMessage.from_model(m) for m in message.thinking_log]
+                [m.to_schema() for m in message.thinking_log]
                 if message.thinking_log
                 else None
             ),
@@ -547,7 +512,7 @@ def propose_conversation_title(
     )
 
     # Append message to generate title
-    new_message = AgentMessageModel(
+    new_message = SimpleMessageModel(
         role="user",
         content=[
             TextContentModel(
@@ -617,7 +582,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
                 else None
             ),
             thinking_log=(
-                [AgentMessage.from_model(m) for m in message.thinking_log]
+                [m.to_schema() for m in message.thinking_log]
                 if message.thinking_log
                 else None
             ),

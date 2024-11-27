@@ -21,7 +21,7 @@ import RelatedDocumentViewer from './RelatedDocumentViewer';
 type Props = BaseProps & {
   children: string;
   isStreaming?: boolean;
-  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
+  relatedDocuments?: RelatedDocument[];
   messageId: string;
 };
 
@@ -50,7 +50,7 @@ const useRelatedDocumentsState = create<{
 }));
 
 const RelatedDocumentLink: React.FC<{
-  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
+  relatedDocument?: RelatedDocument;
   sourceId: string;
   linkId: string;
   children: ReactNode;
@@ -62,16 +62,13 @@ const RelatedDocumentLink: React.FC<{
       <a
         className={twMerge(
           'mx-0.5 ',
-          props.getRelatedDocument != null
+          props.relatedDocument != null
             ? 'cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover'
             : 'cursor-not-allowed text-gray'
         )}
-        onClick={async () => {
-          if (props.getRelatedDocument != null) {
-            const relatedDocument = await props.getRelatedDocument(props.sourceId);
-            if (relatedDocument != null) {
-              setRelatedDocument(props.linkId, relatedDocument);
-            }
+        onClick={() => {
+          if (props.relatedDocument != null) {
+            setRelatedDocument(props.linkId, props.relatedDocument);
           }
         }}>
         {props.children}
@@ -93,7 +90,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   className,
   children,
   isStreaming,
-  getRelatedDocument,
+  relatedDocuments,
   messageId,
 }) => {
   const sourceIds = useMemo(() => (
@@ -195,6 +192,9 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                         href.replace('#user-content-fn-', '')
                       );
                       const sourceId = sourceIds[docNo - 1];
+                      const relatedDocument = relatedDocuments?.find(document => (
+                        document.sourceId === sourceId || document.sourceId === `${messageId}@${sourceId}`
+                      ));
 
                       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       // @ts-ignore
@@ -203,7 +203,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                         <RelatedDocumentLink
                           key={`${idx}-${docNo}`}
                           linkId={`${messageId}-${idx}-${docNo}`}
-                          getRelatedDocument={getRelatedDocument}
+                          relatedDocument={relatedDocument}
                           sourceId={sourceId}
                         >
                           [{refNo}]

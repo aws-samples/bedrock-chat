@@ -1,5 +1,3 @@
-import json
-
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name

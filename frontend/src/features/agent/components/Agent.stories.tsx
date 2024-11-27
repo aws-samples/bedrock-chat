@@ -47,7 +47,7 @@ export const Tools = () => {
 
 export const ToolCardRunning = () => (
   <ToolCard
-    toolUseId="tool1"
+    toolUseId="tool1_tcr"
     name="internet_search"
     status="running"
     input={{ country: 'jp-jp', query: '東京 天気', time_limit: 'd' }}
@@ -56,11 +56,11 @@ export const ToolCardRunning = () => (
 
 export const ToolCardSuccess = () => (
   <ToolCard
-    toolUseId="tool2"
+    toolUseId="tool2_tcs"
     name="Database Query"
     status="success"
     input={{ query: 'SELECT * FROM table' }}
-    content={[{
+    resultContents={[{
       text: 'some data',
     }]}
   />
@@ -68,7 +68,7 @@ export const ToolCardSuccess = () => (
 
 export const ToolCardError = () => (
   <ToolCard
-    toolUseId="tool3"
+    toolUseId="tool3_tce"
     name="API Call"
     status="error"
     input={{ query: 'SELECT * FROM table' }}
@@ -77,24 +77,24 @@ export const ToolCardError = () => (
 
 export const ToolListRunning = () => {
   return <AgentToolList
-    messageId="dummy"
+    messageId="message_tlr"
     tools={{
       tools: {
-        tool1: {
+        tool1_tlr: {
           name: 'internet_search',
           status: 'running',
           input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
         },
-        tool2: {
+        tool2_tlr: {
           name: 'database_query',
           status: 'success',
           input: { query: 'SELECT * FROM table' },
           // Pass the content as stringified JSON
-          content: [{
+          resultContents: [{
             text: '{"result": "success", "data": "some data"}',
           }],
         },
-        tool3: {
+        tool3_tlr: {
           name: 'API Call',
           status: 'running',
           input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
@@ -106,15 +106,15 @@ export const ToolListRunning = () => {
 
 export const ToolList = () => {
   return <AgentToolList
-    messageId="dummy"
+    messageId="message_tl"
     tools={{
-      thought: '東京の天気について以下のことがわかりました。\n- search result 1[^tool1@0]\n- search result 2[^tool1@1]\n- search result 3[^tool1@2]',
+      thought: '東京の天気について以下のことがわかりました。\n- search result 1[^tool1_tl@0]\n- search result 2[^tool1_tl@1]\n- search result 3[^tool1_tl@2]',
       tools: {
-        tool1: {
+        tool1_tl: {
           name: 'internet_search',
           status: 'success',
           input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
-          content: [
+          resultContents: [
             {
               text: "search result 1",
             },
@@ -122,66 +122,52 @@ export const ToolList = () => {
               text: "search result 2",
             },
             {
-              text: "search result 3",
+              text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
             },
           ],
         },
-        tool2: {
+        tool2_tl: {
           name: 'database_query',
           status: 'success',
           input: { query: 'SELECT * FROM table' },
           // Pass the content as stringified JSON
-          content: [{
-            json: {
-              result: "success",
-              data: "some data",
-            },
+          resultContents: [{
+            text: '{"result": "success", "data": "some data"}',
           }],
         },
-        tool3: {
+        tool3_tl: {
           name: 'API Call',
           status: 'error',
           input: { country: 'jp-jp', query: '東京 天気', time_limit: 'd' },
           // Pass the content as simple string
-          content: [{
+          resultContents: [{
             text: 'Error! Connection Timeout',
           }],
         },
       },
     }}
-    getRelatedDocument={async (sourceId) => {
-      switch(sourceId) {
-        case 'tool1@0': {
-          return {
-            content: {
-              text: 'search result 1',
-            },
-            sourceId: 'tool1@0',
-            sourceName: 'internet_search',
-          };
-        }
-        case 'tool1@1': {
-          return {
-            content: {
-              text: 'search result 2',
-            },
-            sourceId: 'tool1@1',
-            sourceName: 'internet_search',
-          };
-        }
-        case 'tool1@2': {
-          return {
-            content: {
-              text: 'search result 3',
-            },
-            sourceId: 'tool1@2',
-            sourceName: 'internet_search',
-          };
-        }
-        default: {
-          return undefined;
-        }
-      }
-    }}
+    relatedDocuments={[
+      {
+        content: {
+          text: 'search result 1',
+        },
+        sourceId: 'tool1_tl@0',
+        sourceName: 'internet_search',
+      },
+      {
+        content: {
+          text: 'search result 2',
+        },
+        sourceId: 'tool1_tl@1',
+        sourceName: 'internet_search',
+      },
+      {
+        content: {
+          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+        },
+        sourceId: 'tool1_tl@2',
+        sourceName: 'internet_search',
+      },
+    ]}
   />;
 };

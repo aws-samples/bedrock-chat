@@ -4,16 +4,15 @@ import ChatMessageMarkdown from '../../../components/ChatMessageMarkdown';
 import { AgentToolsProps } from '../xstates/agentThink';
 import { useTranslation } from 'react-i18next';
 import { PiCircleNotchBold } from 'react-icons/pi';
-import { getAgentName } from '../functions/formatDescription';
 import { RelatedDocument } from '../../../@types/conversation';
 
 type AgentToolListProps = {
   messageId: string;
   tools: AgentToolsProps;
-  getRelatedDocument?: (sourceId: string) => Promise<RelatedDocument | undefined>;
+  relatedDocuments?: RelatedDocument[];
 };
 
-const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, getRelatedDocument}) => {
+const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, relatedDocuments}) => {
   const { t } = useTranslation();
   const isRunning = (
     Object.keys(tools.tools).length === 0 ||
@@ -27,7 +26,7 @@ const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, getRelat
           {tools.thought ? (
             <ChatMessageMarkdown
               messageId={messageId}
-              getRelatedDocument={getRelatedDocument}
+              relatedDocuments={relatedDocuments}
             >
               {tools.thought}
             </ChatMessageMarkdown>
@@ -40,10 +39,11 @@ const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, getRelat
           className=" border-b border-gray last:border-b-0"
           key={toolUseId}
           toolUseId={toolUseId}
-          name={getAgentName(toolUse.name, t)}
+          name={toolUse.name}
           status={toolUse.status}
           input={toolUse.input}
-          content={toolUse.content}
+          resultContents={toolUse.resultContents}
+          relatedDocuments={toolUse.relatedDocuments}
         />
       ))}
     </div>

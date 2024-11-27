@@ -23,7 +23,7 @@ from app.repositories.custom_bot import (
     store_bot,
 )
 from app.repositories.models.conversation import (
-    AgentMessageModel,
+    SimpleMessageModel,
     ChunkModel,
     FeedbackModel,
     TextContentModel,
@@ -159,7 +159,7 @@ class TestConversationRepository(unittest.TestCase):
                         ),
                     ],
                     thinking_log=[
-                        AgentMessageModel(
+                        SimpleMessageModel(
                             role="agent",
                             content=[
                                 ToolUseContentModel(

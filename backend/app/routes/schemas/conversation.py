@@ -1,9 +1,4 @@
-from typing import TYPE_CHECKING, Literal, Annotated
-
-if TYPE_CHECKING:
-    from app.repositories.models.conversation import (
-        AgentMessageModel,
-    )
+from typing import Literal, Annotated
 
 from app.routes.schemas.base import BaseSchema
 from app.repositories.models.common import Base64EncodedBytes
@@ -145,16 +140,9 @@ Content = Annotated[
 ]
 
 
-class AgentMessage(BaseSchema):
+class SimpleMessage(BaseSchema):
     role: str
     content: list[Content]
-
-    @classmethod
-    def from_model(cls, model: "AgentMessageModel"):
-        return AgentMessage(
-            role=model.role,
-            content=[content.to_content() for content in model.content],
-        )
 
 
 class MessageInput(BaseSchema):
@@ -175,7 +163,7 @@ class MessageOutput(BaseSchema):
     feedback: FeedbackOutput | None
     used_chunks: list[Chunk] | None
     parent: str | None
-    thinking_log: list[AgentMessage] | None
+    thinking_log: list[SimpleMessage] | None
 
 
 class ChatInput(BaseSchema):

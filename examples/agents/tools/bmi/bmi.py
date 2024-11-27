@@ -1,5 +1,3 @@
-import json
-
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
@@ -13,7 +11,7 @@ class BMIInput(BaseModel):
 
 def calculate_bmi(
     arg: BMIInput, bot: BotModel | None, model: type_model_name | None
-) -> str:
+) -> dict:
     height = arg.height
     weight = arg.weight
     if height <= 0 or weight <= 0:
@@ -32,9 +30,25 @@ def calculate_bmi(
     else:
         category = "Obese"
 
-    # You can select the return format you prefer.
-    # If return with json format, it will be rendered as a json object in the frontend.
-    return json.dumps({"bmi": bmi_rounded, "category": category})
+    # You can select the return type you prefer.
+    # - str: Plain text.
+    # - dict: Treated as a JSON object, and rendered as a JSON object in the frontend.
+    #   The following fields are treated specially:
+    #   - source_id: If 'Retrieved Context Citation' is enabled, used as the ID of the source.
+    #   - source_name: If 'Retrieved Context Citation' is enabled, used as the name of the source.
+    #   - source_link: If 'Retrieved Context Citation' is enabled, used as the reference link of the source.
+    #   - content: If present, given to the LLM as the content of the tool result.
+    # - app.repositories.models.conversation.ToolResultModel: Union of the following types.
+    #   Given to the LLM as-is.
+    #   - TextToolResultModel: Plain text.
+    #   - JsonToolResultModel: JSON object.
+    #   - ImageToolResultModel: Image file.
+    #   - DocumentToolResultModel: Document file.
+    # - list: List of the above types.
+    return {
+        "bmi": bmi_rounded,
+        "category": category,
+    }
     # return f"Your BMI is {bmi_rounded}, which falls within the {category} range."
 
 

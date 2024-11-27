@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { AgentToolState } from '../xstates/agentThink';
 import { JSONTree } from 'react-json-tree';
 import {
@@ -7,11 +7,14 @@ import {
   PiCaretUp,
   PiCheckCircle,
   PiCircleNotch,
+  PiLinkBold,
   PiXCircle,
 } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
 import useToolCardExpand from '../hooks/useToolCardExpand';
-import { AgentToolResultContent } from '../../../@types/conversation';
+import { AgentToolResultContent, RelatedDocument } from '../../../@types/conversation';
+import { getAgentName } from '../functions/formatDescription';
+import RelatedDocumentViewer from '../../../components/RelatedDocumentViewer';
 
 // Theme of JSONTree
 // NOTE: need to set the theme as base16 style
@@ -42,7 +45,8 @@ type ToolCardProps = {
   name: string;
   status: AgentToolState;
   input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-  content?: AgentToolResultContent[];
+  resultContents?: AgentToolResultContent[];
+  relatedDocuments?: RelatedDocument[];
 };
 
 const ToolCard: React.FC<ToolCardProps> = ({
@@ -51,7 +55,8 @@ const ToolCard: React.FC<ToolCardProps> = ({
   name,
   status,
   input,
-  content,
+  resultContents,
+  relatedDocuments,
 }) => {
   const { t } = useTranslation();
 
@@ -81,22 +86,125 @@ const ToolCard: React.FC<ToolCardProps> = ({
     toggleContentExpand(toolUseId);
   }, [toggleContentExpand, toolUseId]);
 
-  // Convert output content text to JSON object if possible.
-  const displayContent = content
-    ?.map((c) => {
-      if ('text' in c) {
+  const displayDocuments = useMemo(() => {
+    let documents = relatedDocuments;
+    if (documents == null && resultContents != null) {
+      // For backward compatibility
+      if (resultContents.length === 1 && 'text' in resultContents[0]) {
+        // Convert output content text to JSON object if possible.
         try {
-          return JSON.parse(c.text);
-        } catch (e) {
-          return c.text;
+          const json = JSON.parse(resultContents[0].text);
+          if (Array.isArray(json)) {
+            documents = json.map((content, index) => {
+              if (typeof content === 'object') {
+                return {
+                  content: {
+                    json: content,
+                  },
+                  sourceId: `${toolUseId}@${index}`,
+                  sourceName: name,
+                };
+              } else {
+                return {
+                  content: {
+                    text: String(content),
+                  },
+                  sourceId: `${toolUseId}@${index}`,
+                  sourceName: name,
+                };
+              }
+            });
+          } else if (typeof json === 'object') {
+            documents = [{
+              content: {
+                json: json,
+              },
+              sourceId: toolUseId,
+              sourceName: name,
+            }];
+          } else {
+            documents = [{
+              content: {
+                text: String(json),
+              },
+              sourceId: toolUseId,
+              sourceName: name,
+            }];
+          }
+        } catch {
+          documents = [{
+            content: resultContents[0],
+            sourceId: toolUseId,
+            sourceName: name,
+          }];
         }
-      } else if ('json' in c) {
-        return c.json;
       } else {
-        return null;
+        documents = resultContents.map((content, index) => ({
+          content: content,
+          sourceId: `${toolUseId}@${index}`,
+          sourceName: name,
+        }));
       }
-    })
-    .filter(Boolean); // Omit null | undefined values
+    }
+    if (documents == null || documents.length === 0) {
+      return undefined;
+    }
+    return documents;
+  }, [relatedDocuments, resultContents, toolUseId, name]);
+
+  const [viewingRelatedDocument, setViewingRelatedDocument] = useState<RelatedDocument>();
+
+  const ToolResultDocument: React.FC<{
+    relatedDocument: RelatedDocument;
+  }> = ({
+    relatedDocument: document,
+  }) => {
+    return (
+      <div className="flex flex-col">
+        {document.sourceName && document.sourceName !== name && (
+          <div className="font-semibold break-all line-clamp-1">
+            {document.sourceName}
+          </div>
+        )}
+        {document.sourceLink && (
+          <span
+            className="italic break-all line-clamp-1 cursor-pointer underline"
+            onClick={() => window.open(document.sourceLink, '_blank')}
+          >
+            {document.sourceLink}
+          </span>
+        )}
+        {'text' in document.content && (
+          <div className="break-all line-clamp-2">
+            {document.content.text}
+          </div>
+        )}
+        {'json' in document.content && (
+          <JSONTree
+            data={document.content.json}
+            theme={{
+              extend: THEME,
+              tree: ({ style }) => ({
+                style: {
+                  ...style,
+                  margin: 0,
+                },
+              }),
+              value: ({ style }) => ({
+                style: {
+                  ...style,
+                  paddingTop: 0,
+                  marginLeft: 0,
+                },
+              }),
+            }}
+            invertTheme={false} // disable dark theme
+            shouldExpandNodeInitially={() => false}
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={twMerge('relative', className)}>
@@ -111,7 +219,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
             <PiCheckCircle className="mr-2 text-aws-aqua" />
           )}
           {status === 'error' && <PiXCircle className="mr-2  text-red" />}
-          <h3 className="">{name}</h3>
+          <h3 className="">{getAgentName(name, t)}</h3>
         </div>
         <div>
           {isExpanded ? (
@@ -158,7 +266,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
           </div>
         )}
 
-        {(status === 'success' || status === 'error') && displayContent && (
+        {(status === 'success' || status === 'error') && displayDocuments && (
           <div>
             <div
               className="mt-2 flex cursor-pointer items-center text-sm"
@@ -176,29 +284,47 @@ const ToolCard: React.FC<ToolCardProps> = ({
                 `overflow-hidden transition-all duration-300 ease-in-out`,
                 isContentExpanded ? 'max-h-full' : 'max-h-0'
               )}>
-              {displayContent ? (
-                <div className="ml-4 mt-2 text-sm">
-                  {displayContent.length !== 1 ||
-                  typeof displayContent[0] === 'object' ? (
-                    // Render as JSON tree if the content is an object. Otherwise, render as a string.
-                    <JSONTree
-                      data={
-                        displayContent.length === 1
-                          ? displayContent[0]
-                          : displayContent
-                      }
-                      theme={THEME}
-                      invertTheme={false} // disable dark theme
-                    />
-                  ) : (
-                    <p>{String(displayContent[0])}</p>
-                  )}
-                </div>
-              ) : null}
+              <div className="flex flex-col ml-2 mt-2 text-sm space-y-1">
+                {displayDocuments.length == 1 && (
+                  <div className="flex items-center space-x-2">
+                    <a
+                      className="flex items-center cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover"
+                      onClick={() => setViewingRelatedDocument(displayDocuments[0])}
+                    >
+                      <PiLinkBold />
+                    </a>
+                    <div className="flex-1">
+                      <ToolResultDocument relatedDocument={displayDocuments[0]} />
+                    </div>
+                  </div>
+                )}
+                {displayDocuments.length > 1 && displayDocuments.map((document, index) => (
+                  <div key={document.sourceId} className="flex items-center space-x-2">
+                    <a
+                      className="flex items-center cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover"
+                      onClick={() => setViewingRelatedDocument(document)}
+                    >
+                      <div>{`[${index + 1}]`}</div>
+                      <PiLinkBold />
+                    </a>
+                    <div className="flex-1">
+                      <ToolResultDocument relatedDocument={document} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
+      {viewingRelatedDocument && (
+        <RelatedDocumentViewer
+          relatedDocument={viewingRelatedDocument}
+          onClick={() => {
+            setViewingRelatedDocument(undefined);
+          }}
+        />
+      )}
     </div>
   );
 };

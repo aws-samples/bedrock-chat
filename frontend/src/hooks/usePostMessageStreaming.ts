@@ -115,7 +115,13 @@ const usePostMessageStreaming = create<{
                     type: 'tool-result',
                     toolUseId: data.result.toolUseId,
                     status: data.result.status,
-                    content: data.result.content,
+                  });
+                  break;
+                case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
+                  thinkingDispatch({
+                    type: 'related-document',
+                    toolUseId: data.result.toolUseId,
+                    relatedDocument: data.result.relatedDocument,
                   });
                   break;
                 case PostStreamingStatus.STREAMING:

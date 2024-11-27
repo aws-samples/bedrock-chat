@@ -10,7 +10,7 @@ from pprint import pprint
 from unittest.mock import patch
 
 from app.bedrock import call_converse_api, compose_args_for_converse_api, get_model_id
-from app.repositories.models.conversation import AgentMessageModel, TextContentModel
+from app.repositories.models.conversation import SimpleMessageModel, TextContentModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 
@@ -50,7 +50,7 @@ class TestGetModelId(unittest.TestCase):
 
 class TestCallConverseApi(unittest.TestCase):
     def test_call_converse_api(self):
-        message = AgentMessageModel(
+        message = SimpleMessageModel(
             role="user",
             content=[
                 TextContentModel(
@@ -118,7 +118,7 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
             print(f"Error deleting guardrail: {e}")
 
     def test_call_converse_api_with_guardrails(self):
-        message = AgentMessageModel(
+        message = SimpleMessageModel(
             role="user",
             content=[
                 TextContentModel(
