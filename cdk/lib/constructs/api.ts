@@ -4,9 +4,7 @@ import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { HttpUserPoolAuthorizer } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
 import {
-  Code,
-  DockerImageCode,
-  DockerImageFunction,
+  Architecture,
   IFunction,
   LayerVersion,
   Runtime,
@@ -18,7 +16,6 @@ import {
   HttpMethod,
 } from "aws-cdk-lib/aws-apigatewayv2";
 import { Auth } from "./auth";
-import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -41,6 +38,7 @@ export interface ApiProps {
   readonly bedrockCustomBotProject: codebuild.IProject;
   readonly usageAnalysis?: UsageAnalysis;
   readonly enableMistral: boolean;
+  readonly enableLambdaSnapStart: boolean;
 }
 
 export class Api extends Construct {
@@ -184,6 +182,7 @@ export class Api extends Construct {
         buildArgs: { POETRY_VERSION: "1.8.3" },
       },
       runtime: Runtime.PYTHON_3_12,
+      architecture: Architecture.X86_64,
       memorySize: 1024,
       timeout: Duration.minutes(15),
       environment: {
@@ -212,7 +211,7 @@ export class Api extends Construct {
       },
       role: handlerRole,
       logRetention: logs.RetentionDays.THREE_MONTHS,
-      snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
+      snapStart: props.enableLambdaSnapStart ? SnapStartConf.ON_PUBLISHED_VERSIONS : undefined,
       layers: [
         LayerVersion.fromLayerVersionArn(
           this,

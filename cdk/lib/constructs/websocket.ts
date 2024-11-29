@@ -29,6 +29,7 @@ export interface WebSocketProps {
   readonly accessLogBucket?: s3.Bucket;
   readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
+  readonly enableLambdaSnapStart: boolean;
 }
 
 export class WebSocket extends Construct {
@@ -110,7 +111,7 @@ export class WebSocket extends Construct {
           props.enableBedrockCrossRegionInference.toString(),
       },
       role: handlerRole,
-      snapStart: SnapStartConf.ON_PUBLISHED_VERSIONS,
+      snapStart: props.enableLambdaSnapStart ? SnapStartConf.ON_PUBLISHED_VERSIONS : undefined,
       logRetention: logs.RetentionDays.THREE_MONTHS,
     });
 

@@ -55,6 +55,7 @@ describe("Bedrock Chat Stack Test", () => {
         documentBucket: bedrockRegionResourcesStack.documentBucket,
         useStandbyReplicas: false,
         enableBedrockCrossRegionInference: false,
+        enableLambdaSnapStart: true,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -125,6 +126,7 @@ describe("Bedrock Chat Stack Test", () => {
         documentBucket: bedrockRegionResourcesStack.documentBucket,
         useStandbyReplicas: false,
         enableBedrockCrossRegionInference: false,
+        enableLambdaSnapStart: true,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -185,6 +187,7 @@ describe("Bedrock Chat Stack Test", () => {
       documentBucket: bedrockRegionResourcesStack.documentBucket,
       useStandbyReplicas: false,
       enableBedrockCrossRegionInference: false,
+      enableLambdaSnapStart: true,
     });
     const template = Template.fromStack(stack);
 

@@ -288,6 +288,14 @@ This is an account/region-level setting, affecting the entire application rather
 "enableBedrockCrossRegionInference": true
 ```
 
+### Lambda SnapStart
+
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) improves cold start times by 50–70%, providing faster response times for better user experience. On the other hand, for Python functions, there is a [small charge](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) and [not available in some regions](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) currently. To disable SnapStart, edit `cdk.json`.
+
+```json
+"enableLambdaSnapStart": false
+```
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).

@@ -43,6 +43,7 @@ const USE_STAND_BY_REPLICAS: boolean =
 const ENABLE_BEDROCK_CROSS_REGION_INFERENCE: boolean = app.node.tryGetContext(
   "enableBedrockCrossRegionInference"
 );
+const ENABLE_LAMBDA_SNAPSTART: boolean = app.node.tryGetContext("enableLambdaSnapStart");
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
@@ -94,6 +95,7 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   documentBucket: bedrockRegionResources.documentBucket,
   useStandbyReplicas: USE_STAND_BY_REPLICAS,
   enableBedrockCrossRegionInference: ENABLE_BEDROCK_CROSS_REGION_INFERENCE,
+  enableLambdaSnapStart: ENABLE_LAMBDA_SNAPSTART,
 });
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);

@@ -69,6 +69,7 @@
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
     "enableRagReplicas": true,
-    "enableBedrockCrossRegionInference": true
+    "enableBedrockCrossRegionInference": true,
+    "enableLambdaSnapStart": true
   }
 }

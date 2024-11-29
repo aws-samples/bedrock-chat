@@ -39,6 +39,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly documentBucket: Bucket;
   readonly useStandbyReplicas: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
+  readonly enableLambdaSnapStart: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -165,6 +166,7 @@ export class BedrockChatStack extends cdk.Stack {
       usageAnalysis,
       largeMessageBucket,
       enableMistral: props.enableMistral,
+      enableLambdaSnapStart: props.enableLambdaSnapStart,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
 
@@ -181,6 +183,7 @@ export class BedrockChatStack extends cdk.Stack {
       enableMistral: props.enableMistral,
       enableBedrockCrossRegionInference:
         props.enableBedrockCrossRegionInference,
+      enableLambdaSnapStart: props.enableLambdaSnapStart,
     });
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
