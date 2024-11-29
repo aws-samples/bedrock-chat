@@ -35,6 +35,7 @@ done
 
 # Default parameters
 ALLOW_SELF_REGISTER="true"
+ENABLE_LAMBDA_SNAPSTART="false"
 IPV4_RANGES=""
 IPV6_RANGES=""
 DISABLE_IPV6="false"
@@ -46,6 +47,7 @@ VERSION="v2"
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --disable-self-register) ALLOW_SELF_REGISTER="false" ;;
+        --enable-lambda-snapstart) ENABLE_LAMBDA_SNAPSTART="true" ;;
         --disable-ipv6) DISABLE_IPV6="true" ;;
         --ipv4-ranges) IPV4_RANGES="$2"; shift ;;
         --ipv6-ranges) IPV6_RANGES="$2"; shift ;;
@@ -74,6 +76,7 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides \
     AllowSelfRegister=$ALLOW_SELF_REGISTER \
+    EnableLambdaSnapStart=$ENABLE_LAMBDA_SNAPSTART \
     DisableIpv6=$DISABLE_IPV6 \
     Ipv4Ranges="$IPV4_RANGES" \
     Ipv6Ranges="$IPV6_RANGES" \

@@ -5,6 +5,9 @@ Parameters:
   AllowSelfRegister:
     Type: String
     Default: "true"
+  EnableLambdaSnapStart:
+    Type: String
+    Default: "false"
   Ipv4Ranges:
     Type: String
     Default: '["0.0.0.0/1","128.0.0.0/1"]' # Set default values based on current config
@@ -113,6 +116,8 @@ Resources:
         EnvironmentVariables:
           - Name: ALLOW_SELF_REGISTER
             Value: !Ref AllowSelfRegister
+          - Name: ENABLE_LAMBDA_SNAPSTART
+            Value: !Ref EnableLambdaSnapStart
           - Name: IPV4_RANGES
             Value: !Ref Ipv4Ranges
           - Name: IPV6_RANGES
@@ -148,7 +153,8 @@ Resources:
                   "echo 'Build phase...'",
                   "git clone --branch $VERSION https://github.com/aws-samples/bedrock-claude-chat.git",
                   "cd bedrock-claude-chat",
-                  "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true,/\"selfSignUpEnabled\": false,/' cdk/cdk.json; fi",
+                  "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true/\"selfSignUpEnabled\": false/' cdk/cdk.json; fi",
+                  "if [ \"$ENABLE_LAMBDA_SNAPSTART\" = \"false\" ]; then sed -i 's/\"enableLambdaSnapStart\": true/\"enableLambdaSnapStart\": false/' cdk/cdk.json; fi",
                   "if [ ! -z \"$IPV4_RANGES\" ]; then jq --arg ipv4 \"$IPV4_RANGES\" '.context.allowedIpV4AddressRanges = ($ipv4 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "if [ \"$DISABLE_IPV6\" = \"true\" ]; then jq '.context.allowedIpV6AddressRanges = []' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; elif [ ! -z \"$IPV6_RANGES\" ]; then jq --arg ipv6 \"$IPV6_RANGES\" '.context.allowedIpV6AddressRanges = ($ipv6 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "if [ ! -z \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" ]; then jq --arg domains \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" '.context.allowedSignUpEmailDomains = ($domains | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
