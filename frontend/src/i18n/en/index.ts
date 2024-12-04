@@ -55,15 +55,15 @@ const translation = {
       },
       novaPro: {
         label: "Amazon Nova Pro",
-        description: 'Nova Pro is a multimodal understanding foundation model. It is multilingual and can reason over text, images and videos.',
+        description: 'A highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.',
       },
       novaLite: {
         label: 'Amazon Nova Lite',
-        description: 'Nova Lite is a is a multimodal understanding foundation model. It is multilingual and can reason over text, images and videos.',
+        description: 'A very low-cost multimodal model that is lightning fast for processing image, video, and text inputs.',
       },
       novaMicro: {
         label: 'Amazon Nova Micro',
-        description: 'Nova Micro is a text - text understanding foundation model. It is multilingual and can reason over text.',
+        description: 'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
       }
     },
     agent: {

@@ -47,8 +47,6 @@ import {
   PutFeedbackRequest,
 } from '../@types/conversation';
 
-const MISTRAL_ENABLED: boolean =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();

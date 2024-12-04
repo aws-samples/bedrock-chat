@@ -57,15 +57,15 @@ const translation = {
       },
       novaPro: {
         label: "Amazon Nova Pro",
-        description: 'Nova Proはマルチモーダル理解の基礎モデルです。多言語対応で、テキスト、画像、動画を推論できます。',
+        description: '精度、速度、コストのバランスが最も優れた高性能マルチモーダルモデル。',
       },
       novaLite: {
         label: 'Amazon Nova Lite',
-        description: 'Nova Liteはマルチモーダル理解の基盤モデルです。多言語対応で、テキスト、画像、動画を推論できます。',
+        description: '非常に低コストで高速なマルチモーダルモデルで、リアルタイム処理に最適。',
       },
       novaMicro: {
         label: 'Amazon Nova Micro',
-        description: 'Nova Microは、テキスト-テキスト理解の基礎モデルです。多言語対応で、テキストで推論できます。',
+        description: '最も低いレイテンシーと低コストで提供される軽量なテキストモデル。',
       }
     },
     agent: {
