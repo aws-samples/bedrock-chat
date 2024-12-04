@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import TypeGuard
+from typing import TypeGuard, Dict, Any, Optional
 
 from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
@@ -46,6 +46,37 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
     return role in ["user", "assistant"]
 
 
+def _is_nova_model(model: str) -> bool:
+    """Check if the model is an Amazon Nova model"""
+    return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
+
+
+def _prepare_nova_model_params(
+    model: type_model_name, 
+    generation_params: Optional[GenerationParamsModel] = None
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Prepare inference configuration and additional model request fields for Nova models
+    """
+    # Base inference configuration
+    inference_config = {
+        "maxTokens": generation_params.max_tokens if generation_params else DEFAULT_GENERATION_CONFIG["max_tokens"],
+        "temperature": generation_params.temperature if generation_params else DEFAULT_GENERATION_CONFIG["temperature"],
+        "topP": generation_params.top_p if generation_params else DEFAULT_GENERATION_CONFIG["top_p"],
+    }
+
+    # Additional model request fields specific to Nova models
+    additional_fields = {
+        "inferenceConfig": {}
+    }
+
+    # Add top_k if specified in generation params
+    if generation_params and generation_params.top_k is not None:
+        additional_fields["inferenceConfig"]["topK"] = generation_params.top_k
+
+    return inference_config, additional_fields
+
+
 def compose_args_for_converse_api(
     messages: list[SimpleMessageModel],
     model: type_model_name,
@@ -88,32 +119,25 @@ def compose_args_for_converse_api(
         if _is_conversation_role(message.role)
     ]
 
-    inference_config: InferenceConfigurationTypeDef
-    if generation_params:
-        inference_config = {
-            "maxTokens": generation_params.max_tokens,
-            "temperature": generation_params.temperature,
-            "topP": generation_params.top_p,
-            "stopSequences": generation_params.stop_sequences,
-        }
-        additional_model_request_fields = {
-            "top_k": generation_params.top_k,
-        }
-
+    # Prepare model-specific parameters
+    if _is_nova_model(model):
+        # Special handling for Nova models
+        inference_config, additional_model_request_fields = _prepare_nova_model_params(model, generation_params)
     else:
+        # Standard handling for non-Nova models
         inference_config = {
-            "maxTokens": DEFAULT_GENERATION_CONFIG["max_tokens"],
-            "temperature": DEFAULT_GENERATION_CONFIG["temperature"],
-            "topP": DEFAULT_GENERATION_CONFIG["top_p"],
-            "stopSequences": DEFAULT_GENERATION_CONFIG["stop_sequences"],
+            "maxTokens": generation_params.max_tokens if generation_params else DEFAULT_GENERATION_CONFIG["max_tokens"],
+            "temperature": generation_params.temperature if generation_params else DEFAULT_GENERATION_CONFIG["temperature"],
+            "topP": generation_params.top_p if generation_params else DEFAULT_GENERATION_CONFIG["top_p"],
+            "stopSequences": generation_params.stop_sequences if generation_params else DEFAULT_GENERATION_CONFIG.get("stop_sequences", []),
         }
         additional_model_request_fields = {
-            "top_k": DEFAULT_GENERATION_CONFIG["top_k"],
+            "top_k": generation_params.top_k if generation_params else DEFAULT_GENERATION_CONFIG["top_k"]
         }
 
+    # Construct the base arguments
     args: ConverseStreamRequestRequestTypeDef = {
         "inferenceConfig": inference_config,
-        "additionalModelRequestFields": additional_model_request_fields,
         "modelId": get_model_id(model),
         "messages": arg_messages,
         "system": [
@@ -121,6 +145,7 @@ def compose_args_for_converse_api(
             for instruction in instructions
             if len(instruction) > 0
         ],
+        "additionalModelRequestFields": additional_model_request_fields
     }
 
     if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
@@ -193,6 +218,10 @@ def get_model_id(
         "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
         "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
         "mistral-large": "mistral.mistral-large-2402-v1:0",
+        # New Amazon Nova models
+        "amazon-nova-pro": "amazon.nova-pro-v1:0",
+        "amazon-nova-lite": "amazon.nova-lite-v1:0",
+        "amazon-nova-micro": "amazon.nova-micro-v1:0",
     }
 
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html

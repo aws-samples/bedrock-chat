@@ -459,10 +459,11 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
         )}>
         <div className="flex w-full">
           <Textarea
-            className="m-1  bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
-            placeholder={props.placeholder ?? t('app.inputMessage')}
+            className="m-1 bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
+            placeholder={t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
+            rows={3}
             value={content}
             onChange={setContent}
             ref={focusInputRef}

@@ -58,6 +58,9 @@ BEDROCK_PRICING = {
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
         "mistral-large": {"input": 0.008, "output": 0.024},
+        "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
+        "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
+        "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -73,6 +76,9 @@ BEDROCK_PRICING = {
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
         "mistral-large": {"input": 0.008, "output": 0.024},
+        "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
+        "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
+        "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -102,5 +108,8 @@ BEDROCK_PRICING = {
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
         "mistral-large": {"input": 0.008, "output": 0.024},
+        "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
+        "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
+        "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
     },
 }

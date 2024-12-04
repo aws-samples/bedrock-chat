@@ -14,6 +14,13 @@ const CLAUDE_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
+const NOVA_SUPPORTED_MEDIA_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]
+
 const useModelState = create<{
   modelId: Model;
   setModelId: (m: Model) => void;
@@ -75,6 +82,25 @@ const useModel = () => {
             description: t('model.opus3.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
+          // New Amazon Nova models
+          {
+            modelId: 'amazon-nova-pro',
+            label: t('model.novaPro.label'),
+            description: t('model.novaPro.description'),
+            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+          },
+          {
+            modelId: 'amazon-nova-lite',
+            label: t('model.novaLite.label'),
+            description: t('model.novaLite.description'),
+            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+          },
+          {
+            modelId: 'amazon-nova-micro',
+            label: t('model.novaMicro.label'),
+            description: t('model.novaMicro.description'),
+            supportMediaType: [],
+          }
         ]
       : [
           {

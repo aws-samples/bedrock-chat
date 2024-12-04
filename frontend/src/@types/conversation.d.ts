@@ -10,7 +10,10 @@ export type Model =
   | 'claude-v3.5-haiku'
   | 'mistral-7b-instruct'
   | 'mixtral-8x7b-instruct'
-  | 'mistral-large';
+  | 'mistral-large'
+  | 'amazon-nova-pro'
+  | 'amazon-nova-lite'
+  | 'amazon-nova-micro';
 
 export type Content = TextContent | ImageContent | AttachmentContent;
 

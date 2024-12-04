@@ -21,8 +21,11 @@ type_model_name = Literal[
     "mistral-7b-instruct",
     "mixtral-8x7b-instruct",
     "mistral-large",
+    # New Amazon Nova models
+    "amazon-nova-pro",
+    "amazon-nova-lite",
+    "amazon-nova-micro",
 ]
-
 
 class TextContent(BaseSchema):
     content_type: Literal["text"] = Field(

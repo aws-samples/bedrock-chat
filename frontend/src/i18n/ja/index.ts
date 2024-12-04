@@ -11,7 +11,7 @@ const translation = {
     app: {
       name: 'Bedrock Claude Chat',
       nameWithoutClaude: 'Bedrock Chat',
-      inputMessage: '入力してください',
+      inputMessage: 'お手伝いできることはありますか？',
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '会話履歴',
@@ -55,6 +55,18 @@ const translation = {
       mistralLarge: {
         label: 'Mistral Large',
       },
+      novaPro: {
+        label: "Amazon Nova Pro",
+        description: 'Nova Proはマルチモーダル理解の基礎モデルです。多言語対応で、テキスト、画像、動画を推論できます。',
+      },
+      novaLite: {
+        label: 'Amazon Nova Lite',
+        description: 'Nova Liteはマルチモーダル理解の基盤モデルです。多言語対応で、テキスト、画像、動画を推論できます。',
+      },
+      novaMicro: {
+        label: 'Amazon Nova Micro',
+        description: 'Nova Microは、テキスト-テキスト理解の基礎モデルです。多言語対応で、テキストで推論できます。',
+      }
     },
     agent: {
       label: 'エージェント',

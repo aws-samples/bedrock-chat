@@ -479,11 +479,6 @@ const ChatPage: React.FC = () => {
                   {!loadingConversation && (
                     <SwitchBedrockModel className="mt-3 w-min" />
                   )}
-                  <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-                    {!MISTRAL_ENABLED
-                      ? t('app.name')
-                      : t('app.nameWithoutClaude')}
-                  </div>
                 </div>
               ) : (
                 <>
@@ -534,7 +529,7 @@ const ChatPage: React.FC = () => {
         </section>
       </div>
 
-      <div className="bottom-0 z-0 flex w-full flex-col items-center justify-center">
+      <div className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 transform -translate-y-1/2' : ''}`}>
         {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
           <div className="mb-8 w-1/2">
             <Alert
