@@ -51,13 +51,13 @@ def _is_nova_model(model: type_model_name) -> bool:
     return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
 
 
-# Note that Amazon Nova expects inference parameters as a JSON object under a inferenceConfig attribute. Amazon Nova also has an additional parameter "topK" that can be passed as an additional inference parameters. This parameter follows the same structure and is passed through the additionalModelRequestFields, as shown below.
-# https://docs.aws.amazon.com/nova/latest/userguide/getting-started-converse.html
 def _prepare_nova_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> Tuple[InferenceConfigurationTypeDef, Dict[str, Any]]:
     """
     Prepare inference configuration and additional model request fields for Nova models
+    > Note that Amazon Nova expects inference parameters as a JSON object under a inferenceConfig attribute. Amazon Nova also has an additional parameter "topK" that can be passed as an additional inference parameters. This parameter follows the same structure and is passed through the additionalModelRequestFields, as shown below.
+    https://docs.aws.amazon.com/nova/latest/userguide/getting-started-converse.html
     """
     # Base inference configuration
     inference_config: InferenceConfigurationTypeDef = {

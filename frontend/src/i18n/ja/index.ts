@@ -57,15 +57,15 @@ const translation = {
       },
       novaPro: {
         label: "Amazon Nova Pro",
-        description: '精度、速度、コストのバランスが最も優れた高性能マルチモーダルモデル。',
+        description: '精度、速度、コストのバランスが最も優れた高性能マルチモーダルモデル',
       },
       novaLite: {
         label: 'Amazon Nova Lite',
-        description: '非常に低コストで高速なマルチモーダルモデルで、リアルタイム処理に最適。',
+        description: '非常に低コストで高速なマルチモーダルモデルで、リアルタイム処理に最適',
       },
       novaMicro: {
         label: 'Amazon Nova Micro',
-        description: '最も低いレイテンシーと低コストで提供される軽量なテキストモデル。',
+        description: '最も低いレイテンシーと低コストで提供される軽量なテキストモデル',
       }
     },
     agent: {
