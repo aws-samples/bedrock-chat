@@ -27,6 +27,7 @@ type_model_name = Literal[
     "amazon-nova-micro",
 ]
 
+
 class TextContent(BaseSchema):
     content_type: Literal["text"] = Field(
         ..., description="Content type. Note that image is only available for claude 3."
