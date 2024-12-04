@@ -1,12 +1,12 @@
-# Bedrock Claude Chat
+# Bedrock Claude Chat (Nova)
 
-> [!Warning] > **V2 がリリースされました。** 更新する際は、[移行ガイド](./migration/V1_TO_V2.md)を必ずご確認ください。 **注意を払わずに進めると、V1 の BOT は使用できなくなります。**
+> [!Warning]
+> **V2 がリリースされました。** 更新する際は、[移行ガイド](./migration/V1_TO_V2.md)を必ずご確認ください。 **注意を払わずに進めると、V1 の BOT は使用できなくなります。**
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
 ### 基本的な会話
 
-[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`、または`Opus`をサポートしています。
 ![](./imgs/demo_ja.gif)
 
 ### ボットのカスタマイズ
@@ -33,7 +33,7 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3.5 Sonnet` `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > すべての`Anthropic / Claude 3`、 すべての `Amazon / Nova`、`Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 
 <details>
 <summary>スクリーンショット</summary>

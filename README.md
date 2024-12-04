@@ -1,8 +1,9 @@
-# Bedrock Claude Chat
+# Bedrock Claude Chat (Nova)
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+> [!Warning]
+> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -11,8 +12,6 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude](h
 [![Overview](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
 
 ### Basic Conversation
-
-Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku`, `Sonnet` and `Opus`.
 
 ![](./docs/imgs/demo.gif)
 
@@ -64,7 +63,7 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 
 ## 🚀 Super-easy Deployment
 
-- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3.5 Sonnet`, `Anthropic / Claude 3.5 Sonnet v2`, `Anthropic / Claude 3.5 Haiku`, `Amazon / Titan Text Embeddings V2` and `Cohere / Embed Multilingual` then `Save changes`.
+- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check all of `Anthropic / Claude 3`, all of `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>
