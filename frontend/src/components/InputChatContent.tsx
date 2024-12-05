@@ -44,6 +44,7 @@ type Props = BaseProps & {
   canRegenerate: boolean;
   canContinue: boolean;
   isLoading: boolean;
+  isNewChat?: boolean;
   onSend: (
     content: string,
     base64EncodedImages?: string[],
@@ -154,6 +155,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
   }, [acceptMediaType]);
 
   const [content, setContent] = useState('');
+
   const {
     base64EncodedImages,
     pushBase64EncodedImage,
@@ -459,10 +461,12 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
         )}>
         <div className="flex w-full">
           <Textarea
+            key={`textarea-${props.isNewChat}`} // Add a key to force re-render
             className="m-1 bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
             placeholder={t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
+            rows={props.isNewChat ? 3 : 1}
             value={content}
             onChange={setContent}
             ref={focusInputRef}

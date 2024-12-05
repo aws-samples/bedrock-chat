@@ -569,6 +569,7 @@ const ChatPage: React.FC = () => {
           canRegenerate={messages.length > 1}
           canContinue={getShouldContinue()}
           isLoading={postingMessage}
+          isNewChat={messages.length == 0}
           onSend={onSend}
           onRegenerate={onRegenerate}
           continueGenerate={onContinueGenerate}

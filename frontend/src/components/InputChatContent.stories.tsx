@@ -6,6 +6,7 @@ export const Ideal = () => (
     canRegenerate={false}
     canContinue={false}
     isLoading={false}
+    isNewChat={false}
     onSend={() => {}}
     onRegenerate={() => {}}
     continueGenerate={() => {}}
@@ -20,6 +21,7 @@ export const IdealLoading = () => (
     canRegenerate={false}
     canContinue={false}
     isLoading={true}
+    isNewChat={false}
     onSend={() => {}}
     onRegenerate={() => {}}
     continueGenerate={() => {}}
@@ -33,6 +35,7 @@ export const IdealDisabled = () => {
       canRegenerate={false}
       canContinue={false}
       isLoading={false}
+      isNewChat={false}
       disabled={true}
       placeholder={t('bot.label.notAvailableBotInputMessage')}
       onSend={() => {}}
@@ -47,6 +50,7 @@ export const WithRegenerate = () => (
     canRegenerate={true}
     canContinue={false}
     isLoading={false}
+    isNewChat={false}
     onSend={() => {}}
     onRegenerate={() => {}}
     continueGenerate={() => {}}
@@ -58,6 +62,7 @@ export const WithContinue = () => (
     canRegenerate={true}
     canContinue={true}
     isLoading={false}
+    isNewChat={false}
     onSend={() => {}}
     onRegenerate={() => {}}
     continueGenerate={() => {}}
