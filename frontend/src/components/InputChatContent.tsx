@@ -463,7 +463,6 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
             placeholder={t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
-            rows={3}
             value={content}
             onChange={setContent}
             ref={focusInputRef}
