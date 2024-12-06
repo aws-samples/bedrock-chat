@@ -15,8 +15,10 @@ const usePostMessageStreaming = create<{
     dispatch: (completion: string) => void;
     thinkingDispatch: (event: AgentEvent) => void;
   }) => Promise<string>;
-}>(() => {
+  errorDetail: string | null;
+}>((set) => {
   return {
+    errorDetail: null,
     post: async ({ input, dispatch, thinkingDispatch }) => {
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
@@ -136,7 +138,13 @@ const usePostMessageStreaming = create<{
                 case PostStreamingStatus.ERROR:
                   ws.close();
                   console.error(data);
-                  throw new Error(i18next.t('error.predict.invalidResponse'));
+                  set({
+                    errorDetail:
+                      data.reason || i18next.t('error.predict.invalidResponse'),
+                  });
+                  throw new Error(
+                    data.reason || i18next.t('error.predict.invalidResponse')
+                  );
                 default:
                   dispatch('');
                   break;

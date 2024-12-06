@@ -37,7 +37,10 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
-import { AgentState, AgentToolsProps } from '../features/agent/xstates/agentThink';
+import {
+  AgentState,
+  AgentToolsProps,
+} from '../features/agent/xstates/agentThink';
 import { getRelatedDocumentsOfToolUse } from '../features/agent/utils/AgentUtils';
 import { SyncStatus } from '../constants';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
@@ -46,12 +49,13 @@ import {
   DisplayMessageContent,
   PutFeedbackRequest,
 } from '../@types/conversation';
-
+import usePostMessageStreaming from '../hooks/usePostMessageStreaming';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { open: openSnackbar } = useSnackbar();
+  const { errorDetail } = usePostMessageStreaming();
 
   const {
     agentThinking,
@@ -323,11 +327,13 @@ const ChatPage: React.FC = () => {
   }> = React.memo((props) => {
     const { chatContent: message } = props;
 
-    const isAgentThinking = useMemo(() => (
-      [AgentState.THINKING, AgentState.LEAVING].some(v => (
-        v === agentThinking.value
-      ))
-    ), []);
+    const isAgentThinking = useMemo(
+      () =>
+        [AgentState.THINKING, AgentState.LEAVING].some(
+          (v) => v === agentThinking.value
+        ),
+      []
+    );
 
     const tools: AgentToolsProps[] | undefined = useMemo(() => {
       if (isAgentThinking) {
@@ -361,8 +367,14 @@ const ChatPage: React.FC = () => {
 
         if (bot?.hasKnowledge) {
           const pseudoToolUseId = message.id;
-          const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(relatedDocuments, pseudoToolUseId);
-          if (relatedDocumentsOfVectorSearch != null && relatedDocumentsOfVectorSearch.length > 0) {
+          const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(
+            relatedDocuments,
+            pseudoToolUseId
+          );
+          if (
+            relatedDocumentsOfVectorSearch != null &&
+            relatedDocumentsOfVectorSearch.length > 0
+          ) {
             return [
               {
                 tools: {
@@ -382,11 +394,13 @@ const ChatPage: React.FC = () => {
       }
     }, [isAgentThinking, message]);
 
-    const relatedDocumentsForCitation = useMemo(() => (
-      isAgentThinking
-        ? agentThinking.context.relatedDocuments
-        : relatedDocuments
-    ), [isAgentThinking]);
+    const relatedDocumentsForCitation = useMemo(
+      () =>
+        isAgentThinking
+          ? agentThinking.context.relatedDocuments
+          : relatedDocuments,
+      [isAgentThinking]
+    );
 
     return (
       <ChatMessage
@@ -506,7 +520,8 @@ const ChatPage: React.FC = () => {
                 <div className="mb-12 mt-2 flex flex-col items-center">
                   <div className="flex items-center font-bold text-red">
                     <PiWarningCircleFill className="mr-1 text-2xl" />
-                    {t('error.answerResponse')}
+                    {/* {t('error.answerResponse')} */}
+                    {errorDetail ?? t('error.answerResponse')}
                   </div>
 
                   <Button
@@ -527,7 +542,8 @@ const ChatPage: React.FC = () => {
         </section>
       </div>
 
-      <div className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 -translate-y-1/2' : ''}`}>
+      <div
+        className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 -translate-y-1/2' : ''}`}>
         {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
           <div className="mb-8 w-1/2">
             <Alert
