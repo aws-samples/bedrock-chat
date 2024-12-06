@@ -25,7 +25,7 @@ import {
   ParsingStategy
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/parsing";
 
-import { KnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
+import { KnowledgeBase, IKnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { aws_bedrock as bedrock } from "aws-cdk-lib";
 
 import { getThreshold } from "./utils/bedrock-guardrails";
@@ -51,6 +51,8 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly botId: string;
   readonly embeddingsModel: BedrockFoundationModel;
   readonly parsingModel?: BedrockFoundationModel;
+  readonly existKnowledgeBaseId: string | undefined;
+  readonly knowledgeBaseExecutionRoleArn: string | undefined;
   readonly bedrockClaudeChatDocumentBucketName: string;
   readonly chunkingStrategy: ChunkingStrategy;
   readonly existingS3Urls: string[];
@@ -71,41 +73,52 @@ export class BedrockCustomBotStack extends Stack {
 
     const { docBucketsAndPrefixes } = this.setupBucketsAndPrefixes(props);
 
-    const vectorCollection = new VectorCollection(this, "KBVectors", {
-      collectionName: `kb-${props.botId.slice(0, 20).toLowerCase()}`,
-      standbyReplicas:
-        props.useStandbyReplicas === true
-          ? VectorCollectionStandbyReplicas.ENABLED
-          : VectorCollectionStandbyReplicas.DISABLED,
-    });
-    const vectorIndex = new VectorIndex(this, "KBIndex", {
-      collection: vectorCollection,
-      // DO NOT CHANGE THIS VALUE
-      indexName: "bedrock-knowledge-base-default-index",
-      // DO NOT CHANGE THIS VALUE
-      vectorField: "bedrock-knowledge-base-default-vector",
-      vectorDimensions: props.embeddingsModel.vectorDimensions!,
-      mappings: [
-        {
-          mappingField: "AMAZON_BEDROCK_TEXT_CHUNK",
-          dataType: "text",
-          filterable: true,
-        },
-        {
-          mappingField: "AMAZON_BEDROCK_METADATA",
-          dataType: "text",
-          filterable: false,
-        },
-      ],
-      analyzer: props.analyzer,
-    });
+    let kb: IKnowledgeBase
 
-    const kb = new KnowledgeBase(this, "KB", {
-      embeddingsModel: props.embeddingsModel,
-      vectorStore: vectorCollection,
-      vectorIndex: vectorIndex,
-      instruction: props.instruction,
-    });
+    // if knowledge base arn does not exist
+    if (props.existKnowledgeBaseId == undefined || props.knowledgeBaseExecutionRoleArn == undefined) {
+      const vectorCollection = new VectorCollection(this, "KBVectors", {
+        collectionName: `kb-${props.botId.slice(0, 20).toLowerCase()}`,
+        standbyReplicas:
+          props.useStandbyReplicas === true
+            ? VectorCollectionStandbyReplicas.ENABLED
+            : VectorCollectionStandbyReplicas.DISABLED,
+      });
+      const vectorIndex = new VectorIndex(this, "KBIndex", {
+        collection: vectorCollection,
+        // DO NOT CHANGE THIS VALUE
+        indexName: "bedrock-knowledge-base-default-index",
+        // DO NOT CHANGE THIS VALUE
+        vectorField: "bedrock-knowledge-base-default-vector",
+        vectorDimensions: props.embeddingsModel.vectorDimensions!,
+        mappings: [
+          {
+            mappingField: "AMAZON_BEDROCK_TEXT_CHUNK",
+            dataType: "text",
+            filterable: true,
+          },
+          {
+            mappingField: "AMAZON_BEDROCK_METADATA",
+            dataType: "text",
+            filterable: false,
+          },
+        ],
+        analyzer: props.analyzer,
+      });
+  
+      kb = new KnowledgeBase(this, "KB", {
+        embeddingsModel: props.embeddingsModel,
+        vectorStore: vectorCollection,
+        vectorIndex: vectorIndex,
+        instruction: props.instruction,
+      });
+    }else{
+      // if knowledgeBaseArn is exist
+      kb = KnowledgeBase.fromKnowledgeBaseAttributes(this, 'MyKnowledgeBase', {
+        knowledgeBaseId: props.existKnowledgeBaseId,
+        executionRoleArn: props.knowledgeBaseExecutionRoleArn
+      })
+    }
 
     const dataSources = docBucketsAndPrefixes.map(({ bucket, prefix }) => {
       bucket.grantRead(kb.role);

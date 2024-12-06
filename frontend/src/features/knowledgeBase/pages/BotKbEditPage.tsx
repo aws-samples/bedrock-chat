@@ -118,6 +118,8 @@ const BotKbEditPage: React.FC = () => {
   const [webCrawlingScope, setWebCrawlingScope] = useState<WebCrawlingScope>('DEFAULT');
 
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null); // Send null when creating a new bot
+  const [existKnowledgeBaseId, setExistKnowledgeBaseId] = useState<string | null>(null);
+  const [knowledgeBaseExecutionRoleArn, setKnowledgeBaseExecutionRoleArn] = useState<string | null>(null);
   const [embeddingsModel, setEmbeddingsModel] =
     useState<EmbeddingsModel>('titan_v2');
 
@@ -503,6 +505,8 @@ const BotKbEditPage: React.FC = () => {
               ]
           );
           setKnowledgeBaseId(bot.bedrockKnowledgeBase.knowledgeBaseId);
+          setExistKnowledgeBaseId(bot.bedrockKnowledgeBase.existKnowledgeBaseId);
+          setKnowledgeBaseExecutionRoleArn(bot.bedrockKnowledgeBase.knowledgeBaseExecutionRoleArn);
           setEmbeddingsModel(bot.bedrockKnowledgeBase!.embeddingsModel);
           setChunkingStrategy(bot.bedrockKnowledgeBase!.chunkingConfiguration.chunkingStrategy);
           if (bot.bedrockKnowledgeBase!.chunkingConfiguration.chunkingStrategy == 'fixed_size') {
@@ -1109,6 +1113,8 @@ const BotKbEditPage: React.FC = () => {
       ),
       bedrockKnowledgeBase: {
         knowledgeBaseId,
+        existKnowledgeBaseId,
+        knowledgeBaseExecutionRoleArn,
         embeddingsModel,
         chunkingConfiguration: (() => {
           switch (chunkingStrategy) {
@@ -1178,6 +1184,8 @@ const BotKbEditPage: React.FC = () => {
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
+    existKnowledgeBaseId,
+    knowledgeBaseExecutionRoleArn,
     embeddingsModel,
     chunkingStrategy,
     fixedSizeParams,
@@ -1232,6 +1240,8 @@ const BotKbEditPage: React.FC = () => {
         ),
         bedrockKnowledgeBase: {
           knowledgeBaseId,
+          existKnowledgeBaseId,
+          knowledgeBaseExecutionRoleArn,
           embeddingsModel,
           chunkingConfiguration: (() => {
             switch (chunkingStrategy) {
@@ -1305,6 +1315,8 @@ const BotKbEditPage: React.FC = () => {
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
+    existKnowledgeBaseId,
+    knowledgeBaseExecutionRoleArn,
     embeddingsModel,
     chunkingStrategy,
     fixedSizeParams,
@@ -1745,6 +1757,32 @@ const BotKbEditPage: React.FC = () => {
                 className="py-2">
                 <div className="text-sm text-aws-font-color/50">
                   {t('knowledgeBaseSettings.description')}
+                </div>
+
+                <div className="mt-3">
+                  <InputText
+                    label={t('knowledgeBaseSettings.existKnowledgeBaseId.label')}
+                    value={existKnowledgeBaseId ?? ''}
+                    onChange={setExistKnowledgeBaseId}
+                    disabled={!isNewBot}
+                    placeholder='arn:aws:bedrock:us-east-1:123456789012:knowledge-base/ABCDEFGHIJ'
+                  />
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('knowledgeBaseSettings.existKnowledgeBaseId.description')}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <InputText
+                    label={t('knowledgeBaseSettings.executionRoleArn.label')}
+                    value={knowledgeBaseExecutionRoleArn ?? ''}
+                    onChange={setKnowledgeBaseExecutionRoleArn}
+                    disabled={!isNewBot}
+                    placeholder='arn:aws:iam::123456789012:role/AmazonBedrockExecutionRoleForKnowledgeBaseBrChatABCD1EFG34HI4567'
+                  />
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('knowledgeBaseSettings.executionRoleArn.description')}
+                  </div>
                 </div>
 
                 <div className="mt-3">

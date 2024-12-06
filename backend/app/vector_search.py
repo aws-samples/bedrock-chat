@@ -70,6 +70,10 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
 
     limit = bot.bedrock_knowledge_base.search_params.max_results
     knowledge_base_id = bot.bedrock_knowledge_base.knowledge_base_id
+    exist_knowledge_base_id = bot.bedrock_knowledge_base.exist_knowledge_base_id
+    knowledge_base_execution_role_arn = (
+        bot.bedrock_knowledge_base.knowledge_base_execution_role_arn
+    )
 
     try:
         response = agent_client.retrieve(

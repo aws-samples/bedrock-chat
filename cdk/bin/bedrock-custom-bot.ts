@@ -62,6 +62,12 @@ const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
 const parsingModel = getParsingModel(knowledgeBase.parsing_model.S)
 const crawlingScope = getCrowlingScope(knowledgeBase.web_crawling_scope.S)
 const crawlingFilters: CrawlingFilters = getCrawlingFilters(knowledgeBase.web_crawling_filters.M)
+const existKnowledgeBaseId: string | undefined = knowledgeBase.exist_knowledge_base_id.S
+  ? knowledgeBase.exist_knowledge_base_id.S
+  : undefined;
+const knowledgeBaseExecutionRoleArn: string | undefined = knowledgeBase.knowledge_base_execution_role_arn.S
+  ? knowledgeBase.knowledge_base_execution_role_arn.S
+  : undefined;
 const maxTokens: number | undefined = knowledgeBase.chunking_configuration.M.max_tokens
   ? Number(knowledgeBase.chunking_configuration.M.max_tokens.N)
   : undefined;
@@ -136,6 +142,8 @@ const chunkingStrategy = getChunkingStrategy(
 
 console.log("embeddingsModel: ", embeddingsModel);
 console.log("chunkingStrategy: ", chunkingStrategy);
+console.log("existKnowledgeBaseId: ", existKnowledgeBaseId);
+console.log("knowledgeBaseExecutionRoleArn: ", knowledgeBaseExecutionRoleArn);
 console.log("maxTokens: ", maxTokens);
 console.log("instruction: ", instruction);
 console.log("is_guardrail_enabled: ", is_guardrail_enabled);
@@ -175,6 +183,8 @@ const bedrockCustomBotStack = new BedrockCustomBotStack(
     parsingModel,
     crawlingScope,
     crawlingFilters,
+    existKnowledgeBaseId,
+    knowledgeBaseExecutionRoleArn,
     bedrockClaudeChatDocumentBucketName:
       BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME,
     chunkingStrategy,

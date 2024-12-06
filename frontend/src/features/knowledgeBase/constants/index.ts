@@ -49,6 +49,8 @@ export const DEFAULT_OPENSEARCH_ANALYZER: {
 
 export const DEFAULT_BEDROCK_KNOWLEDGEBASE: BedrockKnowledgeBase = {
   knowledgeBaseId: null,
+  existKnowledgeBaseId: null,
+  knowledgeBaseExecutionRoleArn: null,
   embeddingsModel: 'cohere_multilingual_v3',
   openSearch: OPENSEARCH_ANALYZER['none'],
   chunkingConfiguration: {
