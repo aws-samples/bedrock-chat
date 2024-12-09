@@ -4,30 +4,39 @@ import { Popover, Transition } from '@headlessui/react';
 import { Fragment } from 'react/jsx-runtime';
 import { useMemo } from 'react';
 import { PiCaretDown, PiCheck } from 'react-icons/pi';
-import { ModelActivate } from '../@types/bot';
+import { ActiveModels } from '../@types/bot';
 import { toCamelCase } from '../utils/StringUtils';
 
 interface Props extends BaseProps {
-  modelActivate: ModelActivate;
+  activeModels: ActiveModels;
   botId?: string | null;
 }
 
 const SwitchBedrockModel: React.FC<Props> = (props) => {
-  const { availableModels: allModels, modelId, setModelId } = useModel(props.botId, props.modelActivate);
+  const {
+    availableModels: allModels,
+    modelId,
+    setModelId,
+  } = useModel(props.botId, props.activeModels);
 
   const availableModels = useMemo(() => {
-    return allModels.filter(model => {
-      if (props.modelActivate) {
-        return props.modelActivate[toCamelCase(model.modelId) as keyof ModelActivate] === true;
+    return allModels.filter((model) => {
+      if (props.activeModels) {
+        return (
+          props.activeModels[
+            toCamelCase(model.modelId) as keyof ActiveModels
+          ] === true
+        );
       }
       return true;
     });
-  }, [allModels, props.modelActivate]);
+  }, [allModels, props.activeModels]);
 
   const modelName = useMemo(() => {
-    return availableModels.find((model) => model.modelId === modelId)?.label ?? '';
+    return (
+      availableModels.find((model) => model.modelId === modelId)?.label ?? ''
+    );
   }, [availableModels, modelId]);
-
 
   return (
     <div className="">

@@ -7,7 +7,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -25,7 +25,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -48,7 +48,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -63,7 +63,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -81,7 +81,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -98,7 +98,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -121,7 +121,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -136,7 +136,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -151,7 +151,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -169,7 +169,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -186,7 +186,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -203,7 +203,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-3',
@@ -226,7 +226,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -241,7 +241,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -256,7 +256,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -274,7 +274,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -291,7 +291,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-1',
@@ -314,7 +314,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -329,7 +329,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -344,7 +344,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -362,7 +362,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -379,7 +379,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2',
@@ -402,7 +402,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -417,7 +417,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -432,7 +432,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -447,7 +447,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -465,7 +465,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -482,7 +482,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2',
@@ -499,7 +499,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2-1',
@@ -522,7 +522,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -537,7 +537,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -552,7 +552,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -567,7 +567,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -585,7 +585,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -602,7 +602,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2',
@@ -619,7 +619,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2-1',
@@ -642,7 +642,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -657,7 +657,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -672,7 +672,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -687,7 +687,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -702,7 +702,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -717,7 +717,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -732,7 +732,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -750,7 +750,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -767,7 +767,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2',
@@ -784,7 +784,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2-1',
@@ -801,7 +801,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2-2',
@@ -818,7 +818,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-2-2-1',
@@ -841,7 +841,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -856,7 +856,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -871,7 +871,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -889,7 +889,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -906,7 +906,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -929,7 +929,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -944,7 +944,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -959,7 +959,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -974,7 +974,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -989,7 +989,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1007,7 +1007,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-1',
@@ -1024,7 +1024,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-1-1',
@@ -1047,7 +1047,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1062,7 +1062,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1077,7 +1077,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1092,7 +1092,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1107,7 +1107,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1125,7 +1125,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-2',
@@ -1142,7 +1142,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-2-1',
@@ -1165,7 +1165,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1180,7 +1180,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1195,7 +1195,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1210,7 +1210,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1225,7 +1225,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1243,7 +1243,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-1',
@@ -1260,7 +1260,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1-1-1',
@@ -1290,7 +1290,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1305,7 +1305,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1320,7 +1320,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1335,7 +1335,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3-1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1350,7 +1350,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3-2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1368,7 +1368,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -1385,7 +1385,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2-1',
@@ -1402,7 +1402,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3-1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-3-1',
@@ -1426,7 +1426,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1441,7 +1441,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1456,7 +1456,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1474,7 +1474,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -1491,7 +1491,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-3',
@@ -1515,7 +1515,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1530,7 +1530,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1545,7 +1545,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1563,7 +1563,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -1580,7 +1580,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -1604,7 +1604,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1619,7 +1619,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1634,7 +1634,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1652,7 +1652,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',
@@ -1669,7 +1669,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-3',
@@ -1693,7 +1693,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1708,7 +1708,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1723,7 +1723,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             contentType: 'text',
@@ -1741,7 +1741,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-1',
@@ -1758,7 +1758,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude-v2',
+        model: 'claude-v3-haiku',
         content: [
           {
             body: 'message-2',

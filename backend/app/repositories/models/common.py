@@ -1,11 +1,10 @@
 import base64
 from decimal import Decimal
-from typing import get_args, Dict, Any, List, Type
+from typing import Annotated, Any, Dict, List, Type, get_args
+
 from pydantic import BaseModel, ConfigDict
 from pydantic.functional_serializers import PlainSerializer
 from pydantic.functional_validators import PlainValidator
-from typing import Annotated, Any
-from app.routes.schemas.conversation import type_model_name
 
 # Declare customized float type
 Float = Annotated[

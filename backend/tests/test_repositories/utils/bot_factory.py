@@ -5,6 +5,7 @@ sys.path.append(".")
 
 
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     AgentToolModel,
     BedrockGuardrailsModel,
@@ -73,6 +74,7 @@ def create_test_private_bot(
         ),
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
+        active_models=ActiveModelsModel(),
     )
 
 
@@ -127,4 +129,5 @@ def create_test_public_bot(
         ),
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
+        active_models=ActiveModelsModel(),
     )

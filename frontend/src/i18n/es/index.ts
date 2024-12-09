@@ -16,41 +16,41 @@ const translation = {
       adminConsoles: 'Solo Administrador',
     },
     model: {
-      haiku3: {
+      'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
         description:
           'Versión anterior optimizada para velocidad y compacidad, brindando respuesta casi instantánea.',
       },
-      sonnet3: {
+      'claude-v3-sonnet': {
         label: 'Claude 3 (Sonnet)',
         description: 'Equilibrio entre inteligencia y velocidad.',
       },
-      'sonnet3-5': {
+      'claude-v3.5-sonnet': {
         label: 'Claude 3.5 (Sonnet) v1',
         description:
           'Versión anterior de Claude 3.5. Soporta una amplia gama de tareas, pero la v2 ofrece mayor precisión.',
       },
-      'sonnet3-5-v2': {
+      'claude-v3.5-sonnet-v2': {
         label: 'Claude 3.5 (Sonnet) v2',
         description:
           'La última versión de Claude 3.5. Un modelo mejorado que supera a la v1 en precisión y rendimiento.',
       },
-      'haiku3-5': {
+      'claude-v3.5-haiku': {
         label: 'Claude 3.5 (Haiku)',
         description:
           'La última versión, con una capacidad de respuesta aún más rápida y mejor rendimiento respecto a Haiku 3.',
       },
-      opus3: {
+      'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Modelo potente para tareas altamente complejas.',
       },
-      mistral7b: {
+      'mistral-7b-instruct': {
         label: 'Mistral 7B',
       },
-      mistral8x7b: {
-        label: 'Mixtral-8x7B',
+      'mixtral-8x7b-instruct': {
+        label: 'Mistral-8x7B',
       },
-      mistralLarge: {
+      'mistral-large': {
         label: 'Mistral Grande',
       },
     },

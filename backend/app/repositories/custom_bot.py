@@ -21,6 +21,7 @@ from app.repositories.common import (
     decompose_bot_id,
 )
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     BotAliasModel,
     BotMeta,
@@ -29,7 +30,6 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
-    ModelActivateModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -89,7 +89,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ConversationQuickStarters": [
             starter.model_dump() for starter in custom_bot.conversation_quick_starters
         ],
-        "ModelActivate": custom_bot.model_activate.model_dump(),  # type: ignore[attr-defined]
+        "ActiveModels": custom_bot.active_models.model_dump(),  # type: ignore[attr-defined]
     }
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
@@ -112,7 +112,7 @@ def update_bot(
     sync_status: type_sync_status,
     sync_status_reason: str,
     display_retrieved_chunks: bool,
-    model_activate: ModelActivateModel,  # type: ignore
+    active_models: ActiveModelsModel,  # type: ignore
     conversation_quick_starters: list[ConversationQuickStarterModel],
     bedrock_knowledge_base: BedrockKnowledgeBaseModel | None = None,
     bedrock_guardrails: BedrockGuardrailsModel | None = None,
@@ -134,7 +134,7 @@ def update_bot(
         "GenerationParams = :generation_params, "
         "DisplayRetrievedChunks = :display_retrieved_chunks, "
         "ConversationQuickStarters = :conversation_quick_starters, "
-        "ModelActivate = :model_activate"
+        "ActiveModels = :active_models"
     )
 
     expression_attribute_values = {
@@ -150,7 +150,7 @@ def update_bot(
         ":conversation_quick_starters": [
             starter.model_dump() for starter in conversation_quick_starters
         ],
-        ":model_activate": model_activate.model_dump(),  # type: ignore[attr-defined]
+        ":active_models": active_models.model_dump(),  # type: ignore[attr-defined]
     }
     if bedrock_knowledge_base:
         update_expression += ", BedrockKnowledgeBase = :bedrock_knowledge_base"
@@ -200,7 +200,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "ConversationQuickStarters": [
             starter.model_dump() for starter in alias.conversation_quick_starters
         ],
-        "ModelActivate": alias.model_activate.model_dump(),  # type: ignore[attr-defined]
+        "ActiveModels": alias.active_models.model_dump(),  # type: ignore[attr-defined]
     }
 
     response = table.put_item(Item=item)
@@ -490,7 +490,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             if "GuardrailsParams" in item
             else None
         ),
-        model_activate=ModelActivateModel.model_validate(item.get("ModelActivate", {})),
+        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels", {})),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -568,7 +568,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             if "GuardrailsParams" in item
             else None
         ),
-        model_activate=ModelActivateModel.model_validate(item.get("ModelActivate")),
+        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels")),
     )
     logger.info(f"Found public bot: {bot}")
     return bot
@@ -598,7 +598,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         has_knowledge=item["HasKnowledge"],
         has_agent=item.get("HasAgent", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
-        model_activate=ModelActivateModel.model_validate(item.get("ModelActivate")),
+        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels")),
     )
 
     logger.info(f"Found alias: {bot}")

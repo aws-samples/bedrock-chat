@@ -35,13 +35,13 @@ from app.repositories.models.conversation import (
     ToolUseContentModelBody,
 )
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     AgentToolModel,
     BotModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
-    ModelActivateModel,
 )
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -534,7 +534,7 @@ class TestConversationBotRepository(unittest.TestCase):
         os.environ["CONVERSATION_TABLE_NAME"] = "test-table"
         os.environ["CONVERSATION_BUCKET_NAME"] = "test-bucket"
 
-        self.model_activate = ModelActivateModel(
+        self.active_models = ActiveModelsModel(
             claude3_sonnet_v1=True,
             claude3_haiku_v1=True,
             claude3_opus_v1=True,
@@ -654,7 +654,7 @@ class TestConversationBotRepository(unittest.TestCase):
             ],
             bedrock_knowledge_base=None,
             bedrock_guardrails=None,
-            model_activate=self.model_activate,
+            active_models=self.active_models,
         )
 
         self.bot2 = BotModel(
@@ -698,7 +698,7 @@ class TestConversationBotRepository(unittest.TestCase):
             ],
             bedrock_knowledge_base=None,
             bedrock_guardrails=None,
-            model_activate=self.model_activate,  # Added the missing field
+            active_models=self.active_models,  # Added the missing field
         )
 
         store_conversation("user", self.conversation1)

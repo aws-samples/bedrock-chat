@@ -1,13 +1,10 @@
 import { create } from 'zustand';
-import { Model } from '../@types/conversation';
+import { Model, MODEL_KEYS } from '../@types/conversation';
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useLocalStorage from './useLocalStorage';
-import { ModelActivate } from '../@types/bot';
-import { MODEL_KEYS } from '../constants';
-import { 
-  toCamelCase
-} from '../utils/StringUtils';
+import { ActiveModels } from '../@types/bot';
+import { toCamelCase } from '../utils/StringUtils';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -24,7 +21,7 @@ const NOVA_SUPPORTED_MEDIA_TYPES = [
   'image/png',
   'image/gif',
   'image/webp',
-]
+];
 
 const useModelState = create<{
   modelId: Model;
@@ -43,30 +40,28 @@ const DEFAULT_MODEL: Model = 'claude-v3-haiku';
 // Store the Previous BotId
 const usePreviousBotId = (botId: string | null | undefined) => {
   const ref = useRef<string | null | undefined>();
-  
+
   useEffect(() => {
     ref.current = botId;
   }, [botId]);
-  
+
   return ref.current;
 };
 
-const useModel = (botId?: string | null, modelActivate?: ModelActivate) => {
-  const processedModelActivate = useMemo(() => {
-    // Early return if modelActivate is provided and not empty
-    if (modelActivate && Object.keys(modelActivate).length > 0) {
-      return modelActivate;
+const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
+  const processedActiveModels = useMemo(() => {
+    // Early return if activeModels is provided and not empty
+    if (activeModels && Object.keys(activeModels).length > 0) {
+      return activeModels;
     }
 
     // Create a new object with all models set to true
-    return MODEL_KEYS.reduce((acc, model) => {
+    return MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
       // Optimize string replacement by doing it in one operation
-      acc[toCamelCase(model) as keyof ModelActivate ] = true;
+      acc[toCamelCase(model) as keyof ActiveModels] = true;
       return acc;
-    }, {} as ModelActivate);
-    
-  }, [modelActivate]);
-
+    }, {} as ActiveModels);
+  }, [activeModels]);
 
   const { t } = useTranslation();
   const previousBotId = usePreviousBotId(botId);
@@ -83,74 +78,74 @@ const useModel = (botId?: string | null, modelActivate?: ModelActivate) => {
       ? [
           {
             modelId: 'claude-v3-haiku',
-            label: t('model.haiku3.label'),
-            description: t('model.haiku3.description'),
+            label: t('model.claude-v3-haiku.label'),
+            description: t('model.claude-v3-haiku.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'claude-v3.5-haiku',
-            label: t('model.haiku3-5.label'),
-            description: t('model.haiku3-5.description'),
+            label: t('model.claude-v3.5-haiku.label'),
+            description: t('model.claude-v3.5-haiku.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'claude-v3-sonnet',
-            label: t('model.sonnet3.label'),
-            description: t('model.sonnet3.description'),
+            label: t('model.claude-v3-sonnet.label'),
+            description: t('model.claude-v3-sonnet.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'claude-v3.5-sonnet',
-            label: t('model.sonnet3-5.label'),
-            description: t('model.sonnet3-5.description'),
+            label: t('model.claude-v3.5-sonnet.label'),
+            description: t('model.claude-v3.5-sonnet.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'claude-v3.5-sonnet-v2',
-            label: t('model.sonnet3-5-v2.label'),
-            description: t('model.sonnet3-5-v2.description'),
+            label: t('model.claude-v3.5-sonnet-v2.label'),
+            description: t('model.claude-v3.5-sonnet-v2.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'claude-v3-opus',
-            label: t('model.opus3.label'),
-            description: t('model.opus3.description'),
+            label: t('model.claude-v3-opus.label'),
+            description: t('model.claude-v3-opus.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           // New Amazon Nova models
           {
             modelId: 'amazon-nova-pro',
-            label: t('model.novaPro.label'),
-            description: t('model.novaPro.description'),
+            label: t('model.amazon-nova-pro.label'),
+            description: t('model.amazon-nova-pro.description'),
             supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'amazon-nova-lite',
-            label: t('model.novaLite.label'),
-            description: t('model.novaLite.description'),
+            label: t('model.amazon-nova-lite.label'),
+            description: t('model.amazon-nova-lite.description'),
             supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
           },
           {
             modelId: 'amazon-nova-micro',
-            label: t('model.novaMicro.label'),
-            description: t('model.novaMicro.description'),
+            label: t('model.amazon-nova-micro.label'),
+            description: t('model.amazon-nova-micro.description'),
             supportMediaType: [],
-          }
+          },
         ]
       : [
           {
             modelId: 'mistral-7b-instruct',
-            label: t('model.mistral7b.label'),
+            label: t('model.mistral-7b-instruct.label'),
             supportMediaType: [],
           },
           {
             modelId: 'mixtral-8x7b-instruct',
-            label: t('model.mistral8x7b.label'),
+            label: t('model.mixtral-8x7b-instruct.label'),
             supportMediaType: [],
           },
           {
             modelId: 'mistral-large',
-            label: t('model.mistralLarge.label'),
+            label: t('model.mistral-large.label'),
             supportMediaType: [],
           },
         ];
@@ -169,22 +164,24 @@ const useModel = (botId?: string | null, modelActivate?: ModelActivate) => {
     ''
   );
 
-  // Update filtered models when modelActivate changes
+  // Update filtered models when activeModels changes
   useEffect(() => {
     if (MISTRAL_ENABLED) {
-      setFilteredModels(availableModels)
-    } else if (processedModelActivate) {
-      const filtered = availableModels.filter(model => {
-        const key = toCamelCase(model.modelId) as keyof ModelActivate;
-        return processedModelActivate[key] !== false;
+      setFilteredModels(availableModels);
+    } else if (processedActiveModels) {
+      const filtered = availableModels.filter((model) => {
+        const key = toCamelCase(model.modelId) as keyof ActiveModels;
+        return processedActiveModels[key] !== false;
       });
       setFilteredModels(filtered);
     }
-  }, [processedModelActivate, availableModels]);
+  }, [processedActiveModels, availableModels]);
 
   const getDefaultModel = useCallback(() => {
     // check default model is available
-    const defaultModelAvailable = filteredModels.some(m => m.modelId === DEFAULT_MODEL);
+    const defaultModelAvailable = filteredModels.some(
+      (m) => m.modelId === DEFAULT_MODEL
+    );
     if (defaultModelAvailable) {
       return DEFAULT_MODEL;
     }
@@ -192,18 +189,24 @@ const useModel = (botId?: string | null, modelActivate?: ModelActivate) => {
     return filteredModels[0]?.modelId ?? DEFAULT_MODEL;
   }, [filteredModels]);
 
-  // select the model via list of modelActivate 
-  const selectModel = useCallback((targetModelId: Model) => {
-    const modelExists = filteredModels.some(m => toCamelCase(m.modelId) === toCamelCase(targetModelId));
-    return modelExists ? targetModelId : getDefaultModel();
-  }, [filteredModels, getDefaultModel]);
+  // select the model via list of activeModels
+  const selectModel = useCallback(
+    (targetModelId: Model) => {
+      const modelExists = filteredModels.some(
+        (m) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
+      );
+      return modelExists ? targetModelId : getDefaultModel();
+    },
+    [filteredModels, getDefaultModel]
+  );
 
   useEffect(() => {
-    if (processedModelActivate === undefined) {return}
+    if (processedActiveModels === undefined) {
+      return;
+    }
 
     // botId is changed
     if (previousBotId !== botId) {
-
       // BotId is undefined, select recent modelId
       if (!botId) {
         setModelId(selectModel(recentUseModelId as Model));
@@ -219,32 +222,51 @@ const useModel = (botId?: string | null, modelActivate?: ModelActivate) => {
         setModelId(selectModel(botModelId as Model));
       } else {
         // If there is no bot-specific model ID, check if the last model used can be used
-        const lastModelAvailable = filteredModels.some(m => m.modelId === recentUseModelId);
+        const lastModelAvailable = filteredModels.some(
+          (m) => m.modelId === recentUseModelId
+        );
 
         // If the last model used is available, use it.
         if (lastModelAvailable) {
           setModelId(selectModel(recentUseModelId as Model));
           return;
-        }else{
+        } else {
           // Use the default model if not available
           setModelId(selectModel(getDefaultModel()));
         }
       }
-    }else{
+    } else {
       // Processing when botId and previousBotID are the same, but there is an update in FilteredModels
       if (botId) {
-        const lastModelAvailable = filteredModels.some(m => toCamelCase(m.modelId) === toCamelCase(recentUseModelId) || toCamelCase(m.modelId) === toCamelCase(botModelId) );
+        const lastModelAvailable = filteredModels.some(
+          (m) =>
+            toCamelCase(m.modelId) === toCamelCase(recentUseModelId) ||
+            toCamelCase(m.modelId) === toCamelCase(botModelId)
+        );
         if (!lastModelAvailable) {
           setModelId(selectModel(getDefaultModel()));
-        }else{
+        } else {
           setModelId(selectModel(recentUseModelId as Model));
         }
       }
     }
-  }, [botId, previousBotId, botModelId, recentUseModelId, modelId, filteredModels, setModelId, selectModel, getDefaultModel, processedModelActivate]);
+  }, [
+    botId,
+    previousBotId,
+    botModelId,
+    recentUseModelId,
+    modelId,
+    filteredModels,
+    setModelId,
+    selectModel,
+    getDefaultModel,
+    processedActiveModels,
+  ]);
 
   const model = useMemo(() => {
-    return filteredModels.find((model) => toCamelCase(model.modelId) === toCamelCase(modelId));
+    return filteredModels.find(
+      (model) => toCamelCase(model.modelId) === toCamelCase(modelId)
+    );
   }, [filteredModels, modelId]);
 
   return {

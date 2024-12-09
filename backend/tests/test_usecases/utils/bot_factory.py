@@ -5,6 +5,7 @@ sys.path.append(".")
 
 from app.agents.tools.internet_search import internet_search_tool
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     AgentToolModel,
     BotAliasModel,
@@ -77,6 +78,7 @@ def create_test_private_bot(
         conversation_quick_starters=[],
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
+        active_models=ActiveModelsModel(),
     )
 
 
@@ -131,6 +133,7 @@ def create_test_public_bot(
         conversation_quick_starters=[],
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
+        active_models=ActiveModelsModel(),
     )
 
 
@@ -148,6 +151,7 @@ def create_test_bot_alias(id, original_bot_id, is_pinned):
         has_knowledge=True,
         has_agent=False,
         conversation_quick_starters=[],
+        active_models=ActiveModelsModel(),
     )
 
 

@@ -22,6 +22,7 @@ from app.repositories.custom_bot import (
     update_knowledge_base_id,
 )
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     AgentToolModel,
     BotAliasModel,
@@ -299,6 +300,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 guardrail_arn="arn:aws:guardrail",
                 guardrail_version="v1",
             ),
+            active_models=ActiveModelsModel(),
         )
 
         bot = find_private_bot_by_id("user1", "1")
@@ -388,6 +390,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
+            active_models=ActiveModelsModel(),
         )
         alias2 = BotAliasModel(
             id="alias2",
@@ -404,6 +407,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
+            active_models=ActiveModelsModel(),
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -471,6 +475,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
+            active_models=ActiveModelsModel(),
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -507,6 +512,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status_reason="",
             display_retrieved_chunks=True,
             conversation_quick_starters=[],
+            active_models=ActiveModelsModel(),
         )
         bots = fetch_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)

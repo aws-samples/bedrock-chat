@@ -29,10 +29,10 @@ import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
 import ButtonPopover from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
-import { ModelActivate } from '../@types/bot';
+import { ActiveModels } from '../@types/bot';
 
 import { copyBotUrl } from '../utils/BotUtils';
-import { toCamelCase } from '../utils/StringUtils'
+import { toCamelCase } from '../utils/StringUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
 import StatusSyncBot from '../components/StatusSyncBot';
@@ -49,20 +49,18 @@ import { BottomHelper } from '../features/helper/components/BottomHelper';
 import { useIsWindows } from '../hooks/useIsWindows';
 import {
   DisplayMessageContent,
+  Model,
   PutFeedbackRequest,
-} from '../@types/conversation';
-import {
-  MODEL_KEYS
-} from '../constants';
-
+  MODEL_KEYS,
+} from '../@types/conversation.ts';
+import usePostMessageStreaming from '../hooks/usePostMessageStreaming.ts';
 
 // Default model activation settings when no bot is selected
-const defaultModelActivate: ModelActivate = (() => {
+const defaultActiveModels: ActiveModels = (() => {
   return Object.fromEntries(
-    MODEL_KEYS.map(key => [toCamelCase(key), true])
-  ) as ModelActivate;
+    MODEL_KEYS.map((key: Model) => [toCamelCase(key), true])
+  ) as ActiveModels;
 })();
-import usePostMessageStreaming from '../hooks/usePostMessageStreaming';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -428,12 +426,13 @@ const ChatPage: React.FC = () => {
     );
   });
 
-  const modelActivate = useMemo(() => {
+  const activeModels = useMemo(() => {
     if (!bot) {
-      return defaultModelActivate;
+      return defaultActiveModels;
     }
-    const isModelActivateEmpty = Object.keys(bot?.modelActivate ?? {}).length === 0;
-    return isModelActivateEmpty ? defaultModelActivate : bot.modelActivate;
+    const isActiveModelsEmpty =
+      Object.keys(bot?.activeModels ?? {}).length === 0;
+    return isActiveModelsEmpty ? defaultActiveModels : bot.activeModels;
   }, [bot]);
 
   return (
@@ -510,9 +509,9 @@ const ChatPage: React.FC = () => {
               {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
                   {!loadingConversation && (
-                    <SwitchBedrockModel 
-                      className="mt-3 w-min" 
-                      modelActivate={modelActivate}
+                    <SwitchBedrockModel
+                      className="mt-3 w-min"
+                      activeModels={activeModels}
                       botId={botId}
                     />
                   )}

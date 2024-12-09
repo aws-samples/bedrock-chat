@@ -1,43 +1,40 @@
 from __future__ import annotations
 
-from typing import Literal, Any, Annotated, Self, TypedDict, TypeGuard, TYPE_CHECKING
-from pathlib import Path
 import re
+from pathlib import Path
+from typing import Annotated, Any, Literal, Self, TypedDict, TypeGuard
 from urllib.parse import urlparse
+
+from app.repositories.models.common import Base64EncodedBytes
 from app.routes.schemas.conversation import (
-    SimpleMessage,
-    MessageInput,
-    type_model_name,
-    Content,
-    TextContent,
-    ImageContent,
     AttachmentContent,
+    Content,
+    DocumentToolResult,
+    ImageContent,
+    ImageToolResult,
+    JsonToolResult,
+    MessageInput,
+    RelatedDocument,
+    SimpleMessage,
+    TextContent,
+    TextToolResult,
+    ToolResult,
+    ToolResultContent,
+    ToolResultContentBody,
     ToolUseContent,
     ToolUseContentBody,
-    ToolResult,
-    TextToolResult,
-    JsonToolResult,
-    ImageToolResult,
-    DocumentToolResult,
-    ToolResultContentBody,
-    ToolResultContent,
-    RelatedDocument,
+    type_model_name,
 )
 from app.utils import generate_presigned_url
-
-from pydantic import BaseModel, Field, field_validator, Discriminator, JsonValue
+from mypy_boto3_bedrock_runtime.literals import DocumentFormatType, ImageFormatType
 from mypy_boto3_bedrock_runtime.type_defs import (
     ContentBlockTypeDef,
-    ToolUseBlockTypeDef,
-    ToolUseBlockOutputTypeDef,
     ToolResultBlockTypeDef,
     ToolResultContentBlockOutputTypeDef,
+    ToolUseBlockOutputTypeDef,
+    ToolUseBlockTypeDef,
 )
-from mypy_boto3_bedrock_runtime.literals import (
-    DocumentFormatType,
-    ImageFormatType,
-)
-from app.repositories.models.common import Base64EncodedBytes
+from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
 
 
 class TextContentModel(BaseModel):

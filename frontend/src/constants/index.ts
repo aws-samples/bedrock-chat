@@ -1,5 +1,4 @@
 import { GenerationParams } from '../@types/bot';
-import { Model } from '../@types/conversation';
 
 export const EDGE_GENERATION_PARAMS = {
   maxTokens: {
@@ -101,20 +100,3 @@ export const GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD = {
   MIN: 0,
   STEP: 0.01,
 };
-
-export const MODEL_KEYS: Model[] = [
-  'claude-instant-v1',
-  'claude-v2',
-  'claude-v3-opus',
-  'claude-v3-sonnet',
-  'claude-v3.5-sonnet',
-  'claude-v3.5-sonnet-v2',
-  'claude-v3-haiku',
-  'claude-v3.5-haiku',
-  'mistral-7b-instruct',
-  'mixtral-8x7b-instruct',
-  'mistral-large',
-  "amazon-nova-pro",
-  "amazon-nova-lite",
-  "amazon-nova-micro",
-];

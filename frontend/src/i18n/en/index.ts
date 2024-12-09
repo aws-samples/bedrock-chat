@@ -16,55 +16,58 @@ const translation = {
       adminConsoles: 'Admin Only',
     },
     model: {
-      haiku3: {
+      'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
         description:
           'Previous version optimized for speed and compactness, providing near-instant responsiveness.',
       },
-      sonnet3: {
+      'claude-v3-sonnet': {
         label: 'Claude 3 (Sonnet)',
         description: 'Balance of intelligence and speed.',
       },
-      'sonnet3-5': {
+      'claude-v3.5-sonnet': {
         label: 'Claude 3.5 (Sonnet) v1',
         description:
           'An earlier version of Claude 3.5. Supports a wide range of tasks, but v2 offers improved accuracy.',
       },
-      'sonnet3-5-v2': {
+      'claude-v3.5-sonnet-v2': {
         label: 'Claude 3.5 (Sonnet) v2',
         description:
           'The latest version of Claude 3.5. An enhanced model that builds on v1 with higher accuracy and performance.',
       },
-      'haiku3-5': {
+      'claude-v3.5-haiku': {
         label: 'Claude 3.5 (Haiku) v1',
         description:
           'The latest version, offering even faster responsiveness and improved capabilities over Haiku 3.',
       },
-      opus3: {
+      'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Powerful model for highly complex tasks.',
       },
-      mistral7b: {
+      'mistral-7b-instruct': {
         label: 'Mistral 7B',
       },
-      mistral8x7b: {
-        label: 'Mixtral-8x7B',
+      'mixtral-8x7b-instruct': {
+        label: 'Mistral-8x7B',
       },
-      mistralLarge: {
+      'mistral-large': {
         label: 'Mistral Large',
       },
-      novaPro: {
-        label: "Amazon Nova Pro",
-        description: 'A highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.',
+      'amazon-nova-pro': {
+        label: 'Amazon Nova Pro',
+        description:
+          'A highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.',
       },
-      novaLite: {
+      'amazon-nova-lite': {
         label: 'Amazon Nova Lite',
-        description: 'A very low-cost multimodal model that is lightning fast for processing image, video, and text inputs.',
+        description:
+          'A very low-cost multimodal model that is lightning fast for processing image, video, and text inputs.',
       },
-      novaMicro: {
+      'amazon-nova-micro': {
         label: 'Amazon Nova Micro',
-        description: 'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
-      }
+        description:
+          'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
+      },
     },
     agent: {
       label: 'Agent',
@@ -363,9 +366,9 @@ How would you categorize this email?`,
         duplicatedFile: 'A file with the same name has been uploaded.',
         failDeleteApi: 'Failed to delete the API.',
       },
-      modelActivate: {
+      activeModels: {
         title: 'Model Activation',
-        description: 'Configure which AI models can be used with this bot.'
+        description: 'Configure which AI models can be used with this bot.',
       },
     },
     admin: {
@@ -674,8 +677,9 @@ How would you categorize this email?`,
       },
       advancedParsing: {
         label: 'Advanced Parsing',
-        description: 'Select a model to use for advanced document parsing capabilities.',
-        hint: 'Suitable for parsing more than standard text in supported document formats, including tables within PDFs with their structure intact. Additional costs are incurred for parsing using generative AI.'
+        description:
+          'Select a model to use for advanced document parsing capabilities.',
+        hint: 'Suitable for parsing more than standard text in supported document formats, including tables within PDFs with their structure intact. Additional costs are incurred for parsing using generative AI.',
       },
       parsingModel: {
         label: 'Advanced Parsing Model',
@@ -690,7 +694,7 @@ How would you categorize this email?`,
         claude_3_haiku_v1: {
           label: 'Claude 3 Haiku v1',
           hint: 'Use Claude 3 Haiku v1 for advanced document parsing.',
-        }
+        },
       },
       webCrawlerConfig: {
         title: 'Web Crawler Config',
@@ -717,7 +721,7 @@ How would you categorize this email?`,
           label: 'Exclude Patterns',
           hint: 'Specify patterns to exclude from web crawling. URLs matching these patterns will not be crawled.',
         },
-      }
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',

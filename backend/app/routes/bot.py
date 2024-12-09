@@ -1,4 +1,4 @@
-from typing import Literal, Dict, Any
+from typing import Any, Dict, Literal
 
 from app.dependencies import check_creating_bot_allowed
 from app.repositories.custom_bot import (
@@ -7,6 +7,7 @@ from app.repositories.custom_bot import (
     update_bot_visibility,
 )
 from app.routes.schemas.bot import (
+    ActiveModelsOutput,
     Agent,
     AgentTool,
     BedrockGuardrailsOutput,
@@ -22,7 +23,6 @@ from app.routes.schemas.bot import (
     ConversationQuickStarter,
     GenerationParams,
     Knowledge,
-    ModelActivateOutput,
 )
 from app.routes.schemas.conversation import type_model_name
 from app.usecases.bot import (
@@ -154,7 +154,7 @@ def get_private_bot(request: Request, bot_id: str):
             if bot.bedrock_guardrails
             else None
         ),
-        model_activate=ModelActivateOutput.model_validate(dict(bot.model_activate)),
+        active_models=ActiveModelsOutput.model_validate(dict(bot.active_models)),
     )
     return output
 
