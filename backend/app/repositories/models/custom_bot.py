@@ -112,6 +112,12 @@ class BotModel(BaseModel):
             and self.bedrock_knowledge_base.knowledge_base_id is not None
         )
 
+    def has_exist_knowlednge_base_id(self) -> bool :
+        return (
+            self.bedrock_knowledge_base is not None
+            and self.bedrock_knowledge_base.exist_knowledge_base_id is not None
+        )
+
 
 class BotAliasModel(BaseModel):
     id: str

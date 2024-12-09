@@ -59,7 +59,8 @@ def to_guardrails_grounding_source(
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
     assert (
         bot.bedrock_knowledge_base is not None
-        and bot.bedrock_knowledge_base.knowledge_base_id is not None
+        and (bot.bedrock_knowledge_base.knowledge_base_id is not None
+             or bot.bedrock_knowledge_base.exist_knowledge_base_id is not None)
     )
     if bot.bedrock_knowledge_base.search_params.search_type == "semantic":
         search_type = "SEMANTIC"
@@ -69,8 +70,12 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         raise ValueError("Invalid search type")
 
     limit = bot.bedrock_knowledge_base.search_params.max_results
-    knowledge_base_id = bot.bedrock_knowledge_base.knowledge_base_id
-    exist_knowledge_base_id = bot.bedrock_knowledge_base.exist_knowledge_base_id
+    # Use exist_knowledge_base_id if available, otherwise use knowledge_base_id
+    knowledge_base_id = (
+        bot.bedrock_knowledge_base.exist_knowledge_base_id
+        if bot.bedrock_knowledge_base.exist_knowledge_base_id is not None
+        else bot.bedrock_knowledge_base.knowledge_base_id
+    )
 
     try:
         response = agent_client.retrieve(

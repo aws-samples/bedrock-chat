@@ -647,6 +647,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=True,
             sync_status=bot.sync_status,
             has_knowledge=bot.has_knowledge(),
+            has_exist_knowlednge_base_id=bot.has_exist_knowlednge_base_id(),
             conversation_quick_starters=[
                 ConversationQuickStarter(
                     title=starter.title,

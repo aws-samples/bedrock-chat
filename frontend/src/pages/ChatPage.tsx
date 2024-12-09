@@ -361,10 +361,10 @@ const ChatPage: React.FC = () => {
           ];
         }
 
-        if (bot?.hasKnowledge) {
+        if (bot?.hasKnowledge || bot?.hasExistKnowledngeBaseId) {
           return [
             {
-              thought: t('bot.label.retrievingKnowledge'),
+              thought: t('bot.label.retrievingKnowledge'), // @@
               tools: {},
             },
           ];
@@ -372,11 +372,7 @@ const ChatPage: React.FC = () => {
 
         return undefined;
       } else {
-        if (bot?.hasAgent) {
-          return undefined;
-        }
-
-        if (bot?.hasKnowledge) {
+        if (bot?.hasKnowledge || bot?.hasExistKnowledngeBaseId) {
           const pseudoToolUseId = message.id;
           const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(
             relatedDocuments,

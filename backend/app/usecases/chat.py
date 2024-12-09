@@ -266,7 +266,7 @@ def chat(
             if display_citation:
                 instructions.append(PROMPT_TO_CITE_TOOL_RESULTS)
 
-        elif bot.has_knowledge():
+        elif bot.has_knowledge() or bot.has_exist_knowlednge_base_id():
             # Fetch most related documents from vector store
             # NOTE: Currently embedding not support multi-modal. For now, use the last content.
             content = conversation.message_map[user_msg_id].content[-1]
