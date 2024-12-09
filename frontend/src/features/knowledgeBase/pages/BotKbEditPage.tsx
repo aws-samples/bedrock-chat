@@ -122,6 +122,11 @@ const BotKbEditPage: React.FC = () => {
 
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null); // Send null when creating a new bot
   const [existKnowledgeBaseId, setExistKnowledgeBaseId] = useState<string | null>(null);
+
+  const disabledKnowledgeEdit = useMemo(() => {
+    return !!existKnowledgeBaseId;
+  }, [existKnowledgeBaseId]);
+
   const [embeddingsModel, setEmbeddingsModel] =
     useState<EmbeddingsModel>('titan_v2');
 
@@ -1471,6 +1476,7 @@ const BotKbEditPage: React.FC = () => {
                       onAdd={onAddFiles}
                       onUpdate={onUpdateFiles}
                       onDelete={onDeleteFiles}
+                      disabled={disabledKnowledgeEdit}
                     />
                   </div>
                 </div>
@@ -1486,11 +1492,9 @@ const BotKbEditPage: React.FC = () => {
                         <InputText
                           className="w-full"
                           type="text"
-                          disabled={isLoading}
+                          disabled={isLoading || disabledKnowledgeEdit}
                           value={s3Url}
-                          placeholder={
-                            's3://example-bucket/path/to/data-source/'
-                          }
+                          placeholder={'s3://example-bucket/path/to/data-source/'}
                           onChange={(s) => {
                             onChangeS3Url(s, idx);
                           }}
@@ -1498,9 +1502,7 @@ const BotKbEditPage: React.FC = () => {
                         />
                         <ButtonIcon
                           className="text-red"
-                          disabled={
-                            (s3Urls.length === 1 && !s3Url[0]) || isLoading
-                          }
+                          disabled={(s3Urls.length === 1 && !s3Url[0]) || isLoading || disabledKnowledgeEdit}
                           onClick={() => {
                             onClickRemoveS3Url(idx);
                           }}>
@@ -1513,7 +1515,7 @@ const BotKbEditPage: React.FC = () => {
                     <Button
                       outlined
                       icon={<PiPlus />}
-                      disabled={s3Urls.length >= 4}
+                      disabled={s3Urls.length >= 4 || disabledKnowledgeEdit}
                       onClick={onClickAddS3Url}>
                       {t('button.add')}
                     </Button>
@@ -1531,7 +1533,7 @@ const BotKbEditPage: React.FC = () => {
                         <InputText
                           className="w-full"
                           type="text"
-                          disabled={isLoading}
+                          disabled={isLoading || disabledKnowledgeEdit}
                           value={url}
                           placeholder="https://example.com"
                           onChange={(s) => {
@@ -1541,7 +1543,7 @@ const BotKbEditPage: React.FC = () => {
                         />
                         <ButtonIcon
                           className="text-red"
-                          disabled={(urls.length === 1 && !url[0]) || isLoading}
+                          disabled={(urls.length === 1 && !url[0]) || isLoading || disabledKnowledgeEdit}
                           onClick={() => {
                             onClickRemoveUrls(idx);
                           }}>
@@ -1554,7 +1556,7 @@ const BotKbEditPage: React.FC = () => {
                     <Button
                       outlined
                       icon={<PiPlus />}
-                      disabled={urls.length >= 10}
+                      disabled={urls.length >= 10 || disabledKnowledgeEdit}
                       onClick={onClickAddUrls}>
                       {t('button.add')}
                     </Button>
@@ -1566,14 +1568,13 @@ const BotKbEditPage: React.FC = () => {
                     className="py-2">
                     <div className="mt-3">
                       <Select
-                        label={t(
-                          'knowledgeBaseSettings.webCrawlerConfig.crawlingScope.label'
-                        )}
+                        label={t('knowledgeBaseSettings.webCrawlerConfig.crawlingScope.label')}
                         value={webCrawlingScope}
                         options={webCrawlingScopeOptions}
                         onChange={(val) => {
                           setWebCrawlingScope(val as WebCrawlingScope);
                         }}
+                        disabled={disabledKnowledgeEdit}
                       />
                     </div>
 

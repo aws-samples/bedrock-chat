@@ -18,6 +18,7 @@ type Props = BaseProps & {
   onAdd: (files: BotFile[]) => void;
   onUpdate: (files: BotFile[]) => void;
   onDelete: (files: BotFile[], deletedFilename: string) => void;
+  disabled?: boolean;
 };
 
 const SUPPORTED_FILES = [
@@ -55,6 +56,8 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
 
   const uploadFiles = useCallback(
     (targetFiles: FileList) => {
+      if (props.disabled) return;
+
       const originalLength = props.files.length;
 
       // Normalize file names that contain certain Japanese characters to avoid errors in the ECS Task.
@@ -142,13 +145,17 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
   const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       e.preventDefault();
-      uploadFiles(e.dataTransfer.files);
+      if (!props.disabled) {
+        uploadFiles(e.dataTransfer.files);
+      }
     },
-    [uploadFiles]
+    [uploadFiles, props.disabled]
   );
 
   const onDeleteFile = useCallback(
     (idx: number) => {
+      if (props.disabled) return;
+      
       props.onDelete(
         produce(props.files, (draft) => {
           draft.splice(idx, 1);
@@ -166,6 +173,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
         onDrop={onDrop}
         className={twMerge(
           'flex h-full w-full flex-col items-center justify-center gap-3 rounded border-4 border-gray text-dark-gray',
+          props.disabled && 'opacity-50 cursor-not-allowed',
           props.className
         )}>
         <div>
@@ -180,7 +188,8 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
 
         <ButtonFileChoose
           onChange={uploadFiles}
-          accept={SUPPORTED_FILES.join(',')}>
+          accept={SUPPORTED_FILES.join(',')}
+          disabled={props.disabled}>
           {t('bot.button.chooseFiles')}
         </ButtonFileChoose>
       </div>
@@ -216,7 +225,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
                 <div>
                   <ButtonIcon
                     className="text-red"
-                    disabled={file.status === 'UPLOADING'}
+                    disabled={file.status === 'UPLOADING' || props.disabled}
                     onClick={() => {
                       onDeleteFile(idx);
                     }}>
