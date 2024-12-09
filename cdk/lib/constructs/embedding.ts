@@ -424,7 +424,12 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(
-      startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
+      new sfn.Choice(this, "CheckDataSourceId")
+        .when(
+          sfn.Condition.not(sfn.Condition.stringEquals("$.DataSourceId", "")),
+          startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
+        )
+        .otherwise(new sfn.Pass(this, "SkipEmptyDataSourceId"))
     );
 
     const definition = extractFirstElement

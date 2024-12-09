@@ -590,11 +590,7 @@ How would you categorize this email?`,
         'Select the embedded model for configuring knowledge, and set the method for splitting documents added as knowledge. These settings cannot be changed after creating the bot.',
       existKnowledgeBaseId: {
         label: "ID for the Amazon Bedrock Knowledge Base",
-        description: "Please specify the ID you set up in your existing Amazon Bedrock knowledge base. When creating a new knowledge base, leave the 'existKnowledgeBaseId' and 'executionRoleArn' blank."
-      },
-      executionRoleArn: {
-        label: "ARN for the Amazon Bedrock Knowledge Base execution role ",
-        description: "Please specify the ARN for the role you set up in your existing Amazon Bedrock knowledge base. When creating a new knowledge base, leave the 'existKnowledgeBaseId' and 'executionRoleArn' blank."
+        description: "Please specify ID that your existing Amazon Bedrock knowledge base. When creating a new knowledge base, leave the 'existKnowledgeBaseId' blank."
       },
       embeddingModel: {
         label: 'Embeddings Model',

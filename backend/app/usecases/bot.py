@@ -115,8 +115,14 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         bot_input.bedrock_guardrails
         and bot_input.bedrock_guardrails.is_guardrail_enabled == True
     )
+
+    has_exist_knowlednge_base_id = (
+        bot_input.bedrock_knowledge_base is not None
+        and bot_input.bedrock_knowledge_base.exist_knowledge_base_id is not None
+    )
+
     sync_status: type_sync_status = (
-        "QUEUED" if has_knowledge or has_guardrails else "SUCCEEDED"
+        "QUEUED" if has_knowledge or has_guardrails or has_exist_knowlednge_base_id else "SUCCEEDED"
     )
 
     source_urls = []

@@ -94,7 +94,6 @@ class BedrockKnowledgeBaseInput(BaseSchema):
     search_params: SearchParams
     knowledge_base_id: str | None = None
     exist_knowledge_base_id: str | None = None
-    knowledge_base_execution_role_arn: str | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
     web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
@@ -116,7 +115,6 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
     search_params: SearchParams
     knowledge_base_id: str | None = None
     exist_knowledge_base_id: str | None = None
-    knowledge_base_execution_role_arn: str | None = None
     data_source_ids: list[str] | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
