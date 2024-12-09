@@ -2,8 +2,7 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> [!Warning]
-> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -60,6 +59,9 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 - Español 💬
 - Italian 💬
 - Norsk 💬
+- ไทย 💬
+- Bahasa Indonesia 💬
+- Bahasa Melayu 💬
 
 ## 🚀 Super-easy Deployment
 
