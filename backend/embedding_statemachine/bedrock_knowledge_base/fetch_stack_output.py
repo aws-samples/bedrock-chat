@@ -41,14 +41,18 @@ def handler(event, context):
 
     # If no data sources exist, create a result with just the KnowledgeBaseId
     if not data_source_ids and knowledge_base_id:
-        result.append({
-            "KnowledgeBaseId": knowledge_base_id,
-            "DataSourceId": "",
-            "GuardrailArn": guardrail_arn if guardrail_arn != None else "",
-            "GuardrailVersion": guardrail_version if guardrail_version != None else "",
-            "PK": pk,
-            "SK": sk,
-        })
+        result.append(
+            {
+                "KnowledgeBaseId": knowledge_base_id,
+                "DataSourceId": "",
+                "GuardrailArn": guardrail_arn if guardrail_arn != None else "",
+                "GuardrailVersion": (
+                    guardrail_version if guardrail_version != None else ""
+                ),
+                "PK": pk,
+                "SK": sk,
+            }
+        )
     else:
         for data_source_id in data_source_ids:
             result.append(

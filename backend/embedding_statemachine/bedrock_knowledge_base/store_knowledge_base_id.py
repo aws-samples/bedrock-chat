@@ -25,7 +25,9 @@ def handler(event, context):
     stack_output: list[StackOutput] = event["stack_output"]
 
     # Find KnowledgeBaseId using list comprehension
-    kb_id_items = [item["KnowledgeBaseId"] for item in stack_output if "KnowledgeBaseId" in item]
+    kb_id_items = [
+        item["KnowledgeBaseId"] for item in stack_output if "KnowledgeBaseId" in item
+    ]
 
     if not kb_id_items:
         raise ValueError("KnowledgeBaseId not found in stack outputs")

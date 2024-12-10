@@ -498,7 +498,19 @@ ContentModel = Annotated[
 ]
 
 
-def content_model_from_content(content: Content) -> ContentModel:
+def content_model_from_content(content: Content | ContentModel) -> ContentModel:
+    if isinstance(
+        content,
+        (
+            TextContentModel,
+            ImageContentModel,
+            AttachmentContentModel,
+            ToolUseContentModel,
+            ToolResultContentModel,
+        ),
+    ):
+        return content
+
     if isinstance(content, TextContent):
         return TextContentModel.from_text_content(content=content)
 
@@ -513,9 +525,8 @@ def content_model_from_content(content: Content) -> ContentModel:
 
     elif isinstance(content, ToolResultContent):
         return ToolResultContentModel.from_tool_result_content(content=content)
-
     else:
-        raise ValueError(f"Unknown content type")
+        raise ValueError(f"Unknown content type: {type(content)}")
 
 
 class SimpleMessageModel(BaseModel):
@@ -526,7 +537,9 @@ class SimpleMessageModel(BaseModel):
     def from_message_model(cls, message: MessageModel):
         return SimpleMessageModel(
             role=message.role,
-            content=message.content,
+            content=[
+                content_model_from_content(content) for content in message.content
+            ],
         )
 
     def to_schema(self) -> SimpleMessage:

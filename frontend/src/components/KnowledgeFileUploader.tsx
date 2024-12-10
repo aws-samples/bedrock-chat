@@ -56,7 +56,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
 
   const uploadFiles = useCallback(
     (targetFiles: FileList) => {
-      if (props.disabled) return;
+      if (props.disabled) {return;}
 
       const originalLength = props.files.length;
 
@@ -154,7 +154,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
 
   const onDeleteFile = useCallback(
     (idx: number) => {
-      if (props.disabled) return;
+      if (props.disabled) {return;}
       
       props.onDelete(
         produce(props.files, (draft) => {

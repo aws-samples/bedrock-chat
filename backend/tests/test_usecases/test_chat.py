@@ -1,4 +1,5 @@
 import sys
+from unittest.mock import MagicMock, patch
 
 from ulid import ULID
 
@@ -25,6 +26,9 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
     TextContentModel,
+    ToolUseContentModel,
+    ToolUseContentModelBody,
+    ToolResultContentModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import (
@@ -648,7 +652,23 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         delete_bot_by_id(self.second_user_id, self.first_public_bot_id)
         delete_conversation_by_user_id(self.first_user_id)
 
-    def test_chat_with_private_bot(self):
+    @patch("app.vector_search.agent_client")
+    def test_chat_with_private_bot(self, mock_agent_client):
+        # Configure mock agent client
+        mock_retrieve = MagicMock()
+        mock_retrieve.return_value = {
+            "retrievalResults": [
+                {
+                    "content": {"text": "Test content 1"},
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {"uri": "s3://test-bucket/test1.txt"},
+                    },
+                }
+            ]
+        }
+        mock_agent_client.retrieve = mock_retrieve
+
         # First message
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
@@ -724,7 +744,23 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         self.assertEqual(conv.message_map["system"].children[0], "instruction")
         self.assertEqual(len(conv.message_map["instruction"].children), 2)
 
-    def test_chat_with_public_bot(self):
+    @patch("app.vector_search.agent_client")
+    def test_chat_with_public_bot(self, mock_agent_client):
+        # Configure mock agent client
+        mock_retrieve = MagicMock()
+        mock_retrieve.return_value = {
+            "retrievalResults": [
+                {
+                    "content": {"text": "Test content 1"},
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {"uri": "s3://test-bucket/test1.txt"},
+                    },
+                }
+            ]
+        }
+        mock_agent_client.retrieve = mock_retrieve
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(
@@ -772,7 +808,23 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         # Delete alias
         delete_alias_by_id("user1", "public1")
 
-    def test_fetch_conversation(self):
+    @patch("app.vector_search.agent_client")
+    def test_fetch_conversation(self, mock_agent_client):
+        # Configure mock agent client
+        mock_retrieve = MagicMock()
+        mock_retrieve.return_value = {
+            "retrievalResults": [
+                {
+                    "content": {"text": "Test content 1"},
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {"uri": "s3://test-bucket/test1.txt"},
+                    },
+                }
+            ]
+        }
+        mock_agent_client.retrieve = mock_retrieve
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(
@@ -844,7 +896,69 @@ class TestAgentChat(unittest.TestCase):
         delete_bot_by_id(self.user_name, self.bot_id)
         delete_conversation_by_user_id(self.user_name)
 
-    def test_agent_chat(self):
+    @patch("app.agents.tools.internet_search.internet_search_tool.function")
+    @patch("app.stream.ConverseApiStreamHandler.run")
+    def test_agent_chat(self, mock_stream_run, mock_internet_search):
+        # Mock the internet search response
+        mock_internet_search.return_value = {
+            "content": "Amazon (AMZN) stock price is $178.75, up 1.2% today",
+            "source_name": "Stock Market",
+            "source_link": "https://example.com/stocks/amzn",
+        }
+
+        # Mock the stream handler to simulate tool use
+        def stream_side_effect(*args, **kwargs):
+            # First call - return tool use
+            if not hasattr(stream_side_effect, "called"):
+                stream_side_effect.called = True
+                return {
+                    "message": MessageModel(
+                        role="assistant",
+                        content=[
+                            ToolUseContentModel(
+                                content_type="toolUse",
+                                body=ToolUseContentModelBody(
+                                    tool_use_id="test-id",
+                                    name="internet_search",
+                                    input={"query": "amazon stock price"},
+                                ),
+                            )
+                        ],
+                        model=self.model,
+                        children=[],
+                        parent=None,
+                        create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
+                        thinking_log=None,
+                    ),
+                    "stop_reason": "tool_use",
+                    "price": 0.1,
+                }
+            # Second call - return final response
+            return {
+                "message": MessageModel(
+                    role="assistant",
+                    content=[
+                        TextContentModel(
+                            content_type="text",
+                            body="According to the latest data, Amazon's stock price is $178.75, showing a 1.2% increase today.",
+                        )
+                    ],
+                    model=self.model,
+                    children=[],
+                    parent=None,
+                    create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
+                    thinking_log=None,
+                ),
+                "stop_reason": "stop",
+                "price": 0.1,
+            }
+
+        mock_stream_run.side_effect = stream_side_effect
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(
@@ -885,7 +999,6 @@ class TestGuardrailChat(unittest.TestCase):
     model: type_model_name = "claude-v3-sonnet"
 
     def setUp(self) -> None:
-
         # Note that the region must be the same as the one used in the bedrock client
         # https://github.com/aws/aws-sdk-js-v3/issues/6482
         self.bedrock_client = boto3.client("bedrock", region_name="us-east-1")
@@ -916,7 +1029,7 @@ class TestGuardrailChat(unittest.TestCase):
             "",
             "SUCCEEDED",
             include_internet_tool=False,
-            set_dummy_knowledge=False,
+            set_dummy_knowledge=True,
             bedrock_guardrails=BedrockGuardrailsModel(
                 is_guardrail_enabled=True,
                 hate_threshold=0,
@@ -938,11 +1051,26 @@ class TestGuardrailChat(unittest.TestCase):
         # Delete dummy guardrail
         try:
             self.bedrock_client.delete_guardrail(guardrailIdentifier=self.guardrail_arn)
-
         except Exception as e:
             print(f"Error deleting guardrail: {e}")
 
-    def test_guardrail_chat(self):
+    @patch("app.vector_search.agent_client")
+    def test_guardrail_chat(self, mock_agent_client):
+        # Configure mock agent client
+        mock_retrieve = MagicMock()
+        mock_retrieve.return_value = {
+            "retrievalResults": [
+                {
+                    "content": {"text": "Test content 1"},
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {"uri": "s3://test-bucket/test1.txt"},
+                    },
+                }
+            ]
+        }
+        mock_agent_client.retrieve = mock_retrieve
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(

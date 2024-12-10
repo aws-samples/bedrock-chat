@@ -122,7 +122,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     )
 
     sync_status: type_sync_status = (
-        "QUEUED" if has_knowledge or has_guardrails or has_exist_knowlednge_base_id else "SUCCEEDED"
+        "QUEUED"
+        if has_knowledge or has_guardrails or has_exist_knowlednge_base_id
+        else "SUCCEEDED"
     )
 
     source_urls = []
@@ -554,6 +556,7 @@ def fetch_all_bots_by_user_id(
                         sync_status=bot.sync_status,
                         has_knowledge=bot.has_knowledge(),
                         has_agent=bot.is_agent_enabled(),
+                        has_exist_knowlednge_base_id=bot.has_exist_knowlednge_base_id(),
                         conversation_quick_starters=bot.conversation_quick_starters,
                         active_models=ActiveModelsModel.model_validate(
                             dict(bot.active_models)
@@ -676,6 +679,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_pinned=alias.is_pinned,
             is_public=True,
             has_agent=alias.has_agent,
+            has_exist_knowlednge_base_id=alias.has_exist_knowlednge_base_id,
             owned=False,
             sync_status=alias.sync_status,
             has_knowledge=alias.has_knowledge,
@@ -713,6 +717,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 sync_status=bot.sync_status,
                 has_knowledge=bot.has_knowledge(),
                 has_agent=bot.is_agent_enabled(),
+                has_exist_knowlednge_base_id=bot.has_exist_knowlednge_base_id(),
                 conversation_quick_starters=[
                     ConversationQuickStarterModel(
                         title=starter.title,
@@ -737,6 +742,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=False,
             sync_status=bot.sync_status,
             has_knowledge=bot.has_knowledge(),
+            has_exist_knowlednge_base_id=bot.has_exist_knowlednge_base_id(),
             conversation_quick_starters=[
                 ConversationQuickStarter(
                     title=starter.title,

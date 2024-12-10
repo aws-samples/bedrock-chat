@@ -13,6 +13,13 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
 )
+from app.repositories.models.custom_bot_kb import (
+    BedrockKnowledgeBaseModel,
+    SearchParamsModel,
+    OpenSearchParamsModel,
+    AnalyzerParamsModel,
+    DefaultParamsModel,
+)
 
 
 def create_test_private_bot(
@@ -26,6 +33,22 @@ def create_test_private_bot(
     bedrock_knowledge_base=None,
     bedrock_guardrails=None,
 ):
+    if bedrock_knowledge_base is None:
+        bedrock_knowledge_base = BedrockKnowledgeBaseModel(
+            embeddings_model="titan_v2",
+            open_search=OpenSearchParamsModel(
+                analyzer=AnalyzerParamsModel(
+                    character_filters=["icu_normalizer"],
+                    tokenizer="kuromoji_tokenizer",
+                    token_filters=["kuromoji_baseform", "lowercase"],
+                )
+            ),
+            chunking_configuration=DefaultParamsModel(),
+            search_params=SearchParamsModel(max_results=3, search_type="semantic"),
+            exist_knowledge_base_id="test-kb-id",
+            knowledge_base_id=None,
+        )
+
     return BotModel(
         id=id,
         title="Test Bot",
@@ -91,6 +114,22 @@ def create_test_public_bot(
     bedrock_knowledge_base=None,
     bedrock_guardrails=None,
 ):
+    if bedrock_knowledge_base is None:
+        bedrock_knowledge_base = BedrockKnowledgeBaseModel(
+            embeddings_model="titan_v2",
+            open_search=OpenSearchParamsModel(
+                analyzer=AnalyzerParamsModel(
+                    character_filters=["icu_normalizer"],
+                    tokenizer="kuromoji_tokenizer",
+                    token_filters=["kuromoji_baseform", "lowercase"],
+                )
+            ),
+            chunking_configuration=DefaultParamsModel(),
+            search_params=SearchParamsModel(max_results=3, search_type="semantic"),
+            exist_knowledge_base_id="test-kb-id",
+            knowledge_base_id=None,
+        )
+
     return BotModel(
         id=id,
         title="Test Public Bot",
@@ -150,6 +189,7 @@ def create_test_bot_alias(id, original_bot_id, is_pinned):
         sync_status="RUNNING",
         has_knowledge=True,
         has_agent=False,
+        has_exist_knowlednge_base_id=False,
         conversation_quick_starters=[],
         active_models=ActiveModelsModel(),
     )

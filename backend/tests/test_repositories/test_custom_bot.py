@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 
@@ -48,6 +49,7 @@ from tests.test_repositories.utils.bot_factory import (
 
 
 class TestCustomBotRepository(unittest.TestCase):
+
     def test_store_and_find_bot(self):
         bot = create_test_private_bot(
             "1",
@@ -387,6 +389,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             sync_status="RUNNING",
             has_knowledge=True,
             has_agent=True,
+            has_exist_knowlednge_base_id=False,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
@@ -404,6 +407,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             sync_status="RUNNING",
             has_knowledge=True,
             has_agent=True,
+            has_exist_knowlednge_base_id=False,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
@@ -472,6 +476,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             has_knowledge=True,
             has_agent=True,
+            has_exist_knowlednge_base_id=False,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],

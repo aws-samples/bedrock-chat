@@ -145,6 +145,7 @@ def prepare_conversation(
                             sync_status=bot.sync_status,
                             has_knowledge=bot.has_knowledge(),
                             has_agent=bot.is_agent_enabled(),
+                            has_exist_knowlednge_base_id=bot.has_exist_knowlednge_base_id(),
                             conversation_quick_starters=(
                                 []
                                 if bot.conversation_quick_starters is None

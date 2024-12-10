@@ -593,6 +593,10 @@ const translation = {
       title: 'ナレッジの詳細設定',
       description:
         'ナレッジを設定するための埋め込みモデルの選択や、ナレッジとして追加したドキュメントの分割方法などを設定します。ボット作成後の変更はできません。',
+      existKnowledgeBaseId: {
+        label: "既存のAmazon Bedrock Knowledge BaseのID",
+        description: "既存のAmazon Bedrock Knowledge Baseを使用することができる。新規に作成する場合は空欄にします"
+      },
       embeddingModel: {
         label: '埋め込みモデル',
       },
