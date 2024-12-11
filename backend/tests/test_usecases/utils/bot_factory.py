@@ -189,7 +189,7 @@ def create_test_bot_alias(id, original_bot_id, is_pinned):
         sync_status="RUNNING",
         has_knowledge=True,
         has_agent=False,
-        has_exist_knowlednge_base_id=False,
+        has_exist_knowledge_base_id=False,
         conversation_quick_starters=[],
         active_models=ActiveModelsModel(),
     )

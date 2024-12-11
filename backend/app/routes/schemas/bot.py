@@ -305,7 +305,7 @@ class BotSummaryOutput(BaseSchema):
     owned: bool
     sync_status: type_sync_status
     has_knowledge: bool
-    has_exist_knowlednge_base_id: bool
+    has_exist_knowledge_base_id: bool
     conversation_quick_starters: list[ConversationQuickStarter]
     active_models: ActiveModelsOutput  # type: ignore
 
