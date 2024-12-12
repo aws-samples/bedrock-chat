@@ -80,7 +80,11 @@ def _prepare_nova_model_params(
 
     # Add top_k if specified in generation params
     if generation_params and generation_params.top_k is not None:
-        additional_fields["inferenceConfig"]["topK"] = generation_params.top_k
+        top_k = generation_params.top_k
+        if top_k > 128:
+            top_k = 128
+
+        additional_fields["inferenceConfig"]["topK"] = top_k
 
     return inference_config, additional_fields
 
