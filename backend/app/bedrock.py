@@ -132,12 +132,15 @@ def compose_args_for_converse_api(
     ]
 
     # Prepare model-specific parameters
+    inference_config: InferenceConfigurationTypeDef
+    additional_model_request_fields: dict[str, Any]
+    system_prompts: list[SystemContentBlockTypeDef]
     if is_nova_model(model):
         # Special handling for Nova models
         inference_config, additional_model_request_fields = _prepare_nova_model_params(
             model, generation_params
         )
-        system_prompts: list[SystemContentBlockTypeDef] = (
+        system_prompts = (
             [
                 {
                     "text": "\n\n".join(instructions),
@@ -149,7 +152,7 @@ def compose_args_for_converse_api(
 
     else:
         # Standard handling for non-Nova models
-        inference_config: InferenceConfigurationTypeDef = {
+        inference_config = {
             "maxTokens": (
                 generation_params.max_tokens
                 if generation_params
@@ -178,7 +181,7 @@ def compose_args_for_converse_api(
                 else DEFAULT_GENERATION_CONFIG["top_k"]
             )
         }
-        system_prompts: list[SystemContentBlockTypeDef] = [
+        system_prompts = [
             {
                 "text": instruction,
             }

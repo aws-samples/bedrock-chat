@@ -42,29 +42,21 @@ def run_result_to_tool_result_content_model(
         for related_document in run_result["related_documents"]
     ]
     if is_nova_model(model=model) and len(result_contents) > 1:
+        contents: list[str | dict[str, JsonValue]] = []
+        for result_content in result_contents:
+            if isinstance(result_content, JsonToolResultModel):
+                contents.append(result_content.json_)
+
+            elif isinstance(result_content, TextToolResultModel):
+                contents.append(result_content.text)
+
         return ToolResultContentModel(
             content_type="toolResult",
             body=ToolResultContentModelBody(
                 tool_use_id=run_result["tool_use_id"],
                 content=[
                     TextToolResultModel(
-                        text=json.dumps(
-                            [
-                                content
-                                for result_content in result_contents
-                                for content in (
-                                    [result_content.json_]
-                                    if isinstance(result_content, JsonToolResultModel)
-                                    else (
-                                        [result_content.text]
-                                        if isinstance(
-                                            result_content, TextToolResultModel
-                                        )
-                                        else []
-                                    )
-                                )
-                            ]
-                        ),
+                        text=json.dumps(contents),
                     ),
                 ],
                 status=run_result["status"],
