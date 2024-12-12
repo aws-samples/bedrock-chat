@@ -5,6 +5,7 @@ import unittest
 
 from app.agents.tools.knowledge import KnowledgeToolInput, create_knowledge_tool
 from app.repositories.models.custom_bot import (
+    ActiveModelsModel,
     AgentModel,
     BotModel,
     GenerationParamsModel,
@@ -53,10 +54,15 @@ class TestKnowledgeTool(unittest.TestCase):
             conversation_quick_starters=[],
             bedrock_knowledge_base=None,
             bedrock_guardrails=None,
+            active_models=ActiveModelsModel(),
         )
         arg = KnowledgeToolInput(query="What are delicious Japanese dishes?")
-        tool = create_knowledge_tool(bot, model="claude-v3-sonnet")
-        response = tool.run(tool_use_id="dummy", input=arg.model_dump())
+        tool = create_knowledge_tool(bot=bot)
+        response = tool.run(
+            tool_use_id="dummy",
+            input=arg.model_dump(),
+            model="claude-v3.5-sonnet-v2",
+        )
         self.assertIsInstance(response["related_documents"], list)
         self.assertEqual(response["status"], "success")
         print(response)

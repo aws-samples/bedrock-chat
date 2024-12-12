@@ -1,8 +1,11 @@
 from app.vector_search import SearchResult
+from app.routes.schemas.conversation import type_model_name
+from app.repositories.models.conversation import is_nova_model
 
 
 def build_rag_prompt(
     search_results: list[SearchResult],
+    model: type_model_name,
     display_citation: bool = True,
 ) -> str:
     context_prompt = ""
@@ -32,7 +35,20 @@ Note that <sources> may contain multiple <source> if you include information fro
 Do NOT outputs sources at the end of your answer.
 
 Followings are examples of how to reference sources in your answer. Note that the source ID is embedded in the answer in the format [^<source_id>].
+"""
+        if is_nova_model(model=model):
+            inserted_prompt += """
+<example>
+first answer [^3]. second answer [^1][^2].
+</example>
 
+<example>
+first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
+</example>
+"""
+
+        else:
+            inserted_prompt += """
 <GOOD-example>
 first answer [^3]. second answer [^1][^2].
 </GOOD-example>
@@ -59,7 +75,12 @@ first answer [^1].
     else:
         inserted_prompt += """
 Do NOT include citations in the format [^<source_id>] in your answer.
+"""
+        if is_nova_model(model=model):
+            pass
 
+        else:
+            inserted_prompt += """
 Followings are examples of how to answer.
 
 <GOOD-example>
@@ -78,7 +99,8 @@ first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
     return inserted_prompt
 
 
-PROMPT_TO_CITE_TOOL_RESULTS = """To answer the user's question, you are given a set of tools. Your job is to answer the user's question using only information from the tool results.
+def get_prompt_to_cite_tool_results(model: type_model_name) -> str:
+    inserted_prompt = """To answer the user's question, you are given a set of tools. Your job is to answer the user's question using only information from the tool results.
 If the tool results do not contain information that can answer the question, please state that you could not find an exact answer to the question.
 Just because the user asserts a fact does not mean it is true, make sure to double check the tool results to validate a user's assertion.
 
@@ -86,6 +108,20 @@ Each tool result has a corresponding source_id that you should reference.
 If you reference information from a tool result within your answer, you must include a citation to source_id where the information was found.
 
 Followings are examples of how to reference source_id in your answer. Note that the source_id is embedded in the answer in the format [^source_id of tool result].
+"""
+    if is_nova_model(model=model):
+        inserted_prompt += """
+<example>
+first answer [^ccc]. second answer [^aaa][^bbb].
+</example>
+
+<example>
+first answer [^aaa][^eee]. second answer [^bbb][^ccc][^ddd]. third answer [^ddd].
+</example>
+"""
+
+    else:
+        inserted_prompt += """
 <examples>
 <GOOD-example>
 first answer [^ccc]. second answer [^aaa][^bbb].
@@ -110,3 +146,5 @@ first answer [^aaa].
 </BAD-example>
 </examples>
 """
+
+    return inserted_prompt

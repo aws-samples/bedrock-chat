@@ -38,8 +38,7 @@ def search_knowledge(
         logger.error(f"Failed to run AnswerWithKnowledgeTool: {e}")
         raise e
 
-
-def create_knowledge_tool(bot: BotModel, model: type_model_name) -> AgentTool:
+def create_knowledge_tool(bot: BotModel) -> AgentTool:
     description = (
         "Answer a user's question using information. The description is: {}".format(
             bot.knowledge.__str_in_claude_format__()
@@ -51,6 +50,4 @@ def create_knowledge_tool(bot: BotModel, model: type_model_name) -> AgentTool:
         description=description,
         args_schema=KnowledgeToolInput,
         function=search_knowledge,
-        bot=bot,
-        model=model,
     )

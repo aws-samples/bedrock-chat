@@ -1,3 +1,4 @@
+import json
 from typing import Any, Callable, Generic, Literal, TypedDict, TypeVar
 
 from app.repositories.models.conversation import (
@@ -7,6 +8,7 @@ from app.repositories.models.conversation import (
     RelatedDocumentModel,
     ToolResultContentModel,
     ToolResultContentModelBody,
+    is_nova_model,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
@@ -29,21 +31,55 @@ class ToolRunResult(TypedDict):
 
 
 def run_result_to_tool_result_content_model(
-    run_result: ToolRunResult, display_citation: bool
+    run_result: ToolRunResult,
+    model: type_model_name,
+    display_citation: bool,
 ) -> ToolResultContentModel:
-    return ToolResultContentModel(
-        content_type="toolResult",
-        body=ToolResultContentModelBody(
-            tool_use_id=run_result["tool_use_id"],
-            content=[
-                related_document.to_tool_result_model(
-                    display_citation=display_citation,
-                )
-                for related_document in run_result["related_documents"]
-            ],
-            status=run_result["status"],
-        ),
-    )
+    result_contents = [
+        related_document.to_tool_result_model(
+            display_citation=display_citation,
+        )
+        for related_document in run_result["related_documents"]
+    ]
+    if is_nova_model(model=model) and len(result_contents) > 1:
+        return ToolResultContentModel(
+            content_type="toolResult",
+            body=ToolResultContentModelBody(
+                tool_use_id=run_result["tool_use_id"],
+                content=[
+                    TextToolResultModel(
+                        text=json.dumps(
+                            [
+                                content
+                                for result_content in result_contents
+                                for content in (
+                                    [result_content.json_]
+                                    if isinstance(result_content, JsonToolResultModel)
+                                    else (
+                                        [result_content.text]
+                                        if isinstance(
+                                            result_content, TextToolResultModel
+                                        )
+                                        else []
+                                    )
+                                )
+                            ]
+                        ),
+                    ),
+                ],
+                status=run_result["status"],
+            ),
+        )
+
+    else:
+        return ToolResultContentModel(
+            content_type="toolResult",
+            body=ToolResultContentModelBody(
+                tool_use_id=run_result["tool_use_id"],
+                content=result_contents,
+                status=run_result["status"],
+            ),
+        )
 
 
 class InvalidToolError(Exception):
@@ -70,15 +106,11 @@ class AgentTool(Generic[T]):
             [T, BotModel | None, type_model_name | None],
             ToolFunctionResult | list[ToolFunctionResult],
         ],
-        bot: BotModel | None = None,
-        model: type_model_name | None = None,
     ):
         self.name = name
         self.description = description
         self.args_schema = args_schema
         self.function = function
-        self.bot = bot
-        self.model: type_model_name | None = model
 
     def _generate_input_schema(self) -> dict[str, Any]:
         """Converts the Pydantic model to a JSON schema."""
@@ -91,10 +123,16 @@ class AgentTool(Generic[T]):
             inputSchema={"json": self._generate_input_schema()},
         )
 
-    def run(self, tool_use_id: str, input: dict[str, JsonValue]) -> ToolRunResult:
+    def run(
+        self,
+        tool_use_id: str,
+        input: dict[str, JsonValue],
+        model: type_model_name,
+        bot: BotModel | None = None,
+    ) -> ToolRunResult:
         try:
             arg = self.args_schema.model_validate(input)
-            res = self.function(arg, self.bot, self.model)
+            res = self.function(arg, bot, model)
             if isinstance(res, list):
                 related_documents = [
                     _function_result_to_related_document(

@@ -90,7 +90,11 @@ class TestAgentTool(unittest.TestCase):
             arg3=1,
             arg4=["test"],
         )
-        result = self.tool.run(tool_use_id="dummy", input=arg.model_dump())
+        result = self.tool.run(
+            tool_use_id="dummy",
+            input=arg.model_dump(),
+            model="claude-v3.5-sonnet-v2",
+        )
         self.assertEqual(
             result["related_documents"],
             [

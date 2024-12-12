@@ -996,6 +996,7 @@ class TestInsertKnowledge(unittest.TestCase):
         ]
         instruction = build_rag_prompt(
             search_results=results,
+            model="claude-v3.5-sonnet-v2",
             display_citation=True,
         )
         print(instruction)
