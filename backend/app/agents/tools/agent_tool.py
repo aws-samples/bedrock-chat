@@ -11,6 +11,7 @@ from app.repositories.models.conversation import (
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
 from pydantic import BaseModel, JsonValue
+from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from mypy_boto3_bedrock_runtime.type_defs import (
     ToolSpecificationTypeDef,
 )
@@ -49,6 +50,16 @@ class InvalidToolError(Exception):
     pass
 
 
+class RemoveTitle(GenerateJsonSchema):
+    def field_title_should_be_set(self, schema) -> bool:
+        return False
+
+    def generate(self, schema, mode="validation") -> JsonSchemaValue:
+        value = super().generate(schema, mode)
+        del value["title"]
+        return value
+
+
 class AgentTool(Generic[T]):
     def __init__(
         self,
@@ -71,7 +82,7 @@ class AgentTool(Generic[T]):
 
     def _generate_input_schema(self) -> dict[str, Any]:
         """Converts the Pydantic model to a JSON schema."""
-        return self.args_schema.model_json_schema()
+        return self.args_schema.model_json_schema(schema_generator=RemoveTitle)
 
     def to_converse_spec(self) -> ToolSpecificationTypeDef:
         return ToolSpecificationTypeDef(
