@@ -83,13 +83,17 @@ class BedrockKnowledgeBaseModel(BaseModel):
 
     @model_validator(mode="after")
     def validate_knowledge_base_ids(self) -> Self:
-        # Check that only one of the two is set
-        if (
-            self.knowledge_base_id is not None
-            and self.exist_knowledge_base_id is not None
-        ):
-            raise ValueError(
-                "Only one of 'knowledge_base_id' or 'exist_knowledge_base_id' can be set, not both."
-            )
+        is_existing_kb = self.knowledge_base_id == self.exist_knowledge_base_id
+        is_new_kb = (
+            self.knowledge_base_id is not None and self.exist_knowledge_base_id is None
+        )
+        is_cdk_just_deploying_with_exist_kb = (
+            self.knowledge_base_id is None and self.exist_knowledge_base_id is not None
+        )
 
-        return self
+        if any([is_existing_kb, is_new_kb, is_cdk_just_deploying_with_exist_kb]):
+            return self
+
+        raise ValueError(
+            "knowledge_base_id and exist_knowledge_base_id must be either both None or both not None"
+        )

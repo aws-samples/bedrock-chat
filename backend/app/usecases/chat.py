@@ -145,7 +145,6 @@ def prepare_conversation(
                             sync_status=bot.sync_status,
                             has_knowledge=bot.has_knowledge(),
                             has_agent=bot.is_agent_enabled(),
-                            has_exist_knowledge_base_id=bot.has_exist_knowledge_base_id(),
                             conversation_quick_starters=(
                                 []
                                 if bot.conversation_quick_starters is None
@@ -267,7 +266,7 @@ def chat(
             if display_citation:
                 instructions.append(PROMPT_TO_CITE_TOOL_RESULTS)
 
-        elif bot.has_knowledge() or bot.has_exist_knowledge_base_id():
+        elif bot.has_knowledge():
             # Fetch most related documents from vector store
             # NOTE: Currently embedding not support multi-modal. For now, use the last content.
             content = conversation.message_map[user_msg_id].content[-1]

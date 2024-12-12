@@ -597,9 +597,6 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         sync_status=item["SyncStatus"],
         has_knowledge=item["HasKnowledge"],
         has_agent=item.get("HasAgent", False),
-        has_exist_knowledge_base_id=item.get(
-            "BedrockKnowledgeBase.exist_knowledge_base_id", False
-        ),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
         active_models=ActiveModelsModel.model_validate(item.get("ActiveModels")),
     )

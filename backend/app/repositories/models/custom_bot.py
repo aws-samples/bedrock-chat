@@ -101,6 +101,10 @@ class BotModel(BaseModel):
             or len(self.knowledge.sitemap_urls) > 0
             or len(self.knowledge.filenames) > 0
             or len(self.knowledge.s3_urls) > 0
+            or (
+                self.bedrock_knowledge_base is not None
+                and self.bedrock_knowledge_base.exist_knowledge_base_id is not None
+            )
         )
 
     def is_agent_enabled(self) -> bool:
@@ -110,12 +114,6 @@ class BotModel(BaseModel):
         return (
             self.bedrock_knowledge_base is not None
             and self.bedrock_knowledge_base.knowledge_base_id is not None
-        )
-
-    def has_exist_knowledge_base_id(self) -> bool:
-        return (
-            self.bedrock_knowledge_base is not None
-            and self.bedrock_knowledge_base.exist_knowledge_base_id is not None
         )
 
 
@@ -130,7 +128,6 @@ class BotAliasModel(BaseModel):
     sync_status: type_sync_status
     has_knowledge: bool
     has_agent: bool
-    has_exist_knowledge_base_id: bool
     conversation_quick_starters: list[ConversationQuickStarterModel]
     active_models: ActiveModelsModel  # type: ignore
 
