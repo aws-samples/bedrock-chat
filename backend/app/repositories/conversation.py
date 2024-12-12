@@ -272,6 +272,7 @@ def delete_conversation_by_user_id(user_id: str):
 
     except ClientError as e:
         logger.error(f"An error occurred: {e.response['Error']['Message']}")
+        raise e
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
