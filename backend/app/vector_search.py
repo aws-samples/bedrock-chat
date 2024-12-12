@@ -45,15 +45,18 @@ def search_result_to_related_document(
 
 def to_guardrails_grounding_source(
     search_results: list[SearchResult],
-) -> GuardrailConverseContentBlockTypeDef:
+) -> GuardrailConverseContentBlockTypeDef | None:
     """Convert search results to Guardrails Grounding source format."""
-    grounding_source: GuardrailConverseContentBlockTypeDef = {
-        "text": {
-            "text": "\n\n".join(x["content"] for x in search_results),
-            "qualifiers": ["grounding_source"],
+    return (
+        {
+            "text": {
+                "text": "\n\n".join(x["content"] for x in search_results),
+                "qualifiers": ["grounding_source"],
+            }
         }
-    }
-    return grounding_source
+        if len(search_results) > 0
+        else None
+    )
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
