@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { PiQuestion } from 'react-icons/pi';
 import ModalDialog from '../../../components/ModalDialog';
 import { useTranslation } from 'react-i18next';
 import { useIsWindows } from '../../../hooks/useIsWindows';
