@@ -51,14 +51,14 @@ import {
   DisplayMessageContent,
   Model,
   PutFeedbackRequest,
-  MODEL_KEYS,
 } from '../@types/conversation.ts';
+import { AVAILABLE_MODEL_KEYS } from '../constants/index'
 import usePostMessageStreaming from '../hooks/usePostMessageStreaming.ts';
 
 // Default model activation settings when no bot is selected
 const defaultActiveModels: ActiveModels = (() => {
   return Object.fromEntries(
-    MODEL_KEYS.map((key: Model) => [toCamelCase(key), true])
+    AVAILABLE_MODEL_KEYS.map((key: Model) => [toCamelCase(key), true])
   ) as ActiveModels;
 })();
 

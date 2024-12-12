@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { Model, MODEL_KEYS } from '../@types/conversation';
+import { Model } from '../@types/conversation';
+import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useLocalStorage from './useLocalStorage';
@@ -56,7 +57,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     }
 
     // Create a new object with all models set to true
-    return MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
+    return AVAILABLE_MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
       // Optimize string replacement by doing it in one operation
       acc[toCamelCase(model) as keyof ActiveModels] = true;
       return acc;
@@ -250,17 +251,9 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     botId,
-    previousBotId,
-    botModelId,
-    recentUseModelId,
-    modelId,
-    filteredModels,
-    setModelId,
-    selectModel,
-    getDefaultModel,
-    processedActiveModels,
   ]);
 
   const model = useMemo(() => {

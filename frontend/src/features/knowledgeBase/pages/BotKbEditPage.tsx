@@ -51,7 +51,8 @@ import {
   GUARDRAILS_FILTERS_THRESHOLD,
   GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD,
 } from '../../../constants';
-import { Model, MODEL_KEYS } from '../../../@types/conversation';
+import { Model } from '../../../@types/conversation';
+import { AVAILABLE_MODEL_KEYS } from '../../../constants/index'
 import {
   ChunkingStrategy,
   FixedSizeParams,
@@ -151,7 +152,7 @@ const BotKbEditPage: React.FC = () => {
   });
 
   const [activeModels, setActiveModels] = useState<ActiveModels>(() => {
-    const initialState = MODEL_KEYS.reduce((acc: ActiveModels, key: Model) => {
+    const initialState = AVAILABLE_MODEL_KEYS.reduce((acc: ActiveModels, key: Model) => {
       acc[toCamelCase(key) as keyof ActiveModels] = true;
       return acc;
     }, {} as ActiveModels);
@@ -161,21 +162,24 @@ const BotKbEditPage: React.FC = () => {
   const activeModelsOptions: {
     key: Model;
     label: string;
+    description: string;
   }[] = (() => {
     const getMistralModels = () =>
-      MODEL_KEYS.filter(
+      AVAILABLE_MODEL_KEYS.filter(
         (key) => key.includes('mistral') || key.includes('mixtral')
       ).map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
+        description: t(`model.${key}.description`) as string,
       }));
 
     const getClaudeAndNovaModels = () => {
-      return MODEL_KEYS.filter(
+      return AVAILABLE_MODEL_KEYS.filter(
         (key) => key.includes('claude') || key.includes('nova')
       ).map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
+        description: t(`model.${key}.description`) as string,
       }));
     };
 
@@ -2414,8 +2418,8 @@ const BotKbEditPage: React.FC = () => {
 
                 <div className="mt-4">
                   <div className="mt-2 space-y-2">
-                    {activeModelsOptions.map(({ key, label }) => (
-                      <div key={key} className="flex items-center gap-2">
+                    {activeModelsOptions.map(({ key, label, description }) => (
+                      <div key={key} className="flex items-start">
                         <Toggle
                           value={
                             activeModels[
@@ -2424,7 +2428,10 @@ const BotKbEditPage: React.FC = () => {
                           }
                           onChange={(value) => onChangeActiveModels(key, value)}
                         />
-                        <span>{label}</span>
+                        <div>
+                          <div>{label}</div>
+                          <div className="text-sm text-dark-gray">{description}</div>
+                        </div>
                       </div>
                     ))}
                   </div>

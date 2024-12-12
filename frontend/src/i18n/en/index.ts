@@ -46,12 +46,15 @@ const translation = {
       },
       'mistral-7b-instruct': {
         label: 'Mistral 7B',
+        description: 'Supports English text generation tasks with natural coding capabilities'
       },
       'mixtral-8x7b-instruct': {
         label: 'Mistral-8x7B',
+        description: "A popular, high-quality, sparse Mixture-of-Experts (MoE) model, that is ideal for text summarization, question and answering, text classification, text completion, and code generation."
       },
       'mistral-large': {
         label: 'Mistral Large',
+        description: "Ideal for complex tasks that require substantial reasoning capabilities, or ones that are highly specialized, such as Synthetic Text Generation or Code Generation."
       },
       'amazon-nova-pro': {
         label: 'Amazon Nova Pro',
