@@ -8,7 +8,8 @@ from app.routes.schemas.bot_kb import (
     type_os_token_filter,
     type_os_tokenizer,
 )
-from pydantic import BaseModel
+from typing import Self
+from pydantic import BaseModel, validator, model_validator
 
 
 class SearchParamsModel(BaseModel):
@@ -79,3 +80,16 @@ class BedrockKnowledgeBaseModel(BaseModel):
     web_crawling_filters: WebCrawlingFiltersModel = WebCrawlingFiltersModel(
         exclude_patterns=[], include_patterns=[]
     )
+
+    @model_validator(mode="after")
+    def validate_knowledge_base_ids(self) -> Self:
+        # Check that only one of the two is set
+        if (
+            self.knowledge_base_id is not None
+            and self.exist_knowledge_base_id is not None
+        ):
+            raise ValueError(
+                "Only one of 'knowledge_base_id' or 'exist_knowledge_base_id' can be set, not both."
+            )
+
+        return self
