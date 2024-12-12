@@ -11,10 +11,11 @@ export const BottomHelper = () => {
   return (
     <>
       <div className="fixed bottom-3 right-3">
-        <PiQuestion
-          className="cursor-pointer"
+        <img
+          src="/images/qikr_logo_64.png"
+          alt="Logo"
+          className="w-12 h-12"
           onClick={() => setIsOpen(() => true)}
-          size={24}
         />
       </div>
       <ModalDialog
