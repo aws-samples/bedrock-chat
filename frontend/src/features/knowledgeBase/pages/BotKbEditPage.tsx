@@ -1472,21 +1472,23 @@ const BotKbEditPage: React.FC = () => {
                   />
                 </div>
 
-                {knowledgeBaseType=='existing' && (
-                  
-                    <div className="mt-3">
-                      <InputText
-                        label={t('knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.label')}
-                        value={existKnowledgeBaseId ?? ''}
-                        onChange={setExistKnowledgeBaseId}
-                        disabled={!isNewBot}
-                        placeholder='ABCDEFGHIJ'
-                      />
-                      <div className="text-sm text-aws-font-color/50">
-                        {t('knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.description')}
+                {(() => {
+                  if (knowledgeBaseType === 'existing') {
+                    return (
+                      <div className="mt-3 p-4 border border-aws-font-color/30 rounded-lg">
+                        <InputText
+                          label={t('knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.label')}
+                          value={existKnowledgeBaseId ?? ''}
+                          onChange={setExistKnowledgeBaseId}
+                          disabled={!isNewBot}
+                          placeholder='ABCDEFGHIJ'
+                        />
+                        <div className="text-sm text-aws-font-color/50">
+                          {t('knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.description')}
+                        </div>
                       </div>
-                    </div>
-                )}
+                    );
+                  }
 
                 {errorMessages['syncError'] && (
                   <Alert
@@ -1502,8 +1504,9 @@ const BotKbEditPage: React.FC = () => {
                   </Alert>
                 )}
 
-                {knowledgeBaseType == 'new' && (
-                  <div>
+              if (knowledgeBaseType === 'new') {
+                return (
+                  <div className="mt-3 p-4 border border-aws-font-color/30 rounded-lg">
                     <div className="mt-3">
                       <div className="font-semibold">{t('bot.label.file')}</div>
                       <div className="text-sm text-aws-font-color/50">
@@ -1725,7 +1728,9 @@ const BotKbEditPage: React.FC = () => {
                       </ExpandableDrawerGroup>
                     </div>
                   </div>
-                )}
+                    );
+                  }
+                })()}
 
                 <div className="mt-4">
                   <div className="font-semibold">

@@ -46,7 +46,7 @@ const RadioButton: React.FC<Props> = ({
           'relative inline-flex items-center gap-3',
           disabled ? '' : 'cursor-pointer'
         )}>
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
           <input
             type="radio"
             className="peer sr-only"
@@ -69,7 +69,7 @@ const RadioButton: React.FC<Props> = ({
           />
         </div>
         {label && (
-          <div className="flex-grow">
+          <div className="grow">
             <div className="text-sm">{label}</div>
           </div>
         )}

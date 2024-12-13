@@ -42,7 +42,7 @@ def handler(event, context):
             guardrail_version = output["OutputValue"]
 
     for data_source_id in data_source_ids:
-        result['items'].append(
+        result["items"].append(
             {
                 "KnowledgeBaseId": knowledge_base_id,
                 "DataSourceId": data_source_id,
