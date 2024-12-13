@@ -847,7 +847,7 @@ class TestAgentChat(unittest.TestCase):
         delete_conversation_by_user_id(self.user_name)
 
     def test_agent_chat(self):
-      
+
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(

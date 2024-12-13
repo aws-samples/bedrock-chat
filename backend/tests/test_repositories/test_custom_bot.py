@@ -1,4 +1,3 @@
-import os
 import sys
 import unittest
 
@@ -49,7 +48,6 @@ from tests.test_repositories.utils.bot_factory import (
 
 
 class TestCustomBotRepository(unittest.TestCase):
-
     def test_store_and_find_bot(self):
         bot = create_test_private_bot(
             "1",

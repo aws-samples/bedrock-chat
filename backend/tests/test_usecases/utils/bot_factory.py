@@ -13,13 +13,6 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
 )
-from app.repositories.models.custom_bot_kb import (
-    BedrockKnowledgeBaseModel,
-    SearchParamsModel,
-    OpenSearchParamsModel,
-    AnalyzerParamsModel,
-    DefaultParamsModel,
-)
 
 
 def create_test_private_bot(
