@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps, Token } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { VectorCollection } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 import {
@@ -270,6 +270,7 @@ export class BedrockCustomBotStack extends Stack {
         }
       }
 
+      // This output is used by Sfn to synchronize KB data.
       dataSources.forEach((dataSource, index) => {
         new CfnOutput(this, `DataSource${index}`, {
           value: dataSource.dataSourceId,

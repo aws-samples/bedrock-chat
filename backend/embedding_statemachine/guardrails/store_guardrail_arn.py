@@ -26,8 +26,7 @@ def handler(event, context):
     sk = event["sk"]
     stack_output: list[StackOutput] = event["stack_output"]
 
-    guardrail_arn = stack_output[0]["GuardrailArn"]
-    guardrail_version = stack_output[0]["GuardrailVersion"]
+    guardrail_arn, guardrail_version = (stack_output[0].get('items', {}).get("GuardrailArn", ""), stack_output[0].get('items', {}).get("GuardrailVersion", "")) if stack_output and isinstance(stack_output, list) and len(stack_output) > 0 and isinstance(stack_output[0], dict) else ("", "")
 
     user_id = pk
     bot_id = decompose_bot_id(sk)

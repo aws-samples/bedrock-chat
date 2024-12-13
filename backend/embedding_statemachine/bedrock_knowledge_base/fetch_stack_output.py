@@ -27,11 +27,13 @@ def handler(event, context):
     data_source_ids = []
     guardrail_arn = None
     guardrail_version = None
-    result = []
+    result = {}
+    result["items"] = []
 
     for output in outputs:
         if output["OutputKey"] == "KnowledgeBaseId":
             knowledge_base_id = output["OutputValue"]
+            result["KnowledgeBaseId"] = knowledge_base_id
         elif output["OutputKey"].startswith("DataSource"):
             data_source_ids.append(output["OutputValue"])
         elif output["OutputKey"] == "GuardrailArn":
@@ -39,12 +41,11 @@ def handler(event, context):
         elif output["OutputKey"] == "GuardrailVersion":
             guardrail_version = output["OutputValue"]
 
-    # If no data sources exist, create a result with just the KnowledgeBaseId
-    if not data_source_ids and knowledge_base_id:
-        result.append(
+    for data_source_id in data_source_ids:
+        result['items'].append(
             {
                 "KnowledgeBaseId": knowledge_base_id,
-                "DataSourceId": "",
+                "DataSourceId": data_source_id,
                 "GuardrailArn": guardrail_arn if guardrail_arn != None else "",
                 "GuardrailVersion": (
                     guardrail_version if guardrail_version != None else ""
@@ -53,19 +54,5 @@ def handler(event, context):
                 "SK": sk,
             }
         )
-    else:
-        for data_source_id in data_source_ids:
-            result.append(
-                {
-                    "KnowledgeBaseId": knowledge_base_id,
-                    "DataSourceId": data_source_id,
-                    "GuardrailArn": guardrail_arn if guardrail_arn != None else "",
-                    "GuardrailVersion": (
-                        guardrail_version if guardrail_version != None else ""
-                    ),
-                    "PK": pk,
-                    "SK": sk,
-                }
-            )
 
     return result

@@ -420,16 +420,11 @@ export class Embedding extends Construct {
       .otherwise(waitTask.next(getIngestionJob));
 
     const mapIngestionJobs = new sfn.Map(this, "MapIngestionJobs", {
-      inputPath: "$.StackOutput.Payload",
+      inputPath: "$.StackOutput.Payload.items",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(
-      new sfn.Choice(this, "CheckDataSourceId")
-        .when(
-          sfn.Condition.not(sfn.Condition.stringEquals("$.DataSourceId", "")),
-          startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
-        )
-        .otherwise(new sfn.Pass(this, "SkipEmptyDataSourceId"))
+      startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
     );
 
     const definition = extractFirstElement

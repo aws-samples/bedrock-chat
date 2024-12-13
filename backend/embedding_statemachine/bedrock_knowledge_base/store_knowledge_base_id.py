@@ -24,15 +24,11 @@ def handler(event, context):
     sk = event["sk"]
     stack_output: list[StackOutput] = event["stack_output"]
 
-    # Find KnowledgeBaseId using list comprehension
-    kb_id_items = [
-        item["KnowledgeBaseId"] for item in stack_output if "KnowledgeBaseId" in item
-    ]
-
-    if not kb_id_items:
+    kb_id = stack_output['KnowledgeBaseId'] if "KnowledgeBaseId" in stack_output else None
+    if not kb_id:
         raise ValueError("KnowledgeBaseId not found in stack outputs")
-    kb_id = kb_id_items[0]
-    data_source_ids = [x["DataSourceId"] for x in stack_output]
+
+    data_source_ids = [item.get("DataSourceId") for item in stack_output.get("items", [])]
 
     user_id = pk
     bot_id = decompose_bot_id(sk)
