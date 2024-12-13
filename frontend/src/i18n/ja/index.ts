@@ -595,10 +595,6 @@ const translation = {
       title: 'ナレッジの詳細設定',
       description:
         'ナレッジを設定するための埋め込みモデルの選択や、ナレッジとして追加したドキュメントの分割方法などを設定します。ボット作成後の変更はできません。',
-      existKnowledgeBaseId: {
-        label: "既存のAmazon Bedrock Knowledge BaseのID",
-        description: "既存のAmazon Bedrock Knowledge Baseを使用することができる。新規に作成する場合は空欄にします"
-      },
       embeddingModel: {
         label: '埋め込みモデル',
       },
@@ -720,6 +716,18 @@ const translation = {
           hint: 'ウェブクロールから除外するパターンを指定します。これらのパターンに一致するURLはクロールされません。',
         },
       },
+      advancedConfigration: {
+        existKnowledgeBaseId: {
+          label: "既存のAmazon Bedrock Knowledge BaseのID",
+          description: "既存のAmazon Bedrock Knowledge Baseを使用することができる",
+          createNewKb: {
+            label: '新規のナレッジを作成する',
+          },
+          existing: {
+            label: '外部のナレッジ(Knowledge Base)を利用する',
+          }
+        },
+      }
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',

@@ -594,10 +594,6 @@ How would you categorize this email?`,
       title: 'Knowledge Detail Settings',
       description:
         'Select the embedded model for configuring knowledge, and set the method for splitting documents added as knowledge. These settings cannot be changed after creating the bot.',
-      existKnowledgeBaseId: {
-        label: "ID for the Amazon Bedrock Knowledge Base",
-        description: "Please specify ID that your existing Amazon Bedrock knowledge base. When creating a new knowledge base, leave the 'existKnowledgeBaseId' blank."
-      },
       embeddingModel: {
         label: 'Embeddings Model',
         titan_v2: {
@@ -724,6 +720,18 @@ How would you categorize this email?`,
           label: 'Exclude Patterns',
           hint: 'Specify patterns to exclude from web crawling. URLs matching these patterns will not be crawled.',
         },
+      },
+      advancedConfigration: {
+        existKnowledgeBaseId: {
+          label: "ID for the Amazon Bedrock Knowledge Base",
+          description: "Please specify ID that your existing Amazon Bedrock knowledge base.",
+          createNewKb: {
+            label: 'Create New Knowledge Base',
+          },
+          existing: {
+            label: 'Use your existing knowledge base',
+          }
+        }
       },
     },
     error: {
