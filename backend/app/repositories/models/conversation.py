@@ -648,7 +648,7 @@ class RelatedDocumentModel(BaseModel):
         if url.scheme == "s3":
             source_link = generate_presigned_url(
                 bucket=url.netloc,
-                key=url.path,
+                key=url.path.removeprefix("/"),
                 client_method="get_object",
             )
             return source_link
