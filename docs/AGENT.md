@@ -46,7 +46,7 @@ This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It
 
 To develop your own custom tools for the Agent, follow these guidelines:
 
-- Create a new class that inherits from the `BaseTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `BaseTool` class, which you should inherit from ([source](../backend/app/agents/tools/base.py)).
+- Create a new class that inherits from the `AgentTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `AgentTool` class, which you should inherit from ([source](../backend/app/agents/tools/base.py)).
 
 - Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
 

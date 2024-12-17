@@ -82,6 +82,9 @@ def _prepare_nova_model_params(
     if generation_params and generation_params.top_k is not None:
         top_k = generation_params.top_k
         if top_k > 128:
+            logger.warning(
+                "In Amazon Nova, an 'unexpected error' occurs if topK exceeds 128. To avoid errors, the upper limit of A is set to 128."
+            )
             top_k = 128
 
         additional_fields["inferenceConfig"]["topK"] = top_k

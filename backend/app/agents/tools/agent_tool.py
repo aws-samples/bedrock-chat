@@ -86,6 +86,8 @@ class InvalidToolError(Exception):
 
 
 class RemoveTitle(GenerateJsonSchema):
+    """Custom JSON schema generator that doesn't output `title`s for types and parameters."""
+
     def field_title_should_be_set(self, schema) -> bool:
         return False
 
@@ -113,6 +115,7 @@ class AgentTool(Generic[T]):
 
     def _generate_input_schema(self) -> dict[str, Any]:
         """Converts the Pydantic model to a JSON schema."""
+        # Specify a custom generator `RemoveTitle` because some foundation models do not work properly if there are unnecessary titles.
         return self.args_schema.model_json_schema(schema_generator=RemoveTitle)
 
     def to_converse_spec(self) -> ToolSpecificationTypeDef:
