@@ -7,22 +7,32 @@ from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import decompose_bot_id, update_knowledge_base_id
 from app.routes.schemas.bot import type_sync_status
 from retry import retry
+from typing import List
 from typing_extensions import TypedDict
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class StackOutput(TypedDict):
+class StackItem(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
+    GuardrailArn: str
+    GuardrailVersion: str
+    PK: str
+    SK: str
+
+
+class StackOutput(TypedDict):
+    KnowledgeBaseId: str
+    items: List[StackItem]
 
 
 def handler(event, context):
     logger.info(f"Event: {event}")
     pk = event["pk"]
     sk = event["sk"]
-    stack_output: list[StackOutput] = event["stack_output"]
+    stack_output: StackOutput = event["stack_output"]  # Changed type annotation
 
     kb_id = (
         stack_output["KnowledgeBaseId"] if "KnowledgeBaseId" in stack_output else None
