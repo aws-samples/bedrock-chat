@@ -57,14 +57,10 @@ def to_guardrails_grounding_source(
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
-    if bot.bedrock_knowledge_base is None:
-        return []
-
-    if (
-        bot.bedrock_knowledge_base.knowledge_base_id is None
-        and bot.bedrock_knowledge_base.exist_knowledge_base_id is None
-    ):
-        return []
+    assert (
+        bot.bedrock_knowledge_base is not None
+        and bot.bedrock_knowledge_base.knowledge_base_id is not None
+    )
 
     if bot.bedrock_knowledge_base.search_params.search_type == "semantic":
         search_type = "SEMANTIC"
