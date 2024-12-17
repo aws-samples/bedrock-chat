@@ -498,7 +498,7 @@ ContentModel = Annotated[
 ]
 
 
-def content_model_from_content(content: Content | ContentModel) -> ContentModel:
+def content_model_from_content(content: Content) -> ContentModel:
 
     if isinstance(content, TextContent):
         return TextContentModel.from_text_content(content=content)
