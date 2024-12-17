@@ -62,6 +62,7 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 - ไทย 💬
 - Bahasa Indonesia 💬
 - Bahasa Melayu 💬
+- Tiếng Việt 💬
 
 ## 🚀 Super-easy Deployment
 
