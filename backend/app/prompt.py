@@ -1,6 +1,6 @@
+from app.bedrock import is_nova_model
 from app.vector_search import SearchResult
 from app.routes.schemas.conversation import type_model_name
-from app.repositories.models.conversation import is_nova_model
 
 
 def build_rag_prompt(

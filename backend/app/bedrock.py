@@ -1,31 +1,32 @@
+from __future__ import annotations
 import logging
 import os
-from typing import TypeGuard, Dict, Any, Optional, Tuple
+from typing import TypeGuard, Dict, Any, Optional, Tuple, TYPE_CHECKING
 
-from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import (
     SimpleMessageModel,
     ContentModel,
-    is_nova_model,
 )
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 
-from mypy_boto3_bedrock_runtime.type_defs import (
-    ConverseStreamRequestRequestTypeDef,
-    MessageTypeDef,
-    ConverseResponseTypeDef,
-    ContentBlockTypeDef,
-    GuardrailConverseContentBlockTypeDef,
-    InferenceConfigurationTypeDef,
-    SystemContentBlockTypeDef,
-)
-from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
+if TYPE_CHECKING:
+    from app.agents.tools.agent_tool import AgentTool
+    from mypy_boto3_bedrock_runtime.type_defs import (
+        ConverseStreamRequestRequestTypeDef,
+        MessageTypeDef,
+        ConverseResponseTypeDef,
+        ContentBlockTypeDef,
+        GuardrailConverseContentBlockTypeDef,
+        InferenceConfigurationTypeDef,
+        SystemContentBlockTypeDef,
+    )
+    from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -46,6 +47,11 @@ client = get_bedrock_runtime_client()
 
 def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
     return role in ["user", "assistant"]
+
+
+def is_nova_model(model: type_model_name) -> bool:
+    """Check if the model is an Amazon Nova model"""
+    return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
 
 
 def _prepare_nova_model_params(

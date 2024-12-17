@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Annotated, Any, Literal, Self, TypedDict, TypeGuard
+from typing import Annotated, Any, Literal, Self, TypeGuard
 from urllib.parse import urlparse
 
 from app.repositories.models.common import Base64EncodedBytes
@@ -35,11 +35,6 @@ from mypy_boto3_bedrock_runtime.type_defs import (
     ToolUseBlockTypeDef,
 )
 from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
-
-
-def is_nova_model(model: type_model_name) -> bool:
-    """Check if the model is an Amazon Nova model"""
-    return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
 
 
 class TextContentModel(BaseModel):

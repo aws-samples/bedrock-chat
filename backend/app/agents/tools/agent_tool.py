@@ -8,7 +8,6 @@ from app.repositories.models.conversation import (
     RelatedDocumentModel,
     ToolResultContentModel,
     ToolResultContentModelBody,
-    is_nova_model,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
@@ -41,6 +40,8 @@ def run_result_to_tool_result_content_model(
         )
         for related_document in run_result["related_documents"]
     ]
+    from app.bedrock import is_nova_model
+
     if is_nova_model(model=model):
         text_or_json_contents = [
             result_content
