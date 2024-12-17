@@ -42,7 +42,7 @@ def handler(event, context):
 
     # Filter out None values and ensure all elements are strings
     data_source_ids: List[str] = [
-        item["DataSourceId"] 
+        item["DataSourceId"]
         for item in stack_output.get("items", [])
         if item.get("DataSourceId")
     ]

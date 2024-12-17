@@ -76,7 +76,7 @@ def _get_aws_resource(service_name: str, user_id: Optional[str] = None):
                 aws_access_key_id="key",
                 aws_secret_access_key="key",
                 region_name=REGION,
-            ) # type: ignore[call-overload]
+            )  # type: ignore[call-overload]
         else:
             return boto3.resource(service_name, region_name=REGION)  # type: ignore[call-overload]
 
@@ -104,7 +104,7 @@ def _get_aws_resource(service_name: str, user_id: Optional[str] = None):
             }
         ]
     }
-    
+
     if user_id:
         policy_document["Statement"][0]["Condition"] = {
             # Allow access to items with the same partition key as the user id

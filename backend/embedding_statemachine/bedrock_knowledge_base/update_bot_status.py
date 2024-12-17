@@ -71,7 +71,7 @@ def handler(event, context):
     try:
         cause = event.get("cause", None)
         ingestion_job = event.get("ingestion_job", None)
-        
+
         # Initialize variables
         pk: str
         sk: str
