@@ -276,8 +276,10 @@ export class BedrockCustomBotStack extends Stack {
           value: dataSource.dataSourceId,
         });
       });
-    }else{
-      // if knowledgeBaseArn is exist
+    }
+    else
+    {
+      // if knowledgeBaseArn exists
       const getKnowledgeBase = new AwsCustomResource(this, 'GetKnowledgeBase', {
         onCreate: {
           service: 'bedrock-agent',
