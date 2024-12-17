@@ -14,7 +14,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class StackItem(TypedDict):
+class Items(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
     GuardrailArn: str
@@ -25,14 +25,14 @@ class StackItem(TypedDict):
 
 class StackOutput(TypedDict):
     KnowledgeBaseId: str
-    items: List[StackItem]
+    items: List[Items]
 
 
 def handler(event, context):
     logger.info(f"Event: {event}")
     pk = event["pk"]
     sk = event["sk"]
-    stack_output: StackOutput = event["stack_output"]  # Changed type annotation
+    stack_output: StackOutput = event["stack_output"]
 
     kb_id = (
         stack_output["KnowledgeBaseId"] if "KnowledgeBaseId" in stack_output else None
@@ -40,8 +40,11 @@ def handler(event, context):
     if not kb_id:
         raise ValueError("KnowledgeBaseId not found in stack outputs")
 
-    data_source_ids = [
-        item.get("DataSourceId") for item in stack_output.get("items", [])
+    # Filter out None values and ensure all elements are strings
+    data_source_ids: List[str] = [
+        item["DataSourceId"] 
+        for item in stack_output.get("items", [])
+        if item.get("DataSourceId")
     ]
 
     user_id = pk
