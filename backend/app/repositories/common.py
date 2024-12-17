@@ -123,7 +123,7 @@ def _get_aws_resource(service_name: str, user_id: Optional[str] = None):
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
     )
-    return boto3.resource(service_name, region_name=REGION)  # type: ignore[call-overload]
+    return session.resource(service_name, region_name=REGION)  # type: ignore[call-overload]
 
 
 def _get_dynamodb_client(user_id: Optional[str] = None):
