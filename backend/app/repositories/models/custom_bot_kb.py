@@ -80,11 +80,3 @@ class BedrockKnowledgeBaseModel(BaseModel):
     web_crawling_filters: WebCrawlingFiltersModel = WebCrawlingFiltersModel(
         exclude_patterns=[], include_patterns=[]
     )
-
-    @model_validator(mode="after")
-    def validate_knowledge_base_ids(self) -> Self:
-        if bool(self.knowledge_base_id) == bool(self.exist_knowledge_base_id):
-            raise ValueError(
-                "knowledge_base_id and exist_knowledge_base_id must be either both None or both not None"
-            )
-        return self
