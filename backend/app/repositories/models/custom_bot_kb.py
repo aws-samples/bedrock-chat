@@ -83,17 +83,8 @@ class BedrockKnowledgeBaseModel(BaseModel):
 
     @model_validator(mode="after")
     def validate_knowledge_base_ids(self) -> Self:
-        is_existing_kb = self.knowledge_base_id == self.exist_knowledge_base_id
-        is_new_kb = (
-            self.knowledge_base_id is not None and self.exist_knowledge_base_id is None
-        )
-        is_cdk_just_deploying_with_exist_kb = (
-            self.knowledge_base_id is None and self.exist_knowledge_base_id is not None
-        )
-
-        if any([is_existing_kb, is_new_kb, is_cdk_just_deploying_with_exist_kb]):
-            return self
-
-        raise ValueError(
-            "knowledge_base_id and exist_knowledge_base_id must be either both None or both not None"
-        )
+        if bool(self.knowledge_base_id) == bool(self.exist_knowledge_base_id):
+            raise ValueError(
+                "knowledge_base_id and exist_knowledge_base_id must be either both None or both not None"
+            )
+        return self
