@@ -633,8 +633,10 @@ def fetch_all_bots(
 
 
 def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
+    logger.info(f"Fetching bot summary - userId:{user_id}, botId:{bot_id}")
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
+        logger.info(f"Found private bot by id: {bot.id}")
         return BotSummaryOutput(
             id=bot_id,
             title=bot.title,
@@ -662,9 +664,11 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
 
     try:
         alias = find_alias_by_id(user_id, bot_id)
+        logger.info(f"Found alias by id: {alias}")
 
         # update bot model activate if alias is found.
         bot = find_public_bot_by_id(bot_id)
+        logger.info(f"Found bot by bot_id: {bot}")
 
         return BotSummaryOutput(
             id=alias.id,
@@ -697,6 +701,8 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
     try:
         # NOTE: At the first time using shared bot, alias is not created yet.
         bot = find_public_bot_by_id(bot_id)
+        logger.info(f"Found bot by bot_id: {bot}")
+        logger.info("This is first time being accessed, so creating alias")
         current_time = get_current_time()
         # Store alias when opened shared bot page
         store_alias(
@@ -719,9 +725,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                     )
                     for starter in bot.conversation_quick_starters
                 ],
-                active_models=ActiveModelsOutput.model_validate(
-                    dict(bot.active_models)
-                ),
+                active_models=bot.active_models,
             ),
         )
         return BotSummaryOutput(
