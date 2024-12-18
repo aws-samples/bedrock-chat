@@ -3,7 +3,6 @@ from typing import Callable
 
 from app.agents.tools.agent_tool import (
     ToolRunResult,
-    run_result_to_tool_result_content_model,
 )
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
@@ -451,7 +450,7 @@ def chat(
         tool_result_message = SimpleMessageModel(
             role="user",
             content=[
-                run_result_to_tool_result_content_model(
+                ToolResultContentModel.from_tool_run_result(
                     run_result=result,
                     model=chat_input.message.model,
                     display_citation=display_citation,

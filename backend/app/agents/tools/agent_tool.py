@@ -1,4 +1,3 @@
-import json
 from typing import Any, Callable, Generic, Literal, TypedDict, TypeVar
 
 from app.repositories.models.conversation import (
@@ -6,8 +5,6 @@ from app.repositories.models.conversation import (
     TextToolResultModel,
     JsonToolResultModel,
     RelatedDocumentModel,
-    ToolResultContentModel,
-    ToolResultContentModelBody,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
@@ -27,59 +24,6 @@ class ToolRunResult(TypedDict):
     tool_use_id: str
     status: Literal["success", "error"]
     related_documents: list[RelatedDocumentModel]
-
-
-def run_result_to_tool_result_content_model(
-    run_result: ToolRunResult,
-    model: type_model_name,
-    display_citation: bool,
-) -> ToolResultContentModel:
-    result_contents = [
-        related_document.to_tool_result_model(
-            display_citation=display_citation,
-        )
-        for related_document in run_result["related_documents"]
-    ]
-    from app.bedrock import is_nova_model
-
-    if is_nova_model(model=model):
-        text_or_json_contents = [
-            result_content
-            for result_content in result_contents
-            if isinstance(result_content, TextToolResultModel)
-            or isinstance(result_content, JsonToolResultModel)
-        ]
-        if len(text_or_json_contents) > 1:
-            return ToolResultContentModel(
-                content_type="toolResult",
-                body=ToolResultContentModelBody(
-                    tool_use_id=run_result["tool_use_id"],
-                    content=[
-                        TextToolResultModel(
-                            text=json.dumps(
-                                [
-                                    (
-                                        content.json_
-                                        if isinstance(content, JsonToolResultModel)
-                                        else content.text
-                                    )
-                                    for content in text_or_json_contents
-                                ]
-                            ),
-                        ),
-                    ],
-                    status=run_result["status"],
-                ),
-            )
-
-    return ToolResultContentModel(
-        content_type="toolResult",
-        body=ToolResultContentModelBody(
-            tool_use_id=run_result["tool_use_id"],
-            content=result_contents,
-            status=run_result["status"],
-        ),
-    )
 
 
 class InvalidToolError(Exception):

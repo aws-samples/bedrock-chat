@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import logging
 import os
 from typing import TypeGuard, Dict, Any, Optional, Tuple, TYPE_CHECKING
@@ -6,10 +7,7 @@ from typing import TypeGuard, Dict, Any, Optional, Tuple, TYPE_CHECKING
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-from app.repositories.models.conversation import (
-    SimpleMessageModel,
-    ContentModel,
-)
+
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -17,6 +15,10 @@ from app.utils import get_bedrock_runtime_client
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import AgentTool
+    from app.repositories.models.conversation import (
+        SimpleMessageModel,
+        ContentModel,
+    )
     from mypy_boto3_bedrock_runtime.type_defs import (
         ConverseStreamRequestRequestTypeDef,
         MessageTypeDef,
