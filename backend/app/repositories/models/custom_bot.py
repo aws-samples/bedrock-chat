@@ -101,16 +101,16 @@ class BotModel(BaseModel):
             or len(self.knowledge.sitemap_urls) > 0
             or len(self.knowledge.filenames) > 0
             or len(self.knowledge.s3_urls) > 0
-            or self.bedrock_knowledge_base is not None
+            or self.has_bedrock_knowledge_base()
         )
 
     def is_agent_enabled(self) -> bool:
         return len(self.agent.tools) > 0
 
     def has_bedrock_knowledge_base(self) -> bool:
-        return (
-            self.bedrock_knowledge_base is not None
-            and self.bedrock_knowledge_base.knowledge_base_id is not None
+        return self.bedrock_knowledge_base is not None and (
+            self.bedrock_knowledge_base.knowledge_base_id is not None
+            or self.bedrock_knowledge_base.exist_knowledge_base_id is not None
         )
 
 
