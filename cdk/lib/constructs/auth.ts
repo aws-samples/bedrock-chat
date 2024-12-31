@@ -143,7 +143,7 @@ export class Auth extends Construct {
 
       userPool.addDomain("UserPool", {
         cognitoDomain: {
-          domainPrefix: props.userPoolDomainPrefixKey,
+          domainPrefix: "us-east-1qiw2xr5pq",
         },
       });
     }
