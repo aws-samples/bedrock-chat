@@ -59,8 +59,13 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "identityProviders": [],
-    "userPoolDomainPrefix": "",
+    "identityProviders": [
+      {
+        "service": "google",
+        "secretName": "oauth/google/sam"
+      }
+    ],
+    "userPoolDomainPrefix": "qikr-demo-",
     "allowedSignUpEmailDomains": [],
     "autoJoinUserGroups": ["CreatingBotAllowed"],
     "selfSignUpEnabled": true,
