@@ -65,7 +65,7 @@
         "secretName": "oauth/google/sam"
       }
     ],
-    "userPoolDomainPrefix": "",
+    "userPoolDomainPrefix": "qikr-tool-123",
     "allowedSignUpEmailDomains": [],
     "autoJoinUserGroups": ["CreatingBotAllowed"],
     "selfSignUpEnabled": true,
