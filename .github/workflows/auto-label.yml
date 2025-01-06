@@ -1,0 +1,20 @@
+name: Add 'needs triage' label
+
+on:
+  issues:
+    types:
+      - opened
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add 'needs triage' label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "needs-triage"
