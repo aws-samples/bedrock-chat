@@ -42,6 +42,8 @@ export type ListPublicBotsResponse = {
   publishedDatetime: Date;
   ownerUserId: string;
   totalPrice: number;
+  numOfUsers: number;
+  numOfConvos: number;
 }[];
 
 export type PublishBotRequest = {

@@ -70,6 +70,8 @@ async def get_all_public_bots(
             published_datetime=bot.published_api_datetime,
             owner_user_id=bot.owner_user_id,
             total_price=bot.total_price,
+            num_of_users=bot.num_of_users,
+            num_of_convos=bot.num_of_convos,
         )
         for bot in bots
     ]

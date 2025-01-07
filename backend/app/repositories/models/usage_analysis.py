@@ -11,6 +11,8 @@ class UsagePerBot(BaseModel):
     published_api_datetime: int | None
     owner_user_id: str
     total_price: float
+    num_of_users: int
+    num_of_convos: int
 
 
 class UsagePerUser(BaseModel):
