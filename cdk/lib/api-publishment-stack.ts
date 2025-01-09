@@ -33,7 +33,7 @@ export class ApiPublishmentStack extends Stack {
 
     const deploymentStage = props.deploymentStage ?? "dev";
 
-    const chatQueueDLQ = new sqs.Queue(this, "ChatQueue-DLQ", {
+    const chatQueueDLQ = new sqs.Queue(this, "ChatQueueDlq", {
       retentionPeriod: cdk.Duration.days(14),
     });
     const chatQueue = new sqs.Queue(this, "ChatQueue", {
