@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: DockerfileLocal
+      args:
+        DOT_ENV_FILE: ${DOT_ENV_FILE:-.env-local.mgmt}
+    ports:
+      - "80:80"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # Add STS session token
+    volumes:
+      - ./frontend:/app
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=us-east-1
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # Add STS session token
+    env_file:
+      - ./backend/.env.dockerfile-mgmt
+    volumes:
+      - ./backend:/backend
+#    command: sh -c "env | sort"
+
+  # websocket:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+  #     - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+  #     - AWS_REGION=${AWS_REGION}
+  #     - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # Add STS session token
+  #   volumes:
+  #     - ./backend:/backend
+  #   command: ["uvicorn", "app.websocket:app", "--host", "0.0.0.0", "--port", "9000"]
