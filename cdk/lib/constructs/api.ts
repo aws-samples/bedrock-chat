@@ -26,6 +26,8 @@ import { UsageAnalysis } from "./usage-analysis";
 import { excludeDockerImage } from "../constants/docker";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
+import { ValidatedPythonFunction } from './validated-python-function';
+
 export interface ApiProps {
   readonly database: ITable;
   readonly corsAllowOrigins?: string[];
@@ -175,7 +177,7 @@ export class Api extends Construct {
     props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
 
-    const handler = new PythonFunction(this, "HandlerV2", {
+    const handler = new ValidatedPythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
       index: "app/main.py",
       bundling: {

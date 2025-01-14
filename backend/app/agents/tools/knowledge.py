@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
@@ -17,9 +18,25 @@ class KnowledgeToolInput(BaseModel):
 
 def search_knowledge(
     tool_input: KnowledgeToolInput, bot: BotModel | None, model: type_model_name | None
-) -> list:
-    assert bot is not None
-
+) -> List:
+    """
+    Search the knowledge base for relevant documents using the provided query.
+    
+    Args:
+        tool_input: The input containing the search query
+        bot: The bot instance containing the knowledge base
+        model: The model type name
+        
+    Returns:
+        List of search results
+        
+    Raises:
+        ValueError: If bot is not provided
+        Exception: If search fails
+    """
+    if bot is None:
+        raise ValueError("Bot instance is required for knowledge base search")
+        
     query = tool_input.query
     logger.info(f"Running AnswerWithKnowledgeTool with query: {query}")
 
@@ -40,14 +57,25 @@ def search_knowledge(
 
 
 def create_knowledge_tool(bot: BotModel) -> AgentTool:
+    """
+    Create a knowledge base search tool instance for a specific bot and model.
+    
+    Args:
+        bot: The bot instance containing the knowledge base
+        
+    Returns:
+        AgentTool instance configured for knowledge base search
+    """
     description = (
-        "Answer a user's question using information. The description is: {}".format(
-            bot.knowledge.__str_in_claude_format__()
-        )
+        #"Search and answer questions using the knowledge base."
+        "Search and answer questions using the knowledge base. Available knowledge: {}"
+        .format(bot.knowledge.__str_in_claude_format__())
     )
+    
     logger.info(f"Creating knowledge base tool with description: {description}")
+    
     return AgentTool(
-        name=f"knowledge_base_tool",
+        name="knowledge_base_search",
         description=description,
         args_schema=KnowledgeToolInput,
         function=search_knowledge,

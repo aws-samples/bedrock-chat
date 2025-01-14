@@ -137,15 +137,23 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sitemap_urls = bot_input.knowledge.sitemap_urls
         s3_urls = bot_input.knowledge.s3_urls
 
-        # Commit changes to S3
-        _update_s3_documents_by_diff(
-            user_id, bot_input.id, bot_input.knowledge.filenames, []
-        )
-        # Delete files from upload temp directory
-        delete_files_with_prefix_from_s3(
-            DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_input.id)
-        )
+        # Only try to move files if there are actually files to move
         filenames = bot_input.knowledge.filenames
+        if filenames:
+            try:
+                # Commit changes to S3
+                _update_s3_documents_by_diff(
+                    user_id, bot_input.id, filenames, []
+                )
+                # Delete files from upload temp directory
+                delete_files_with_prefix_from_s3(
+                    DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_input.id)
+                )
+            except FileNotFoundError:
+                # If no files found, just log and continue - the bot can still be created
+                logger.warning(f"No files found in temp S3 location for bot {bot_input.id}")
+                filenames = []  # Reset filenames since we couldn't move them
+
 
     generation_params: GenerationParamsDict = (
         {
@@ -159,18 +167,31 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_GENERATION_CONFIG
     )
 
-    agent = (
-        AgentModel(
-            tools=[
-                AgentToolModel(name=t.name, description=t.description)
-                for t in [
-                    get_tool_by_name(tool_name) for tool_name in bot_input.agent.tools
-                ]
-            ]
-        )
-        if bot_input.agent
-        else AgentModel(tools=[])
-    )
+    # Get appropriate model for tools
+    effective_model = None
+    if bot_input.active_models:
+        active_models_dict = bot_input.active_models.model_dump()
+        effective_model = active_models_dict.get('tools')
+    if not effective_model:
+        effective_model = "claude_v3_5_sonnet_v2"
+
+    # Create agent with tools
+    agent = None
+    if bot_input.agent and bot_input.agent.tools:
+        tool_instances = []
+        for tool_name in bot_input.agent.tools:
+            try:
+                tool = get_tool_by_name(tool_name, model=effective_model)
+                tool_instances.append(AgentToolModel(
+                    name=tool.name,
+                    description=tool.description
+                ))
+            except Exception as e:
+                logger.error(f"Failed to create tool {tool_name}: {str(e)}")
+        agent = AgentModel(tools=tool_instances)
+    else:
+        agent = AgentModel(tools=[])
+
 
     store_bot(
         user_id,
@@ -325,24 +346,45 @@ def modify_owned_bot(
         else DEFAULT_GENERATION_CONFIG
     )
 
-    agent = (
-        AgentModel(
+    # Get existing bot and model first
+    bot = find_private_bot_by_id(user_id, bot_id)
+
+    # Determine which model to use for tools, with proper fallback
+    effective_model = None
+    if modify_input.active_models:
+        # Access dict form to get tools value
+        active_models_dict = modify_input.active_models.model_dump()
+        effective_model = active_models_dict.get('tools')
+    
+    if not effective_model and bot.active_models:
+        # Try to get from existing bot
+        bot_active_models_dict = bot.active_models.model_dump()
+        effective_model = bot_active_models_dict.get('tools')
+    
+    if not effective_model:
+        # Final fallback
+        effective_model = "claude_v3_5_sonnet_v2"
+
+    agent = None
+    if modify_input.agent:
+        agent = AgentModel(
             tools=[
                 AgentToolModel(name=t.name, description=t.description)
                 for t in [
-                    get_tool_by_name(tool_name)
-                    for tool_name in modify_input.agent.tools
+                    get_tool_by_name(
+                        tool_name,
+                        bot=bot,  # We don't have the bot yet for creation
+                        model=effective_model,
+                    ) for tool_name in modify_input.agent.tools
                 ]
             ]
         )
-        if modify_input.agent
-        else AgentModel(tools=[])
-    )
+    else:
+        agent = AgentModel(tools=[])
 
     # if knowledge is not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
-    bot = find_private_bot_by_id(user_id, bot_id)
     sync_status = (
         "QUEUED"
         if modify_input.is_embedding_required(bot)

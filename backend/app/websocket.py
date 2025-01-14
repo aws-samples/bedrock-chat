@@ -170,6 +170,9 @@ def process_chat_input(
     logger.info(f"Received chat input: {chat_input}")
 
     try:
+        # Add debug log before chat call
+        logger.info("Starting chat with parameters: user_id=%s, chat_input=%s", user_id, chat_input)
+
         chat(
             user_id=user_id,
             chat_input=chat_input,

@@ -1,0 +1,22 @@
+[MASTER]
+ignore=CVS,tests,*.pyc,__pycache__,cdk.out,.venv
+ignored-modules=boto3,pydantic,jose,fastapi,starlette,ulid,duckduckgo_search,retry,humps,aws_lambda_powertools,mypy_boto3_bedrock_runtime,mypy_boto3_bedrock_agent_runtime
+
+[MESSAGES CONTROL]
+disable=all
+enable=E0602,  # Undefined variable
+       E0603,  # Undefined all variable 
+       E1120,  # No value for param 
+       E0611,  # No name in module
+       E1102,  # Not callable
+       E1111,  # Assignment to function
+       F0001,  # Syntax error
+       E0633,  # Attempting to unpack non-sequence
+       E0632   # Possible unbalanced tuple unpacking
+
+[VARIABLES]
+allow-global-unused-variables=no
+
+[FORMAT]
+max-line-length=120
+load-plugins=iterator_checker

@@ -102,25 +102,26 @@ def _content_model_from_partial_content(
         raise ValueError(f"Unknown content type")
 
 
-def _content_model_to_partial_content(
-    content: ContentModel,
-) -> _PartialTextContent | _PartialToolUseContent:
-    if isinstance(content, TextContentModel):
-        return {
-            "text": content.body,
-        }
-
-    elif isinstance(content, ToolUseContentModel):
-        return {
-            "tool_use": {
-                "tool_use_id": content.body.tool_use_id,
-                "name": content.body.name,
-                "input": json.dumps(content.body.input),
-            },
-        }
-
-    else:
-        raise ValueError(f"Unknown content type")
+def _content_model_to_partial_content(content: ContentModel) -> _PartialTextContent | _PartialToolUseContent:
+    try:
+        if isinstance(content, TextContentModel):
+            return {
+                "text": content.body,
+            }
+        elif isinstance(content, ToolUseContentModel):
+            return {
+                "tool_use": {
+                    "tool_use_id": content.body.tool_use_id,
+                    "name": content.body.name,
+                    "input": json.dumps(content.body.input),
+                }
+            }
+        else:
+            logger.error(f"Unknown content type: {type(content)}")
+            raise ValueError(f"Unknown content type: {type(content)}")
+    except Exception as e:
+        logger.error(f"Error in content model conversion: {e}")
+        raise
 
 
 class ConverseApiStreamHandler:
@@ -173,6 +174,15 @@ class ConverseApiStreamHandler:
             client = get_bedrock_runtime_client()
             response = client.converse_stream(**args)
 
+            # Add debug logging for message processing
+            logger.info("Processing messages: %s", messages)
+            # Add the validation check here
+            if message_for_continue_generate is not None:
+                if not hasattr(message_for_continue_generate, 'content'):
+                    logger.error(f"message_for_continue_generate missing content attribute: {message_for_continue_generate}")
+                    raise ValueError("Invalid message format")
+            logger.info("Message for continue generate: %s", message_for_continue_generate)
+            
             current_message = _PartialMessage(
                 role="assistant",
                 contents=(

@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime
 from typing import Any, Literal
+from decimal import Decimal
 
 import boto3
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -170,3 +171,33 @@ def start_codebuild_project(environment_variables: dict) -> str:
         environmentVariablesOverride=environment_variables_override,
     )
     return response["build"]["id"]
+
+def convert_floats_to_decimals(obj: Any) -> Any:
+    """Recursively converts all float values to Decimal in a nested structure."""
+    if isinstance(obj, float):
+        return Decimal(str(obj))
+    elif isinstance(obj, dict):
+        return {
+            key: convert_floats_to_decimals(value) 
+            for key, value in obj.items()
+        }
+    elif isinstance(obj, list):
+        return [convert_floats_to_decimals(item) for item in obj]
+    elif isinstance(obj, (int, str, bool, type(None))):
+        return obj
+    # For other types, convert to string first then to Decimal if numeric
+    try:
+        str_val = str(obj)
+        return Decimal(str_val)
+    except:
+        return str(obj)
+
+def convert_decimals_for_json(obj: Any) -> Any:
+    """Recursively converts all Decimal values back to float for JSON serialization."""
+    if isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {key: convert_decimals_for_json(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_decimals_for_json(item) for item in obj]
+    return obj

@@ -8,6 +8,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from pydantic import TypeAdapter
 
+from app.utils import convert_decimals_for_json, convert_floats_to_decimals
 from app.repositories.common import (
     TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
@@ -36,32 +37,46 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 s3_client = boto3.client("s3", BEDROCK_REGION)
 
 
+
 def store_conversation(
     user_id: str, conversation: ConversationModel, threshold=THRESHOLD_LARGE_MESSAGE
 ):
-    logger.info(f"Storing conversation: {conversation.model_dump_json()}")
+    """Store conversation with proper decimal conversion for DynamoDB"""
+    # Convert the conversation data before logging
+    conversation_data = json.loads(conversation.model_dump_json())
+    decimalized_data = convert_floats_to_decimals(conversation_data)
+    json_safe_data = convert_decimals_for_json(decimalized_data)
+    logger.info(f"Storing conversation: {json.dumps(json_safe_data)}")
+    
     table = _get_table_client(user_id)
-
+    
+    # Base item parameters with decimal conversion
     item_params = {
         "PK": user_id,
         "SK": compose_conv_id(user_id, conversation.id),
         "Title": conversation.title,
-        "CreateTime": decimal(conversation.create_time),
-        # Convert to decimal via str to avoid error
-        # Ref: https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
+        "CreateTime": decimal(str(conversation.create_time)),
         "TotalPrice": decimal(str(conversation.total_price)),
         "LastMessageId": conversation.last_message_id,
         "ShouldContinue": conversation.should_continue,
     }
-
+    
     if conversation.bot_id:
         item_params["BotId"] = conversation.bot_id
 
+    # Convert message map with decimal values
     message_map = {
-        k: v.model_dump(by_alias=True) for k, v in conversation.message_map.items()
+        k: convert_floats_to_decimals(v.model_dump(by_alias=True)) 
+        for k, v in conversation.message_map.items()
     }
-    message_map_size = len(json.dumps(message_map).encode("utf-8"))
+    
+    # Use the existing helper to convert decimals before JSON serialization
+    json_safe_message_map = convert_decimals_for_json(message_map)
+    message_map_json = json.dumps(json_safe_message_map)
+    
+    message_map_size = len(message_map_json.encode("utf-8"))
     logger.info(f"Message map size: {message_map_size}")
+
     if message_map_size > threshold:
         logger.info(
             f"Message map size {message_map_size} exceeds threshold {threshold}"
@@ -69,23 +84,23 @@ def store_conversation(
         item_params["IsLargeMessage"] = True
         large_message_path = f"{user_id}/{conversation.id}/message_map.json"
         item_params["LargeMessagePath"] = large_message_path
-        # Store all message in S3
+        
+        # Store full message map in S3
         s3_client.put_object(
             Bucket=LARGE_MESSAGE_BUCKET,
             Key=large_message_path,
-            Body=json.dumps(message_map),
+            Body=message_map_json,
         )
-        # Store only `system` attribute in DynamoDB
-        item_params["MessageMap"] = json.dumps(
-            {k: v for k, v in message_map.items() if k == "system"}
-        )
+        
+        # Store only system attribute in DynamoDB
+        system_message_map = {k: v for k, v in message_map.items() if k == "system"}
+        item_params["MessageMap"] = json.dumps(system_message_map)
     else:
         item_params["IsLargeMessage"] = False
-        item_params["MessageMap"] = json.dumps(message_map)
+        item_params["MessageMap"] = message_map_json
 
-    response = table.put_item(
-        Item=item_params,
-    )
+    # Store in DynamoDB
+    response = table.put_item(Item=item_params)
     return response
 
 
@@ -338,6 +353,11 @@ def store_related_documents(
     table = _get_table_client(user_id)
     with table.batch_writer() as writer:
         for related_document in related_documents:
+            # Convert the content to dict and handle float conversion
+            content_dict = related_document.content.model_dump(by_alias=True)
+            # Convert any float values to Decimal
+            decimalized_content = convert_floats_to_decimals(content_dict)
+            
             item_params = {
                 "PK": user_id,
                 "SK": compose_related_document_source_id(
@@ -347,7 +367,7 @@ def store_related_documents(
                 ),
                 "SourceName": related_document.source_name,
                 "SourceLink": related_document.source_link,
-                "Content": related_document.content.model_dump(by_alias=True),
+                "Content": decimalized_content,
             }
             writer.put_item(Item=item_params)
 
