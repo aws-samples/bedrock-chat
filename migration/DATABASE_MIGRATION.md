@@ -8,7 +8,7 @@ The migration process involves scanning all bots and launching embedding ECS tas
 
 ## Migration Steps
 
-- After [cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values. The values can be referred on `CloudFormation` > `BedrockChatStack` > `Outputs` tab.
+- After [npx cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values. The values can be referred on `CloudFormation` > `BedrockChatStack` > `Outputs` tab.
 
 ```py
 # Open the CloudFormation stack in the AWS Management Console and copy the values from the Outputs tab.
@@ -35,7 +35,7 @@ If you prefer not to use the above method due to the associated time and cost im
 
 ### Snapshot Restore and DMS Migration
 
-Firstly, note the password to access current Aurora cluster. Then run `cdk deploy`, which triggers replacement of the cluster. After that, create a temporary database by restoring from a snapshot of the original database.
+Firstly, note the password to access current Aurora cluster. Then run `npx cdk deploy`, which triggers replacement of the cluster. After that, create a temporary database by restoring from a snapshot of the original database.
 Use [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/) to migrate data from the temporary database to the new Aurora cluster.
 
 Note: As of May 29, 2024, DMS does not natively support the pgvector extension. However, you can explore the following options to work around this limitation:

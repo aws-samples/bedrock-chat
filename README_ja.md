@@ -1,7 +1,6 @@
 # Bedrock Claude Chat (Nova)
 
-> [!Warning]
-> **V2 がリリースされました。** 更新する際は、[移行ガイド](./migration/V1_TO_V2.md)を必ずご確認ください。 **注意を払わずに進めると、V1 の BOT は使用できなくなります。**
+> [!Warning] > **V2 がリリースされました。** 更新する際は、[移行ガイド](./migration/V1_TO_V2.md)を必ずご確認ください。 **注意を払わずに進めると、V1 の BOT は使用できなくなります。**
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
@@ -130,28 +129,22 @@ cd cdk
 npm ci
 ```
 
-- [AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
-
-```
-npm i -g aws-cdk
-```
-
-- CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします。なお`<account id>`はアカウント ID に置換してください。
-
-```
-cdk bootstrap aws://<account id>/ap-northeast-1
-```
-
 - 必要に応じて[cdk.json](../cdk/cdk.json)の下記項目を編集します
 
   - `bedrockRegion`: Bedrock が利用できるリージョン
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: 許可する IP アドレス範囲の指定
   - `enableLambdaSnapStart`: デフォルトでは true ですが、[Python 関数の Lambda SnapStart をサポートしていないリージョン](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)にデプロイする場合は false に変更してください。
 
+- CDK デプロイ前に、1 度だけ Bootstrap の作業が必要となります。
+
+```
+npx cdk bootstrap
+```
+
 - プロジェクトをデプロイします
 
 ```
-cdk deploy --require-approval never --all
+npx cdk deploy --require-approval never --all
 ```
 
 - 下記のような出力が得られれば成功です。`BedrockChatStack.FrontendURL`に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。
@@ -172,7 +165,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### Mistral を利用する
 
-cdk.json 内の`enableMistral`を`true`に更新し、`cdk deploy`を実行します。
+cdk.json 内の`enableMistral`を`true`に更新し、`npx cdk deploy`を実行します。
 
 ```json
 ...
@@ -184,7 +177,7 @@ cdk.json 内の`enableMistral`を`true`に更新し、`cdk deploy`を実行し�
 
 ### テキスト生成パラメータの設定
 
-[config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
+[config.py](../backend/app/config.py)を編集後、`npx cdk deploy`を実行してください。
 
 ```py
 GENERATION_CONFIG = {
@@ -206,7 +199,7 @@ GENERATION_CONFIG = {
 
 ### リソースの削除
 
-cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
+cli および CDK を利用されている場合、`npx cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
 
 ### 言語設定について
 
