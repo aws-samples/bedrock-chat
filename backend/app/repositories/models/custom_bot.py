@@ -20,6 +20,11 @@ ActiveModelsModel: Type[BaseModel] = _create_model_activate_model(
 )
 
 
+default_active_models = ActiveModelsModel.model_validate(
+    {field_name: True for field_name in ActiveModelsModel.model_fields.keys()}
+)
+
+
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
     sitemap_urls: list[str]

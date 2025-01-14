@@ -219,9 +219,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                 if bot_input.bedrock_guardrails
                 else None
             ),
-            active_models=ActiveModelsModel.model_validate(
-                dict(bot_input.active_models)
-            ),
+            active_models=ActiveModelsModel.model_validate(dict(bot_input.active_models)),
         ),
     )
     return BotOutput(
@@ -263,9 +261,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseOutput(
-                **(bot_input.bedrock_knowledge_base.model_dump())
-            )
+            BedrockKnowledgeBaseOutput(**(bot_input.bedrock_knowledge_base.model_dump()))
             if bot_input.bedrock_knowledge_base
             else None
         ),
@@ -327,8 +323,7 @@ def modify_owned_bot(
             tools=[
                 AgentToolModel(name=t.name, description=t.description)
                 for t in [
-                    get_tool_by_name(tool_name)
-                    for tool_name in modify_input.agent.tools
+                    get_tool_by_name(tool_name) for tool_name in modify_input.agent.tools
                 ]
             ]
         )
@@ -376,9 +371,7 @@ def modify_owned_bot(
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(
-                **modify_input.bedrock_knowledge_base.model_dump()
-            )
+            BedrockKnowledgeBaseModel(**modify_input.bedrock_knowledge_base.model_dump())
             if modify_input.bedrock_knowledge_base
             else None
         ),
@@ -387,9 +380,7 @@ def modify_owned_bot(
             if modify_input.bedrock_guardrails
             else None
         ),
-        active_models=ActiveModelsOutput.model_validate(
-            dict(modify_input.active_models)
-        ),
+        active_models=ActiveModelsOutput.model_validate(dict(modify_input.active_models)),
     )
 
     return BotModifyOutput(
@@ -433,9 +424,7 @@ def modify_owned_bot(
             if modify_input.bedrock_guardrails
             else None
         ),
-        active_models=ActiveModelsOutput.model_validate(
-            dict(modify_input.active_models)
-        ),
+        active_models=ActiveModelsOutput.model_validate(dict(modify_input.active_models)),
     )
 
 
@@ -537,7 +526,8 @@ def fetch_all_bots_by_user_id(
                     ConversationQuickStarter(**starter)
                     for starter in item.get("ConversationQuickStarters", [])
                 ]
-                or bot.active_models != item["ActiveModels"]
+                or bot.active_models
+                != ActiveModelsModel.model_validate(dict(item.get("ActiveModels", {})))
             ):
                 # Update alias to the latest original bot
                 store_alias(
@@ -719,9 +709,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                     )
                     for starter in bot.conversation_quick_starters
                 ],
-                active_models=ActiveModelsOutput.model_validate(
-                    dict(bot.active_models)
-                ),
+                active_models=bot.active_models,
             ),
         )
         return BotSummaryOutput(
