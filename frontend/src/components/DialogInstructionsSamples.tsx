@@ -38,6 +38,14 @@ const DialogInstructionsSamples: React.FC<Props> = (props) => {
       <div>
         <div className="flex flex-col gap-3">
           <PromptSample
+            title={t('bot.samples.quizAssistant.title')}
+            prompt={t('bot.samples.quizAssistant.prompt')}
+          />
+          <PromptSample
+            title={t('bot.samples.learningAssistant.title')}
+            prompt={t('bot.samples.learningAssistant.prompt')}
+          />
+          <PromptSample
             title={t('bot.samples.pythonCodeAssistant.title')}
             prompt={t('bot.samples.pythonCodeAssistant.prompt')}
           />
