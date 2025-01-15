@@ -340,7 +340,8 @@ const translation = {
       button: {
         newBot: 'Buat Bot Baru',
         create: 'Buat',
-        edit: 'Ubah',
+        edit: 'Edit',
+        save: 'Simpan',
         delete: 'Hapus',
         share: 'Bagikan',
         apiSettings: 'Pengaturan Publikasi API',

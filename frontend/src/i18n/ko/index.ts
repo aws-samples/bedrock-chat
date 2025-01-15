@@ -23,6 +23,7 @@ const translation = {
       newChat: '새로운 채팅',
       SaveAndSubmit: '변경 & 전송',
       resend: '재전송',
+      save: '저장',
       regenerate: '재생성',
       delete: '삭제',
       deleteAll: '모두 삭제',
