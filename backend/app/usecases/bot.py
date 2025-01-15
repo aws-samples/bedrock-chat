@@ -347,6 +347,23 @@ def modify_owned_bot(
         else "SUCCEEDED"
     )
 
+    # Use the existing knowledge base (KB) configuration if available, as it may have been set externally
+    # by a Step Functions state machine for embedding processes e.g. data source id. If a new KB configuration is provided,
+    # merge it with the existing one; otherwise, retain the current KB settings.
+    current_bot_kb = bot.bedrock_knowledge_base
+    if modify_input.bedrock_knowledge_base:
+        updated_kb = (
+            current_bot_kb.model_copy(
+                update=modify_input.bedrock_knowledge_base.model_dump()
+            )
+            if current_bot_kb
+            else BedrockKnowledgeBaseModel(
+                **modify_input.bedrock_knowledge_base.model_dump()
+            )
+        )
+    else:
+        updated_kb = current_bot_kb
+
     update_bot(
         user_id,
         bot_id,
@@ -375,13 +392,7 @@ def modify_owned_bot(
                 for starter in modify_input.conversation_quick_starters
             ]
         ),
-        bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(
-                **modify_input.bedrock_knowledge_base.model_dump()
-            )
-            if modify_input.bedrock_knowledge_base
-            else None
-        ),
+        bedrock_knowledge_base=updated_kb,
         bedrock_guardrails=(
             BedrockGuardrailsModel(**modify_input.bedrock_guardrails.model_dump())
             if modify_input.bedrock_guardrails
