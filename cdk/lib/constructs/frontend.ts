@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -7,9 +7,11 @@ import {
   IBucket,
 } from "aws-cdk-lib/aws-s3";
 import {
-  CloudFrontWebDistribution,
-  OriginAccessIdentity,
+  CachePolicy,
+  Distribution,
+  ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
 import { Idp } from "../utils/identity-provider";
@@ -23,7 +25,7 @@ export interface FrontendProps {
 }
 
 export class Frontend extends Construct {
-  readonly cloudFrontWebDistribution: CloudFrontWebDistribution;
+  readonly cloudFrontWebDistribution: Distribution;
   readonly assetBucket: Bucket;
   constructor(scope: Construct, id: string, props: FrontendProps) {
     super(scope, id);
@@ -38,46 +40,33 @@ export class Frontend extends Construct {
       serverAccessLogsPrefix: "AssetBucket",
     });
 
-    const originAccessIdentity = new OriginAccessIdentity(
-      this,
-      "OriginAccessIdentity"
-    );
-    const distribution = new CloudFrontWebDistribution(this, "Distribution", {
-      originConfigs: [
+    const distribution = new Distribution(this, "Distribution", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: S3BucketOrigin.withOriginAccessControl(assetBucket),
+        viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
+        cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+      },
+      errorResponses: [
         {
-          s3OriginSource: {
-            s3BucketSource: assetBucket,
-            originAccessIdentity,
-          },
-          behaviors: [
-            {
-              isDefaultBehavior: true,
-            },
-          ],
-        },
-      ],
-      errorConfigurations: [
-        {
-          errorCode: 404,
-          errorCachingMinTtl: 0,
-          responseCode: 200,
+          httpStatus: 404,
+          ttl: Duration.seconds(0),
+          responseHttpStatus: 200,
           responsePagePath: "/",
         },
         {
-          errorCode: 403,
-          errorCachingMinTtl: 0,
-          responseCode: 200,
+          httpStatus: 403,
+          ttl: Duration.seconds(0),
+          responseHttpStatus: 200,
           responsePagePath: "/",
         },
       ],
       ...(!this.shouldSkipAccessLogging() && {
-        loggingConfig: {
-          bucket: props.accessLogBucket,
-          prefix: "Frontend/",
-        },
+        logBucket: props.accessLogBucket,
+        logFilePrefix: "Frontend/",
       }),
-      webACLId: props.webAclId,
-      enableIpV6: props.enableIpV6,
+      webAclId: props.webAclId,
+      enableIpv6: props.enableIpV6,
     });
 
     NagSuppressions.addResourceSuppressions(distribution, [
