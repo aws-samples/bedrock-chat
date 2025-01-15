@@ -351,6 +351,7 @@ def modify_owned_bot(
     # by a Step Functions state machine for embedding processes e.g. data source id. If a new KB configuration is provided,
     # merge it with the existing one; otherwise, retain the current KB settings.
     current_bot_kb = bot.bedrock_knowledge_base
+    updated_kb: BedrockKnowledgeBaseModel | None = None
     if modify_input.bedrock_knowledge_base:
         updated_kb = (
             current_bot_kb.model_copy(
