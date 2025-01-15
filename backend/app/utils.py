@@ -38,6 +38,11 @@ def get_bedrock_runtime_client(region=BEDROCK_REGION):
 
 
 def get_bedrock_agent_client(region=BEDROCK_REGION):
+    client = boto3.client("bedrock-agent", region_name=region)
+    return client
+
+
+def get_bedrock_agent_runtime_client(region=BEDROCK_REGION):
     client = boto3.client("bedrock-agent-runtime", region_name=region)
     return client
 

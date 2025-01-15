@@ -166,6 +166,8 @@ export class BedrockChatStack extends cdk.Stack {
       usageAnalysis,
       largeMessageBucket,
       enableMistral: props.enableMistral,
+      enableBedrockCrossRegionInference:
+        props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
