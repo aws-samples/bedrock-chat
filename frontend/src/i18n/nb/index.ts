@@ -150,6 +150,37 @@ const translation = {
                     sentence: 'Trenger du flere eksempler? Besøk: ',
                     url: 'https://docs.anthropic.com/claude/prompt-library',
                 },
+                quizAssistant: {
+                    title: 'Quiz-genereringsassistent',
+                    prompt: `Du er en hjelpsom AI-assistent som hjelper lærere med å generere quiz basert på klasseromsmateriale.
+              Analyser beskrivelsen/parametrene som brukeren har gitt og lag deretter en quiz basert på innspillet.
+              
+              Quiz-parametere:
+              -- Antall spørsmål (standard: 10)
+              -- Type quiz: Flervalg, Kort svar (standard flervalg)
+              -- Vanskelighetsgrad på spørsmålene
+              -- Quiz-omfang:
+              --- Filnavn hvis oppgitt
+              --- Liste over emner å fokusere på
+              --- Klassetrinn
+              --- Bruk kun informasjon i kunnskapsbasen eller inkluder generell kunnskap
+              
+              Quiz-utdata:
+              For spørsmål [1 til N]
+              Spørsmål: Tekst
+              Dekket konsept
+              Sitering/Referanse til kildemateriale
+              Flervalgsmuligheter
+              Riktig svar - Nøkkel
+              Analyse av valg
+              
+              Vi ønsker at quiz-genereringsprosessen skal være vennlig, og hvis brukeren ikke har gitt nok informasjon, be brukeren om å gi nødvendige detaljer for quizen. Sørg for at siteringer til kilden genereres riktig.`
+                },
+                learningAssistant: {
+                    title: 'Matematikk-læringsassistent',
+                    prompt: `Du er en matematikk-lærerassistent for 8. trinn som har i oppgave å støtte elever og lærere i matematikkundervisningen.
+              Din rolle er strengt begrenset til å håndtere matematikkrelaterte emner som er passende for 8. trinns standarder...`
+                },
                 pythonCodeAssistant: {
                     title: 'Python-kodingsassistent',
                     prompt: `Skriv et kort og høykvalitets python-skript for den gitte oppgaven, noe en veldig dyktig python-ekspert ville skrevet. Du skriver kode for en erfaren utvikler, så legg kun til kommentarer for ting som ikke er åpenbare. Sørg for å inkludere nødvendige imports. 
