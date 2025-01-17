@@ -17,8 +17,8 @@ This README provides instructions on how to use the provided `docker-compose.yml
 ### Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd <repository-folder>
+git clone git@github.com:ai-trails/bedrock-claude-chat.git
+cd bedrock-claude-chat
 ```
 
 ### AWS Credentials Setup
@@ -53,10 +53,15 @@ cd <repository-folder>
     source ~/.zshrc
     ```
 
-3. Use the function to load credentials for a specific profile:
+3. Use the function to load credentials and ensure `aws sso login --profile profilename` is completedfor a specific profile:
 
     ```bash
     setssocredentials profilename
+    ```
+4. Generate the environment variables from the .env-backend.local and .env-frontend.local files.
+
+    ```bash
+    ./generate-env.sh
     ```
 
 ### Run Docker Compose
@@ -65,6 +70,10 @@ cd <repository-folder>
 
     ```bash
     docker-compose up --build
+    ```
+    In daemon mode:
+    ```bash
+    docker-compose up --build -d
     ```
 
 2. Access the backend API service at:

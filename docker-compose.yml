@@ -6,13 +6,13 @@ services:
       context: ./frontend
       dockerfile: DockerfileLocal
       args:
-        DOT_ENV_FILE: ${DOT_ENV_FILE:-.env-local.mgmt}
+        DOT_ENV_FILE: ${DOT_ENV_FILE:-.env-frontend.local}
     ports:
       - "80:80"
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION}
+      - AWS_REGION=us-east-1
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # Add STS session token
     volumes:
       - ./frontend:/app
@@ -28,7 +28,7 @@ services:
       - AWS_REGION=us-east-1
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # Add STS session token
     env_file:
-      - ./backend/.env.dockerfile-mgmt
+      - ./backend/.env-backend.local
     volumes:
       - ./backend:/backend
 #    command: sh -c "env | sort"
