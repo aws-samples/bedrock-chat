@@ -62,7 +62,7 @@
     "identityProviders": [],
     "userPoolDomainPrefix": "",
     "allowedSignUpEmailDomains": [],
-    "autoJoinUserGroups": ["CreatingBotAllowed"],
+    "autoJoinUserGroups": [],
     "selfSignUpEnabled": true,
     "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "publishedApiAllowedIpV6AddressRanges": [
