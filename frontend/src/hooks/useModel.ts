@@ -1,28 +1,32 @@
 import { create } from 'zustand';
 import { Model } from '../@types/conversation';
-import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useLocalStorage from './useLocalStorage';
 import { ActiveModels } from '../@types/bot';
 import { toCamelCase } from '../utils/StringUtils';
 
+import { 
+  MODEL_REGISTRY,
+  type ModelId,
+  AVAILABLE_MODEL_KEYS 
+} from '../constants';
+
+// Define the interface for model info
+interface ModelInfo {
+  modelId: Model;
+  label: string;
+  supportMediaType: string[];
+  description: string;
+}
+
+interface ModelConfig {
+  supportMediaType: string[];
+  maxTokens: number;
+}
+
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
-
-const CLAUDE_SUPPORTED_MEDIA_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-];
-
-const NOVA_SUPPORTED_MEDIA_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-];
 
 const useModelState = create<{
   modelId: Model;
@@ -36,7 +40,21 @@ const useModelState = create<{
   },
 }));
 
-const DEFAULT_MODEL: Model = 'claude-v3-haiku';
+const DEFAULT_MODEL: Model = 'claude-v3.5-haiku';
+
+const getModelConfig = (modelId: ModelId): ModelConfig & { category: string } => {
+  for (const [category, models] of Object.entries(MODEL_REGISTRY)) {
+    if (modelId in models) {
+      const modelConfig = models[modelId as keyof typeof models] as ModelConfig;
+      return {
+        category,
+        supportMediaType: modelConfig.supportMediaType,
+        maxTokens: modelConfig.maxTokens
+      };
+    }
+  }
+  throw new Error(`Unknown model ID: ${modelId}`);
+};
 
 // Store the Previous BotId
 const usePreviousBotId = (botId: string | null | undefined) => {
@@ -67,90 +85,18 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const { t } = useTranslation();
   const previousBotId = usePreviousBotId(botId);
 
-  const availableModels = useMemo<
-    {
-      modelId: Model;
-      label: string;
-      supportMediaType: string[];
-      description?: string;
-    }[]
-  >(() => {
-    return !MISTRAL_ENABLED
-      ? [
-          {
-            modelId: 'claude-v3-haiku',
-            label: t('model.claude-v3-haiku.label'),
-            description: t('model.claude-v3-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'claude-v3.5-haiku',
-            label: t('model.claude-v3.5-haiku.label'),
-            description: t('model.claude-v3.5-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'claude-v3-sonnet',
-            label: t('model.claude-v3-sonnet.label'),
-            description: t('model.claude-v3-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet',
-            label: t('model.claude-v3.5-sonnet.label'),
-            description: t('model.claude-v3.5-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet-v2',
-            label: t('model.claude-v3.5-sonnet-v2.label'),
-            description: t('model.claude-v3.5-sonnet-v2.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'claude-v3-opus',
-            label: t('model.claude-v3-opus.label'),
-            description: t('model.claude-v3-opus.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-          },
-          // New Amazon Nova models
-          {
-            modelId: 'amazon-nova-pro',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'amazon-nova-lite',
-            label: t('model.amazon-nova-lite.label'),
-            description: t('model.amazon-nova-lite.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-          },
-          {
-            modelId: 'amazon-nova-micro',
-            label: t('model.amazon-nova-micro.label'),
-            description: t('model.amazon-nova-micro.description'),
-            supportMediaType: [],
-          },
-        ]
-      : [
-          {
-            modelId: 'mistral-7b-instruct',
-            label: t('model.mistral-7b-instruct.label'),
-            supportMediaType: [],
-          },
-          {
-            modelId: 'mixtral-8x7b-instruct',
-            label: t('model.mixtral-8x7b-instruct.label'),
-            supportMediaType: [],
-          },
-          {
-            modelId: 'mistral-large',
-            label: t('model.mistral-large.label'),
-            supportMediaType: [],
-          },
-        ];
+  const availableModels = useMemo<ModelInfo[]>(() => {
+    return AVAILABLE_MODEL_KEYS.map(modelId => {
+      const config = getModelConfig(modelId);
+      return {
+        modelId,
+        label: t(`model.${modelId}.label`),
+        description: t(`model.${modelId}.description`),
+        supportMediaType: config.supportMediaType,
+      };
+    });
   }, [t]);
+  
 
   const [filteredModels, setFilteredModels] = useState(availableModels);
   const { modelId, setModelId } = useModelState();

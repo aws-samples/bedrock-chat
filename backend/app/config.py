@@ -20,10 +20,10 @@ class EmbeddingConfig(TypedDict):
 # Adjust the values according to your application.
 # See: https://docs.anthropic.com/claude/reference/complete_post
 DEFAULT_GENERATION_CONFIG: GenerationParams = {
-    "max_tokens": 2000,
+    "max_tokens": 3000,
     "top_k": 250,
     "top_p": 0.999,
-    "temperature": 0.6,
+    "temperature": 0.0,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 
@@ -32,7 +32,7 @@ DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
     "max_tokens": 4096,
     "top_k": 250,
     "top_p": 0.9,
-    "temperature": 0.5,
+    "temperature": 0.0,
     "stop_sequences": ["[INST]", "[/INST]"],
 }
 

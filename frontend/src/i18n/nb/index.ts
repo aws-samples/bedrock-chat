@@ -563,7 +563,7 @@ Hvordan vil du kategorisere denne e-posten?`,
                 label: 'Chunking-strategi',
                 default: {
                     label: 'Standard chunking',
-                    hint: "Deler automatisk opp tekst i biter på omtrent 300 tokens i størrelse som standard. Hvis et dokument er mindre enn eller allerede 300 tokens, deles det ikke ytterligere.",
+                    hint: "Deler automatisk opp tekst i biter på omtrent 500 tokens i størrelse som standard. Hvis et dokument er mindre enn eller allerede 500 tokens, deles det ikke ytterligere.",
                 },
                 fixed_size: {
                     label: 'Fast størrelse chunking',

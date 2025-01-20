@@ -612,7 +612,7 @@ Las categorías de clasificación son:
         label: 'Estrategia de Fragmentación',
         default: {
           label: 'Fragmentación predeterminada',
-          hint: "Divide automáticamente el texto en fragmentos de aproximadamente 300 tokens por defecto. Si un documento es menor o ya tiene 300 tokens, no se divide más.",
+          hint: "Divide automáticamente el texto en fragmentos de aproximadamente 500 tokens por defecto. Si un documento es menor o ya tiene 500 tokens, no se divide más.",
         },
         fixed_size: {
           label: 'Fragmentación de tamaño fijo',

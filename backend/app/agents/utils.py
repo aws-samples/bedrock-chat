@@ -9,6 +9,7 @@ from app.routes.schemas.conversation import type_model_name
 from app.agents.tools.internet_search import internet_search_tool
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.tools.simple_quiz import create_simple_quiz_tool
+from app.agents.tools.lesson_plan import create_unified_lesson_planner_tool
 from app.repositories.models.custom_bot import GenerationParamsModel, AgentModel, KnowledgeModel, ActiveModelsModel
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ AVAILABLE_TOOLS: dict[str, AgentTool] = {
 BOT_TOOL_CREATORS = {
     "knowledge_base_search": create_knowledge_tool,
     "quiz_generator": create_simple_quiz_tool,  # Changed key to match frontend expectation
+    "lesson_planner": create_unified_lesson_planner_tool,  # Changed key to match frontend expectation
 }
 
 def fetch_available_agent_tools() -> List[AgentToolSchema]:
@@ -37,33 +39,27 @@ def fetch_available_agent_tools() -> List[AgentToolSchema]:
     Fetch all available tools that can be added to a bot.
     Used by the /bot/{bot_id}/agent/available-tools endpoint.
     Returns schema representations of tools for API responses.
-    """
-    logger.info(f"Fetching available agent tool schemas")
-    tools = []
     
-    # Add static tools
-    for name, tool in AVAILABLE_TOOLS.items():
-        logger.debug(f"Adding static tool schema: {name}")
-        tools.append(AgentToolSchema(
-            name=name,
+    This implementation uses get_available_tools logic to ensure consistency
+    and avoid hard-coding of tools.
+    """
+    logger.info("Fetching available agent tool schemas")
+    
+    # Get all possible tools using get_available_tools
+    # Pass bot=None to get all possible tools (new bot flow)
+    all_tools = get_available_tools(bot=None)
+    
+    # Convert AgentTool instances to AgentToolSchema representations
+    tool_schemas = []
+    for tool in all_tools:
+        logger.debug(f"Converting tool to schema: {tool.__class__.__name__}")
+        tool_schemas.append(AgentToolSchema(
+            name=tool.name,  # Use the tool's defined name property
             description=tool.description
         ))
     
-    # Add bot-specific tools
-    logger.debug("Adding bot-specific tool schemas")
-    tools.extend([
-        AgentToolSchema(
-            name="quiz_generator",
-            description="Generate educational quizzes based on knowledge base content"
-        ),
-        AgentToolSchema(
-            name="knowledge_base_search", 
-            description="Search and retrieve information from the knowledge base"
-        )
-    ])
-    
-    logger.info(f"Returning {len(tools)} tool schemas")
-    return tools
+    logger.info(f"Returning {len(tool_schemas)} tool schemas")
+    return tool_schemas
 
 def get_tool_by_name(
     name: str,
@@ -123,7 +119,7 @@ def create_dummy_bot() -> BotModel:
         # Nested models need proper initialization
         generation_params=GenerationParamsModel(
             max_tokens=1000,
-            temperature=0.7,
+            temperature=0.0,
             top_p=0.7,
             top_k=10,
             stop_sequences=[],
