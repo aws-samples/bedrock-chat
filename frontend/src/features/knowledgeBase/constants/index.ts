@@ -62,7 +62,7 @@ export const DEFAULT_BEDROCK_KNOWLEDGEBASE: BedrockKnowledgeBase = {
 
 export const DEFAULT_FIXED_CHUNK_PARAMS: FixedSizeParams = {
   chunkingStrategy: 'fixed_size',
-  maxTokens: 300,
+  maxTokens: 500,
   overlapPercentage: 20,
 };
 
@@ -88,7 +88,7 @@ export const DEFAULT_HIERARCHICAL_CHUNK_PARAMS: HierarchicalParams = {
   chunkingStrategy: 'hierarchical',
   overlapTokens: 60,
   maxParentTokenSize: 1500,
-  maxChildTokenSize: 300,
+  maxChildTokenSize: 500,
 };
 
 // Hierarchical chunking valid range
@@ -118,7 +118,7 @@ export const EDGE_HIERARCHICAL_CHUNK_PARAMS = {
 
 export const DEFAULT_SEMANTIC_CHUNK_PARAMS: SemanticParams = {
   chunkingStrategy: 'semantic',
-  maxTokens: 300,
+  maxTokens: 500,
   bufferSize: 0,
   breakpointPercentileThreshold: 95,
 };

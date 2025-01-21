@@ -724,7 +724,7 @@ How would you categorize this email?`,
         label: 'Chunking Strategy',
         default: {
           label: 'Default chunking',
-          hint: "Automatically splits text into chunks of about 300 tokens in size, by default. If a document is less than or already 300 tokens, it's not split any futher.",
+          hint: "Automatically splits text into chunks of about 500 tokens in size, by default. If a document is less than or already 500 tokens, it's not split any futher.",
         },
         fixed_size: {
           label: 'Fixed-size chunking',

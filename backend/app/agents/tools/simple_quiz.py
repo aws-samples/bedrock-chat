@@ -19,6 +19,11 @@ class SimpleQuizInput(BaseModel):
         le=10,
         description="Number of questions to generate (1-10)"
     )
+    # Add documents field for specific source documents
+    documents: Optional[List[str]] = Field(
+        default=None,
+        description="List of source document names to search in knowledge base"
+    )
 
 class SimpleQuizTool(AgentTool):
     """Quiz generation tool with class-level description"""
@@ -42,6 +47,28 @@ class SimpleQuizTool(AgentTool):
             model=model
         )
     
+    def _build_search_query(
+        self,
+        tool_input: SimpleQuizInput
+    ) -> str:
+        """
+        Build context-appropriate search query for knowledge base search
+        """
+        # Base components for search query
+        topic_term = tool_input.topic
+
+        query = (
+            f"Find detailed information about {topic_term}"
+        )
+
+        # Add any documents if specified
+        if hasattr(tool_input, 'documents') and tool_input.documents:
+            documents_list = " ".join(tool_input.documents)
+            query += f" sources: {documents_list}"
+
+        logger.info(f"Built search query: {query}")
+        return query
+
     def generate_quiz(
         self,
         tool_input: SimpleQuizInput,
@@ -58,7 +85,7 @@ class SimpleQuizTool(AgentTool):
             # Search knowledge base for relevant content
             search_results = search_related_docs(
                 bot=bot,
-                query=f"Find detailed information about {tool_input.topic}"
+                query=self._build_search_query(tool_input)
             )
 
             if not search_results:

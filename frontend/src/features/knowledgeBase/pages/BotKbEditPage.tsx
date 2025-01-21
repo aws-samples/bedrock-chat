@@ -125,13 +125,13 @@ const BotKbEditPage: React.FC = () => {
   const [embeddingsModel, setEmbeddingsModel] =
     useState<EmbeddingsModel>('titan_v2');
 
-  const [hateThreshold, setHateThreshold] = useState<number>(0);
-  const [insultsThreshold, setInsultsThreshold] = useState<number>(0);
-  const [sexualThreshold, setSexualThreshold] = useState<number>(0);
-  const [violenceThreshold, setViolenceThreshold] = useState<number>(0);
-  const [misconductThreshold, setMisconductThreshold] = useState<number>(0);
-  const [groundingThreshold, setGroundingThreshold] = useState<number>(0);
-  const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0);
+  const [hateThreshold, setHateThreshold] = useState<number>(2);
+  const [insultsThreshold, setInsultsThreshold] = useState<number>(2);
+  const [sexualThreshold, setSexualThreshold] = useState<number>(2);
+  const [violenceThreshold, setViolenceThreshold] = useState<number>(2);
+  const [misconductThreshold, setMisconductThreshold] = useState<number>(2);
+  const [groundingThreshold, setGroundingThreshold] = useState<number>(0.7);
+  const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0.7);
   const [guardrailArn, setGuardrailArn] = useState<string>('');
   const [guardrailVersion, setGuardrailVersion] = useState<string>('');
   const [parsingModel, setParsingModel] = useState<ParsingModel | undefined>(
@@ -197,7 +197,7 @@ const BotKbEditPage: React.FC = () => {
   ];
 
   const [chunkingStrategy, setChunkingStrategy] =
-    useState<ChunkingStrategy>('default');
+    useState<ChunkingStrategy>('semantic');
 
   const webCrawlingScopeOptions: {
     label: string;
@@ -536,37 +536,37 @@ const BotKbEditPage: React.FC = () => {
           setHateThreshold(
             bot.bedrockGuardrails.hateThreshold
               ? bot.bedrockGuardrails.hateThreshold
-              : 0
+              : 2
           );
           setInsultsThreshold(
             bot.bedrockGuardrails.insultsThreshold
               ? bot.bedrockGuardrails.insultsThreshold
-              : 0
+              : 2
           );
           setSexualThreshold(
             bot.bedrockGuardrails.sexualThreshold
               ? bot.bedrockGuardrails.sexualThreshold
-              : 0
+              : 2
           );
           setViolenceThreshold(
             bot.bedrockGuardrails.violenceThreshold
               ? bot.bedrockGuardrails.violenceThreshold
-              : 0
+              : 2
           );
           setMisconductThreshold(
             bot.bedrockGuardrails.misconductThreshold
               ? bot.bedrockGuardrails.misconductThreshold
-              : 0
+              : 2
           );
           setGroundingThreshold(
             bot.bedrockGuardrails.groundingThreshold
               ? bot.bedrockGuardrails.groundingThreshold
-              : 0
+              : 0.7
           );
           setRelevanceThreshold(
             bot.bedrockGuardrails.relevanceThreshold
               ? bot.bedrockGuardrails.relevanceThreshold
-              : 0
+              : 0.7
           );
           setParsingModel(bot.bedrockKnowledgeBase.parsingModel);
           setWebCrawlingScope(

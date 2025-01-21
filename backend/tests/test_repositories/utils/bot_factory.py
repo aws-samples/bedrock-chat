@@ -44,10 +44,10 @@ def create_test_private_bot(
         public_bot_id=None,
         owner_user_id=owner_user_id,
         generation_params=GenerationParamsModel(
-            max_tokens=2000,
+            max_tokens=3000,
             top_k=250,
             top_p=0.999,
-            temperature=0.6,
+            temperature=0.0,
             stop_sequences=["Human: ", "Assistant: "],
         ),
         agent=AgentModel(
@@ -99,10 +99,10 @@ def create_test_public_bot(
         public_bot_id=public_bot_id,
         owner_user_id=owner_user_id,
         generation_params=GenerationParamsModel(
-            max_tokens=2000,
+            max_tokens=3000,
             top_k=250,
             top_p=0.999,
-            temperature=0.6,
+            temperature=0.0,
             stop_sequences=["Human: ", "Assistant: "],
         ),
         agent=AgentModel(
