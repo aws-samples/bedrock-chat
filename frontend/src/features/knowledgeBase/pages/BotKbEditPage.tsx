@@ -138,8 +138,8 @@ const BotKbEditPage: React.FC = () => {
   const [sexualThreshold, setSexualThreshold] = useState<number>(2);
   const [violenceThreshold, setViolenceThreshold] = useState<number>(2);
   const [misconductThreshold, setMisconductThreshold] = useState<number>(2);
-  const [groundingThreshold, setGroundingThreshold] = useState<number>(0.7);
-  const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0.7);
+  const [groundingThreshold, setGroundingThreshold] = useState<number>(0);
+  const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0);
   const [guardrailArn, setGuardrailArn] = useState<string>('');
   const [guardrailVersion, setGuardrailVersion] = useState<string>('');
   const [parsingModel, setParsingModel] = useState<ParsingModel | undefined>(
@@ -570,12 +570,12 @@ const BotKbEditPage: React.FC = () => {
           setGroundingThreshold(
             bot.bedrockGuardrails.groundingThreshold
               ? bot.bedrockGuardrails.groundingThreshold
-              : 0.7
+              : 0
           );
           setRelevanceThreshold(
             bot.bedrockGuardrails.relevanceThreshold
               ? bot.bedrockGuardrails.relevanceThreshold
-              : 0.7
+              : 0
           );
           setParsingModel(bot.bedrockKnowledgeBase.parsingModel);
           setWebCrawlingScope(
