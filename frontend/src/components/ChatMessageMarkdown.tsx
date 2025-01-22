@@ -139,7 +139,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
 
   return (
     <ReactMarkdown
-      className={twMerge(className, 'prose dark:prose-invert max-w-full break-all')}
+      className={twMerge(className, 'prose dark:prose-invert max-w-full break-words')}
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

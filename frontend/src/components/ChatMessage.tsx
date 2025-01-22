@@ -161,7 +161,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           </div>
         )}
 
-        <div className="ml-5 grow ">
+        <div className="break-words ml-5 grow">
           {chatContent?.role === 'assistant' && tools != null && tools.length > 0 && (
             <div className="flex flex-col">
               {tools.map((tools, index) => (
