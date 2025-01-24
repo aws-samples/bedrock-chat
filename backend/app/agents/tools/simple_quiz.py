@@ -37,14 +37,13 @@ class SimpleQuizTool(AgentTool):
         """Get tool description for schema generation"""
         return cls.DESCRIPTION
 
-    def __init__(self, bot: BotModel, model: type_model_name):
+    def __init__(self, bot: BotModel):
         super().__init__(
             name="quiz_generator",
             description=self.DESCRIPTION,
             args_schema=SimpleQuizInput,
             function=self.generate_quiz,
             bot=bot,
-            model=model
         )
     
     def _build_search_query(
@@ -76,19 +75,36 @@ class SimpleQuizTool(AgentTool):
         model: type_model_name | None
     ) -> list:
         """Generate quiz based on knowledge base content"""
+        logger.info(f"Starting quiz generation for: {tool_input}")
         if bot is None:
+            logger.error("Bot instance is None")
             raise ValueError("Bot instance required for quiz generation")
+
+        # Single consolidated log statement
+        logger.info(
+            f"""QUIZ BOT INFO: | 
+            ID: {bot.id} | 
+            Type: {type(bot)} | 
+            Knowledge Base: {bot.bedrock_knowledge_base} | 
+            Knowledge Config: {bot.knowledge} | 
+            Sync Status: {bot.sync_status} | 
+            Active Models: {bot.active_models} | 
+            Topic: {tool_input.topic}"""
+        )
 
         logger.info(f"Generating quiz about: {tool_input.topic}")
 
         try:
+            query = self._build_search_query(tool_input)
+            logger.info(f"Search query built: {query}")
+
             # Search knowledge base for relevant content
-            search_results = search_related_docs(
-                bot=bot,
-                query=self._build_search_query(tool_input)
-            )
+            logger.info("Starting search with knowledge base")
+            search_results = search_related_docs(bot=bot, query=query)
+            logger.info(f"Got search results length: {len(search_results)}")
 
             if not search_results:
+                logger.warning(f"No content found for topic: {tool_input.topic}")
                 return [{
                     "content": f"No information found about {tool_input.topic} in the knowledge base.",
                     "source_name": "Quiz Generator"
@@ -144,12 +160,12 @@ Begin quiz generation:"""
             }]
 
         except Exception as e:
-            logger.error(f"Failed to generate quiz: {e}")
+            logger.error(f"Error in generate_quiz: {str(e)}", exc_info=True)
             return [{
                 "content": f"Error generating quiz: {str(e)}",
                 "source_name": "Quiz Generator"
             }]
 
-def create_simple_quiz_tool(bot: BotModel, model: type_model_name) -> AgentTool:
+def create_simple_quiz_tool(bot: BotModel) -> AgentTool:
     """Create a quiz tool instance for the given bot."""
-    return SimpleQuizTool(bot, model)
+    return SimpleQuizTool(bot)

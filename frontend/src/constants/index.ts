@@ -186,3 +186,7 @@ export const AVAILABLE_MODEL_KEYS = Object.entries(MODEL_REGISTRY)
   .filter(([category]) => ENABLED_MODEL_CATEGORIES[category as keyof typeof ENABLED_MODEL_CATEGORIES])
   .flatMap(([_, models]) => Object.keys(models))
   .filter(model => ALLOWED_MODELS.includes(model)) as ModelId[];
+
+
+// Refresh Interval
+export const BASE_REFRESH_INTERVAL = 15000;
