@@ -996,6 +996,7 @@ class TestInsertKnowledge(unittest.TestCase):
         ]
         instruction = build_rag_prompt(
             search_results=results,
+            model="claude-v3.5-haiku",
             display_citation=True,
         )
         print(instruction)

@@ -43,7 +43,7 @@ const useBotApi = () => {
               data?.syncStatus === 'QUEUED' ||
               data?.syncStatus === 'RUNNING'
             ) {
-              return 5000;
+              return 15000;
             }
             return 0;
           },

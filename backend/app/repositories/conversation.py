@@ -93,7 +93,7 @@ def store_conversation(
         )
         
         # Store only system attribute in DynamoDB
-        system_message_map = {k: v for k, v in message_map.items() if k == "system"}
+        system_message_map = {k: v for k, v in json_safe_message_map.items() if k == "system"}
         item_params["MessageMap"] = json.dumps(system_message_map)
     else:
         item_params["IsLargeMessage"] = False
@@ -287,6 +287,7 @@ def delete_conversation_by_user_id(user_id: str):
 
     except ClientError as e:
         logger.error(f"An error occurred: {e.response['Error']['Message']}")
+        raise e
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):

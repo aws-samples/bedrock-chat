@@ -64,13 +64,12 @@ def fetch_available_agent_tools() -> List[AgentToolSchema]:
 def get_tool_by_name(
     name: str,
     bot: BotModel | None = None,
-    model: type_model_name | None = None
 ) -> AgentTool:
     """
     Get a tool instance by name.
     For bot-specific tools, requires bot and model context.
     """
-    logger.info(f"Getting tool by name: {name}, model: {model}")
+    logger.info(f"Getting tool by name: {name}")
     
     # Check static tools first
     if name in AVAILABLE_TOOLS:
@@ -83,12 +82,9 @@ def get_tool_by_name(
         if bot is None:
             logger.debug(f"Creating dummy bot for tool: {name}")
             bot = create_dummy_bot()
-        if model is None:
-            logger.debug("No model provided, using default")
-            model = DEFAULT_AGENT_MODEL
-            
-        logger.debug(f"Creating bot-specific tool: {name} for bot_id={bot.id}, model={model}")
-        return BOT_TOOL_CREATORS[name](bot, model)
+
+        logger.debug(f"Creating bot-specific tool: {name} for bot_id={bot.id}")
+        return BOT_TOOL_CREATORS[name](bot)
     
     logger.error(f"Tool with name {name} not found")        
     raise ValueError(f"Tool with name {name} not found")    
@@ -168,14 +164,13 @@ def create_dummy_bot() -> BotModel:
 
 def get_available_tools(
     bot: BotModel | None = None,
-    model: type_model_name | None = None
 ) -> list[AgentTool]:
     """
     Get all available tools based on bot configuration.
     If bot is provided, includes bot-specific tools configured for that bot.
     Returns actual AgentTool instances rather than schemas.
     """
-    logger.info(f"Getting available tools (bot={bot.id if bot else 'None'}, model={model})")
+    logger.info(f"Getting available tools (bot={bot.id if bot else 'None'})")
     
     tools: list[AgentTool] = []
     
@@ -190,13 +185,11 @@ def get_available_tools(
     else:
         dummy_bot = bot  # Use provided bot
 
-    effective_model = model or DEFAULT_AGENT_MODEL  # Default model if none provided
-
     # Add bot-specific tools only once
-    logger.info(f"Adding core bot tools (quiz and knowledge base) using model: {effective_model}")
+    logger.info(f"Adding core bot tools")
     for tool_name, creator in BOT_TOOL_CREATORS.items():
         try:
-            tools.append(creator(dummy_bot, effective_model))
+            tools.append(creator(dummy_bot))
             logger.debug(f"Successfully added {tool_name} tool")
         except Exception as e:
             logger.error(f"Error creating tool {tool_name}: {str(e)}")

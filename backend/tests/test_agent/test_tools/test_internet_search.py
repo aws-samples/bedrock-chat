@@ -13,7 +13,11 @@ class TestInternetSearchTool(unittest.TestCase):
         time_limit = "d"
         country = "jp-jp"
         arg = InternetSearchInput(query=query, time_limit=time_limit, country=country)
-        response = internet_search_tool.run(tool_use_id="dummy", input=arg.model_dump())
+        response = internet_search_tool.run(
+            tool_use_id="dummy",
+            input=arg.model_dump(),
+            model="claude-v3.5-sonnet-v2",
+        )
         self.assertIsInstance(response["related_documents"], list)
         self.assertEqual(response["status"], "success")
         print(response)

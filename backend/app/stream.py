@@ -181,7 +181,7 @@ class ConverseApiStreamHandler:
                 if not hasattr(message_for_continue_generate, 'content'):
                     logger.error(f"message_for_continue_generate missing content attribute: {message_for_continue_generate}")
                     raise ValueError("Invalid message format")
-            logger.info("Message for continue generate: %s", message_for_continue_generate)
+                logger.info("Message for continue generate: %s", message_for_continue_generate)
             
             current_message = _PartialMessage(
                 role="assistant",

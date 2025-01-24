@@ -1,29 +1,34 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import TypeGuard, Dict, Any, Optional, Tuple
+from typing import TypeGuard, Dict, Any, Optional, Tuple, TYPE_CHECKING
 
-from app.agents.tools.agent_tool import AgentTool
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-from app.repositories.models.conversation import (
-    SimpleMessageModel,
-    ContentModel,
-)
+
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 
-from mypy_boto3_bedrock_runtime.type_defs import (
-    ConverseStreamRequestRequestTypeDef,
-    MessageTypeDef,
-    ConverseResponseTypeDef,
-    ContentBlockTypeDef,
-    GuardrailConverseContentBlockTypeDef,
-    InferenceConfigurationTypeDef,
-)
-from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
+if TYPE_CHECKING:
+    from app.agents.tools.agent_tool import AgentTool
+    from app.repositories.models.conversation import (
+        SimpleMessageModel,
+        ContentModel,
+    )
+    from mypy_boto3_bedrock_runtime.type_defs import (
+        ConverseStreamRequestRequestTypeDef,
+        MessageTypeDef,
+        ConverseResponseTypeDef,
+        ContentBlockTypeDef,
+        GuardrailConverseContentBlockTypeDef,
+        InferenceConfigurationTypeDef,
+        SystemContentBlockTypeDef,
+    )
+    from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -46,7 +51,7 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
     return role in ["user", "assistant"]
 
 
-def _is_nova_model(model: type_model_name) -> bool:
+def is_nova_model(model: type_model_name) -> bool:
     """Check if the model is an Amazon Nova model"""
     return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
 
@@ -83,7 +88,14 @@ def _prepare_nova_model_params(
 
     # Add top_k if specified in generation params
     if generation_params and generation_params.top_k is not None:
-        additional_fields["inferenceConfig"]["topK"] = generation_params.top_k
+        top_k = generation_params.top_k
+        if top_k > 128:
+            logger.warning(
+                "In Amazon Nova, an 'unexpected error' occurs if topK exceeds 128. To avoid errors, the upper limit of A is set to 128."
+            )
+            top_k = 128
+
+        additional_fields["inferenceConfig"]["topK"] = top_k
 
     return inference_config, additional_fields
 
@@ -131,11 +143,24 @@ def compose_args_for_converse_api(
     ]
 
     # Prepare model-specific parameters
-    if _is_nova_model(model):
+    inference_config: InferenceConfigurationTypeDef
+    additional_model_request_fields: dict[str, Any]
+    system_prompts: list[SystemContentBlockTypeDef]
+    if is_nova_model(model):
         # Special handling for Nova models
         inference_config, additional_model_request_fields = _prepare_nova_model_params(
             model, generation_params
         )
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if len(instructions) > 0
+            else []
+        )
+
     else:
         # Standard handling for non-Nova models
         inference_config = {
@@ -167,17 +192,18 @@ def compose_args_for_converse_api(
                 else DEFAULT_GENERATION_CONFIG["top_k"]
             )
         }
+        system_prompts = [
+            {"text": instruction}
+            for instruction in instructions
+            if len(instruction) > 0
+        ]
 
     # Construct the base arguments
     args: ConverseStreamRequestRequestTypeDef = {
         "inferenceConfig": inference_config,
         "modelId": get_model_id(model),
         "messages": arg_messages,
-        "system": [
-            {"text": instruction}
-            for instruction in instructions
-            if len(instruction) > 0
-        ],
+        "system": system_prompts,        
         "additionalModelRequestFields": additional_model_request_fields,
     }
 
