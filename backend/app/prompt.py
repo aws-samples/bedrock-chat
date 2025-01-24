@@ -134,7 +134,6 @@ first answer [^aaa][^eee]. second answer [^bbb][^ccc][^ddd]. third answer [^ddd]
     else:
         # For other models, provide good examples and bad examples.
         inserted_prompt += """
-<examples>
 <GOOD-example>
 first answer [^ccc]. second answer [^aaa][^bbb].
 </GOOD-example>

@@ -57,10 +57,22 @@ def to_guardrails_grounding_source(
 
 
 def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
-    assert (
-        bot.bedrock_knowledge_base is not None
-        and bot.bedrock_knowledge_base.knowledge_base_id is not None
-    )
+    # Instead of assert, do an explicit check and log a full stack trace if missing
+    if bot.bedrock_knowledge_base is None or bot.bedrock_knowledge_base.knowledge_base_id is None:
+        logger.error(
+            "Missing bedrock_knowledge_base or knowledge_base_id in _bedrock_knowledge_base_search.\n"
+            "Bot ID: %s\n"
+            "bedrock_knowledge_base: %s\n",
+            bot.id,
+            bot.bedrock_knowledge_base,
+        )
+        # Print the stack to logs:
+        logger.error("Stacktrace below:", exc_info=True)
+        
+        # Then raise an assertion or custom exception:
+        raise AssertionError(
+            "Cannot perform knowledge base search with a null or missing knowledge_base_id."
+        )
 
     if bot.bedrock_knowledge_base.search_params.search_type == "semantic":
         search_type = "SEMANTIC"

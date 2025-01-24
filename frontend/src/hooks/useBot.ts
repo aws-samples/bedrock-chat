@@ -1,23 +1,45 @@
-import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
+import { useState } from 'react';
+import { BotSyncStatus, RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
+import { BASE_REFRESH_INTERVAL } from '../constants';
+
+interface SyncState {
+  interval: number;
+  lastStatus?: BotSyncStatus;
+ }
 
 const useBot = (shouldAutoRefreshMyBots?: boolean) => {
+  const [syncState, setSyncState] = useState<SyncState>({
+    interval: BASE_REFRESH_INTERVAL,
+    lastStatus: undefined
+  });
+
   const api = useBotApi();
 
   const { data: myBots, mutate: mutateMyBots } = api.bots(
-    {
-      kind: 'private',
-    },
+    { kind: 'private' },
     shouldAutoRefreshMyBots
       ? (data) => {
-          if (!data) {
+          if (!data) return 0;
+          
+          const runningBot = data.find(bot => 
+            bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
+          );
+
+          if (!runningBot) {
             return 0;
           }
-          const index = data.findIndex(
-            (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
-          );
-          return index > -1 ? 5000 : 0;
+
+          if (runningBot.syncStatus !== syncState.lastStatus) {
+            setSyncState({
+              interval: BASE_REFRESH_INTERVAL,
+              lastStatus: runningBot.syncStatus
+            });
+            return BASE_REFRESH_INTERVAL;
+          }
+
+          return syncState.interval;
         }
       : undefined
   );

@@ -236,7 +236,7 @@ def chat(
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
     tools = (
-        {t.name: get_tool_by_name(t.name) for t in bot.agent.tools}
+        {t.name: get_tool_by_name(t.name, bot) for t in bot.agent.tools}
         if bot and bot.is_agent_enabled()
         else {}
     )

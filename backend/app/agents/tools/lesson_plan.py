@@ -223,7 +223,7 @@ class UnifiedLessonPlannerTool(AgentTool):
     RELEVANCE_THRESHOLD: ClassVar[float] = 0.65
     MAX_CONTENT_LENGTH: ClassVar[int] = 5000
 
-    def __init__(self, bot: BotModel, model: type_model_name):
+    def __init__(self, bot: BotModel):
         """Initialize the lesson planner tool"""
         super().__init__(
             name="lesson_planner",
@@ -231,7 +231,6 @@ class UnifiedLessonPlannerTool(AgentTool):
             args_schema=UnifiedLessonPlanInput,
             function=self.generate_lesson_plan,
             bot=bot,
-            model=model
         )
         
         self.content_cache: Dict[str, List[ContentResult]] = {}
@@ -810,8 +809,7 @@ Begin session plan generation:"""
 
 
 def create_unified_lesson_planner_tool(
-    bot: BotModel,
-    model: type_model_name
+    bot: BotModel
 ) -> AgentTool:
     """Create an instance of the unified lesson planner tool"""
-    return UnifiedLessonPlannerTool(bot, model)
+    return UnifiedLessonPlannerTool(bot)

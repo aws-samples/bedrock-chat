@@ -65,6 +65,7 @@ from app.utils import (
     delete_file_from_s3,
     delete_files_with_prefix_from_s3,
     generate_presigned_url,
+    get_bedrock_agent_client,
     get_current_time,
     move_file_in_s3,
 )
@@ -128,33 +129,25 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         "QUEUED" if has_knowledge or has_guardrails else "SUCCEEDED"
     )
 
-    source_urls = []
-    sitemap_urls = []
-    filenames = []
-    s3_urls = []
-    if bot_input.knowledge:
-        source_urls = bot_input.knowledge.source_urls
-        sitemap_urls = bot_input.knowledge.sitemap_urls
-        s3_urls = bot_input.knowledge.s3_urls
+    # Prepare knowledge fields
+    source_urls = bot_input.knowledge.source_urls if bot_input.knowledge else []
+    sitemap_urls = bot_input.knowledge.sitemap_urls if bot_input.knowledge else []
+    s3_urls = bot_input.knowledge.s3_urls if bot_input.knowledge else []
+    filenames = bot_input.knowledge.filenames if bot_input.knowledge else []
 
-        # Only try to move files if there are actually files to move
-        filenames = bot_input.knowledge.filenames
-        if filenames:
-            try:
-                # Commit changes to S3
-                _update_s3_documents_by_diff(
-                    user_id, bot_input.id, filenames, []
-                )
-                # Delete files from upload temp directory
-                delete_files_with_prefix_from_s3(
-                    DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_input.id)
-                )
-            except FileNotFoundError:
-                # If no files found, just log and continue - the bot can still be created
-                logger.warning(f"No files found in temp S3 location for bot {bot_input.id}")
-                filenames = []  # Reset filenames since we couldn't move them
+    if filenames:
+        try:
+            # Move files from temp to final S3 path
+            _update_s3_documents_by_diff(user_id, bot_input.id, filenames, [])
+            # Clean up any leftover temp uploads
+            delete_files_with_prefix_from_s3(
+                DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_input.id)
+            )
+        except FileNotFoundError:
+            logger.warning(f"No files found in temp S3 location for bot {bot_input.id}")
+            filenames = []  # Reset if we couldn't move them
 
-
+    # Build generation params
     generation_params: GenerationParamsDict = (
         {
             "max_tokens": bot_input.generation_params.max_tokens,
@@ -167,94 +160,107 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_GENERATION_CONFIG
     )
 
-    # Get appropriate model for tools
-    effective_model = None
-    if bot_input.active_models:
-        active_models_dict = bot_input.active_models.model_dump()
-        effective_model = active_models_dict.get('tools')
-    if not effective_model:
-        effective_model = "claude_v3_5_sonnet_v2"
+    # ===== Construct the AgentModel (never None!) =====
+    tool_instances = []
+    if bot_input.agent and bot_input.agent.tools:
+        for tool_name in bot_input.agent.tools:
+            try:
+                # We do not yet have a real "bot" object to pass here,
+                # but you can pass model if needed:
+                the_tool = get_tool_by_name(tool_name)
+                tool_instances.append(
+                    AgentToolModel(
+                        name=the_tool.name,
+                        description=the_tool.description
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Failed to create tool {tool_name}: {e}")
 
-    # Create agent with tools
-    agent = None
+    # If user didn't provide any agent or agent.tools, we default to empty
+    agent_model = AgentModel(tools=tool_instances)
+
+
+    # Step 1: Construct the BotModel object (without agent tools yet)
+    new_bot = BotModel(
+        id=bot_input.id,
+        title=bot_input.title,
+        description=bot_input.description or "",
+        instruction=bot_input.instruction,
+        create_time=current_time,
+        last_used_time=current_time,
+        public_bot_id=None,
+        is_pinned=False,
+        owner_user_id=user_id,
+        generation_params=GenerationParamsModel(**generation_params),
+        agent=agent_model,  # Will replace in after creating tools below
+        knowledge=KnowledgeModel(
+            source_urls=source_urls,
+            sitemap_urls=sitemap_urls,
+            filenames=filenames,
+            s3_urls=s3_urls,
+        ),
+        sync_status=sync_status,
+        sync_status_reason="",
+        sync_last_exec_id="",
+        published_api_stack_name=None,
+        published_api_datetime=None,
+        published_api_codebuild_id=None,
+        display_retrieved_chunks=bot_input.display_retrieved_chunks,
+        conversation_quick_starters=(
+            []
+            if not bot_input.conversation_quick_starters
+            else [
+                ConversationQuickStarterModel(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in bot_input.conversation_quick_starters
+            ]
+        ),
+        bedrock_knowledge_base=(
+            BedrockKnowledgeBaseModel(**bot_input.bedrock_knowledge_base.model_dump())
+            if bot_input.bedrock_knowledge_base
+            else None
+        ),
+        bedrock_guardrails=(
+            BedrockGuardrailsModel(**bot_input.bedrock_guardrails.model_dump())
+            if bot_input.bedrock_guardrails
+            else None
+        ),
+        active_models=ActiveModelsModel.model_validate(
+            dict(bot_input.active_models) if bot_input.active_models else {}
+        ),
+    )
+
+    # Step 2: Build agent tools using the *same* new_bot instance
     if bot_input.agent and bot_input.agent.tools:
         tool_instances = []
         for tool_name in bot_input.agent.tools:
             try:
-                tool = get_tool_by_name(tool_name, model=effective_model)
-                tool_instances.append(AgentToolModel(
-                    name=tool.name,
-                    description=tool.description
-                ))
-            except Exception as e:
-                logger.error(f"Failed to create tool {tool_name}: {str(e)}")
-        agent = AgentModel(tools=tool_instances)
-    else:
-        agent = AgentModel(tools=[])
-
-
-    store_bot(
-        user_id,
-        BotModel(
-            id=bot_input.id,
-            title=bot_input.title,
-            description=bot_input.description if bot_input.description else "",
-            instruction=bot_input.instruction,
-            create_time=current_time,
-            last_used_time=current_time,
-            public_bot_id=None,
-            is_pinned=False,
-            owner_user_id=user_id,  # Owner is the creator
-            generation_params=GenerationParamsModel(**generation_params),
-            agent=agent,
-            knowledge=KnowledgeModel(
-                source_urls=source_urls,
-                sitemap_urls=sitemap_urls,
-                filenames=filenames,
-                s3_urls=s3_urls,
-            ),
-            sync_status=sync_status,
-            sync_status_reason="",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=bot_input.display_retrieved_chunks,
-            conversation_quick_starters=(
-                []
-                if bot_input.conversation_quick_starters is None
-                else [
-                    ConversationQuickStarterModel(
-                        title=starter.title,
-                        example=starter.example,
-                    )
-                    for starter in bot_input.conversation_quick_starters
-                ]
-            ),
-            bedrock_knowledge_base=(
-                BedrockKnowledgeBaseModel(
-                    **(bot_input.bedrock_knowledge_base.model_dump())
+                # Provide the real BotModel instance and model
+                tool = get_tool_by_name(tool_name, bot=new_bot)
+                tool_instances.append(
+                    AgentToolModel(name=tool.name, description=tool.description)
                 )
-                if bot_input.bedrock_knowledge_base
-                else None
-            ),
-            bedrock_guardrails=(
-                BedrockGuardrailsModel(**(bot_input.bedrock_guardrails.model_dump()))
-                if bot_input.bedrock_guardrails
-                else None
-            ),
-            active_models=ActiveModelsModel.model_validate(
-                dict(bot_input.active_models) if bot_input.active_models else {}
-            ),
-        ),
-    )
+            except Exception as e:
+                logger.error(f"Failed to create tool {tool_name}: {e}")
+
+        new_bot.agent = AgentModel(tools=tool_instances)
+    else:
+        new_bot.agent = AgentModel(tools=[])
+
+    # Step 3: Store the newly created bot in DB
+    store_bot(user_id, new_bot)
+
+    # Step 4: Return BotOutput
     return BotOutput(
-        id=bot_input.id,
-        title=bot_input.title,
-        instruction=bot_input.instruction,
-        description=bot_input.description if bot_input.description else "",
-        create_time=current_time,
-        last_used_time=current_time,
+        id=new_bot.id,
+        title=new_bot.title,
+        instruction=new_bot.instruction,
+        description=new_bot.description,
+        create_time=new_bot.create_time,
+        last_used_time=new_bot.last_used_time,
         is_public=False,
         is_pinned=False,
         owned=True,
@@ -262,7 +268,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         agent=Agent(
             tools=[
                 AgentTool(name=tool.name, description=tool.description)
-                for tool in agent.tools
+                for tool in new_bot.agent.tools
             ]
         ),
         knowledge=Knowledge(
@@ -274,27 +280,20 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sync_status=sync_status,
         sync_status_reason="",
         sync_last_exec_id="",
-        display_retrieved_chunks=bot_input.display_retrieved_chunks,
-        conversation_quick_starters=(
-            []
-            if bot_input.conversation_quick_starters is None
-            else [
-                ConversationQuickStarter(
-                    title=starter.title,
-                    example=starter.example,
-                )
-                for starter in bot_input.conversation_quick_starters
-            ]
-        ),
+        display_retrieved_chunks=new_bot.display_retrieved_chunks,
+        conversation_quick_starters=[
+            ConversationQuickStarter(title=starter.title, example=starter.example)
+            for starter in new_bot.conversation_quick_starters
+        ]
+        if new_bot.conversation_quick_starters
+        else [],
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseOutput(
-                **(bot_input.bedrock_knowledge_base.model_dump())
-            )
+            BedrockKnowledgeBaseOutput(**bot_input.bedrock_knowledge_base.model_dump())
             if bot_input.bedrock_knowledge_base
             else None
         ),
         bedrock_guardrails=(
-            BedrockGuardrailsOutput(**(bot_input.bedrock_guardrails.model_dump()))
+            BedrockGuardrailsOutput(**bot_input.bedrock_guardrails.model_dump())
             if bot_input.bedrock_guardrails
             else None
         ),
@@ -307,7 +306,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
 def modify_owned_bot(
     user_id: str, bot_id: str, modify_input: BotModifyInput
 ) -> BotModifyOutput:
-    """Modify owned bot."""
+    """
+    Modify an owned bot. Ensures we pass the real 'bot' instance
+    to any agent tools, so bedrock_knowledge_base is preserved.
+    """
     source_urls = []
     sitemap_urls = []
     filenames = []
@@ -351,36 +353,27 @@ def modify_owned_bot(
     # Get existing bot and model first
     bot = find_private_bot_by_id(user_id, bot_id)
 
-    # Determine which model to use for tools, with proper fallback
-    effective_model = None
-    if modify_input.active_models:
-        # Access dict form to get tools value
-        active_models_dict = modify_input.active_models.model_dump()
-        effective_model = active_models_dict.get('tools')
-    
-    if not effective_model and bot.active_models:
-        # Try to get from existing bot
-        bot_active_models_dict = bot.active_models.model_dump()
-        effective_model = bot_active_models_dict.get('tools')
-    
-    if not effective_model:
-        # Final fallback
-        effective_model = "claude_v3_5_sonnet_v2"
-
-    agent = None
+    # Build or update the agent if needed
     if modify_input.agent:
-        agent = AgentModel(
-            tools=[
-                AgentToolModel(name=t.name, description=t.description)
-                for t in [
-                    get_tool_by_name(
-                        tool_name,
-                        bot=bot,  # We don't have the bot yet for creation
-                        model=effective_model,
-                    ) for tool_name in modify_input.agent.tools
-                ]
-            ]
-        )
+        # Create new AgentToolModel entries using the real 'bot'
+        new_tools = []
+        for tool_name in modify_input.agent.tools:
+            try:
+                # Provide the real existing bot object so the tool sees the correct bedrock_knowledge_base
+                the_tool = get_tool_by_name(
+                    tool_name,
+                    bot=bot,
+                )
+                new_tools.append(
+                    AgentToolModel(
+                        name=the_tool.name,
+                        description=the_tool.description,
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Failed to create tool {tool_name}: {e}")
+
+        agent = AgentModel(tools=new_tools)
     else:
         agent = AgentModel(tools=[])
 

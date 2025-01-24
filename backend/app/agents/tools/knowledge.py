@@ -68,8 +68,6 @@ def create_knowledge_tool(bot: BotModel) -> AgentTool:
     """
     description = (
         "Search and answer questions using the knowledge base."
-        #"Search and answer questions using the knowledge base. Available knowledge: {}"
-        #.format(bot.knowledge.__str_in_claude_format__())
     )
     
     logger.info(f"Creating knowledge base tool with description: {description}")
