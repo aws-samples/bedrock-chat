@@ -45,7 +45,6 @@ export class ApiPublishCodebuild extends Construct {
             "runtime-versions": {
               nodejs: "18",
             },
-            commands: ["npm install -g aws-cdk"],
             "on-failure": "ABORT",
           },
           build: {
@@ -54,7 +53,7 @@ export class ApiPublishCodebuild extends Construct {
               "npm ci",
               // Replace cdk's entrypoint. This is a workaround to avoid the issue that cdk synthesize all stacks.
               "sed -i 's|bin/bedrock-chat.ts|bin/api-publish.ts|' cdk.json",
-              `cdk deploy --require-approval never ApiPublishmentStack$PUBLISHED_API_ID \\
+              `npx cdk deploy --require-approval never ApiPublishmentStack$PUBLISHED_API_ID \\
          -c publishedApiThrottleRateLimit=$PUBLISHED_API_THROTTLE_RATE_LIMIT \\
          -c publishedApiThrottleBurstLimit=$PUBLISHED_API_THROTTLE_BURST_LIMIT \\
          -c publishedApiQuotaLimit=$PUBLISHED_API_QUOTA_LIMIT \\

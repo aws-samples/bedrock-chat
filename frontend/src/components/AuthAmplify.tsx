@@ -22,7 +22,7 @@ const AuthAmplify: React.FC<Props> = ({ socialProviders, children }) => {
       socialProviders={socialProviders}
       components={{
         Header: () => (
-          <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
+          <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color-light">
             {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
           </div>
         ),

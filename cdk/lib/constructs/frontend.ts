@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -7,26 +7,48 @@ import {
   IBucket,
 } from "aws-cdk-lib/aws-s3";
 import {
-  CloudFrontWebDistribution,
-  OriginAccessIdentity,
+  CachePolicy,
+  Distribution,
+  ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
 import { Idp } from "../utils/identity-provider";
 import { NagSuppressions } from "cdk-nag";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as targets from "aws-cdk-lib/aws-route53-targets";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
 
 export interface FrontendProps {
   readonly webAclId: string;
   readonly enableMistral: boolean;
   readonly accessLogBucket?: IBucket;
   readonly enableIpV6: boolean;
+  /** 
+   * Alternative domain name for CloudFront distribution (e.g., chat.example.com)
+   * If provided, CloudFront will be accessible via this domain
+   */
+  readonly alternateDomainName?: string;
+  /**
+   * Route53 hosted zone ID where the alternate domain records will be created
+   * Required if alternateDomainName is provided
+   */
+  readonly hostedZoneId?: string;
 }
 
 export class Frontend extends Construct {
-  readonly cloudFrontWebDistribution: CloudFrontWebDistribution;
+  readonly cloudFrontWebDistribution: Distribution;
   readonly assetBucket: Bucket;
+  private readonly certificate?: acm.ICertificate;
+  private readonly hostedZone?: route53.IHostedZone;
+  /** Alternate domain name for the CloudFront distribution */
+  private readonly alternateDomainName?: string;
+
   constructor(scope: Construct, id: string, props: FrontendProps) {
     super(scope, id);
+
+    this.alternateDomainName = props.alternateDomainName;
 
     const assetBucket = new Bucket(this, "AssetBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -38,47 +60,72 @@ export class Frontend extends Construct {
       serverAccessLogsPrefix: "AssetBucket",
     });
 
-    const originAccessIdentity = new OriginAccessIdentity(
-      this,
-      "OriginAccessIdentity"
-    );
-    const distribution = new CloudFrontWebDistribution(this, "Distribution", {
-      originConfigs: [
+    if (props.alternateDomainName && props.hostedZoneId) {
+      this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+        hostedZoneId: props.hostedZoneId,
+        zoneName: this.getDomainZoneName(props.alternateDomainName),
+      });
+
+      this.certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
+        domainName: props.alternateDomainName,
+        hostedZone: this.hostedZone,
+        region: 'us-east-1',
+        validation: acm.CertificateValidation.fromDns(this.hostedZone),
+      });
+    }
+
+    const distribution = new Distribution(this, "Distribution", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: S3BucketOrigin.withOriginAccessControl(assetBucket),
+        viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
+        cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+      },
+      ...(this.alternateDomainName && this.certificate ? {
+        domainNames: [this.alternateDomainName],
+        certificate: this.certificate,
+      } : {}),
+      errorResponses: [
         {
-          s3OriginSource: {
-            s3BucketSource: assetBucket,
-            originAccessIdentity,
-          },
-          behaviors: [
-            {
-              isDefaultBehavior: true,
-            },
-          ],
-        },
-      ],
-      errorConfigurations: [
-        {
-          errorCode: 404,
-          errorCachingMinTtl: 0,
-          responseCode: 200,
+          httpStatus: 404,
+          ttl: Duration.seconds(0),
+          responseHttpStatus: 200,
           responsePagePath: "/",
         },
         {
-          errorCode: 403,
-          errorCachingMinTtl: 0,
-          responseCode: 200,
+          httpStatus: 403,
+          ttl: Duration.seconds(0),
+          responseHttpStatus: 200,
           responsePagePath: "/",
         },
       ],
       ...(!this.shouldSkipAccessLogging() && {
-        loggingConfig: {
-          bucket: props.accessLogBucket,
-          prefix: "Frontend/",
-        },
+        logBucket: props.accessLogBucket,
+        logFilePrefix: "Frontend/",
       }),
-      webACLId: props.webAclId,
-      enableIpV6: props.enableIpV6,
+      webAclId: props.webAclId,
+      enableIpv6: props.enableIpV6,
     });
+
+    if (this.alternateDomainName && this.hostedZone) {
+      new route53.ARecord(this, 'AliasRecord', {
+        zone: this.hostedZone,
+        target: route53.RecordTarget.fromAlias(
+          new targets.CloudFrontTarget(distribution)
+        ),
+        recordName: this.alternateDomainName,
+      });
+
+      if (props.enableIpV6) {
+        new route53.AaaaRecord(this, 'AaaaRecord', {
+          zone: this.hostedZone,
+          target: route53.RecordTarget.fromAlias(
+            new targets.CloudFrontTarget(distribution)
+          ),
+          recordName: this.alternateDomainName,
+        });
+      }
+    }
 
     NagSuppressions.addResourceSuppressions(distribution, [
       {
@@ -89,9 +136,35 @@ export class Frontend extends Construct {
 
     this.assetBucket = assetBucket;
     this.cloudFrontWebDistribution = distribution;
+
+    if (this.alternateDomainName) {
+      new CfnOutput(this, 'AlternateDomain', {
+        value: this.alternateDomainName,
+        description: 'Alternate domain name for the CloudFront distribution',
+      });
+    }
+    if (this.certificate) {
+      new CfnOutput(this, 'CertificateArn', {
+        value: this.certificate.certificateArn,
+        description: 'ARN of the ACM certificate',
+      });
+    }
+  }
+
+  /**
+   * Extracts the parent domain from a full domain name
+   * e.g., 'chat.example.com' -> 'example.com'
+   */
+  private getDomainZoneName(domainName: string): string {
+    const parts = domainName.split('.');
+    if (parts.length <= 2) return domainName;
+    return parts.slice(-2).join('.');
   }
 
   getOrigin(): string {
+    if (this.alternateDomainName) {
+      return `https://${this.alternateDomainName}`;
+    }
     return `https://${this.cloudFrontWebDistribution.distributionDomainName}`;
   }
 

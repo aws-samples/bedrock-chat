@@ -39,15 +39,15 @@ export const Slider: FC<Props> = (props) => {
     <div className="flex flex-col">
       <label
         className={twMerge(
-          'text-sm text-dark-gray',
-          props.errorMessage && 'border-red text-red'
+          'text-sm text-dark-gray dark:text-light-gray',
+          props.errorMessage && 'border-red dark:border-red text-red dark:text-red'
         )}>
         {props.label}
       </label>
       <div className="flex gap-2">
         <input
           className={twMerge(
-            'w-full cursor-pointer',
+            'w-full cursor-pointer dark:accent-white',
             props.disabled && 'cursor-default'
           )}
           type="range"
@@ -62,8 +62,8 @@ export const Slider: FC<Props> = (props) => {
           className={twMerge(
             'peer h-9 w-16 rounded border p-1 text-center',
             props.errorMessage
-              ? 'border-2 border-red'
-              : 'border-aws-font-color/50 '
+              ? 'dark:bg-aws-ui-color-dark border-2 border-red dark:text-aws-font-color-dark'
+              : 'dark:bg-aws-ui-color-dark border-aws-font-color-light/50 dark:border-aws-font-color-dark dark:text-aws-font-color-dark'
           )}
           value={value}
           max={props.range.max}
@@ -73,7 +73,7 @@ export const Slider: FC<Props> = (props) => {
         />
       </div>
       {props.hint && !props.errorMessage && (
-        <span className={'mt-0.5 text-xs text-gray'}>{props.hint}</span>
+        <span className={'mt-0.5 text-xs text-gray dark:text-aws-font-color-gray'}>{props.hint}</span>
       )}
       {props.errorMessage && (
         <div className="mt-0.5 text-xs text-red">{props.errorMessage}</div>

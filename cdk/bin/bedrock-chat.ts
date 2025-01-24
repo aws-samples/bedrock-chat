@@ -73,6 +73,9 @@ const bedrockRegionResources = new BedrockRegionResourcesStack(
   }
 );
 
+const ALTERNATE_DOMAIN_NAME: string = app.node.tryGetContext("alternateDomainName");
+const HOSTED_ZONE_ID: string = app.node.tryGetContext("hostedZoneId");
+
 const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   env: {
     // account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -96,6 +99,8 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   useStandbyReplicas: USE_STAND_BY_REPLICAS,
   enableBedrockCrossRegionInference: ENABLE_BEDROCK_CROSS_REGION_INFERENCE,
   enableLambdaSnapStart: ENABLE_LAMBDA_SNAPSTART,
+  alternateDomainName: ALTERNATE_DOMAIN_NAME,
+  hostedZoneId: HOSTED_ZONE_ID,
 });
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);

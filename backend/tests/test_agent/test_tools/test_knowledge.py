@@ -61,7 +61,7 @@ class TestKnowledgeTool(unittest.TestCase):
         response = tool.run(
             tool_use_id="dummy",
             input=arg.model_dump(),
-            model="claude-v3.5-haiku",
+            model="claude-v3.5-sonnet-v2",
         )
         self.assertIsInstance(response["related_documents"], list)
         self.assertEqual(response["status"], "success")

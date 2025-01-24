@@ -25,10 +25,10 @@ const RelatedDocumentViewer: React.FC<{
 
   return (
     <div
-      className="fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000"
+      className="fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink-light/20 dark:bg-aws-squid-ink-dark/20 transition duration-1000"
       onClick={props.onClick}>
       <div
-        className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
+        className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink-light dark:bg-aws-squid-ink-dark p-1 text-sm text-aws-font-color-white-light dark:text-aws-font-color-white-dark"
         onClick={(e) => {
           e.stopPropagation();
         }}>

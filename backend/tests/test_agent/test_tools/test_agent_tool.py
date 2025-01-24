@@ -93,7 +93,7 @@ class TestAgentTool(unittest.TestCase):
         result = self.tool.run(
             tool_use_id="dummy",
             input=arg.model_dump(),
-            model="claude-v3.5-haiku",
+            model="claude-v3.5-sonnet-v2",
         )
         self.assertEqual(
             result["related_documents"],

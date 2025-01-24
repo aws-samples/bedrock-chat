@@ -67,13 +67,13 @@ export const Conversation = () => {
         <div
           key={idx}
           className={`${
-            message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+            message.role === 'assistant' ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/5' : 'dark:text-aws-font-color-dark'
           }`}>
           <ChatMessage
             chatContent={message}
           />
 
-          <div className="w-full border-b border-aws-squid-ink/10"></div>
+          <div className="w-full border-b border-aws-squid-ink-light/10 dark:border-aws-squid-ink-dark/10"></div>
         </div>
       ))}
     </>
@@ -123,13 +123,13 @@ export const ConversationThinking = () => {
         <div
           key={idx}
           className={`${
-            message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+            message.role === 'assistant' ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/5' : 'dark:text-aws-font-color-dark'
           }`}>
           <ChatMessage
             chatContent={message}
           />
 
-          <div className="w-full border-b border-aws-squid-ink/10"></div>
+          <div className="w-full border-b border-aws-squid-ink-light/10 dark:border-aws-squid-ink-dark/10"></div>
         </div>
       ))}
     </>
@@ -272,7 +272,7 @@ export const ConversationWithAgnet = () => {
         <div
           key={idx}
           className={`${
-            message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+            message.role === 'assistant' ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/5' : 'dark:text-aws-font-color-dark'
           }`}>
           <ChatMessage
             chatContent={message}
@@ -313,7 +313,7 @@ export const ConversationWithAgnet = () => {
             ]}
           />
 
-          <div className="w-full border-b border-aws-squid-ink/10"></div>
+          <div className="w-full border-b border-aws-squid-ink-light/10 dark:border-aws-squid-ink-dark/10"></div>
         </div>
       ))}
     </>

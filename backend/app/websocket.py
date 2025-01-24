@@ -360,7 +360,6 @@ def handler(event, context):
 
     except Exception as e:
         logger.exception(f"Operation failed: {e}")
-        #logger.error("".join(traceback.format_tb(e.__traceback__)))
         return {
             "statusCode": 500,
             "body": json.dumps(

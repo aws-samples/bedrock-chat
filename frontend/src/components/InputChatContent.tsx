@@ -457,7 +457,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
         onDrop={onDrop}
         className={twMerge(
           props.className,
-          'relative mb-7 flex w-11/12 flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6'
+          'relative mb-7 flex w-11/12 flex-col rounded-xl border border-black/10 bg-white dark:bg-aws-ui-color-dark shadow-[0_0_30px_7px] shadow-light-gray dark:shadow-black/35 md:w-10/12 lg:w-4/6 xl:w-3/6'
         )}>
         <div className="flex w-full">
           <Textarea
@@ -493,14 +493,14 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
               <div key={idx} className="relative">
                 <img
                   src={imageFile}
-                  className="h-16 rounded border border-aws-squid-ink"
+                  className="h-16 rounded border border-aws-squid-ink-light dark:border-aws-squid-ink-dark"
                   onClick={() => {
                     setPreviewImageUrl(imageFile);
                     setIsOpenPreviewImage(true);
                   }}
                 />
                 <ButtonIcon
-                  className="absolute left-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  className="absolute left-0 top-0 -m-2 border border-aws-sea-blue-light dark:border-aws-sea-blue-dark bg-white p-1 text-xs text-aws-sea-blue-light dark:text-aws-sea-blue-dark"
                   onClick={() => {
                     removeBase64EncodedImage(idx);
                   }}>
@@ -529,7 +529,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
               <div key={idx} className="relative flex flex-col items-center">
                 <UploadedAttachedFile fileName={file.name} />
                 <ButtonIcon
-                  className="absolute left-2 top-1 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  className="absolute left-2 top-1 -m-2 border border-aws-sea-blue-light dark:border-aws-sea-blue-dark bg-white p-1 text-xs text-aws-sea-blue-light dark:text-aws-sea-blue-dark"
                   onClick={() => {
                     removeTextFile(idx);
                   }}>
@@ -543,7 +543,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
           <div className="absolute -top-14 right-0 flex space-x-2">
             {props.canContinue && !props.disabledContinue && !props.disabled && (
               <Button
-                className="bg-aws-paper p-2 text-sm"
+                className="bg-aws-paper-light dark:bg-aws-paper-dark p-2 text-sm"
                 outlined
                 onClick={props.continueGenerate}>
                 <PiArrowFatLineRight className="mr-2" />
@@ -551,7 +551,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>((props, focusInputRef) =
               </Button>
             )}
             <Button
-              className="bg-aws-paper p-2 text-sm"
+              className="bg-aws-paper-light dark:bg-aws-paper-dark p-2 text-sm"
               outlined
               disabled={props.disabledRegenerate || props.disabled}
               onClick={props.onRegenerate}>

@@ -64,7 +64,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
       ```
    3. Deploy the changes:
       ```bash
-      cdk deploy
+      npx cdk deploy
       ```
 
 3. **Recrate your bots**: Recreate your bots on Knowledge Base with the same definitions (documents, chunk size, etc.) as the pgvector bots. If you have a large volume of documents, restoring from the backup in step 1 will make this process easier. To restore, we can use restoring cross-region copies. For more detail, visit [here](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). To specify the restored bucket, set `S3 Data Source` section as following. The path structure is `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. You can check user id on Cognito user pool and bot id on address bar on bot creation screen.
@@ -79,7 +79,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
    ```bash
    git fetch --tags
    git checkout tags/v2.0.0
-   cdk deploy
+   npx cdk deploy
    ```
 
 > [!Warning]

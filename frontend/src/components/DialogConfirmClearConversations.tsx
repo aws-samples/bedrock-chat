@@ -31,7 +31,7 @@ const DialogConfirmClearConversations: React.FC<Props> = (props) => {
           onClick={() => {
             props.onDelete();
           }}
-          className="bg-red p-2 text-aws-font-color-white">
+          className="bg-red p-2 text-aws-font-color-white-light dark:text-aws-font-color-white-dark">
           {t('button.deleteAll')}
         </Button>
       </div>

@@ -84,6 +84,7 @@ export type BotDetails = BotMeta & {
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
   hasAgent: boolean;
+  hasExistKnowledngeBaseId: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   activeModels: ActiveModels;
 };

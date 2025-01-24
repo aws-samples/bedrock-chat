@@ -33,8 +33,15 @@ export class ApiPublishmentStack extends Stack {
 
     const deploymentStage = props.deploymentStage ?? "dev";
 
+    const chatQueueDLQ = new sqs.Queue(this, "ChatQueueDlq", {
+      retentionPeriod: cdk.Duration.days(14),
+    });
     const chatQueue = new sqs.Queue(this, "ChatQueue", {
       visibilityTimeout: cdk.Duration.minutes(30),
+      deadLetterQueue: {
+        maxReceiveCount: 2, // one retry
+        queue: chatQueueDLQ,
+      },
     });
 
     const handlerRole = new iam.Role(this, "HandlerRole", {

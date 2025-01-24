@@ -61,7 +61,7 @@ The userPoolDomainPrefix must be globally unique across all Amazon Cognito users
 Deploy your CDK stack to AWS:
 
 ```sh
-cdk deploy --require-approval never --all
+npx cdk deploy --require-approval never --all
 ```
 
 ## Step 5: Update Google OAuth Client with Cognito Redirect URIs

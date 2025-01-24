@@ -7,25 +7,45 @@ from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import decompose_bot_id, update_knowledge_base_id
 from app.routes.schemas.bot import type_sync_status
 from retry import retry
+from typing import List
 from typing_extensions import TypedDict
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class StackOutput(TypedDict):
+class Items(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
+    GuardrailArn: str
+    GuardrailVersion: str
+    PK: str
+    SK: str
+
+
+class StackOutput(TypedDict):
+    KnowledgeBaseId: str
+    items: List[Items]
 
 
 def handler(event, context):
     logger.info(f"Event: {event}")
     pk = event["pk"]
     sk = event["sk"]
-    stack_output: list[StackOutput] = event["stack_output"]
+    stack_output: StackOutput = event["stack_output"]
 
-    kb_id = stack_output[0]["KnowledgeBaseId"]
-    data_source_ids = [x["DataSourceId"] for x in stack_output]
+    kb_id = (
+        stack_output["KnowledgeBaseId"] if "KnowledgeBaseId" in stack_output else None
+    )
+    if not kb_id:
+        raise ValueError("KnowledgeBaseId not found in stack outputs")
+
+    # Filter out None values and ensure all elements are strings
+    data_source_ids: List[str] = [
+        item["DataSourceId"]
+        for item in stack_output.get("items", [])
+        if item.get("DataSourceId")
+    ]
 
     user_id = pk
     bot_id = decompose_bot_id(sk)

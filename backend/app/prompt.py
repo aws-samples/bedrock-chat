@@ -45,6 +45,7 @@ Followings are examples of how to reference sources in your answer. Note that th
 <example>
 first answer [^3]. second answer [^1][^2].
 </example>
+
 <example>
 first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
 </example>
@@ -53,7 +54,6 @@ first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
         else:
             # For other models, provide good examples and bad examples.
             inserted_prompt += """
-<example>
 <GOOD-example>
 first answer [^3]. second answer [^1][^2].
 </GOOD-example>
@@ -125,6 +125,7 @@ Followings are examples of how to reference source_id in your answer. Note that 
 <example>
 first answer [^ccc]. second answer [^aaa][^bbb].
 </example>
+
 <example>
 first answer [^aaa][^eee]. second answer [^bbb][^ccc][^ddd]. third answer [^ddd].
 </example>
@@ -133,7 +134,6 @@ first answer [^aaa][^eee]. second answer [^bbb][^ccc][^ddd]. third answer [^ddd]
     else:
         # For other models, provide good examples and bad examples.
         inserted_prompt += """
-<examples>
 <GOOD-example>
 first answer [^ccc]. second answer [^aaa][^bbb].
 </GOOD-example>

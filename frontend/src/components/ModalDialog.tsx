@@ -57,19 +57,19 @@ const ModalDialog: React.FC<Props> = (props) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
                 <Dialog.Panel
-                  className={`rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ${
+                  className={`rounded-2xl bg-white dark:bg-aws-paper-dark p-6 text-left align-middle shadow-xl transition-all ${
                     !props.widthFromContent && 'w-full max-w-md'
                   }`}>
                   {props.title && (
                     <Dialog.Title
                       as="h3"
-                      className="border-b pb-2 text-lg font-medium leading-6 text-aws-font-color">
+                      className="border-b pb-2 text-lg font-medium leading-6 text-aws-font-color-light dark:text-aws-font-color-white-dark">
                       {props.title}
                     </Dialog.Title>
                   )}
 
                   <div className="mt-3">
-                    <div className="text-sm text-aws-font-color/70">
+                    <div className="text-sm text-aws-font-color-light/70 dark:text-aws-font-color-dark">
                       {props.children}
                     </div>
                   </div>

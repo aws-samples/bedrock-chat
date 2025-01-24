@@ -20,11 +20,11 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
       ref={ref}
       className={twMerge(
         'flex items-center justify-center whitespace-nowrap rounded-lg border p-1 px-3',
-        props.text && 'border-0',
-        props.outlined && 'border-aws-squid-ink/50 hover:bg-white ',
+        props.text && 'border-0 dark:text-aws-font-color-dark',
+        props.outlined && 'border-aws-squid-ink-light/50 dark:border-aws-font-color-gray/50 hover:bg-white dark:hover:bg-aws-ui-color-dark dark:text-aws-font-color-dark',
         !props.text &&
           !props.outlined &&
-          'bg-aws-sea-blue text-aws-font-color-white',
+          'bg-aws-sea-blue-light dark:bg-aws-ui-color-dark dark:border-aws-ui-color-dark text-aws-font-color-white-light dark:text-aws-font-color-white-dark',
         props.disabled || props.loading ? 'opacity-30' : 'hover:brightness-75',
         props.className
       )}

@@ -259,13 +259,13 @@ def chat(
         if bot.is_agent_enabled():
             if bot.has_knowledge():
                 # Add knowledge tool
-                knowledge_tool = create_knowledge_tool(bot)
+                knowledge_tool = create_knowledge_tool(bot=bot)
                 tools[knowledge_tool.name] = knowledge_tool
 
             if display_citation:
                 instructions.append(
                     get_prompt_to_cite_tool_results(
-                        model=chat_input.message.model
+                        model=chat_input.message.model,
                     )
                 )
 

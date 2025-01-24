@@ -28,7 +28,7 @@ const DialogConfirmDeleteApi: React.FC<Props> = (props) => {
         <Button
           loading={props.loading}
           onClick={props.onDelete}
-          className="bg-red p-2 text-aws-font-color-white">
+          className="bg-red p-2 text-aws-font-color-white-light dark:text-aws-font-color-white-dark">
           {t('bot.button.delete')}
         </Button>
       </div>

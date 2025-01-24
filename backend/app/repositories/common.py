@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Dict, List, Optional, Sequence
 
 import boto3
 
@@ -63,7 +64,7 @@ def decompose_related_document_source_id(composed_id: str):
     return composed_id.split("#")[-1]
 
 
-def _get_aws_resource(service_name, user_id=None):
+def _get_aws_resource(service_name: str, user_id: Optional[str] = None):
     """Get AWS resource with optional row-level access control for DynamoDB.
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
     """
@@ -75,11 +76,11 @@ def _get_aws_resource(service_name, user_id=None):
                 aws_access_key_id="key",
                 aws_secret_access_key="key",
                 region_name=REGION,
-            )
+            )  # type: ignore[call-overload]
         else:
-            return boto3.resource(service_name, region_name=REGION)
+            return boto3.resource(service_name, region_name=REGION)  # type: ignore[call-overload]
 
-    policy_document = {
+    policy_document: Dict[str, List[Dict]] = {
         "Statement": [
             {
                 "Effect": "Allow",
@@ -103,6 +104,7 @@ def _get_aws_resource(service_name, user_id=None):
             }
         ]
     }
+
     if user_id:
         policy_document["Statement"][0]["Condition"] = {
             # Allow access to items with the same partition key as the user id
@@ -121,15 +123,15 @@ def _get_aws_resource(service_name, user_id=None):
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
     )
-    return session.resource(service_name, region_name=REGION)
+    return session.resource(service_name, region_name=REGION)  # type: ignore[call-overload]
 
 
-def _get_dynamodb_client(user_id=None):
+def _get_dynamodb_client(user_id: Optional[str] = None):
     """Get a DynamoDB client, optionally with row-level access control."""
     return _get_aws_resource("dynamodb", user_id=user_id).meta.client
 
 
-def _get_table_client(user_id):
+def _get_table_client(user_id: str):
     """Get a DynamoDB table client with row-level access."""
     return _get_aws_resource("dynamodb", user_id=user_id).Table(TABLE_NAME)
 

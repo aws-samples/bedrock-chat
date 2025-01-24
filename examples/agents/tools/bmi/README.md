@@ -24,4 +24,4 @@ def get_available_tools() -> list[BaseTool]:
     return tools
 ```
 
-- Run cdk deploy.
+- Run `npx cdk deploy`.

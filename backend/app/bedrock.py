@@ -193,7 +193,9 @@ def compose_args_for_converse_api(
             )
         }
         system_prompts = [
-            {"text": instruction}
+            {
+                "text": instruction,
+            }
             for instruction in instructions
             if len(instruction) > 0
         ]
@@ -203,7 +205,7 @@ def compose_args_for_converse_api(
         "inferenceConfig": inference_config,
         "modelId": get_model_id(model),
         "messages": arg_messages,
-        "system": system_prompts,        
+        "system": system_prompts,
         "additionalModelRequestFields": additional_model_request_fields,
     }
 

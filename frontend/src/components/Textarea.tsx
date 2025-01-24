@@ -49,9 +49,9 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
           }
         }}
         className={twMerge(
-          'peer w-full resize-none rounded p-1.5 outline-none',
+          'peer w-full resize-none rounded p-1.5 outline-none dark:bg-aws-ui-color-dark dark:placeholder-aws-font-color-gray',
           isMax ? 'overflow-y-auto' : 'overflow-hidden',
-          props.noBorder ? '' : 'border border-aws-font-color/50',
+          props.noBorder ? '' : 'border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50',
           props.className
         )}
         rows={props.rows ?? 1}
@@ -63,12 +63,12 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
         }}
       />
       {props.label && (
-        <div className="order-first text-sm text-dark-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
+        <div className="order-first text-sm text-dark-gray dark:text-light-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color-light dark:peer-focus:text-aws-font-color-dark">
           {props.label}
         </div>
       )}
       {props.hint && (
-        <div className="mt-0.5 text-xs text-gray">{props.hint}</div>
+        <div className="mt-0.5 text-xs text-gray dark:text-aws-font-color-dark">{props.hint}</div>
       )}
     </div>
   );

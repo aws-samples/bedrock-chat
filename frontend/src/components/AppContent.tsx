@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ChatListDrawer from './ChatListDrawer';
 import { BaseProps } from '../@types/common';
 import { ConversationMeta } from '../@types/conversation';
@@ -18,6 +18,7 @@ import useUser from '../hooks/useUser';
 import DialogConfirmDeleteChat from './DialogConfirmDeleteChat';
 import DialogConfirmClearConversations from './DialogConfirmClearConversations';
 import DialogSelectLanguage from './DialogSelectLanguage';
+import useLocalStorage from '../hooks/useLocalStorage';
 
 type Props = BaseProps & {
   signOut?: () => void;
@@ -34,6 +35,13 @@ const AppContent: React.FC<Props> = (props) => {
   const { newChat, isGeneratedTitle } = useChat();
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
   const { isAdmin } = useUser();
+  const [theme] = useLocalStorage(
+    'theme',
+    'light'
+  );
+  useEffect(() => {
+    document.documentElement.className = theme;
+  }, [theme]);
 
   const onClickNewChat = useCallback(() => {
     navigate('/');
@@ -74,7 +82,7 @@ const AppContent: React.FC<Props> = (props) => {
   const [isOpenSelectLangage, setIsOpenSelectLangage] = useState(false);
 
   return (
-    <div className="relative flex h-dvh w-screen bg-aws-paper">
+    <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
       <ChatListDrawer
         isAdmin={isAdmin}
         conversations={conversations}
@@ -120,7 +128,7 @@ const AppContent: React.FC<Props> = (props) => {
 
       <main className="min-h-dvh relative flex flex-col flex-1 overflow-y-hidden transition-width">
 
-        <header className="visible flex h-12 w-full items-center bg-aws-squid-ink p-3 text-lg text-aws-font-color-white lg:hidden lg:h-0">
+        <header className="visible flex h-12 w-full items-center bg-aws-squid-ink-light dark:bg-aws-squid-ink-dark p-3 text-lg text-aws-font-color-white-light dark:text-aws-font-color-white-dark lg:hidden lg:h-0">
           <button
             className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "
             onClick={() => {
@@ -149,7 +157,7 @@ const AppContent: React.FC<Props> = (props) => {
         </header>
 
         <div
-          className="h-full overflow-hidden overflow-y-auto  text-aws-font-color"
+          className="h-full overflow-hidden overflow-y-auto  text-aws-font-color-light dark:text-aws-font-color-dark"
           id="main">
           <SnackbarProvider>
             <Outlet />

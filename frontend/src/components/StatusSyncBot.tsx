@@ -22,7 +22,7 @@ const StatusSyncBot: React.FC<Props> = (props) => {
       <div>
         {(props.syncStatus === SyncStatus.QUEUED ||
           props.syncStatus === SyncStatus.RUNNING) && (
-          <PiSpinnerBold className="animate-spin text-aws-squid-ink" />
+          <PiSpinnerBold className="animate-spin text-aws-squid-ink-light dark:text-white" />
         )}
         {props.syncStatus === SyncStatus.SUCCEEDED && (
           <PiCheckCircleBold className="text-aws-aqua" />
@@ -32,7 +32,7 @@ const StatusSyncBot: React.FC<Props> = (props) => {
         )}
       </div>
 
-      <div className="whitespace-nowrap text-sm text-dark-gray">
+      <div className="whitespace-nowrap text-sm text-dark-gray dark:text-light-gray">
         {props.syncStatus === SyncStatus.QUEUED && (
           <>{t('bot.label.syncStatus.queue')}</>
         )}
@@ -46,7 +46,7 @@ const StatusSyncBot: React.FC<Props> = (props) => {
           <>
             {props.onClickError ? (
               <a
-                className="flex cursor-pointer items-center gap-0.5 border-b font-semibold text-aws-sea-blue hover:font-bold"
+                className="flex cursor-pointer items-center gap-0.5 border-b font-semibold text-aws-sea-blue-light dark:text-aws-sea-blue-dark hover:font-bold"
                 onClick={props.onClickError}>
                 {t('bot.label.syncStatus.fail')}
               </a>

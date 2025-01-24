@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from typing import Literal
 
 import boto3
 from app.repositories.common import _get_table_client
@@ -70,6 +71,14 @@ def handler(event, context):
     try:
         cause = event.get("cause", None)
         ingestion_job = event.get("ingestion_job", None)
+
+        # Initialize variables
+        pk: str
+        sk: str
+        sync_status: type_sync_status
+        sync_status_reason: str
+        last_exec_id: str
+
         if cause:
             # UpdateSymcStatusFailed
             pk, sk, build_arn = extract_from_cause(cause)

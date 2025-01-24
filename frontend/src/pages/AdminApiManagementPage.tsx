@@ -36,7 +36,7 @@ const AdminApiManagementPage: React.FC = () => {
 
             <div className="mt-2 border-b border-gray"></div>
 
-            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
+            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
               {isLoadingApis && (
                 <div className="flex flex-col gap-2">
                   {new Array(15).fill('').map((_, idx) => {
@@ -46,7 +46,7 @@ const AdminApiManagementPage: React.FC = () => {
               )}
 
               {botApis?.length === 0 && (
-                <div className="flex size-full items-center justify-center italic text-dark-gray">
+                <div className="flex size-full items-center justify-center italic text-dark-gray dark:text-light-gray">
                   {t('admin.apiManagement.label.noApi')}
                 </div>
               )}

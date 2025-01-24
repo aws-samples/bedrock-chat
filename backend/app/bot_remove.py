@@ -21,7 +21,7 @@ def delete_custom_bot_stack_by_bot_id(bot_id: str):
     stack_name = f"BrChatKbStack{bot_id}"
     try:
         response = client.delete_stack(StackName=stack_name)
-    except client.exceptions.ClientError as e:
+    except client.exceptions.ClientError:
         raise RecordNotFoundError()
     return response
 
@@ -49,7 +49,7 @@ def delete_from_s3(user_id: str, bot_id: str):
         print(e)
 
 
-def handler(event, context):
+def handler(event: dict, context: Any) -> None:
     """Bot removal handler.
     This function is triggered by dynamodb stream when item is deleted.
     Following resources are deleted asynchronously when bot is deleted:
@@ -84,9 +84,10 @@ def handler(event, context):
         return
 
     # Before delete cfn stack, delete all api keys
-    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
-    for key_id in usage_plan.key_ids:
-        delete_api_key(key_id)
+    if stack.api_usage_plan_id:  # Add type check
+        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+        for key_id in usage_plan.key_ids:
+            delete_api_key(key_id)
 
     # Delete `ApiPublishmentStack` by CloudFormation
     delete_stack_by_bot_id(bot_id)

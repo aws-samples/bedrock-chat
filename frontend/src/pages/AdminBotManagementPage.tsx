@@ -116,19 +116,19 @@ const AdminBotManagementPage: React.FC = () => {
                 <div className="mt-3 flex flex-col gap-1">
                   <div className="text-lg font-bold">{bot?.title}</div>
                   {bot?.description ? (
-                    <div className="text-sm text-aws-font-color/50">
+                    <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                       {bot?.description}
                     </div>
                   ) : (
-                    <div className="text-sm font-light italic text-aws-font-color/50">
+                    <div className="text-sm font-light italic text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                       {t('bot.label.noDescription')}
                     </div>
                   )}
 
-                  <div className="flex items-center text-sm text-dark-gray">
+                  <div className="flex items-center text-sm text-dark-gray dark:text-light-gray">
                     {t('admin.botManagement.label.sharedUrl')}:
                     <div
-                      className="flex cursor-pointer items-center text-aws-sea-blue underline hover:text-aws-sea-blue-hover"
+                      className="flex cursor-pointer items-center text-aws-sea-blue-light dark:text-aws-sea-blue-dark underline hover:text-aws-sea-blue-hover-light dark:hover:text-aws-sea-blue-hover-dark"
                       onClick={() => {
                         window.open(getBotUrl(bot?.id ?? ''), '_blank');
                       }}>
@@ -152,14 +152,14 @@ const AdminBotManagementPage: React.FC = () => {
                     {t('bot.label.knowledge')}
                   </div>
                   {!hasSourceUrls && !hasS3Urls && !hasFiles && (
-                    <div className="italic text-dark-gray">
+                    <div className="italic text-dark-gray dark:text-light-gray">
                       {t('admin.botManagement.label.noKnowledge')}
                     </div>
                   )}
 
                   {hasSourceUrls && (
                     <div>
-                      <div className="text-sm text-dark-gray">
+                      <div className="text-sm text-dark-gray dark:text-light-gray">
                         {t('bot.label.url')}
                       </div>
                       <div className="flex w-full flex-col gap-1">
@@ -172,7 +172,7 @@ const AdminBotManagementPage: React.FC = () => {
                               value={url}
                             />
                             <ButtonIcon
-                              className="text-aws-sea-blue"
+                              className="text-aws-sea-blue-light dark:text-aws-sea-blue-dark"
                               onClick={() => {
                                 window.open(url, '_blank');
                               }}>
@@ -186,7 +186,7 @@ const AdminBotManagementPage: React.FC = () => {
 
                   {hasFiles && (
                     <div>
-                      <div className="text-sm text-dark-gray">
+                      <div className="text-sm text-dark-gray dark:text-light-gray">
                         {t('bot.label.file')}
                       </div>
                       <div className="flex w-full flex-col gap-1">
@@ -208,7 +208,7 @@ const AdminBotManagementPage: React.FC = () => {
 
                   {hasS3Urls && (
                     <div>
-                      <div className="text-sm text-dark-gray">
+                      <div className="text-sm text-dark-gray dark:text-light-gray">
                         {t('bot.label.s3url')}
                       </div>
                       <div className="flex w-full flex-col gap-1">
@@ -244,7 +244,7 @@ const AdminBotManagementPage: React.FC = () => {
                 </div>
 
                 {!botPublication && (
-                  <div className="italic text-dark-gray">
+                  <div className="italic text-dark-gray dark:text-light-gray">
                     {t('admin.botManagement.label.notPublishApi')}
                   </div>
                 )}
@@ -290,7 +290,7 @@ const AdminBotManagementPage: React.FC = () => {
                       <div className="text-base font-bold">
                         {t('bot.apiSettings.label.apiKeys')}
                       </div>
-                      <div className="text-sm text-aws-font-color/50">
+                      <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.apiSettings.help.apiKeys')}
                       </div>
 
@@ -319,11 +319,11 @@ const AdminBotManagementPage: React.FC = () => {
                       <div className="text-base font-bold">
                         {t('bot.apiSettings.label.usagePlan')}
                       </div>
-                      <div className="text-sm text-aws-font-color/50">
+                      <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.apiSettings.help.usagePlan')}
                       </div>
 
-                      <div className="mt-1 rounded border border-aws-font-color/50 p-2">
+                      <div className="mt-1 rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50 p-2">
                         <div className="flex text-sm">
                           {t('bot.apiSettings.item.throttling')}:
                           <div className="ml-1 font-bold">
@@ -360,7 +360,7 @@ const AdminBotManagementPage: React.FC = () => {
                           </ul>
                         )}
 
-                        <div className="my-2 border-t border-aws-font-color/50"></div>
+                        <div className="my-2 border-t border-aws-font-color-light/50 dark:border-aws-font-color-dark/50"></div>
 
                         <div className="flex text-sm">
                           {t('bot.apiSettings.item.quota')}:
@@ -395,7 +395,7 @@ const AdminBotManagementPage: React.FC = () => {
                         <div className="text-base font-bold">
                           {t('bot.apiSettings.label.allowOrigins')}
                         </div>
-                        <div className="text-sm text-aws-font-color/50">
+                        <div className="text-sm text-aws-font-color-light/50 dark:border-aws-font-color-dark/50">
                           <div>{t('bot.apiSettings.help.allowOrigins')}</div>
                         </div>
                       </div>
@@ -410,7 +410,7 @@ const AdminBotManagementPage: React.FC = () => {
                               value={url}
                             />
                             <ButtonIcon
-                              className="text-aws-sea-blue"
+                              className="text-aws-sea-blue-light dark:text-aws-sea-blue-dark"
                               onClick={() => {
                                 window.open(url, '_blank');
                               }}>

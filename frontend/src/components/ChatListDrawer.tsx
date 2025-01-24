@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { BaseProps } from '../@types/common';
 import { useLocation, useParams } from 'react-router-dom';
+import { IoMoonSharp, IoSunnyOutline } from "react-icons/io5";
 import useDrawer from '../hooks/useDrawer';
 import ButtonIcon from './ButtonIcon';
 import {
@@ -28,11 +29,13 @@ import { ConversationMeta } from '../@types/conversation';
 import { BotListItem } from '../@types/bot';
 import { isMobile } from 'react-device-detect';
 import useChat from '../hooks/useChat';
+import useLocalStorage from '../hooks/useLocalStorage';
 import { useTranslation } from 'react-i18next';
 import Menu from './Menu';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
 import { usePageLabel } from '../routes';
+import Toggle from '../components/Toggle.tsx';
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -194,9 +197,16 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const [prevConversations, setPrevConversations] =
     useState<typeof conversations>();
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
+  // If you want to add a theme, change the type from boolean to string and change the UI from toggle to pulldown.
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   const { newChat, conversationId } = useChat();
   const { botId } = useParams();
+
+  const [theme, setTheme] = useLocalStorage(
+    'theme',
+    'light'
+  );
 
   useEffect(() => {
     setPrevConversations(conversations);
@@ -217,6 +227,12 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     }
   }, [conversations, prevConversations]);
 
+  useEffect(() => {
+    if (theme === 'dark') {
+      setIsDarkTheme(true);
+    }
+  }, [theme]);
+
   const onClickNewChat = useCallback(() => {
     newChat();
     closeSamllDrawer();
@@ -231,6 +247,17 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  const changeTheme = (isDarkTheme: boolean) => {
+    setIsDarkTheme(isDarkTheme);
+    if (isDarkTheme) {
+      document.documentElement.className = 'dark';
+      setTheme('dark');
+    } else {
+      document.documentElement.className = 'light';
+      setTheme('light');
+    }
+  };
 
   const smallDrawer = useRef<HTMLDivElement>(null);
 
@@ -262,7 +289,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
 
   return (
     <>
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink scrollbar-thin scrollbar-track-white scrollbar-thumb-aws-squid-ink/30 ">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink-light dark:bg-aws-ui-color-dark scrollbar-thin scrollbar-track-white scrollbar-thumb-aws-squid-ink-light/30 dark:scrollbar-thumb-aws-ui-color-dark/30">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
@@ -361,12 +388,28 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <div
             className={`${
               opened ? 'w-64' : 'w-0'
-            } fixed bottom-0 flex h-12 items-center justify-start border-t bg-aws-squid-ink transition-width lg:w-64`}>
+            } fixed bottom-0 flex h-12 items-center justify-between p-2 border-t bg-aws-squid-ink-light dark:bg-aws-ui-color-dark transition-width lg:w-64`}>
             <Menu
               onSignOut={props.onSignOut}
               onSelectLanguage={props.onSelectLanguage}
               onClearConversations={props.onClearConversations}
             />
+
+            <div className="flex items-center gap-2">
+              {isDarkTheme ? (
+                <>
+                  <IoMoonSharp />
+                </>
+              ): (
+                <>
+                  <IoSunnyOutline />
+                </>
+              )}
+              <Toggle
+                value={isDarkTheme}
+                onChange={(isDarkTheme) => changeTheme(isDarkTheme)}
+              />
+            </div>
           </div>
         </nav>
       </div>

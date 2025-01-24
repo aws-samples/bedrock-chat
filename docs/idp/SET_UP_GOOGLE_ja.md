@@ -61,7 +61,7 @@ userPoolDomainPrefix は、すべての Amazon Cognito ユーザー間でグロ�
 AWS に CDK スタックをデプロイします：
 
 ```sh
-cdk deploy --require-approval never --all
+npx cdk deploy --require-approval never --all
 ```
 
 ## ステップ 5: Cognito リダイレクト URI で Google OAuth クライアントを更新する

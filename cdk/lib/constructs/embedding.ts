@@ -420,7 +420,7 @@ export class Embedding extends Construct {
       .otherwise(waitTask.next(getIngestionJob));
 
     const mapIngestionJobs = new sfn.Map(this, "MapIngestionJobs", {
-      inputPath: "$.StackOutput.Payload",
+      inputPath: "$.StackOutput.Payload.items",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(

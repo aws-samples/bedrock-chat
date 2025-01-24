@@ -25,7 +25,7 @@ const PopoverMenu: React.FC<Props> = (props) => {
           <Popover.Button
             className={`${
               props.className ?? ''
-            } group inline-flex items-center rounded-lg border border-aws-squid-ink/50 bg-aws-paper p-1 px-3 text-base hover:brightness-75`}>
+            } group inline-flex items-center rounded-lg border border-aws-squid-ink-light/50 dark:border-aws-font-color-gray/50 bg-aws-paper-light dark:bg-aws-paper-dark p-1 px-3 text-base hover:brightness-75`}>
             <PiDotsThreeOutlineFill />
           </Popover.Button>
           <Transition
@@ -38,7 +38,7 @@ const PopoverMenu: React.FC<Props> = (props) => {
             leaveTo="opacity-0 translate-y-1">
             <Popover.Panel className={`absolute z-10 ${origin}`}>
               <div className="mt-0.5 overflow-hidden shadow-lg">
-                <div className="flex flex-col whitespace-nowrap rounded border border-aws-font-color/50 bg-aws-paper text-sm">
+                <div className="flex flex-col whitespace-nowrap rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50 bg-aws-paper-light dark:bg-aws-paper-dark text-sm">
                   {props.children}
                 </div>
               </div>

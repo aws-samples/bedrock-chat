@@ -63,7 +63,7 @@ const RelatedDocumentLink: React.FC<{
         className={twMerge(
           'mx-0.5 ',
           props.relatedDocument != null
-            ? 'cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover'
+            ? 'cursor-pointer text-aws-sea-blue-light dark:text-aws-sea-blue-dark hover:text-aws-sea-blue-hover-light dark:hover:text-aws-sea-blue-hover-dark'
             : 'cursor-not-allowed text-gray'
         )}
         onClick={() => {
@@ -139,7 +139,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
 
   return (
     <ReactMarkdown
-      className={twMerge(className, 'prose max-w-full break-words')}
+      className={twMerge(className, 'prose dark:prose-invert max-w-full break-words')}
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -14,7 +14,7 @@ class TestBmiTool(unittest.TestCase):
                 "height": 170,
                 "weight": 70,
             },
-            model="claude-v3.5-haiku",
+            model="claude-v3.5-sonnet-v2",
         )
         print(result)
         self.assertEqual(type(result), str)

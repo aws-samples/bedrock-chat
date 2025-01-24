@@ -1,5 +1,6 @@
 export type BedrockKnowledgeBase = {
   knowledgeBaseId: string | null;
+  existKnowledgeBaseId: string | null;
   dataSourceIds?: string[]; // only present after bot is ready
   embeddingsModel: EmbeddingsModel;
   chunkingConfiguration: ChunkingConfiguration;

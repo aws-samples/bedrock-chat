@@ -838,6 +838,18 @@ How would you categorize this email?`,
           hint: 'Specify patterns to exclude from web crawling. URLs matching these patterns will not be crawled.',
         },
       },
+      advancedConfigration: {
+        existKnowledgeBaseId: {
+          label: "ID for the Amazon Bedrock Knowledge Base",
+          description: "Please specify ID that your existing Amazon Bedrock knowledge base.",
+          createNewKb: {
+            label: 'Create New Knowledge Base',
+          },
+          existing: {
+            label: 'Use your existing knowledge base',
+          }
+        }
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',

@@ -40,6 +40,8 @@ export interface BedrockChatStackProps extends StackProps {
   readonly useStandbyReplicas: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
+  readonly alternateDomainName?: string;
+  readonly hostedZoneId?: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -124,6 +126,8 @@ export class BedrockChatStack extends cdk.Stack {
       webAclId: props.webAclId,
       enableMistral: props.enableMistral,
       enableIpV6: props.enableIpV6,
+      alternateDomainName: props.alternateDomainName,
+      hostedZoneId: props.hostedZoneId,
     });
 
     const auth = new Auth(this, "Auth", {
@@ -166,6 +170,8 @@ export class BedrockChatStack extends cdk.Stack {
       usageAnalysis,
       largeMessageBucket,
       enableMistral: props.enableMistral,
+      enableBedrockCrossRegionInference:
+        props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);

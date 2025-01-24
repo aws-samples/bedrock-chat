@@ -55,8 +55,6 @@ class AgentTool(Generic[T]):
             [T, BotModel | None, type_model_name | None],
             ToolFunctionResult | list[ToolFunctionResult],
         ],
-        bot: BotModel | None = None,
-        model: type_model_name | None = None,
     ):
         self.name = name
         self.description = description
@@ -65,6 +63,7 @@ class AgentTool(Generic[T]):
 
     def _generate_input_schema(self) -> dict[str, Any]:
         """Converts the Pydantic model to a JSON schema."""
+        # Specify a custom generator `RemoveTitle` because some foundation models do not work properly if there are unnecessary titles.
         return self.args_schema.model_json_schema(schema_generator=RemoveTitle)
 
     def to_converse_spec(self) -> ToolSpecificationTypeDef:

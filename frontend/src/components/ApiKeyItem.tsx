@@ -64,7 +64,7 @@ const ApiKeyItem: React.FC<Props> = (props) => {
         {isLoading ? (
           <Skeleton className="h-8 w-full" />
         ) : (
-          <div className="flex flex-col gap-1 rounded border border-aws-font-color/50 p-1 text-sm">
+          <div className="flex flex-col gap-1 rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark p-1 text-sm">
             <div className="text-base font-semibold">
               {botApiKey?.description}
             </div>
@@ -80,7 +80,7 @@ const ApiKeyItem: React.FC<Props> = (props) => {
                   {t('bot.apiSettings.label.apiKeyDetail.inactive')}
                 </div>
               )}
-              <div className="text-xs text-aws-font-color/70">
+              <div className="text-xs text-aws-font-color-light/70 dark:text-aws-font-color-dark/70">
                 <div className="mr-1 inline">
                   {t('bot.apiSettings.label.apiKeyDetail.creationDate')}:
                 </div>
@@ -98,7 +98,7 @@ const ApiKeyItem: React.FC<Props> = (props) => {
                 <ButtonCopy text={botApiKey?.value ?? ''} className="-my-2" />
                 <Button
                   text
-                  className="-m-2 font-bold text-aws-sea-blue"
+                  className="-m-2 font-bold text-aws-sea-blue-light dark:text-aws-sea-blue-dark"
                   onClick={() => {
                     setIsHideKey(!isHideKey);
                   }}>

@@ -7,18 +7,15 @@ from app.repositories.models.conversation import (
     TextToolResultModel,
 )
 from app.repositories.models.custom_bot import BotModel
-from app.utils import get_bedrock_agent_client
-
+from app.utils import get_bedrock_agent_runtime_client
 from botocore.exceptions import ClientError
-from mypy_boto3_bedrock_runtime.type_defs import (
-    GuardrailConverseContentBlockTypeDef,
-)
 from mypy_boto3_bedrock_agent_runtime.type_defs import (
     KnowledgeBaseRetrievalResultTypeDef,
 )
+from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 
 logger = logging.getLogger(__name__)
-agent_client = get_bedrock_agent_client()
+agent_client = get_bedrock_agent_runtime_client()
 
 
 class SearchResult(TypedDict):
@@ -70,9 +67,6 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             bot.bedrock_knowledge_base,
         )
         # Print the stack to logs:
-        # Option 1: using traceback module
-        #traceback.print_stack()
-        # Option 2: or using exc_info=True in logger.error
         logger.error("Stacktrace below:", exc_info=True)
         
         # Then raise an assertion or custom exception:
@@ -88,7 +82,12 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         raise ValueError("Invalid search type")
 
     limit = bot.bedrock_knowledge_base.search_params.max_results
-    knowledge_base_id = bot.bedrock_knowledge_base.knowledge_base_id
+    # Use exist_knowledge_base_id if available, otherwise use knowledge_base_id
+    knowledge_base_id = (
+        bot.bedrock_knowledge_base.exist_knowledge_base_id
+        if bot.bedrock_knowledge_base.exist_knowledge_base_id is not None
+        else bot.bedrock_knowledge_base.knowledge_base_id
+    )
 
     try:
         response = agent_client.retrieve(

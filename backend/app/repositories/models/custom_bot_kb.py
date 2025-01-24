@@ -8,7 +8,8 @@ from app.routes.schemas.bot_kb import (
     type_os_token_filter,
     type_os_tokenizer,
 )
-from pydantic import BaseModel
+from typing import Self
+from pydantic import BaseModel, validator, model_validator
 
 
 class SearchParamsModel(BaseModel):
@@ -72,6 +73,7 @@ class BedrockKnowledgeBaseModel(BaseModel):
     )
     search_params: SearchParamsModel
     knowledge_base_id: str | None = None
+    exist_knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
     parsing_model: type_kb_parsing_model = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"

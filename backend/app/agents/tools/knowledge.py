@@ -62,7 +62,6 @@ def create_knowledge_tool(bot: BotModel) -> AgentTool:
     
     Args:
         bot: The bot instance containing the knowledge base
-        model: The model type name
         
     Returns:
         AgentTool instance configured for knowledge base search

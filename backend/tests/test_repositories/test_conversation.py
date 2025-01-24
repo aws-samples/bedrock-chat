@@ -298,8 +298,9 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(content[0].content_type, "text")
         self.assertEqual(content[0].body, "Hello")
         self.assertEqual(content[1].content_type, "image")
+        # Convert the raw bytes to base64 for comparison
         self.assertEqual(
-            content[1].body,
+            base64.b64encode(content[1].body).decode(),
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
         )
         self.assertEqual(message_map["a"].model, "claude-instant-v1")

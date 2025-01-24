@@ -39,6 +39,11 @@ def get_bedrock_runtime_client(region=BEDROCK_REGION):
 
 
 def get_bedrock_agent_client(region=BEDROCK_REGION):
+    client = boto3.client("bedrock-agent", region_name=region)
+    return client
+
+
+def get_bedrock_agent_runtime_client(region=BEDROCK_REGION):
     client = boto3.client("bedrock-agent-runtime", region_name=region)
     return client
 
@@ -93,17 +98,18 @@ def compose_upload_document_s3_path(user_id: str, bot_id: str, filename: str) ->
     return f"{user_id}/{bot_id}/documents/{filename}"
 
 
-def delete_file_from_s3(bucket: str, key: str):
+def delete_file_from_s3(bucket: str, key: str, ignore_not_exist: bool = False):
     client = boto3.client("s3", region_name=BEDROCK_REGION)
 
     # Check if the file exists
-    try:
-        client.head_object(Bucket=bucket, Key=key)
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            raise FileNotFoundError(f"The file does not exist in bucket.")
-        else:
-            raise
+    if not ignore_not_exist:
+        try:
+            client.head_object(Bucket=bucket, Key=key)
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                raise FileNotFoundError(f"The file does not exist in bucket.")
+            else:
+                raise
 
     response = client.delete_object(Bucket=bucket, Key=key)
     return response

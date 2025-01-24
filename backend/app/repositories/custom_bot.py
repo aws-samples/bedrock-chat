@@ -30,6 +30,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    default_active_models,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -490,7 +491,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             if "GuardrailsParams" in item
             else None
         ),
-        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels", {})),
+        active_models=(
+            ActiveModelsModel.model_validate(item.get("ActiveModels"))
+            if item.get("ActiveModels")
+            else default_active_models  # for backward compatibility
+        ),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -568,7 +573,11 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             if "GuardrailsParams" in item
             else None
         ),
-        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels")),
+        active_models=(
+            ActiveModelsModel.model_validate(item.get("ActiveModels"))
+            if item.get("ActiveModels")
+            else default_active_models  # for backward compatibility
+        ),
     )
     logger.info(f"Found public bot: {bot}")
     return bot
@@ -598,7 +607,11 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         has_knowledge=item["HasKnowledge"],
         has_agent=item.get("HasAgent", False),
         conversation_quick_starters=item.get("ConversationQuickStarters", []),
-        active_models=ActiveModelsModel.model_validate(item.get("ActiveModels")),
+        active_models=(
+            ActiveModelsModel.model_validate(item.get("ActiveModels"))
+            if item.get("ActiveModels")
+            else default_active_models  # for backward compatibility
+        ),
     )
 
     logger.info(f"Found alias: {bot}")

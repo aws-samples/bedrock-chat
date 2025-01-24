@@ -10,7 +10,7 @@ type Props = BaseProps & {
 
 const Tooltip: React.FC<Props> = (props) => {
   return (
-    <div className={`${props.className ?? ''} group relative`}>
+    <div className={`${props.className ?? ''} group relative dark:text-aws-font-color-dark`}>
       <div
         className={`${
           props.direction === TooltipDirection.LEFT ? 'right-0' : ''

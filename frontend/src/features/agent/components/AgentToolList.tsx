@@ -19,7 +19,7 @@ const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, relatedD
     Object.values(tools.tools).some(tool => tool.status === 'running')
   );
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper text-aws-font-color/80">
+    <div className="mx-auto flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light dark:bg-aws-paper-dark text-aws-font-color-light/80 dark:text-aws-font-color-dark/80">
       {(isRunning || tools.thought) && (
         <div className="flex items-center border-b border-gray p-2 last:border-b-0">
           {isRunning && <PiCircleNotchBold className="mr-2 animate-spin" />}

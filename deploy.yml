@@ -143,9 +143,6 @@ Resources:
                 "runtime-versions": {
                   "nodejs": "18"
                 },
-                "commands": [
-                  "npm i -g aws-cdk"
-                ],
                 "on-failure": "ABORT"
               },
               "build": {
@@ -161,8 +158,8 @@ Resources:
                   "sed -i \"s/\\\"bedrockRegion\\\": \\\"[^\\\"]*\\\"/\\\"bedrockRegion\\\": \\\"${BEDROCK_REGION}\\\"/\" cdk/cdk.json",
                   "cd cdk",
                   "npm ci",
-                  "cdk bootstrap",
-                  "cdk deploy --require-approval never --all"
+                  "npx cdk bootstrap",
+                  "npx cdk deploy --require-approval never --all"
                 ]
               }
             }

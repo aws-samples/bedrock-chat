@@ -748,6 +748,18 @@ const translation = {
           hint: 'ウェブクロールから除外するパターンを指定します。これらのパターンに一致するURLはクロールされません。',
         },
       },
+      advancedConfigration: {
+        existKnowledgeBaseId: {
+          label: "既存のAmazon Bedrock Knowledge BaseのID",
+          description: "既存のAmazon Bedrock Knowledge Baseを使用することができる",
+          createNewKb: {
+            label: '新規のナレッジを作成する',
+          },
+          existing: {
+            label: '外部のナレッジ(Knowledge Base)を利用する',
+          }
+        },
+      }
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',

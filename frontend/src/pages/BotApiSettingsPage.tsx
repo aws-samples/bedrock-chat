@@ -313,11 +313,11 @@ const BotApiSettingsPage: React.FC = () => {
                   <div className="flex flex-col gap-1">
                     <div className="text-lg font-bold">{myBot?.title}</div>
                     {myBot?.description ? (
-                      <div className="text-sm text-aws-font-color/50">
+                      <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {myBot?.description}
                       </div>
                     ) : (
-                      <div className="text-sm font-light italic text-aws-font-color/50">
+                      <div className="text-sm font-light italic text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.label.noDescription')}
                       </div>
                     )}
@@ -360,7 +360,7 @@ const BotApiSettingsPage: React.FC = () => {
                           {t('bot.apiSettings.label.endpoint')}
                           <Help message={t('bot.apiSettings.help.endpoint')} />
                         </div>
-                        <div className="text-sm text-aws-font-color/50">
+                        <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           {t('bot.apiSettings.label.endpoint')}
                         </div>
                         <div className="flex">
@@ -376,7 +376,7 @@ const BotApiSettingsPage: React.FC = () => {
                         <div className="text-lg font-bold">
                           {t('bot.apiSettings.label.apiKeys')}
                         </div>
-                        <div className="text-sm text-aws-font-color/50">
+                        <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           {t('bot.apiSettings.help.apiKeys')}
                         </div>
 
@@ -403,7 +403,7 @@ const BotApiSettingsPage: React.FC = () => {
                       <div className="text-lg font-bold">
                         {t('bot.apiSettings.label.usagePlan')}
                       </div>
-                      <div className="text-sm text-aws-font-color/50">
+                      <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.apiSettings.help.usagePlan')}
                       </div>
 
@@ -491,7 +491,7 @@ const BotApiSettingsPage: React.FC = () => {
                         <div className="text-lg font-bold">
                           {t('bot.apiSettings.label.allowOrigins')}
                         </div>
-                        <div className="text-sm text-aws-font-color/50">
+                        <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           <div>{t('bot.apiSettings.help.allowOrigins')}</div>
                           <div>
                             {t('bot.apiSettings.help.allowOriginsExample')}
