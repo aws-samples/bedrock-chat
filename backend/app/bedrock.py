@@ -41,7 +41,7 @@ DEFAULT_GENERATION_CONFIG = (
     else DEFAULT_CLAUDE_GENERATION_CONFIG
 )
 ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
-    os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false") == "true"
+    os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "true") == "true"
 )
 
 client = get_bedrock_runtime_client()

@@ -248,9 +248,23 @@ def internet_search(
         for i, doc in enumerate(raw_results["related_documents"])
     ]
 
-internet_search_tool = AgentTool(
-    name="internet_search",
-    description="Search the internet for information using DuckDuckGo with Bing fallback.",
-    args_schema=InternetSearchInput,
-    function=internet_search,
-)
+
+def create_internet_search_tool() -> AgentTool:
+    """
+    Create a internet search tool instance
+    
+    Returns:
+        AgentTool instance configured for internet search
+    """
+    description = (
+        "Search the internet for information using DuckDuckGo with Bing fallback."
+    )
+    
+    logger.info(f"Creating internet search tool with description: {description}")
+    
+    return AgentTool(
+        name="internet_search",
+        description=description,
+        args_schema=InternetSearchInput,
+        function=internet_search,
+    )

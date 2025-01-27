@@ -56,13 +56,10 @@ def search_knowledge(
         raise e
 
 
-def create_knowledge_tool(bot: BotModel) -> AgentTool:
+def create_knowledge_tool() -> AgentTool:
     """
-    Create a knowledge base search tool instance for a specific bot and model.
+    Create a knowledge base search tool instance
     
-    Args:
-        bot: The bot instance containing the knowledge base
-        
     Returns:
         AgentTool instance configured for knowledge base search
     """
@@ -73,7 +70,7 @@ def create_knowledge_tool(bot: BotModel) -> AgentTool:
     logger.info(f"Creating knowledge base tool with description: {description}")
     
     return AgentTool(
-        name="knowledge_base_search",
+        name="knowledge_base_tool",
         description=description,
         args_schema=KnowledgeToolInput,
         function=search_knowledge,

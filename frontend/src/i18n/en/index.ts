@@ -122,6 +122,14 @@ const translation = {
           name: 'Retrieve Knowledge',
           description: 'Retrieve information from knowledge.',
         },
+        quiz_generator: {
+          name: 'Quiz Generator',
+          description: 'Generate Quiz based on information in the knowledge base. Specify a course level, topic, type(default multiple-choice) and number of questions(default 5)',
+        },
+        lesson_planner: {
+          name: 'Lesson Planner',
+          description: 'Generate comprehensive lesson plans with automatic adaptation to educational context(K-12 or higher education). Provides structured content, time allocation, and assessment strategies.',
+        },
       },
     },
     bot: {

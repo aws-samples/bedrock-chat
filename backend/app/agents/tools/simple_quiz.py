@@ -37,13 +37,12 @@ class SimpleQuizTool(AgentTool):
         """Get tool description for schema generation"""
         return cls.DESCRIPTION
 
-    def __init__(self, bot: BotModel):
+    def __init__(self):
         super().__init__(
             name="quiz_generator",
             description=self.DESCRIPTION,
             args_schema=SimpleQuizInput,
             function=self.generate_quiz,
-            bot=bot,
         )
     
     def _build_search_query(
@@ -166,6 +165,6 @@ Begin quiz generation:"""
                 "source_name": "Quiz Generator"
             }]
 
-def create_simple_quiz_tool(bot: BotModel) -> AgentTool:
+def create_simple_quiz_tool() -> AgentTool:
     """Create a quiz tool instance for the given bot."""
-    return SimpleQuizTool(bot)
+    return SimpleQuizTool()
