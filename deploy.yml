@@ -23,6 +23,12 @@ Parameters:
   BedrockRegion:
     Type: String
     Default: "us-east-1"
+  CdkJsonOverride:
+    Type: String
+    Default: "{}"
+  RepoUrl:
+    Type: String
+    Default: "https://github.com/aws-samples/bedrock-claude-chat.git"
   Version:
     Type: String
     Default: "v2"
@@ -128,6 +134,10 @@ Resources:
             Value: !Ref AllowedSignUpEmailDomains
           - Name: BEDROCK_REGION
             Value: !Ref BedrockRegion
+          - Name: CDK_JSON_OVERRIDE
+            Value: !Ref CdkJsonOverride
+          - Name: REPO_URL
+            Value: !Ref RepoUrl
           - Name: VERSION
             Value: !Ref Version
       ServiceRole:
@@ -148,7 +158,7 @@ Resources:
               "build": {
                 "commands": [
                   "echo 'Build phase...'",
-                  "git clone --branch $VERSION https://github.com/aws-samples/bedrock-claude-chat.git",
+                  "git clone --branch $VERSION $REPO_URL bedrock-claude-chat",
                   "cd bedrock-claude-chat",
                   "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true/\"selfSignUpEnabled\": false/' cdk/cdk.json; fi",
                   "if [ \"$ENABLE_LAMBDA_SNAPSTART\" = \"false\" ]; then sed -i 's/\"enableLambdaSnapStart\": true/\"enableLambdaSnapStart\": false/' cdk/cdk.json; fi",
@@ -156,7 +166,9 @@ Resources:
                   "if [ \"$DISABLE_IPV6\" = \"true\" ]; then jq '.context.allowedIpV6AddressRanges = []' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; elif [ ! -z \"$IPV6_RANGES\" ]; then jq --arg ipv6 \"$IPV6_RANGES\" '.context.allowedIpV6AddressRanges = ($ipv6 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "if [ ! -z \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" ]; then jq --arg domains \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" '.context.allowedSignUpEmailDomains = ($domains | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "sed -i \"s/\\\"bedrockRegion\\\": \\\"[^\\\"]*\\\"/\\\"bedrockRegion\\\": \\\"${BEDROCK_REGION}\\\"/\" cdk/cdk.json",
+                  "echo \"$CDK_JSON_OVERRIDE\" | jq '.' && jq --argjson override \"$CDK_JSON_OVERRIDE\" '. * $override' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json",
                   "cd cdk",
+                  "cat cdk.json",
                   "npm ci",
                   "npx cdk bootstrap",
                   "npx cdk deploy --require-approval never --all"

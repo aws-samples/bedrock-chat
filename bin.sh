@@ -41,6 +41,8 @@ IPV6_RANGES=""
 DISABLE_IPV6="false"
 ALLOWED_SIGN_UP_EMAIL_DOMAINS=""
 BEDROCK_REGION="us-east-1"
+CDK_JSON_OVERRIDE="{}"
+REPO_URL="https://github.com/aws-samples/bedrock-claude-chat.git"
 VERSION="v2"
 
 # Parse command-line arguments for customization
@@ -53,6 +55,8 @@ while [[ "$#" -gt 0 ]]; do
         --ipv6-ranges) IPV6_RANGES="$2"; shift ;;
         --bedrock-region) BEDROCK_REGION="$2"; shift ;;
         --allowed-signup-email-domains) ALLOWED_SIGN_UP_EMAIL_DOMAINS="$2"; shift ;;
+        --cdk-json-override) CDK_JSON_OVERRIDE="$2"; shift ;;
+        --repo-url) REPO_URL="$2"; shift ;;
         --version) VERSION="$2"; shift ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
     esac
@@ -82,6 +86,8 @@ aws cloudformation deploy \
     Ipv6Ranges="$IPV6_RANGES" \
     AllowedSignUpEmailDomains="$ALLOWED_SIGN_UP_EMAIL_DOMAINS" \
     BedrockRegion="$BEDROCK_REGION" \
+    CdkJsonOverride="$CDK_JSON_OVERRIDE" \
+    RepoUrl="$REPO_URL" \
     Version="$VERSION"
 
 echo "Waiting for the stack creation to complete..."
