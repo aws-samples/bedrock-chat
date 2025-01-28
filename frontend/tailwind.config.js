@@ -4,7 +4,7 @@ export default {
   darkMode: 'class',
   theme: {
     fontFamily: {
-      body: ['M PLUS Rounded 1c'],
+      body: ['Roboto', 'sans-serif'],
     },
     extend: {
       transitionProperty: {
@@ -16,7 +16,7 @@ export default {
       },
       colors: {
         'aws-squid-ink': {
-          light: '#232F3E',
+          light: '#074a6e',
           dark: '#171717',
         },
         'aws-sea-blue': {

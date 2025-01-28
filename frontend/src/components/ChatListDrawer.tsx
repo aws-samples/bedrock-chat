@@ -36,6 +36,7 @@ import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
 import { usePageLabel } from '../routes';
 import Toggle from '../components/Toggle.tsx';
+import Logo from './Logo'; // Import the new Logo component
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -295,6 +296,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm  text-white transition-width`}>
           <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
+            <Logo 
+            />
             <DrawerItem
               isActive={false}
               icon={<PiNotePencil />}
