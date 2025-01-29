@@ -205,7 +205,7 @@ const BotKbEditPage: React.FC = () => {
   ];
 
   const [chunkingStrategy, setChunkingStrategy] =
-    useState<ChunkingStrategy>('semantic');
+    useState<ChunkingStrategy>('default');
 
   const webCrawlingScopeOptions: {
     label: string;
