@@ -3,7 +3,7 @@ import React from 'react';
 const Logo: React.FC = () => {
   return (
     <img
-      src="https://3is.org/wp-content/uploads/2023/12/logo_w.png"
+      src="https://compass-assistant.s3.us-west-2.amazonaws.com/logo.png"
       alt="3is Logo"
       className="logo"
     />

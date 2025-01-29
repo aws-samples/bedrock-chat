@@ -1,7 +1,7 @@
 const translation = {
   translation: {
     app: {
-      name: 'Bedrock Claude Chat',
+      name: 'Compass',
       nameWithoutClaude: 'Bedrock Chat',
       inputMessage: 'Envoyer un message',
       starredBots: 'Epingler un bot',

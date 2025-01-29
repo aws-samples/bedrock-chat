@@ -6,7 +6,7 @@ const translation = {
       },
     },
     app: {
-      name: 'Bedrock Claude Chat',
+      name: 'Compass',
       nameWithoutClaude: 'Bedrock Chat',
       inputMessage: 'ฉันช่วยอะไรคุณได้บ้าง?',
       starredBots: 'บ็อตที่ถูกใจ',
