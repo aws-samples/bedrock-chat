@@ -56,7 +56,11 @@ def to_guardrails_grounding_source(
     )
 
 
-def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResult]:
+def _bedrock_knowledge_base_search(
+    bot: BotModel,
+    query: str,
+    doc_filter: list[str] | None = None
+) -> list[SearchResult]:
     # Instead of assert, do an explicit check and log a full stack trace if missing
     if bot.bedrock_knowledge_base is None or bot.bedrock_knowledge_base.knowledge_base_id is None:
         logger.error(
@@ -67,7 +71,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             bot.bedrock_knowledge_base,
         )
         # Print the stack to logs:
-        logger.error("Stacktrace below:", exc_info=True)
+        logger.exception("Stacktrace below:")
         
         # Then raise an assertion or custom exception:
         raise AssertionError(
@@ -90,15 +94,50 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
     )
 
     try:
+        retrieval_config = {
+            "vectorSearchConfiguration": {
+                "numberOfResults": limit,
+                "overrideSearchType": search_type,
+            }
+        }
+
+        if doc_filter:
+            if len(doc_filter) == 1:
+                retrieval_config["vectorSearchConfiguration"]["filter"] = {
+                    "stringContains": {
+                        "key": "x-amz-bedrock-kb-source-uri",
+                        "value": doc_filter[0]
+                    }
+                }
+            else:
+                retrieval_config["vectorSearchConfiguration"]["filter"] = {
+                    "orAll": [
+                        {
+                            "stringContains": {
+                                "key": "x-amz-bedrock-kb-source-uri",
+                                "value": doc_name
+                            }
+                        }
+                        for doc_name in doc_filter
+                    ]
+                }
+
+        logger.debug(
+            "Executing Knowledge Base Search:\n"
+            "- Bot ID: %s\n"
+            "- Bedrock_knowledge_base: %s\n"
+            "- Bedrock_knowledge_base search: %s\n"
+            "- Retrieval Config: %s\n",
+            bot.id,
+            bot.bedrock_knowledge_base,
+            query,
+            retrieval_config
+        )
+
         response = agent_client.retrieve(
             knowledgeBaseId=knowledge_base_id,
             retrievalQuery={"text": query},
-            retrievalConfiguration={
-                "vectorSearchConfiguration": {
-                    "numberOfResults": limit,
-                    "overrideSearchType": search_type,
-                }
-            },
+            retrievalConfiguration=retrieval_config,
         )
 
         def extract_source_from_retrieval_result(
@@ -123,6 +162,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         for i, retrieval_result in enumerate(response.get("retrievalResults", [])):
             content = retrieval_result.get("content", {}).get("text", "")
             source = extract_source_from_retrieval_result(retrieval_result)
+            logger.debug(f"KB Search Response - source:{source} - content: {content[:100]}...")
 
             if source is not None:
                 search_results.append(
@@ -142,5 +182,6 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
         raise e
 
 
-def search_related_docs(bot: BotModel, query: str) -> list[SearchResult]:
-    return _bedrock_knowledge_base_search(bot, query)
+def search_related_docs(bot: BotModel, query: str, doc_filter: list[str] | None = None) -> list[SearchResult]:
+    return _bedrock_knowledge_base_search(bot, query, doc_filter)
+

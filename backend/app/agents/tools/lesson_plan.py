@@ -472,7 +472,8 @@ class UnifiedLessonPlannerTool(AgentTool):
             # If knowledge base is configured, proceed with search
             search_results = search_related_docs(
                 bot=bot,
-                query=self._build_search_query(tool_input)
+                query=self._build_search_query(tool_input),
+                doc_filter=tool_input.documents,
             )
 
             if not search_results:

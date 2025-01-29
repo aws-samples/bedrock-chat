@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeToolInput(BaseModel):
     query: str = Field(description="User's original question string.")
+
+    # Add documents field for specific source documents
+    documents: Optional[List[str]] = Field(
+        default=None,
+        description="List of source document names to search in knowledge base"
+    )
 
 
 def search_knowledge(
@@ -44,6 +50,7 @@ def search_knowledge(
         search_results = search_related_docs(
             bot,
             query=query,
+            doc_filter=tool_input.documents,
         )
 
         # # For testing purpose
