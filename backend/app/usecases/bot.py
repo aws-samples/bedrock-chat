@@ -165,8 +165,6 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     if bot_input.agent and bot_input.agent.tools:
         for tool_name in bot_input.agent.tools:
             try:
-                # We do not yet have a real "bot" object to pass here,
-                # but you can pass model if needed:
                 the_tool = get_tool_by_name(tool_name)
                 tool_instances.append(
                     AgentToolModel(
@@ -181,7 +179,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     agent_model = AgentModel(tools=tool_instances)
 
 
-    # Step 1: Construct the BotModel object (without agent tools yet)
+    # Step 1: Construct the BotModel object
     new_bot = BotModel(
         id=bot_input.id,
         title=bot_input.title,
@@ -193,7 +191,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_pinned=False,
         owner_user_id=user_id,
         generation_params=GenerationParamsModel(**generation_params),
-        agent=agent_model,  # Will replace in after creating tools below
+        agent=agent_model,
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -233,27 +231,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         ),
     )
 
-    # Step 2: Build agent tools using the *same* new_bot instance
-    if bot_input.agent and bot_input.agent.tools:
-        tool_instances = []
-        for tool_name in bot_input.agent.tools:
-            try:
-                # Provide the real BotModel instance and model
-                tool = get_tool_by_name(tool_name, bot=new_bot)
-                tool_instances.append(
-                    AgentToolModel(name=tool.name, description=tool.description)
-                )
-            except Exception as e:
-                logger.error(f"Failed to create tool {tool_name}: {e}")
-
-        new_bot.agent = AgentModel(tools=tool_instances)
-    else:
-        new_bot.agent = AgentModel(tools=[])
-
-    # Step 3: Store the newly created bot in DB
+    # Step 2: Store the newly created bot in DB
     store_bot(user_id, new_bot)
 
-    # Step 4: Return BotOutput
+    # Step 3: Return BotOutput
     return BotOutput(
         id=new_bot.id,
         title=new_bot.title,
@@ -307,8 +288,7 @@ def modify_owned_bot(
     user_id: str, bot_id: str, modify_input: BotModifyInput
 ) -> BotModifyOutput:
     """
-    Modify an owned bot. Ensures we pass the real 'bot' instance
-    to any agent tools, so bedrock_knowledge_base is preserved.
+    Modify an owned bot. 
     """
     source_urls = []
     sitemap_urls = []
@@ -354,28 +334,24 @@ def modify_owned_bot(
     bot = find_private_bot_by_id(user_id, bot_id)
 
     # Build or update the agent if needed
+    tool_dict = {tool.name: tool for tool in bot.agent.tools}
+
     if modify_input.agent:
-        # Create new AgentToolModel entries using the real 'bot'
-        new_tools = []
+        # Create or update AgentToolModel entries
         for tool_name in modify_input.agent.tools:
             try:
-                # Provide the real existing bot object so the tool sees the correct bedrock_knowledge_base
-                the_tool = get_tool_by_name(
-                    tool_name,
-                    bot=bot,
-                )
-                new_tools.append(
-                    AgentToolModel(
-                        name=the_tool.name,
-                        description=the_tool.description,
-                    )
+                the_tool = get_tool_by_name(tool_name)
+                # Update existing or add new tool
+                tool_dict[tool_name] = AgentToolModel(
+                    name=the_tool.name,
+                    description=the_tool.description,
                 )
             except Exception as e:
-                logger.error(f"Failed to create tool {tool_name}: {e}")
+                logger.error(f"Failed to create/update tool {tool_name}: {e}")
 
-        agent = AgentModel(tools=new_tools)
-    else:
-        agent = AgentModel(tools=[])
+    # Convert dictionary values back to list
+    new_tools = list(tool_dict.values())
+    agent = AgentModel(tools=new_tools)
 
     # if knowledge is not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
