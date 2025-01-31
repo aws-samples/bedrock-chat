@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import ButtonDownload from './ButtonDownload';
 import ButtonCopy from './ButtonCopy';
 import { RelatedDocument } from '../@types/conversation';
 import { twMerge } from 'tailwind-merge';
@@ -244,7 +245,10 @@ const CopyToClipboard = ({
   return (
     <div className="relative">
       {children}
-      <ButtonCopy text={codeText} className="absolute right-2 top-2" />
+      <div className="absolute right-2 top-2 flex gap-0">
+        <ButtonDownload text={codeText} />
+        <ButtonCopy text={codeText} />
+      </div>
     </div>
   );
 };
