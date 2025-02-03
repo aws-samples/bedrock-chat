@@ -1,0 +1,73 @@
+name: Intelligent Operations with Amazon Bedrock
+# Enable manual trigger
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+
+    # Avoid running the same workflow on the same branch concurrently
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    # environment: AWS_ROLE_TO_ASSUME
+    permissions:
+      # read repository contents and write pull request comments
+      id-token: write
+      # allow github action bot to push new content into existing pull requests
+      contents: write
+      # contents: read
+      pull-requests: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install dependencies @actions/core and @actions/github
+      run: |
+        npm install @actions/core
+        npm install @actions/github
+      shell: bash
+
+    # check if required dependencies @actions/core and @actions/github are installed
+    - name: Check if required dependencies are installed
+      run: |
+        npm list @actions/core
+        npm list @actions/github
+      shell: bash
+
+    - name: Debug GitHub Token
+      run: |
+        if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+          echo "GitHub Token is set"
+        else
+          echo "GitHub Token is not set"
+        fi
+
+    # assume the specified IAM role and set up the AWS credentials for use in subsequent steps.
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        # Go to your repo -> Settings -> Secrets and variables -> Actions -> New repository secret, then add the secret name as e.g. AWS_ROLE_TO_ASSUME, and the value as the role arn, e.g. arn:aws:iam::123456789012:role/role-name, then reference it in the workflow as ${{ secrets.AWS_ROLE_TO_ASSUME }}, note you might need to create a environment variable instead of secret for the role arn, to allow PR from other users (not the repo owner) have access to the role.
+        # role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME_VAR }}
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: us-east-1
+
+    - name: Intelligent GitHub Actions
+      uses: rogeriomartini/aws-genai-cicd-suite@stable
+      with:
+        # Automatic Provision: The GITHUB_TOKEN is automatically created and provided by GitHub for each workflow run. You don't need to manually create or store this token as a secret.
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        aws-region: us-east-1
+        model-id: anthropic.claude-3-sonnet-20240229-v1:0
+        generate-code-review-level: 'detailed'
+        generate-code-review: 'true'
+        generate-pr-description: 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
