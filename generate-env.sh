@@ -43,7 +43,7 @@ if ! touch "$OUTPUT_FRONTEND_FILE" 2>/dev/null; then
 fi
 
 # Parse the outputs and format them as .env key-value pairs
-echo "# Environment variables from CloudFormation stack: $STACK_NAME" > "$OUTPUT_BACKEND_FILE"
+echo "# Environment variables from CloudFormation stack: $STACK_NAME - Account: $ACCOUNT_ID" > "$OUTPUT_BACKEND_FILE"
 echo "AWS_REGION=us-east-1" >> "$OUTPUT_BACKEND_FILE"
 echo "ACCOUNT=$ACCOUNT_ID" >> "$OUTPUT_BACKEND_FILE"
 echo "BEDROCK_REGION=us-east-1" >> "$OUTPUT_BACKEND_FILE"
@@ -65,7 +65,7 @@ echo "BING_API_SECRET_ARN=$(aws secretsmanager describe-secret --secret-id 'bing
 
 # Please duplicate this file to ".env.local" for local development
 # in production development, these values will be automatically set.
-echo "# Environment variables from CloudFormation stack: $STACK_NAME" > "$OUTPUT_FRONTEND_FILE"
+echo "# Environment variables from CloudFormation stack: $STACK_NAME - Account: $ACCOUNT_ID" > "$OUTPUT_FRONTEND_FILE"
 echo "VITE_APP_API_ENDPOINT=http://localhost:8000" >> "$OUTPUT_FRONTEND_FILE"
 echo "VITE_APP_WS_ENDPOINT=$(echo "$CF_OUTPUT" | jq -r '.[] | select(.OutputKey | contains("WebSocketWebSocketEndpoint")).OutputValue' | head -n 1)" >> "$OUTPUT_FRONTEND_FILE"
 
