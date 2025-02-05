@@ -37,13 +37,12 @@ class SimpleQuizTool(AgentTool):
         """Get tool description for schema generation"""
         return cls.DESCRIPTION
 
-    def __init__(self, bot: BotModel):
+    def __init__(self):
         super().__init__(
             name="quiz_generator",
             description=self.DESCRIPTION,
             args_schema=SimpleQuizInput,
             function=self.generate_quiz,
-            bot=bot,
         )
     
     def _build_search_query(
@@ -60,12 +59,6 @@ class SimpleQuizTool(AgentTool):
             f"Find detailed information about {topic_term}"
         )
 
-        # Add any documents if specified
-        if hasattr(tool_input, 'documents') and tool_input.documents:
-            documents_list = " ".join(tool_input.documents)
-            query += f" sources: {documents_list}"
-
-        logger.info(f"Built search query: {query}")
         return query
 
     def generate_quiz(
@@ -92,15 +85,12 @@ class SimpleQuizTool(AgentTool):
             Topic: {tool_input.topic}"""
         )
 
-        logger.info(f"Generating quiz about: {tool_input.topic}")
-
         try:
-            query = self._build_search_query(tool_input)
-            logger.info(f"Search query built: {query}")
+            query_str = self._build_search_query(tool_input)
+            logger.info(f"Search query built: {query_str}")
 
             # Search knowledge base for relevant content
-            logger.info("Starting search with knowledge base")
-            search_results = search_related_docs(bot=bot, query=query)
+            search_results = search_related_docs(bot=bot, query=query_str, doc_filter=tool_input.documents)
             logger.info(f"Got search results length: {len(search_results)}")
 
             if not search_results:
@@ -114,7 +104,7 @@ class SimpleQuizTool(AgentTool):
             content_text = "\n\n".join(result["content"] for result in search_results)
             sources = [f"- {result['source_name']}" for result in search_results]
             
-            quiz_prompt = f"""You are a quiz generation assistant. Your task is to create {tool_input.num_questions} high-quality multiple-choice questions about {tool_input.topic} using the provided content.
+            quiz_prompt = f"""You are a quiz generation assistant. Your task is to create {tool_input.num_questions} high-quality multiple-choice questions and analysis about {tool_input.topic} using the provided content.
 
 CONTENT TO USE:
 {content_text}
@@ -128,11 +118,8 @@ VALIDATION REQUIREMENTS:
 3. Keep track of content coverage to avoid duplicates
 4. Each question must include a citation to the source material
 
-FORMAT EACH QUESTION AS FOLLOWS:
+QUIZ OUTPUT - FORMAT EACH QUESTION AS FOLLOWS:
 Question [X of {tool_input.num_questions}]
-Source: [source document name]
-Retrieved Content: [brief relevant quote from source]
-
 [Question text]
 Options:
 A) [Option A]
@@ -140,10 +127,20 @@ B) [Option B]
 C) [Option C]
 D) [Option D]
 
+---
+QUIZ ANSWER KEY - FORMAT ANSWER FOR EACH QUESTION AS FOLLOWS:
+Question [X]  Correct Answer: [Letter]
+
+---
+QUIZ ANALYSIS OUTPUT - FORMAT EACH QUESTION ANALYSIS AS FOLLOWS:
+Question [X of {tool_input.num_questions}]
+Source: [source document name, section]
+Retrieved Content: [brief relevant quote from source]
 Correct Answer: [Letter]
 Explanation: [Explanation referencing the source content]
 Validation: [Brief statement confirming answer can be verified in source]
 
+Include Citations for the sources.
 ---
 
 Begin quiz generation:"""
@@ -166,6 +163,6 @@ Begin quiz generation:"""
                 "source_name": "Quiz Generator"
             }]
 
-def create_simple_quiz_tool(bot: BotModel) -> AgentTool:
+def create_simple_quiz_tool() -> AgentTool:
     """Create a quiz tool instance for the given bot."""
-    return SimpleQuizTool(bot)
+    return SimpleQuizTool()
