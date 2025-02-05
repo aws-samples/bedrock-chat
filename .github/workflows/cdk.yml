@@ -6,6 +6,9 @@ on:
       - main
       - v1
       - v2
+      - v2-qikr-main
+    paths:
+      - 'cdk/**'
   workflow_dispatch: {}
 
 jobs:
