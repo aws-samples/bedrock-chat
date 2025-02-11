@@ -14,6 +14,7 @@ from app.routes.api_publication import router as api_publication_router
 from app.routes.bot import router as bot_router
 from app.routes.conversation import router as conversation_router
 from app.routes.published_api import router as published_api_router
+from app.routes.group import router as group_router
 from app.user import User
 from app.utils import is_running_on_lambda
 from fastapi import Depends, FastAPI, Request
@@ -57,6 +58,7 @@ if not is_published_api:
     app.include_router(bot_router)
     app.include_router(api_publication_router)
     app.include_router(admin_router)
+    app.include_router(group_router)
 else:
     app.include_router(published_api_router)
 
