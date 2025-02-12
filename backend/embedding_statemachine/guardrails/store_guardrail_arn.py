@@ -25,13 +25,13 @@ def handler(event, context):
     stack_output: List[StackOutput] = event["stack_output"]
 
     # Check if stack_output is valid and has at least one item
-    if not stack_output or not isinstance(stack_output, list) or len(stack_output) == 0:
+    if not stack_output or not isinstance(stack_output["items"], list) or len(stack_output["items"]) == 0:
         logger.warning("Empty or invalid stack_output received")
         guardrail_arn = ""
         guardrail_version = ""
     else:
         # Access the first item directly since we know it exists
-        first_output = stack_output[0]
+        first_output = stack_output["items"][0]
         guardrail_arn = first_output.get("GuardrailArn", "")
         guardrail_version = first_output.get("GuardrailVersion", "")
 
