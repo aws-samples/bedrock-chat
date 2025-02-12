@@ -20,7 +20,7 @@ LANGUAGES = [
 def check_env_vars():
     """Check if required environment variables are set. Exit immediately if any are missing."""
     missing = []
-    for key in ("BEDROCK_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"):
+    for key in ("AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"):
         if not os.environ.get(key):
             missing.append(key)
     if missing:
@@ -36,7 +36,7 @@ def get_model_id(model: str) -> str:
     base_model_ids = {
         "haiku-3.5": "anthropic.claude-3-5-haiku-20241022-v1:0",
     }
-    region = os.environ.get("BEDROCK_REGION")
+    region = os.environ.get("AWS_REGION")
     if region not in {"us-east-1", "us-west-2"}:
         logger.warning("Region %s is not supported; defaulting to us-east-1", region)
         region = "us-east-1"
@@ -62,7 +62,7 @@ def translate_text(text: str, target_lang: str) -> str:
     - If the response stopReason is "max_tokens", continue generating and concatenate the results.
     """
     logger.info("Starting translation for target language: %s", target_lang)
-    region = os.environ.get("BEDROCK_REGION")
+    region = os.environ.get("AWS_REGION")
     model = "haiku-3.5"
     model_id = get_model_id(model)
     logger.info("Using model_id: %s", model_id)

@@ -6,7 +6,7 @@ env:
   BASE_BRANCH: v2
 
 on:
-  push:
+  pull_request:
     branches:
       - main
       - v1
