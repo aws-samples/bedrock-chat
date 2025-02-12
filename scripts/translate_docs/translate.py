@@ -58,98 +58,183 @@ def get_model_id(model: str) -> str:
 @retry(Exception, tries=5, delay=2, backoff=2)
 def translate_text(text: str, target_lang: str) -> str:
     """
-    Translation function using the AWS Bedrock Converse API.
-    - For the first request, send the text to be translated as a user message.
-    - If the response stopReason is "max_tokens", continue generating and concatenate the results.
+    Translation function using the AWS Bedrock Converse API with continuation support.
     """
     logger.info("Starting translation for target language: %s", target_lang)
     region = os.environ.get("AWS_REGION")
     model = "haiku-3.5"
     model_id = get_model_id(model)
-    logger.info("Using model_id: %s", model_id)
 
     system_prompt = {
         "text": (
             f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
-            "Ignore any character limit and translate the entire text completely, regardless of length. "
-            "If the content is long and you cannot translate it all at once, end your response with 'max_tokens' on stopReason."
-            "Keep all markdown formatting exactly as in the original text."
+            "YOU MUST OBEY THE FOLLOWING RULES: "
+            "<rules>"
+            "- Keep ALL MARKDOWN FORMATTING EXACTLY as in the original text. "
+            "- If you cannot complete the translation in one response, END WITH '<CONTINUE>'. "
+            "  - DO NOT ADD ANY EXPLANATORY NOTES - just end with '<CONTINUE>'."
+            "</rules>"
         )
     }
-
-    # system_prompt = {
-    #     "text": (
-    #         f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
-    #         "Keep all markdown formatting exactly as in the original text."
-    #     )
-    # }
-
-    user_message = {"role": "user", "content": [{"text": text}]}
-    inference_config = {
-        "maxTokens": 4096,
-        "temperature": 0.7,
-        "topP": 0.95,
-    }
-    payload = {
-        "modelId": model_id,
-        "inferenceConfig": inference_config,
-        "system": [system_prompt],
-        "messages": [user_message],
-        "additionalModelRequestFields": {},
-    }
-    logger.debug("Payload for Converse API:\n%s", json.dumps(payload, indent=2))
-
-    config = Config(read_timeout=10000)  # Set longer timeout for large files
-    client = boto3.client("bedrock-runtime", region_name=region, config=config)
-    logger.debug("Created boto3 client for bedrock-runtime in region %s", region)
-
-    response = client.converse(**payload)
-    logger.debug("Response from client.converse: %s", response)
 
     complete_text = ""
-    if "output" in response and "message" in response["output"]:
-        content_list = response["output"]["message"].get("content", [])
-        if content_list and "text" in content_list[0]:
-            complete_text = content_list[0]["text"]
-    stop_reason = response.get("stopReason", "")
+    remaining_text = text
+    continuation = False
 
-    while stop_reason == "max_tokens":
-        logger.info("Token limit reached. Continuing translation...")
-        continuation_payload = {
-            "modelId": model_id,
-            "inferenceConfig": inference_config,
-            "system": [system_prompt],
-            "messages": [
-                user_message,
-                {"role": "assistant", "content": [{"text": complete_text}]},
+    while True:
+        user_message = {
+            "role": "user",
+            "content": [
                 {
-                    "role": "user",
-                    "content": [
-                        {
-                            "text": "Please continue the translation from where you left off."
-                        }
-                    ],
-                },
+                    "text": (
+                        "Continue translation from where you left off."
+                        if continuation
+                        else remaining_text
+                    )
+                }
             ],
+        }
+
+        messages = [user_message]
+        if continuation:
+            messages = [
+                {"role": "assistant", "content": [{"text": complete_text}]},
+                user_message,
+            ]
+
+        payload = {
+            "modelId": model_id,
+            "inferenceConfig": {
+                "maxTokens": 8192,
+                "temperature": 0.7,
+                "topP": 0.95,
+            },
+            "system": [system_prompt],
+            "messages": messages,
             "additionalModelRequestFields": {},
         }
-        logger.debug(
-            "Continuation payload:\n%s", json.dumps(continuation_payload, indent=2)
+
+        client = boto3.client(
+            "bedrock-runtime", region_name=region, config=Config(read_timeout=10000)
         )
-        new_response = client.converse(**continuation_payload)
-        logger.debug("Continuation response: %s", new_response)
-        new_text = ""
-        if "output" in new_response and "message" in new_response["output"]:
-            content_list = new_response["output"]["message"].get("content", [])
+        response = client.converse(**payload)
+
+        if "output" in response and "message" in response["output"]:
+            content_list = response["output"]["message"].get("content", [])
             if content_list and "text" in content_list[0]:
-                new_text = content_list[0]["text"]
-        complete_text += new_text
-        stop_reason = new_response.get("stopReason", "")
-    if not complete_text:
-        logger.error("No text found in the response")
-        raise Exception("No text found in the response")
-    logger.info("Translation successful for target language: %s", target_lang)
+                current_text = content_list[0]["text"]
+
+                # Check for continuation marker
+                if current_text.endswith("<CONTINUE>"):
+                    complete_text += current_text[:-10]  # Remove <CONTINUE>
+                    continuation = True
+                else:
+                    complete_text += current_text
+                    break
+        else:
+            raise Exception("No text found in the response")
+
+    logger.info("Translation completed for target language: %s", target_lang)
     return complete_text
+
+
+# @retry(Exception, tries=5, delay=2, backoff=2)
+# def translate_text(text: str, target_lang: str) -> str:
+#     """
+#     Translation function using the AWS Bedrock Converse API.
+#     - For the first request, send the text to be translated as a user message.
+#     - If the response stopReason is "max_tokens", continue generating and concatenate the results.
+#     """
+#     logger.info("Starting translation for target language: %s", target_lang)
+#     region = os.environ.get("AWS_REGION")
+#     model = "haiku-3.5"
+#     model_id = get_model_id(model)
+#     logger.info("Using model_id: %s", model_id)
+
+#     # system_prompt = {
+#     #     "text": (
+#     #         f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
+#     #         "Ignore any character limit and translate the entire text completely, regardless of length. "
+#     #         "If the content is long and you cannot translate it all at once, end your response with 'max_tokens' on stopReason."
+#     #         "Keep all markdown formatting exactly as in the original text."
+#     #     )
+#     # }
+
+#     system_prompt = {
+#         "text": (
+#             f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
+#             "Keep all markdown formatting exactly as in the original text. "
+#             "If you cannot complete the translation in one response, end with '<CONTINUE>' and wait for continuation. "
+#             "Do not add any explanatory notes - just end with '<CONTINUE>'."
+#         )
+#     }
+
+#     user_message = {"role": "user", "content": [{"text": text}]}
+#     inference_config = {
+#         "maxTokens": 4096,
+#         "temperature": 0.7,
+#         "topP": 0.95,
+#     }
+#     payload = {
+#         "modelId": model_id,
+#         "inferenceConfig": inference_config,
+#         "system": [system_prompt],
+#         "messages": [user_message],
+#         "additionalModelRequestFields": {},
+#     }
+#     logger.debug("Payload for Converse API:\n%s", json.dumps(payload, indent=2))
+
+#     config = Config(read_timeout=10000)  # Set longer timeout for large files
+#     client = boto3.client("bedrock-runtime", region_name=region, config=config)
+#     logger.debug("Created boto3 client for bedrock-runtime in region %s", region)
+
+#     response = client.converse(**payload)
+#     logger.debug("Response from client.converse: %s", response)
+
+#     complete_text = ""
+#     if "output" in response and "message" in response["output"]:
+#         content_list = response["output"]["message"].get("content", [])
+#         if content_list and "text" in content_list[0]:
+#             complete_text = content_list[0]["text"]
+#     stop_reason = response.get("stopReason", "")
+
+#     while stop_reason == "max_tokens":
+#         logger.info("Token limit reached. Continuing translation...")
+#         continuation_payload = {
+#             "modelId": model_id,
+#             "inferenceConfig": inference_config,
+#             "system": [system_prompt],
+#             "messages": [
+#                 user_message,
+#                 {"role": "assistant", "content": [{"text": complete_text}]},
+#                 {
+#                     "role": "user",
+#                     "content": [
+#                         {
+#                             "text": "Please continue the translation from where you left off."
+#                         }
+#                     ],
+#                 },
+#             ],
+#             "additionalModelRequestFields": {},
+#         }
+#         logger.debug(
+#             "Continuation payload:\n%s", json.dumps(continuation_payload, indent=2)
+#         )
+#         new_response = client.converse(**continuation_payload)
+#         logger.debug("Continuation response: %s", new_response)
+#         new_text = ""
+#         if "output" in new_response and "message" in new_response["output"]:
+#             content_list = new_response["output"]["message"].get("content", [])
+#             if content_list and "text" in content_list[0]:
+#                 new_text = content_list[0]["text"]
+#         complete_text += new_text
+#         stop_reason = new_response.get("stopReason", "")
+#     if not complete_text:
+#         logger.error("No text found in the response")
+#         raise Exception("No text found in the response")
+#     logger.info("Translation successful for target language: %s", target_lang)
+#     return complete_text
 
 
 def update_links(content: str, lang_code: str, rel_path: str) -> str:
