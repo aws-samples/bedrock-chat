@@ -67,11 +67,18 @@ def translate_text(text: str, target_lang: str) -> str:
     model_id = get_model_id(model)
     logger.info("Using model_id: %s", model_id)
 
+    # system_prompt = {
+    #     "text": (
+    #         f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
+    #         "Ignore any character limit and translate the entire text completely, regardless of length. "
+    #         "Return only the translated text and nothing else. "
+    #         "Keep all markdown formatting exactly as in the original text."
+    #     )
+    # }
+
     system_prompt = {
         "text": (
             f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
-            "Ignore any character limit and translate the entire text completely, regardless of length. "
-            "Return only the translated text and nothing else. "
             "Keep all markdown formatting exactly as in the original text."
         )
     }

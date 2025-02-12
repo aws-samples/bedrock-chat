@@ -16,6 +16,11 @@ on:
       - "README.md"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
 jobs:
   translate:
     runs-on: ubuntu-latest
