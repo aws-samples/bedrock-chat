@@ -67,13 +67,22 @@ def translate_text(text: str, target_lang: str) -> str:
 
     system_prompt = {
         "text": (
-            f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
-            "YOU MUST OBEY THE FOLLOWING RULES: "
-            "<rules>"
-            "- Keep ALL MARKDOWN FORMATTING EXACTLY as in the original text. "
-            "- If you cannot complete the translation in one response, END WITH '<CONTINUE>'. "
-            "  - DO NOT ADD ANY EXPLANATORY NOTES - just end with '<CONTINUE>'."
-            "</rules>"
+            f"You are a professional translator. Translate the following text into {target_lang}. "
+            "CRITICAL REQUIREMENTS:\n"
+            "1. Preserve ALL original formatting including:\n"
+            "   - Markdown syntax\n"
+            "   - Links and URLs\n"
+            "   - Code blocks and inline code\n"
+            "   - Special characters and emojis\n"
+            "2. Maintain the exact same structure and layout\n"
+            "3. Do not add or remove any lines\n"
+            "4. Do not translate:\n"
+            "   - URLs\n"
+            "   - Code snippets\n"
+            "   - Command examples\n"
+            "5. If you cannot complete in one response, end with '<CONTINUE>'\n"
+            "6. Do not add any explanatory notes\n"
+            "Translate with natural and professional tone while keeping technical accuracy."
         )
     }
 

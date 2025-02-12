@@ -44,13 +44,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          cd backend
+          mv backend/pyproject.toml backend/poetry.lock .
           poetry install
 
       - name: Run translation script
         run: |
-          cd backend
-          poetry run python ../scripts/translate_docs/translate.py
+          poetry run python scripts/translate_docs/translate.py
 
       # Check for changes
       - name: Check for changes
