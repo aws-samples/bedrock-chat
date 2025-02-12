@@ -1,10 +1,15 @@
 # Bedrock Claude Chat (Nova)
 
-![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
+![](https://img.shields.io/github/v/release/aws-samples/bedrock-claude-chat?style=flat-square)
+![](https://img.shields.io/github/license/aws-samples/bedrock-claude-chat?style=flat-square)
+![](https://img.shields.io/github/actions/workflow/status/aws-samples/bedrock-claude-chat/cdk.yml?style=flat-square)
 
-> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+[English](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/README.md) | [日本語](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/ja/README.md) | [한국어](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/ko/README.md) | [中文](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/zh/README.md) | [Français](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/fr/README.md) | [Deutsch](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/de/README.md) | [Español](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/es/README.md) | [Italian](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/it/README.md) | [Norsk](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/no/README.md) | [ไทย](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/th/README.md) | [Bahasa Indonesia](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/id/README.md) | [Bahasa Melayu](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/ms/README.md) | [Tiếng Việt](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/vi/README.md)
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
+> [!Warning]  
+> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+
+A multilingual chatbot using LLM models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ### Watch Overview and Installation on YouTube
 
@@ -47,22 +52,6 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 ![](./docs/imgs/agent2.png)
 
 </details>
-
-## 📚 Supported Languages
-
-- English 💬
-- 日本語 💬 (ドキュメントは[こちら](./docs/README_ja.md))
-- 한국어 💬
-- 中文 💬
-- Français 💬
-- Deutsch 💬
-- Español 💬
-- Italian 💬
-- Norsk 💬
-- ไทย 💬
-- Bahasa Indonesia 💬
-- Bahasa Melayu 💬
-- Tiếng Việt 💬
 
 ## 🚀 Super-easy Deployment
 
@@ -118,7 +107,7 @@ Example usage:
 The override JSON must follow the same structure as cdk.json. You can override any context values including:
 
 - `selfSignUpEnabled`
-- `enableLambdaSnapStart` 
+- `enableLambdaSnapStart`
 - `allowedIpV4AddressRanges`
 - `allowedIpV6AddressRanges`
 - `allowedSignUpEmailDomains`
@@ -339,6 +328,7 @@ You can configure a custom domain for the CloudFront distribution by setting the
 - `hostedZoneId`: The ID of your Route 53 hosted zone where the domain records will be created
 
 When these parameters are provided, the deployment will automatically:
+
 - Create an ACM certificate with DNS validation in us-east-1 region
 - Create the necessary DNS records in your Route 53 hosted zone
 - Configure CloudFront to use your custom domain
@@ -379,4 +369,3 @@ Please also take a look at the following guidelines before contributing:
 ## License
 
 This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
-

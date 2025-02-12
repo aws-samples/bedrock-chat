@@ -1,0 +1,82 @@
+name: Auto Translate Docs
+
+env:
+  AWS_REGION: us-west-2
+  BRANCH_NAME: auto-translate-$(date +'%Y%m%d%H%M%S')
+  BASE_BRANCH: v2
+
+on:
+  push:
+    branches:
+      - main
+      - v1
+      - v2
+    paths:
+      - "docs/**"
+      - "README.md"
+  workflow_dispatch:
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Assume Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.BEDROCK_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          cd .github/scripts/translate_docs
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run translation script
+        run: python .github/scripts/translate_docs/translate_docs.py
+
+      # Check for changes
+      - name: Check for changes
+        id: changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected"
+            echo "::set-output name=changed::true"
+          else
+            echo "No changes detected"
+            echo "::set-output name=changed::false"
+          fi
+
+      # If changes are detected, commit and push
+      - name: Commit and push changes if any
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          branch_name="auto-translate-$(date +'%Y%m%d%H%M%S')"
+          git checkout -b $branch_name
+          git add docs/
+          git commit -m "Auto update translated docs using AWS Bedrock (haiku 3.5)"
+          git push origin $branch_name
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+
+      # Create a pull request if changes are detected
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          base: ${{ env.BASE_BRANCH }}
+          title: "Auto update translated docs using AWS Bedrock (haiku 3.5)"
+          body: "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with haiku 3.5 model."
