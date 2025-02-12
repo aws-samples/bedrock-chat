@@ -2,7 +2,6 @@ name: Auto Translate Docs
 
 env:
   AWS_REGION: us-west-2
-  BRANCH_NAME: auto-translate-$(date +'%Y%m%d%H%M%S')
   BASE_BRANCH: v2
 
 on:
@@ -25,6 +24,21 @@ jobs:
   translate:
     runs-on: ubuntu-latest
     steps:
+      # Check for existing auto-translate PR to avoid infinite loop
+      - name: Check for existing auto-translate PR
+        id: check_pr
+        run: |
+          owner_repo="${GITHUB_REPOSITORY}"
+          head_branch_prefix="auto-translate"
+          prs=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${owner_repo}/pulls?state=open" | jq -r ".[] | select(.head.ref | startswith(\"${head_branch_prefix}\"))")
+          if [ -n "$prs" ]; then
+            echo "An auto-translate PR already exists. Skipping further processing."
+            exit 1
+          else
+            echo "No existing auto-translate PR found."
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -69,12 +83,11 @@ jobs:
       - name: Commit and push changes if any
         if: steps.changes.outputs.changed == 'true'
         run: |
-          branch_name="auto-translate-$(date +'%Y%m%d%H%M%S')"
+          branch_name="auto-translate-${{ github.run_id }}"
           git checkout -b $branch_name
-          git add docs/
+          git add docs/ README.md 
           git commit -m "Auto update translated docs using AWS Bedrock (haiku 3.5)"
           git push origin $branch_name
-          echo "branch_name=$branch_name" >> $GITHUB_ENV
 
       # Create a pull request if changes are detected
       - name: Create Pull Request
@@ -82,7 +95,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: "auto-translate-${{ github.run_id }}"
           base: ${{ env.BASE_BRANCH }}
           title: "Auto update translated docs using AWS Bedrock (haiku 3.5)"
           body: "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with haiku 3.5 model."
