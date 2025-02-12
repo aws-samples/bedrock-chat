@@ -48,7 +48,9 @@ jobs:
           poetry install
 
       - name: Run translation script
-        run: poetry run python ./scripts/translate_docs/translate.py
+        run: |
+          cd backend
+          poetry run python ../scripts/translate_docs/translate.py
 
       # Check for changes
       - name: Check for changes
