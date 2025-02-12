@@ -13,9 +13,18 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class StackOutput(TypedDict):
+class Items(TypedDict):
+    KnowledgeBaseId: str
+    DataSourceId: str
     GuardrailArn: str
     GuardrailVersion: str
+    PK: str
+    SK: str
+
+
+class StackOutput(TypedDict):
+    KnowledgeBaseId: str
+    items: List[Items]
 
 
 def handler(event, context):
@@ -25,7 +34,11 @@ def handler(event, context):
     stack_output: List[StackOutput] = event["stack_output"]
 
     # Check if stack_output is valid and has at least one item
-    if not stack_output or not isinstance(stack_output["items"], list) or len(stack_output["items"]) == 0:
+    if (
+        not stack_output
+        or not isinstance(stack_output["items"], list)
+        or len(stack_output["items"]) == 0
+    ):
         logger.warning("Empty or invalid stack_output received")
         guardrail_arn = ""
         guardrail_version = ""
