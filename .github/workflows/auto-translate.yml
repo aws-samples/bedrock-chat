@@ -43,9 +43,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd .github/scripts/translate_docs
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r .github/scripts/translate_docs/requirements.txt
 
       - name: Run translation script
         run: python .github/scripts/translate_docs/translate_docs.py

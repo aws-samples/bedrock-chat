@@ -6,6 +6,7 @@ import re
 import sys
 
 import boto3
+from botocore.config import Config
 from retry import retry
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -67,21 +68,21 @@ def translate_text(text: str, target_lang: str) -> str:
     model_id = get_model_id(model)
     logger.info("Using model_id: %s", model_id)
 
-    # system_prompt = {
-    #     "text": (
-    #         f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
-    #         "Ignore any character limit and translate the entire text completely, regardless of length. "
-    #         "Return only the translated text and nothing else. "
-    #         "Keep all markdown formatting exactly as in the original text."
-    #     )
-    # }
-
     system_prompt = {
         "text": (
             f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
+            "Ignore any character limit and translate the entire text completely, regardless of length. "
+            "If the content is long and you cannot translate it all at once, end your response with 'max_tokens' on stopReason."
             "Keep all markdown formatting exactly as in the original text."
         )
     }
+
+    # system_prompt = {
+    #     "text": (
+    #         f"You are a translation assistant. Your task is to translate the following text into {target_lang}. "
+    #         "Keep all markdown formatting exactly as in the original text."
+    #     )
+    # }
 
     user_message = {"role": "user", "content": [{"text": text}]}
     inference_config = {
@@ -98,7 +99,8 @@ def translate_text(text: str, target_lang: str) -> str:
     }
     logger.debug("Payload for Converse API:\n%s", json.dumps(payload, indent=2))
 
-    client = boto3.client("bedrock-runtime", region_name=region)
+    config = Config(read_timeout=10000)  # Set longer timeout for large files
+    client = boto3.client("bedrock-runtime", region_name=region, config=config)
     logger.debug("Created boto3 client for bedrock-runtime in region %s", region)
 
     response = client.converse(**payload)
