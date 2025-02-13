@@ -150,180 +150,138 @@ def translate_text(text: str, target_lang: str) -> str:
     return final_translation
 
 
-def update_links(content: str, lang_code: str, rel_path: str) -> str:
+def update_links(
+    content: str, lang_code: str, output_file: str, is_root: bool = False
+) -> str:
     """
-    Update links in the given content for the specified language and relative path.
+    Markdown 内のリンクを更新する。
 
-    [Case 1] Root README.md (rel_path is "README.md"):
-    - Markdown links: Replace links that start with "./docs/…" or "docs/…" with "./…"
-    - Image links: Replace links that start with "./docs/imgs/…" or "docs/imgs/…" with "./imgs/…"
+    ・ローカル Markdown ファイル（.md）のリンクに対して、ファイル名の直前に _<lang> を追加する。
+    ・リンク先が既に _<lang> で終わっている場合は変更しない。
+    ・絶対 URL (http://, https://) は変更しない。
 
-
-    [Case 2] All other cases (e.g., "subdir/file.md"):
-    - No change for Markdown links
-    - For image links: If the link starts with "imgs/" or "./imgs/", convert it to a relative path to "docs/imgs/"
-        based on the depth of the output file (number of directory levels in rel_path).
-        Example: If the output is "docs/ja/subdir/file.md" (depth 1), the prefix is "../"*(1+1) = "../../", so "../../imgs/…"
-
-    【ケース1】 ルート README.md (rel_path が "README.md" の場合)
-      - Markdown リンク: リンク先が "./docs/…" または "docs/…" を "./…" に変換
-      - 画像リンク: リンク先が "./docs/imgs/…" または "docs/imgs/…" を "./imgs/…" に変換
-
-    【ケース2】 それ以外 (例: "subdir/file.md")
-      - Markdown リンクは変更なし
-      - 画像リンク: リンク先が "imgs/…" または "./imgs/…" の場合、出力ファイルの深度 (rel_path のディレクトリ階層数) に合わせて、
-        リポジトリ内の docs/imgs/ への相対パスに変換する。
-        例: 出力先が "docs/ja/subdir/file.md" (深度 1) の場合、プレフィックスは "../"*(1+1) = "../../", で "../../imgs/…"
+    さらに、ルートの README の翻訳（is_root=True）の場合は、
+    元のリンクが "./docs/..." もしくは "docs/..." となっている場合、出力先 (docs/README_\<lang\>.md)
+    からの相対パスにするため、先頭の "docs/" 部分を削除します。
     """
-    logger.debug("Updating links for lang_code: %s, rel_path: %s", lang_code, rel_path)
-    depth = 0
-    # ルートの場合は、file_path はルートにあるとみなすので、rel_path が "README.md"
-    if os.path.dirname(rel_path):
-        depth = len(os.path.dirname(rel_path).split(os.sep))
+    # Update Markdown (.md) links.
+    md_pattern = re.compile(r"(\[[^\]]*\]\()([^)\s]+\.md)(\))", re.IGNORECASE)
 
-    # Case 1: Root README.md
-    if depth == 0 and os.path.basename(rel_path).lower() == "readme.md":
+    def replace_md(match):
+        prefix, link, suffix = match.groups()
+        if re.match(r"https?://", link):
+            return match.group(0)
+        if re.search(rf"_{lang_code}\.md$", link):
+            return match.group(0)
+        if is_root:
+            new_link = re.sub(r"^(?:\./)?(?:docs/)?", "", link)
+            new_link = "./" + new_link
+            new_link = re.sub(r"(?i)(\.md)$", f"_{lang_code}\\1", new_link)
+            return f"{prefix}{new_link}{suffix}"
+        else:
+            new_link = re.sub(r"(?i)(\.md)$", f"_{lang_code}\\1", link)
+            return f"{prefix}{new_link}{suffix}"
 
-        def replace_root_md(match: re.Match) -> str:
-            link_text = match.group(1)
-            link_target = match.group(2)
-            # If the link starts with "./docs/" or "docs/", convert it to "./…"
-            if re.match(r"^(\./)?docs/", link_target):
-                new_target = re.sub(r"^(\./)?docs/", "./", link_target)
-                logger.debug(
-                    "Root README: Replacing md link: %s -> %s", link_target, new_target
-                )
-                return f"[{link_text}]({new_target})"
+    content = md_pattern.sub(replace_md, content)
+
+    # Update image links (.png, .jpg, .jpeg, .gif) for root README:
+    # 例: ![](./docs/imgs/bot_creation.png) → ![](./imgs/bot_creation.png)
+    img_pattern = re.compile(
+        r"(!\[[^\]]*\]\()([^)\s]+\.(?:png|jpg|jpeg|gif))(\))", re.IGNORECASE
+    )
+
+    def replace_img(match):
+        prefix, link, suffix = match.groups()
+        if re.match(r"https?://", link):
+            return match.group(0)
+        if is_root:
+            new_link = re.sub(r"^(?:\./)?(?:docs/)?", "", link)
+            new_link = "./" + new_link
+            return f"{prefix}{new_link}{suffix}"
+        else:
             return match.group(0)
 
-        content = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", replace_root_md, content)
+    content = img_pattern.sub(replace_img, content)
 
-        def replace_root_img(match: re.Match) -> str:
-            alt_text = match.group(1)
-            link_target = match.group(2)
-            # If the link starts with "./docs/imgs/" or "docs/imgs/", convert it to "../imgs/…"
-            if re.match(r"^(\./)?docs/imgs/", link_target):
-                new_target = re.sub(r"^(\./)?docs/imgs/", "../imgs/", link_target)
-                logger.debug(
-                    "Root README: Replacing image link: %s -> %s", link_target, new_target
-                )
-                return f"![{alt_text}]({new_target})"
-            return match.group(0)
-
-        content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", replace_root_img, content)
-    else:
-        # Case 2: Non-root files
-        # Markdown links are left as is
-        # For image links: If the link starts with "imgs/" or "./imgs/", convert it to a relative path to "docs/imgs/"
-        prefix = "../" * (depth + 1)  # Note that output location is "docs/<lang_code>/"
-
-        def replace_nonroot_img(match: re.Match) -> str:
-            alt_text = match.group(1)
-            link_target = match.group(2)
-            if re.match(r"^(\./)?imgs/", link_target):
-                new_target = prefix + "imgs/" + re.sub(r"^(\./)?imgs/", "", link_target)
-                logger.debug(
-                    "Non-root: Replacing image link: %s -> %s", link_target, new_target
-                )
-                return f"![{alt_text}]({new_target})"
-            return match.group(0)
-
-        content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", replace_nonroot_img, content)
     return content
 
 
 def process_file(file_path: str):
+    """
+    ファイルを読み込み、各言語について翻訳後の出力先に保存する。
+
+    ・ルートの README.md の場合、出力先は docs/ にしてファイル名を README_<lang>.md にする。
+    ・それ以外の場合、元と同じディレクトリにファイル名に _<lang> を付与して保存する。
+    """
     logger.info("Processing file: %s", file_path)
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-    # Set relative path based on whether the file is under docs/ or not
-    if os.path.dirname(file_path) == "":
-        # The case of root README.md
-        rel_path = os.path.basename(file_path)
-    else:
-        # The case of files under docs/
-        rel_path = os.path.relpath(file_path, "docs")
-    logger.info("Relative path for file: %s", rel_path)
-    is_root_readme = os.path.basename(
-        rel_path
-    ).lower() == "readme.md" and not os.path.dirname(rel_path)
 
+    is_root = os.path.dirname(file_path) == "" and re.search(
+        r"readme", os.path.basename(file_path), re.IGNORECASE
+    )
     for lang_code in LANGUAGES:
         logger.info("Translating %s to %s", file_path, lang_code)
         try:
-            translated = translate_text(content, lang_code)
-            # translated = "test"
+            # 実際の翻訳時は下記のコメントを外す
+            # translated = translate_text(content, lang_code)
+            translated = content  # デバッグ用：元の内容をそのまま利用
         except Exception as e:
             logger.error("Translation failed for %s: %s", lang_code, e)
             continue
 
-        logger.info("Updating links for %s in language: %s", file_path, lang_code)
-        translated = update_links(translated, lang_code, rel_path)
-
-        # Create output directory if it doesn't exist
-        if os.path.dirname(file_path) == "":
-            output_dir = os.path.join("docs", lang_code)
+        if is_root:
+            # ルート README.md の場合
+            output_dir = "docs"
+            base_name, ext = os.path.splitext(os.path.basename(file_path))
+            output_file = os.path.join(output_dir, f"{base_name}_{lang_code}{ext}")
         else:
-            output_dir = os.path.join("docs", lang_code, os.path.dirname(rel_path))
+            # docs/ 以下のファイルの場合
+            output_dir = os.path.dirname(file_path)
+            base_name, ext = os.path.splitext(os.path.basename(file_path))
+            output_file = os.path.join(output_dir, f"{base_name}_{lang_code}{ext}")
+
         os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.join(output_dir, os.path.basename(file_path))
+        logger.info("Updating links for %s in language: %s", file_path, lang_code)
+        translated = update_links(translated, lang_code, output_file, is_root=is_root)
+
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(translated)
         logger.info("Saved translated file to %s", output_file)
 
 
-def get_source_files() -> list[str]:
-    """
-    Get all source markdown files that should be translated.
-    Returns a list of file paths that are either:
-    1. README.md in the root
-    2. Markdown files under docs/ but not in language-specific directories
-    """
-    source_files = []
-
-    # Add root README.md if it exists
-    if os.path.exists("README.md"):
-        source_files.append("README.md")
-
-    # Add files under docs/
-    for root, dirs, files in os.walk("docs"):
-        # Exclude language-specific directories
-        dirs[:] = [d for d in dirs if d not in LANGUAGES]
-
-        for file in files:
-            if file.lower().endswith(".md"):
-                file_path = os.path.join(root, file)
-                # Convert to use forward slashes for consistency
-                file_path = file_path.replace(os.sep, "/")
-                if is_source_file(file_path):
-                    source_files.append(file_path)
-
-    return source_files
-
-
 def is_source_file(file_path: str) -> bool:
     """
-    Check if the file is a source file (not in language-specific directories).
-    Returns True if the file is either:
-    1. README.md in the root
-    2. A markdown file under docs/ but not in a language-specific directory
+    Return True if file_path is a source file (not already translated).
     """
-    if file_path == "README.md":
+    if file_path.lower().startswith("readme"):
         return True
-
-    # Check if the file is under docs/
     if not file_path.startswith("docs/"):
         return False
+    base_name = os.path.basename(file_path)
+    for lang in LANGUAGES:
+        if base_name.endswith(f"_{lang}.md"):
+            return False
+    return True
 
-    # Split the path into components
-    parts = file_path.split("/")
 
-    # If it's directly under docs/ (e.g., docs/README.md)
-    if len(parts) == 2:
-        return True
-
-    # Check if the first directory under docs/ is a language code
-    return parts[1] not in LANGUAGES
+def get_source_files() -> list[str]:
+    """
+    ソースとなる Markdown ファイル一覧を取得する。
+    ルートの README.md と、docs/ 以下で既に翻訳済み（ファイル名に _<lang> が付いたもの）でないファイルを対象とする。
+    """
+    source_files = []
+    if os.path.exists("README.md"):
+        source_files.append("README.md")
+    for root, dirs, files in os.walk("docs"):
+        # LANGUAGES で定義された言語ディレクトリは除外
+        dirs[:] = [d for d in dirs if d not in LANGUAGES]
+        for file in files:
+            if file.lower().endswith(".md"):
+                file_path = os.path.join(root, file).replace(os.sep, "/")
+                if is_source_file(file_path):
+                    source_files.append(file_path)
+    return source_files
 
 
 def main():
@@ -340,16 +298,13 @@ def main():
         process_all = True
 
     if process_all:
-        # Workflow dispatch mode: process all source files
         logger.info("Processing all source files (workflow_dispatch mode)")
         source_files = get_source_files()
         logger.info("Source files to process: %s", source_files)
-
         for file_path in source_files:
             logger.info("Processing %s", file_path)
             process_file(file_path)
     else:
-        # PR mode: process only changed source files
         logger.info("Processing only changed files (PR mode)")
         try:
             with open("changed_files.txt", "r") as f:
@@ -357,13 +312,9 @@ def main():
         except FileNotFoundError:
             logger.error("changed_files.txt not found")
             sys.exit(1)
-
         logger.info("Changed files: %s", changed_files)
-
-        # Filter and process only source files
         source_files = {f for f in changed_files if is_source_file(f)}
         logger.info("Source files to process: %s", source_files)
-
         for file_path in source_files:
             logger.info("Processing %s", file_path)
             process_file(file_path)

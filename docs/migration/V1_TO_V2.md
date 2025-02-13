@@ -33,7 +33,7 @@ We strongly recommend upgrading to v1.4 before moving to v2. In v1.4, you can us
 
 By setting `useBedrockKnowledgeBasesForRag` to true in `cdk.json`, you can create bots using Knowledge Bases. However, pgvector bots will become read-only, preventing the creation or editing of new pgvector bots.
 
-![](./imgs/v1_to_v2_readonly_bot.png)
+![](../imgs/v1_to_v2_readonly_bot.png)
 
 In v1.4, [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guardrails/) are also introduced. Due to regional restrictions of Knowledge Bases, the S3 bucket for uploading documents must be in the same region as `bedrockRegion`. We recommend backing up existing document buckets before updating, to avoid manually uploading large numbers of documents later (as S3 bucket import functionality is available).
 
@@ -41,7 +41,7 @@ In v1.4, [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guard
 
 The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
 
-![](./imgs/v1_to_v2_arch.png)
+![](../imgs/v1_to_v2_arch.png)
 
 ### Steps for users of v1.2 or earlier
 
@@ -69,7 +69,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
 
 3. **Recrate your bots**: Recreate your bots on Knowledge Base with the same definitions (documents, chunk size, etc.) as the pgvector bots. If you have a large volume of documents, restoring from the backup in step 1 will make this process easier. To restore, we can use restoring cross-region copies. For more detail, visit [here](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). To specify the restored bucket, set `S3 Data Source` section as following. The path structure is `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. You can check user id on Cognito user pool and bot id on address bar on bot creation screen.
 
-![](./imgs/v1_to_v2_KB_s3_source.png)
+![](../imgs/v1_to_v2_KB_s3_source.png)
 
 **Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support (Planning to support web crawler ([issue](https://github.com/aws-samples/bedrock-claude-chat/issues/557))).** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
 

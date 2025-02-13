@@ -90,6 +90,7 @@ jobs:
           echo "${{ env.PROCESS_ALL }}" > process_all.txt
           poetry run python scripts/translate_docs/translate.py
           mv pyproject.toml poetry.lock backend/
+          rm changed_files.txt process_all.txt
 
       # Check for changes
       - name: Check for changes
