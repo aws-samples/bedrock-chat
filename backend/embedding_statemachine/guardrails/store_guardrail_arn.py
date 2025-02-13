@@ -51,7 +51,7 @@ def handler(event, context):
     logger.info(f"Event: {event}")
     pk = event["pk"]
     sk = event["sk"]
-    stack_output: List[StackOutput] = event["stack_output"]
+    stack_output: StackOutput = event["stack_output"]
 
     # Check if stack_output is valid and has at least one item
     if (
