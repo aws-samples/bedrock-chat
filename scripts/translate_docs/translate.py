@@ -272,17 +272,64 @@ def process_file(file_path: str):
         logger.info("Saved translated file to %s", output_file)
 
 
+def get_source_files() -> list[str]:
+    """
+    Get all source markdown files that should be translated.
+    Returns a list of file paths that are either:
+    1. README.md in the root
+    2. Markdown files under docs/ but not in language-specific directories
+    """
+    source_files = []
+
+    # Add root README.md if it exists
+    if os.path.exists("README.md"):
+        source_files.append("README.md")
+
+    # Add files under docs/
+    for root, dirs, files in os.walk("docs"):
+        # Exclude language-specific directories
+        dirs[:] = [d for d in dirs if d not in LANGUAGES]
+
+        for file in files:
+            if file.lower().endswith(".md"):
+                file_path = os.path.join(root, file)
+                # Convert to use forward slashes for consistency
+                file_path = file_path.replace(os.sep, "/")
+                if is_source_file(file_path):
+                    source_files.append(file_path)
+
+    return source_files
+
+
+def is_source_file(file_path: str) -> bool:
+    """
+    Check if the file is a source file (not in language-specific directories).
+    Returns True if the file is either:
+    1. README.md in the root
+    2. A markdown file under docs/ but not in a language-specific directory
+    """
+    if file_path == "README.md":
+        return True
+
+    # Check if the file is under docs/
+    if not file_path.startswith("docs/"):
+        return False
+
+    # Split the path into components
+    parts = file_path.split("/")
+
+    # If it's directly under docs/ (e.g., docs/README.md)
+    if len(parts) == 2:
+        return True
+
+    # Check if the first directory under docs/ is a language code
+    return parts[1] not in LANGUAGES
+
+
 def main():
-    """
-    Main function to handle document translation process.
-    Supports two modes:
-    1. Process all files (workflow_dispatch mode)
-    2. Process only changed files (PR mode)
-    """
     logger.info("Starting translation process")
     check_env_vars()
 
-    # Read the process all flag
     try:
         with open("process_all.txt", "r") as f:
             process_all = f.read().strip().lower() == "true"
@@ -291,25 +338,17 @@ def main():
         sys.exit(1)
 
     if process_all:
-        # Workflow dispatch mode: process all files
-        logger.info("Processing all files (workflow_dispatch mode)")
-        # Process root README.md if it exists
-        if os.path.exists("README.md"):
-            logger.info("Processing root README.md")
-            process_file("README.md")
+        # Workflow dispatch mode: process all source files
+        logger.info("Processing all source files (workflow_dispatch mode)")
+        source_files = get_source_files()
+        logger.info("Source files to process: %s", source_files)
 
-        # Process all markdown files under docs/
-        for root, dirs, files in os.walk("docs"):
-            # Exclude language-specific directories
-            dirs[:] = [d for d in dirs if d not in LANGUAGES]
-            for file in files:
-                if file.lower().endswith(".md"):
-                    file_path = os.path.join(root, file)
-                    process_file(file_path)
+        for file_path in source_files:
+            logger.info("Processing %s", file_path)
+            process_file(file_path)
     else:
-        # PR mode: process only changed files
+        # PR mode: process only changed source files
         logger.info("Processing only changed files (PR mode)")
-        # Read the list of changed files
         try:
             with open("changed_files.txt", "r") as f:
                 changed_files = set(line.strip() for line in f if line.strip())
@@ -319,18 +358,13 @@ def main():
 
         logger.info("Changed files: %s", changed_files)
 
-        # Process changed README.md if it exists
-        if "README.md" in changed_files:
-            logger.info("Processing root README.md")
-            process_file("README.md")
+        # Filter and process only source files
+        source_files = {f for f in changed_files if is_source_file(f)}
+        logger.info("Source files to process: %s", source_files)
 
-        # Process changed files under docs/
-        for file_path in changed_files:
-            if file_path.startswith("docs/") and file_path.lower().endswith(".md"):
-                # Skip files in language-specific directories
-                if not any(lang_code in file_path for lang_code in LANGUAGES):
-                    logger.info("Processing %s", file_path)
-                    process_file(file_path)
+        for file_path in source_files:
+            logger.info("Processing %s", file_path)
+            process_file(file_path)
 
     logger.info("Translation process completed.")
 
