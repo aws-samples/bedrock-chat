@@ -23,6 +23,7 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
+    timeout-minutes: 360 # 6 hours
     steps:
       # Check for existing auto-translate PR to avoid infinite loop
       - name: Check for existing auto-translate PR
@@ -61,9 +62,31 @@ jobs:
           mv backend/pyproject.toml backend/poetry.lock .
           poetry install
 
+      # Identify changed files
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For PR events, get only the changed files
+            changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep -E "^(docs/.*\.md|README\.md)$" || true)
+            echo "PROCESS_ALL=false" >> $GITHUB_ENV
+          else
+            # For workflow_dispatch events, process all files
+            changed_files=""
+            echo "PROCESS_ALL=true" >> $GITHUB_ENV
+          fi
+          echo "Changed files:"
+          echo "$changed_files"
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Run translation script
         run: |
+          echo "${{ steps.changed-files.outputs.files }}" > changed_files.txt
+          echo "${{ env.PROCESS_ALL }}" > process_all.txt
           poetry run python scripts/translate_docs/translate.py
+          mv pyproject.toml poetry.lock backend/
 
       # Check for changes
       - name: Check for changes

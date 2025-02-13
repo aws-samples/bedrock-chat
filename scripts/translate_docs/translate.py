@@ -13,25 +13,25 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-LANGUAGES = [
-    "ja",
-]
-
 # LANGUAGES = [
-#     "de",
-#     "en",
-#     "es",
-#     "fr",
-#     "it",
 #     "ja",
-#     "ko",
-#     "ms",
-#     "nb",
-#     "th",
-#     "vi",
-#     "zh-hans",
-#     "zh-hant"
 # ]
+
+# Target languages for translation
+LANGUAGES = [
+    "de",
+    "es",
+    "fr",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nb",
+    "th",
+    "vi",
+    "zh-hans",
+    "zh-hant",
+]
 
 
 def check_env_vars():
@@ -201,9 +201,9 @@ def update_links(content: str, lang_code: str, rel_path: str) -> str:
         def replace_root_img(match: re.Match) -> str:
             alt_text = match.group(1)
             link_target = match.group(2)
-            # If the link starts with "./docs/imgs/" or "docs/imgs/", convert it to "./imgs/…"
+            # If the link starts with "./docs/imgs/" or "docs/imgs/", convert it to "../imgs/…"
             if re.match(r"^(\./)?docs/imgs/", link_target):
-                new_target = re.sub(r"^(\./)?docs/imgs/", "./imgs/", link_target)
+                new_target = re.sub(r"^(\./)?docs/imgs/", "../imgs/", link_target)
                 logger.debug(
                     "Root README: Replacing image link: %s -> %s", link_target, new_target
                 )
@@ -273,21 +273,65 @@ def process_file(file_path: str):
 
 
 def main():
+    """
+    Main function to handle document translation process.
+    Supports two modes:
+    1. Process all files (workflow_dispatch mode)
+    2. Process only changed files (PR mode)
+    """
     logger.info("Starting translation process")
     check_env_vars()
 
-    # For root README.md
-    if os.path.exists("README.md"):
-        logger.info("Processing root README.md")
-        process_file("README.md")
+    # Read the process all flag
+    try:
+        with open("process_all.txt", "r") as f:
+            process_all = f.read().strip().lower() == "true"
+    except FileNotFoundError:
+        logger.error("process_all.txt not found")
+        sys.exit(1)
 
-    # For all files under docs/
-    for root, dirs, files in os.walk("docs"):
-        dirs[:] = [d for d in dirs if d not in LANGUAGES]
-        for file in files:
-            if file.lower().endswith(".md"):
-                file_path = os.path.join(root, file)
-                process_file(file_path)
+    if process_all:
+        # Workflow dispatch mode: process all files
+        logger.info("Processing all files (workflow_dispatch mode)")
+        # Process root README.md if it exists
+        if os.path.exists("README.md"):
+            logger.info("Processing root README.md")
+            process_file("README.md")
+
+        # Process all markdown files under docs/
+        for root, dirs, files in os.walk("docs"):
+            # Exclude language-specific directories
+            dirs[:] = [d for d in dirs if d not in LANGUAGES]
+            for file in files:
+                if file.lower().endswith(".md"):
+                    file_path = os.path.join(root, file)
+                    process_file(file_path)
+    else:
+        # PR mode: process only changed files
+        logger.info("Processing only changed files (PR mode)")
+        # Read the list of changed files
+        try:
+            with open("changed_files.txt", "r") as f:
+                changed_files = set(line.strip() for line in f if line.strip())
+        except FileNotFoundError:
+            logger.error("changed_files.txt not found")
+            sys.exit(1)
+
+        logger.info("Changed files: %s", changed_files)
+
+        # Process changed README.md if it exists
+        if "README.md" in changed_files:
+            logger.info("Processing root README.md")
+            process_file("README.md")
+
+        # Process changed files under docs/
+        for file_path in changed_files:
+            if file_path.startswith("docs/") and file_path.lower().endswith(".md"):
+                # Skip files in language-specific directories
+                if not any(lang_code in file_path for lang_code in LANGUAGES):
+                    logger.info("Processing %s", file_path)
+                    process_file(file_path)
+
     logger.info("Translation process completed.")
 
 
