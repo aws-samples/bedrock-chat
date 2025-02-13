@@ -13,25 +13,25 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-LANGUAGES = [
-    "ja",
-]
+# LANGUAGES = [
+#     "ja",
+# ]
 
 # Target languages for translation
-# LANGUAGES = [
-#     "de",
-#     "es",
-#     "fr",
-#     "it",
-#     "ja",
-#     "ko",
-#     "ms",
-#     "nb",
-#     "th",
-#     "vi",
-#     "zh-hans",
-#     "zh-hant",
-# ]
+LANGUAGES = [
+    "de",
+    "es",
+    "fr",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nb",
+    "th",
+    "vi",
+    "zh-hans",
+    "zh-hant",
+]
 
 
 def check_env_vars():
@@ -76,7 +76,7 @@ def split_by_h2(text: str) -> list[str]:
     Split markdown text by h2 headings (##) only.
     Returns a list of sections, each starting with ## if it's a heading section.
     """
-    # ## で始まる行で分割
+    # Split by lines starting with ##
     sections = re.split(r"\n(?=## )", text)
     return [section.strip() for section in sections if section.strip()]
 
@@ -143,7 +143,7 @@ def translate_text(text: str, target_lang: str) -> str:
         else:
             raise Exception(f"Invalid response format for section {i+1}")
 
-    # 翻訳結果を結合（セクション間に空行を入れる）
+    # Convert list of translated sections to a single string
     final_translation = "\n\n".join(complete_translation)
 
     logger.info("Translation completed for target language: %s", target_lang)
@@ -154,15 +154,14 @@ def update_links(
     content: str, lang_code: str, output_file: str, is_root: bool = False
 ) -> str:
     """
-    Markdown 内のリンクを更新する。
+    Analyze and update links in the content for the specified language.
+    - For local Markdown files (.md), add _<lang> before the file extension.
+    - If the link already ends with _<lang>, do not change it.
+    - Do not change absolute URLs (http://, https://).
 
-    ・ローカル Markdown ファイル（.md）のリンクに対して、ファイル名の直前に _<lang> を追加する。
-    ・リンク先が既に _<lang> で終わっている場合は変更しない。
-    ・絶対 URL (http://, https://) は変更しない。
-
-    さらに、ルートの README の翻訳（is_root=True）の場合は、
-    元のリンクが "./docs/..." もしくは "docs/..." となっている場合、出力先 (docs/README_\<lang\>.md)
-    からの相対パスにするため、先頭の "docs/" 部分を削除します。
+    Additionally, for the root README translation (is_root=True):
+    - If the original link starts with "./docs/..." or "docs/...", remove the "docs/" part
+        to make it a relative path from the output file (docs/README_<lang>.md).
     """
     # Update Markdown (.md) links.
     md_pattern = re.compile(r"(\[[^\]]*\]\()([^)\s]+\.md)(\))", re.IGNORECASE)
@@ -185,7 +184,7 @@ def update_links(
     content = md_pattern.sub(replace_md, content)
 
     # Update image links (.png, .jpg, .jpeg, .gif) for root README:
-    # 例: ![](./docs/imgs/bot_creation.png) → ![](./imgs/bot_creation.png)
+    # e.g.: ![](./docs/imgs/bot_creation.png) → ![](./imgs/bot_creation.png)
     img_pattern = re.compile(
         r"(!\[[^\]]*\]\()([^)\s]+\.(?:png|jpg|jpeg|gif))(\))", re.IGNORECASE
     )
@@ -208,10 +207,9 @@ def update_links(
 
 def process_file(file_path: str):
     """
-    ファイルを読み込み、各言語について翻訳後の出力先に保存する。
-
-    ・ルートの README.md の場合、出力先は docs/ にしてファイル名を README_<lang>.md にする。
-    ・それ以外の場合、元と同じディレクトリにファイル名に _<lang> を付与して保存する。
+    Load files and save translated content for each language.
+    - For root README.md, save to docs/README_<lang>.md.
+    - For other files, save to the same directory with _<lang> suffix.
     """
     logger.info("Processing file: %s", file_path)
     with open(file_path, "r", encoding="utf-8") as f:
@@ -223,20 +221,19 @@ def process_file(file_path: str):
     for lang_code in LANGUAGES:
         logger.info("Translating %s to %s", file_path, lang_code)
         try:
-            # 実際の翻訳時は下記のコメントを外す
-            # translated = translate_text(content, lang_code)
-            translated = content  # デバッグ用：元の内容をそのまま利用
+            translated = translate_text(content, lang_code)
+            # translated = content  # For debug
         except Exception as e:
             logger.error("Translation failed for %s: %s", lang_code, e)
             continue
 
         if is_root:
-            # ルート README.md の場合
+            # For root README.md
             output_dir = "docs"
             base_name, ext = os.path.splitext(os.path.basename(file_path))
             output_file = os.path.join(output_dir, f"{base_name}_{lang_code}{ext}")
         else:
-            # docs/ 以下のファイルの場合
+            # For other files on docs/
             output_dir = os.path.dirname(file_path)
             base_name, ext = os.path.splitext(os.path.basename(file_path))
             output_file = os.path.join(output_dir, f"{base_name}_{lang_code}{ext}")
@@ -267,8 +264,8 @@ def is_source_file(file_path: str) -> bool:
 
 def get_source_files() -> list[str]:
     """
-    ソースとなる Markdown ファイル一覧を取得する。
-    ルートの README.md と、docs/ 以下で既に翻訳済み（ファイル名に _<lang> が付いたもの）でないファイルを対象とする。
+    Get a list of source Markdown files to translate.
+    Includes the root README.md and any files under docs/ that are not already translated.
     """
     source_files = []
     if os.path.exists("README.md"):
