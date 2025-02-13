@@ -13,25 +13,25 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# LANGUAGES = [
-#     "ja",
-# ]
+LANGUAGES = [
+    "ja",
+]
 
 # Target languages for translation
-LANGUAGES = [
-    "de",
-    "es",
-    "fr",
-    "it",
-    "ja",
-    "ko",
-    "ms",
-    "nb",
-    "th",
-    "vi",
-    "zh-hans",
-    "zh-hant",
-]
+# LANGUAGES = [
+#     "de",
+#     "es",
+#     "fr",
+#     "it",
+#     "ja",
+#     "ko",
+#     "ms",
+#     "nb",
+#     "th",
+#     "vi",
+#     "zh-hans",
+#     "zh-hant",
+# ]
 
 
 def check_env_vars():
@@ -334,8 +334,10 @@ def main():
         with open("process_all.txt", "r") as f:
             process_all = f.read().strip().lower() == "true"
     except FileNotFoundError:
-        logger.error("process_all.txt not found")
-        sys.exit(1)
+        logger.info(
+            "process_all.txt not found, defaulting to process_all = True for debugging"
+        )
+        process_all = True
 
     if process_all:
         # Workflow dispatch mode: process all source files
