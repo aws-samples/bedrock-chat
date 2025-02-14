@@ -13,24 +13,39 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# # LANGUAGES = [
+# #     "ja",
+# # ]
+
+# # Target languages for translation
 # LANGUAGES = [
+#     "de",
+#     "es",
+#     "fr",
+#     "it",
 #     "ja",
+#     "ko",
+#     "ms",
+#     "nb",
+#     "th",
+#     "vi",
+#     "zh-hans",
+#     "zh-hant",
 # ]
 
-# Target languages for translation
 LANGUAGES = [
-    "de",
-    "es",
-    "fr",
-    "it",
-    "ja",
-    "ko",
-    "ms",
-    "nb",
-    "th",
-    "vi",
-    "zh-hans",
-    "zh-hant",
+    "de-DE",  # German (Germany)
+    "es-ES",  # Spanish (Spain)
+    "fr-FR",  # French (France)
+    "it-IT",  # Italian (Italy)
+    "ja-JP",  # Japanese (Japan)
+    "ko-KR",  # Korean (Korea)
+    "ms-MY",  # Malay (Malaysia)
+    "nb-NO",  # Norwegian Bokmål (Norway)
+    "th-TH",  # Thai (Thailand)
+    "vi-VN",  # Vietnamese (Vietnam)
+    "zh-CN",  # Chinese (Simplified, China)
+    "zh-TW",  # Chinese (Traditional, Taiwan)
 ]
 
 
@@ -97,6 +112,7 @@ def translate_text(text: str, target_lang: str) -> str:
     system_prompt = {
         "text": (
             f"You are a professional translator. Translate the following text into {target_lang}. "
+            "For example, if the target language is it-IT, translate into standard Italian as used in Italy. "
             "CRITICAL REQUIREMENTS:\n"
             "1. DO NOT translate:\n"
             "   - Personal names (leave them exactly as is)\n"
