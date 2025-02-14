@@ -221,8 +221,8 @@ def process_file(file_path: str):
     for lang_code in LANGUAGES:
         logger.info("Translating %s to %s", file_path, lang_code)
         try:
-            # translated = translate_text(content, lang_code)
-            translated = content  # For debug
+            translated = translate_text(content, lang_code)
+            # translated = content  # For debug (It can skip the time-consuming translation process)
         except Exception as e:
             logger.error("Translation failed for %s: %s", lang_code, e)
             continue

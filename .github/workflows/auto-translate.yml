@@ -116,17 +116,6 @@ jobs:
           git commit -m "Auto update translated docs using AWS Bedrock (haiku 3.5)"
           git push origin $branch_name
 
-      # # Create a pull request if changes are detected
-      # - name: Create Pull Request
-      #   if: steps.changes.outputs.changed == 'true'
-      #   uses: peter-evans/create-pull-request@v5
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: "auto-translate-${{ github.run_id }}"
-      #     base: ${{ env.BASE_BRANCH }}
-      #     title: "Auto update translated docs using AWS Bedrock (haiku 3.5)"
-      #     body: "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with haiku 3.5 model."
-
       - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
         env:
