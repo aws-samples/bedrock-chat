@@ -1,6 +1,6 @@
 from typing import Any, Dict, Literal
 
-from app.dependencies import check_creating_bot_allowed
+from app.dependencies import check_is_user_authotized
 from app.repositories.custom_bot import (
     find_private_bot_by_id,
     find_private_bots_by_user_id,
@@ -47,24 +47,26 @@ router = APIRouter(tags=["bot"])
 def post_bot(
     request: Request,
     bot_input: BotInput,
-    create_bot_check=Depends(check_creating_bot_allowed),
 ):
     """Create new private owned bot."""
     current_user: User = request.state.current_user
-
+    check_is_user_authotized("create_assistant", current_user)
     return create_new_bot(current_user.id, bot_input)
 
 
 @router.patch("/bot/{bot_id}")
 def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
     """Modify owned bot title, instruction and description."""
-    return modify_owned_bot(request.state.current_user.id, bot_id, modify_input)
+    current_user: User = request.state.current_user
+    check_is_user_authotized("edit_assistant", current_user)
+    return modify_owned_bot(current_user.id, bot_id, modify_input)
 
 
 @router.patch("/bot/{bot_id}/pinned")
 def patch_bot_pin_status(request: Request, bot_id: str, pinned_input: BotPinnedInput):
     """Modify owned bot pin status."""
     current_user: User = request.state.current_user
+    check_is_user_authotized("edit_assistant", current_user)
     return modify_pin_status(current_user.id, bot_id, pinned=pinned_input.pinned)
 
 
@@ -74,6 +76,7 @@ def patch_bot_visibility(
 ):
     """Switch bot visibility"""
     current_user: User = request.state.current_user
+    check_is_user_authotized("edit_assistant_visibility", current_user)
     update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)
 
 
@@ -102,7 +105,7 @@ def get_all_bots(
 def get_private_bot(request: Request, bot_id: str):
     """Get private bot by id."""
     current_user: User = request.state.current_user
-
+    check_is_user_authotized("get_assistant", current_user)
     bot = find_private_bot_by_id(current_user.id, bot_id)
     output = BotOutput(
         id=bot.id,
@@ -165,7 +168,6 @@ def get_private_bot(request: Request, bot_id: str):
 def get_bot_summary(request: Request, bot_id: str):
     """Get bot summary by id."""
     current_user: User = request.state.current_user
-
     return fetch_bot_summary(current_user.id, bot_id)
 
 
@@ -175,6 +177,7 @@ def delete_bot(request: Request, bot_id: str):
     If the bot is shared, just remove the alias.
     """
     current_user: User = request.state.current_user
+    check_is_user_authotized("delete_assistant", current_user)
     remove_bot_by_id(current_user.id, bot_id)
 
 
@@ -184,6 +187,7 @@ def get_bot_presigned_url(
 ):
     """Get presigned url for bot"""
     current_user: User = request.state.current_user
+    check_is_user_authotized("get_presigned_url", current_user)
     url = issue_presigned_url(current_user.id, bot_id, filename, contentType)
     return BotPresignedUrlOutput(url=url)
 
@@ -192,11 +196,14 @@ def get_bot_presigned_url(
 def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     """Delete uploaded file for bot"""
     current_user: User = request.state.current_user
+    check_is_user_authotized("delete_uploaded_file", current_user)
     remove_uploaded_file(current_user.id, bot_id, filename)
 
 
 @router.get("/bot/{bot_id}/agent/available-tools", response_model=list[AgentTool])
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
+    current_user: User = request.state.current_user
+    check_is_user_authotized("get_assistant_agents", current_user)
     tools = fetch_available_agent_tools()
     return [AgentTool(name=tool.name, description=tool.description) for tool in tools]

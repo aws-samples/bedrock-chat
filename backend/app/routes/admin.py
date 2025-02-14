@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.dependencies import check_admin
+from app.dependencies import check_is_user_authotized
 from app.repositories.custom_bot import find_all_published_bots, find_public_bot_by_id
 from app.repositories.usage_analysis import (
     find_bots_sorted_by_price,
@@ -22,11 +22,13 @@ router = APIRouter(tags=["admin"])
 
 @router.get("/admin/published-bots", response_model=PublishedBotOutputsWithNextToken)
 def get_all_published_bots(
+    request: Request,
     next_token: str | None = None,
     limit: int = 1000,
-    admin_check=Depends(check_admin),
 ):
     """Get all published bots. This is intended to be used by admin."""
+    current_user: User = request.state.current_user
+    check_is_user_authotized("view_analytics", current_user)
     bots, next_token = find_all_published_bots(next_token=next_token, limit=limit)
 
     bot_outputs = [
@@ -46,10 +48,10 @@ def get_all_published_bots(
 
 @router.get("/admin/public-bots", response_model=list[UsagePerBotOutput])
 async def get_all_public_bots(
+    request: Request,
     limit: int = 100,
     start: str | None = None,
     end: str | None = None,
-    admin_check=Depends(check_admin),
 ):
     """Get all public bots. This is intended to be used by admin.
     NOTE:
@@ -59,8 +61,9 @@ async def get_all_public_bots(
     - If start and end are not specified, start is set to today's 00:00 and end is set to 23:00.
     - The result is sorted by the total price in descending order.
     """
+    current_user: User = request.state.current_user
+    check_is_user_authotized("view_analytics", current_user)
     bots = await find_bots_sorted_by_price(limit=limit, from_=start, to_=end)
-
     return [
         UsagePerBotOutput(
             id=bot.id,
@@ -79,10 +82,10 @@ async def get_all_public_bots(
 
 @router.get("/admin/users", response_model=list[UsagePerUserOutput])
 async def get_users(
+    request: Request,
     limit: int = 100,
     start: str | None = None,
     end: str | None = None,
-    admin_check=Depends(check_admin),
 ):
     """Get all users. This is intended to be used by admin.
     NOTE:
@@ -92,6 +95,8 @@ async def get_users(
     - If start and end are not specified, start is set to today's 00:00 and end is set to 23:00.
     - The result is sorted by the total price in descending order.
     """
+    current_user: User = request.state.current_user
+    check_is_user_authotized("view_analytics", current_user)
     users = await find_users_sorted_by_price(limit=limit, from_=start, to_=end)
 
     return [
@@ -105,8 +110,14 @@ async def get_users(
 
 
 @router.get("/admin/bot/public/{bot_id}", response_model=PublicBotOutput)
-def get_public_bot(request: Request, bot_id: str, admin_check=Depends(check_admin)):
+def get_public_bot(
+    request: Request, 
+    bot_id: str,
+    ):
     """Get public (shared) bot by id."""
+    current_user: User = request.state.current_user
+    check_is_user_authotized("view_analytics", current_user)
+
     bot = find_public_bot_by_id(bot_id)
     output = PublicBotOutput(
         id=bot.id,
