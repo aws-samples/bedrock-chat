@@ -65,21 +65,21 @@ def get_model_id(model: str) -> str:
     )
     return model_id
 
+
 def get_bedrock_client(region: str):
-    sts_client = boto3.client('sts', region_name=region)
+    sts_client = boto3.client("sts", region_name=region)
     assumed_role = sts_client.assume_role(
-        RoleArn=os.environ['BEDROCK_ROLE_ARN']
-        RoleSessionName="bedrock_session"
+        RoleArn=os.environ["BEDROCK_ROLE_ARN"], RoleSessionName="bedrock_session"
     )
-    credentials = assumed_role['Credentials']
-    
+    credentials = assumed_role["Credentials"]
+
     return boto3.client(
-        'bedrock-runtime', 
+        "bedrock-runtime",
         region_name=region,
-        aws_access_key_id=credentials['AccessKeyId'],
-        aws_secret_access_key=credentials['SecretAccessKey'],
-        aws_session_token=credentials['SessionToken'],
-        config=Config(read_timeout=10000)
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+        config=Config(read_timeout=10000),
     )
 
 
