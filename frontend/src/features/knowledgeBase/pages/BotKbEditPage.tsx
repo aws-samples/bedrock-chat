@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import InputText from '../../../components/InputText';
 import Button from '../../../components/Button';
 import useBot from '../../../hooks/useBot';
+import useGroup from '../../../hooks/useGroup';
+import { AssistantGroupType } from '../../../@types/group';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PiCaretLeft, PiNote, PiPlus, PiTrash } from 'react-icons/pi';
 import Textarea from '../../../components/Textarea';
@@ -85,10 +87,12 @@ const BotKbEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
+  const { getGroupList } = useGroup();
   const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const [groupOptionsList, setGroupOptionsList] = useState<AssistantGroupType[]>([]);
+  const [groupName, setGroupName] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
@@ -452,6 +456,18 @@ const BotKbEditPage: React.FC = () => {
   );
 
   useEffect(() => {
+    
+    getGroupList()
+      .then((groupList) => {
+        const options = groupList.map(({ groupId, groupName }) => ({
+          value: groupId,
+          label: groupName,
+        }));
+        setGroupOptionsList(options);
+        if (options.length && isNewBot) {
+          setGroupName(options[0].value);
+        }
+      })
     if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
@@ -1436,7 +1452,16 @@ const BotKbEditPage: React.FC = () => {
                   onChange={setInstruction}
                 />
               </div>
-
+              <div className="mt-3">
+                <Select
+                  label={"Select Course"}
+                  value={groupName}
+                  options={groupOptionsList}
+                  onChange={(val) => {
+                    setGroupName(val);
+                  }}
+                />
+              </div>
               <div className="mt-3" />
               <AvailableTools
                 availableTools={availableTools}
