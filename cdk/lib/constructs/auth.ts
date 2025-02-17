@@ -54,6 +54,7 @@ export class Auth extends Construct {
         authFlows: {
           userPassword: true,
           userSrp: true,
+          custom: true, // Enable custom authentication flow
         },
       };
       if (!props.idp.isExist()) return defaultProps;
@@ -174,6 +175,53 @@ export class Auth extends Construct {
         checkEmailDomainFunction
       );
     }
+
+    // Add custom auth lambdas
+    const createAuthChallengeFunction = new PythonFunction(
+      this,
+      "CreateAuthChallenge",
+      {
+        runtime: Runtime.PYTHON_3_12,
+        index: "create_auth_challenge.py",
+        entry: path.join( __dirname, "../../../backend/auth/create_auth_challenge"),
+        timeout: Duration.minutes(1),
+      }
+    );
+    userPool.addTrigger(
+      UserPoolOperation.CREATE_AUTH_CHALLENGE,
+      createAuthChallengeFunction
+    );
+
+    const defineAuthChallengeFunction = new PythonFunction(
+      this,
+      "DefineAuthChallenge",
+      {
+        runtime: Runtime.PYTHON_3_12,
+        index: "define_auth_challenge.py",
+        entry: path.join( __dirname, "../../../backend/auth/define_auth_challenge"),
+        timeout: Duration.minutes(1),
+      }
+    );
+    userPool.addTrigger(
+      UserPoolOperation.DEFINE_AUTH_CHALLENGE,
+      defineAuthChallengeFunction
+    );
+
+    const verifyAuthChallengeFunction = new PythonFunction(
+      this,
+      "VerifyAuthChallenge",
+      {
+        runtime: Runtime.PYTHON_3_12,
+        index: "verify_auth_challenge.py",
+        entry: path.join( __dirname, "../../../backend/auth/verify_auth_challenge"),
+        timeout: Duration.minutes(1),
+      }
+    );
+    userPool.addTrigger(
+      UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE,
+      verifyAuthChallengeFunction
+    );
+
 
     const adminGroup = new CfnUserPoolGroup(this, "AdminGroup", {
       groupName: "Admin",
