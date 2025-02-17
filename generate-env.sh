@@ -61,7 +61,11 @@ echo "USAGE_ANALYSIS_TABLE=ddb_export" >> "$OUTPUT_BACKEND_FILE"
 echo "USAGE_ANALYSIS_DATABASE=bedrockchatstack_usage_analysis" >> "$OUTPUT_BACKEND_FILE"
 echo "USAGE_ANALYSIS_OUTPUT_LOCATION=$(echo "$CF_OUTPUT" | jq -r '.[] | select(.OutputKey | contains("UsageAnalysisUsageAnalysisOutputLocation")).OutputValue' | head -n 1)" >> "$OUTPUT_BACKEND_FILE"
 echo "USER_POOL_ID=$(echo "$CF_OUTPUT" | jq -r '.[] | select(.OutputKey | contains("AuthUserPoolId")).OutputValue' | head -n 1)" >> "$OUTPUT_BACKEND_FILE"
-echo "BING_API_SECRET_ARN=$(aws secretsmanager describe-secret --secret-id 'bing-api-key' --query 'ARN' --output text)" >> "$OUTPUT_BACKEND_FILE"
+BING_API_SECRET_ARN=$(aws secretsmanager describe-secret --secret-id 'bing-api-key' --query 'ARN' --output text 2>/dev/null) || {
+    echo "Warning: 'bing-api-key' secret not found. Setting BING_API_SECRET_ARN to an empty value."
+    BING_API_SECRET_ARN=""
+}
+echo "BING_API_SECRET_ARN=$BING_API_SECRET_ARN" >> "$OUTPUT_BACKEND_FILE"
 
 # Please duplicate this file to ".env.local" for local development
 # in production development, these values will be automatically set.
