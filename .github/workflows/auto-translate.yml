@@ -26,7 +26,7 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    timeout-minutes: 360 # NOTE: cannot specify using env variable
     steps:
       # Check for existing auto-translate PR to avoid infinite loop
       - name: Check for existing auto-translate PR
