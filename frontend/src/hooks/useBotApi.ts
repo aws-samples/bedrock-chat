@@ -26,6 +26,7 @@ const useBotApi = () => {
     ) => {
       return http.get<GetBotsResponse>(['bot', req], {
         refreshInterval: refreshIntervalFunction,
+        revalidateOnFocus: false  // Disable refresh on window focus
       });
     },
     getOnceMyBot: (botId: string) => {
