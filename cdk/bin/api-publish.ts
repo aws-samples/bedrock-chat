@@ -101,5 +101,6 @@ const publishedApi = new ApiPublishmentStack(
       allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
       allowCredentials: true,
     },
+    userPoolId: cdk.Fn.importValue("BedrockClaudeChatUserPoolId"),
   }
 );

@@ -43,6 +43,7 @@ export interface ApiProps {
   readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
+  readonly frontendURL: string;
 }
 
 export class Api extends Construct {
@@ -170,7 +171,12 @@ export class Api extends Construct {
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["cognito-idp:AdminGetUser"],
+        actions: [
+          "cognito-idp:ListUsers",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminSetUserPassword",
+        ],
         resources: [props.auth.userPool.userPoolArn],
       })
     );
@@ -224,6 +230,7 @@ export class Api extends Construct {
           props.usageAnalysis?.ddbExportTable.tableName || "",
         USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis?.workgroupName || "",
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
+        FRONTEND_URL: props.frontendURL,
         ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
         props.enableBedrockCrossRegionInference.toString(),

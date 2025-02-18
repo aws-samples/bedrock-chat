@@ -174,6 +174,7 @@ export class BedrockChatStack extends cdk.Stack {
       enableBedrockCrossRegionInference:
       props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
+      frontendURL: frontend.getOrigin(),
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
 
