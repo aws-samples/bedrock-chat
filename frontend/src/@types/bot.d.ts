@@ -79,6 +79,10 @@ export type BotDetails = BotMeta & {
   bedrockGuardrails: GuardrailsParams;
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  version: string;
+  groupId: string;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig;
 };
 
 export type BotSummary = BotMeta & {
@@ -109,7 +113,20 @@ export type RegisterBotRequest = {
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  version: string;
+  groupId: string;
+  assistantConfig: AssistantConfig;
 };
+
+export type AssistantConfig = {
+  assistantType: string;
+  assistantTopics: string;
+}
+
+export type CreatorConfig = {
+  user_id: string;
+  user_name: string;
+}
 
 export type RegisterBotResponse = BotDetails;
 
@@ -125,6 +142,8 @@ export type UpdateBotRequest = {
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  groupId: string;
+  assistantConfig: AssistantConfig;
 };
 
 export type UpdateBotResponse = {
@@ -138,6 +157,8 @@ export type UpdateBotResponse = {
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  groupId: string;
+  assistantConfig: AssistantConfig;
 };
 
 export type UpdateBotPinnedRequest = {
@@ -164,7 +185,10 @@ export type GetBotsRequest =
   | {
       kind: 'mixed';
       pinned: boolean;
-    };
+    }
+  | {
+    kind: 'groups';
+  };
 
 export type GetBotsResponse = BotListItem[];
 

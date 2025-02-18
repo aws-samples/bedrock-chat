@@ -9,6 +9,7 @@ class GroupOutput(BaseSchema):
     update_time: float
     create_by: str
     role: str
+    user_name: str
 
 # Role hierarchy from lowest to highest
 ROLE_HIERARCHY = ["STUDENT", "TEACHER", "SCHOOLADMIN", "DISTRICTADMIN", "SUPERADMIN"]

@@ -18,7 +18,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
   const api = useBotApi();
 
   const { data: myBots, mutate: mutateMyBots } = api.bots(
-    { kind: 'private' },
+    { kind: 'groups' },
     shouldAutoRefreshMyBots
       ? (data) => {
           if (!data) return 0;

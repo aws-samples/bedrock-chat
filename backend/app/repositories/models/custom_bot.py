@@ -73,6 +73,16 @@ class ConversationQuickStarterModel(BaseModel):
     title: str
     example: str
 
+class AssistantConfigModel(BaseModel):
+    # database access object
+    assistantType: str
+    assistantTopics: str
+
+class CreatorConfigModel(BaseModel):
+    # database access object
+    user_id: str
+    user_name: str
+
 
 class BotModel(BaseModel):
     id: str
@@ -99,6 +109,10 @@ class BotModel(BaseModel):
     bedrock_knowledge_base: BedrockKnowledgeBaseModel | None
     bedrock_guardrails: BedrockGuardrailsModel | None
     active_models: ActiveModelsModel  # type: ignore
+    version: str | None
+    group_id: str | None
+    assistant_config: AssistantConfigModel | None
+    creator_config: CreatorConfigModel | None
 
     def has_knowledge(self) -> bool:
         return (

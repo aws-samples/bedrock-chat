@@ -133,6 +133,10 @@ const translation = {
       },
     },
     bot: {
+      toggleView: {
+        title: 'Customize View',
+        description: 'Number of customizable options.'
+      },
       label: {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
@@ -359,10 +363,12 @@ How would you categorize this email?`,
         },
       },
       create: {
-        pageTitle: 'Create My Bot',
+        pageTitle: 'Create Assistant',
+        advancedPageTitle: 'Plus Create Assistant',
       },
       edit: {
-        pageTitle: 'Edit My Bot',
+        pageTitle: 'Edit Assistant',
+        advancedPageTitle: 'Plus Edit Assistant',
       },
 
       item: {

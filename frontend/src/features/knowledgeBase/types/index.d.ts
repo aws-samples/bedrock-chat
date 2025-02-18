@@ -83,3 +83,5 @@ export type SearchParams = {
 };
 
 export type SearchType = 'hybrid' | 'semantic';
+
+export type AssistantType = 'learning_assistant' | 'quiz_assistant' | 'lesson_plan_assistant' | 'my_own_assistant';

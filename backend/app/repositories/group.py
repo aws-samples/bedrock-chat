@@ -36,6 +36,7 @@ def find_groups_by_user_id(user_id: str) -> list[GroupModel]:
             update_time=float(item["UpdateTime"]),
             create_by=item["CreateBy"],
             role=item["Role"],
+            user_name=item["UserName"]
         )
         for item in response["Items"]
     ]

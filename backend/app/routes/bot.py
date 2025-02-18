@@ -13,6 +13,8 @@ from app.routes.schemas.bot import (
     BedrockGuardrailsOutput,
     BedrockKnowledgeBaseOutput,
     BotInput,
+    AssistantConfig,
+    CreatorConfig,
     BotMetaOutput,
     BotModifyInput,
     BotOutput,
@@ -83,13 +85,14 @@ def patch_bot_visibility(
 @router.get("/bot", response_model=list[BotMetaOutput])
 def get_all_bots(
     request: Request,
-    kind: Literal["private", "mixed"] = "private",
+    kind: Literal["private", "mixed", "groups"] = "private",
     pinned: bool = False,
     limit: int | None = None,
 ):
     """Get all bots. The order is descending by `last_used_time`.
     - If `kind` is `private`, only private bots will be returned.
         - If `mixed` must give either `pinned` or `limit`.
+        - If `groups`, return all bots from each of the user's groups 
     - If `pinned` is True, only pinned bots will be returned.
         - When kind is `private`, this will be ignored.
     - If `limit` is specified, only the first n bots will be returned.
@@ -160,6 +163,19 @@ def get_private_bot(request: Request, bot_id: str):
         active_models=ActiveModelsOutput.model_validate(
             dict(bot.active_models) if bot.active_models else {}
         ),
+        version=bot.version or None,
+        group_id=bot.group_id or None,
+        assistant_config=(
+            AssistantConfig(**bot.assistant_config.model_dump())
+            if bot.assistant_config
+            else None
+        ),
+        creator_config=(
+            CreatorConfig(**bot.creator_config.model_dump())
+            if bot.creator_config
+            else None
+        ),
+
     )
     return output
 

@@ -30,6 +30,8 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    AssistantConfigModel,
+    CreatorConfigModel,
     default_active_models,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -91,6 +93,10 @@ def store_bot(user_id: str, custom_bot: BotModel):
             starter.model_dump() for starter in custom_bot.conversation_quick_starters
         ],
         "ActiveModels": custom_bot.active_models.model_dump(),  # type: ignore[attr-defined]
+        "Version": custom_bot.version,
+        "GroupId": custom_bot.group_id,
+        "AssistantConfig": custom_bot.assistant_config.model_dump(),
+        "CreatorConfig": custom_bot.creator_config.model_dump(),
     }
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
@@ -112,6 +118,8 @@ def update_bot(
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
+    group_id: str,
+    assistant_config: AssistantConfigModel,
     display_retrieved_chunks: bool,
     active_models: ActiveModelsModel,  # type: ignore
     conversation_quick_starters: list[ConversationQuickStarterModel],
@@ -132,6 +140,8 @@ def update_bot(
         "Knowledge = :knowledge, "
         "SyncStatus = :sync_status, "
         "SyncStatusReason = :sync_status_reason, "
+        "GroupId = :group_id, "
+        "AssistantConfig = :assistant_config, "
         "GenerationParams = :generation_params, "
         "DisplayRetrievedChunks = :display_retrieved_chunks, "
         "ConversationQuickStarters = :conversation_quick_starters, "
@@ -146,6 +156,8 @@ def update_bot(
         ":agent_data": agent.model_dump(),
         ":sync_status": sync_status,
         ":sync_status_reason": sync_status_reason,
+        ":group_id": group_id,
+        ":assistant_config": assistant_config.model_dump(),
         ":display_retrieved_chunks": display_retrieved_chunks,
         ":generation_params": generation_params.model_dump(),
         ":conversation_quick_starters": [
@@ -433,6 +445,8 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     if "OriginalBotId" in item:
         raise RecordNotFoundError(f"Bot with id {bot_id} is alias")
 
+
+
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
         title=item["Title"],
@@ -496,10 +510,56 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             if item.get("ActiveModels")
             else default_active_models  # for backward compatibility
         ),
+        version=(
+            None if "Version" not in item else item["Version"]
+        ),
+        group_id=(
+            None if "GroupId" not in item else item["GroupId"]
+        ),
+        assistant_config=(
+            AssistantConfigModel(**item["AssistantConfig"])
+            if "AssistantConfig" in item
+            else None
+        ),
+        creator_config=(
+            CreatorConfigModel(**item["CreatorConfig"])
+            if "CreatorConfig" in item
+            else None
+        )
     )
 
     logger.info(f"Found bot: {bot}")
     return bot
+
+def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
+    table = _get_table_client(group_id)
+    logger.info(f"Finding bots for group: {group_id}")
+    query_params = {
+        "IndexName": "GroupIdIndex",
+        "KeyConditionExpression": Key("GroupId").eq(group_id),
+        "ScanIndexForward": False,
+    }
+    response = table.query(**query_params)
+    bots = [
+        BotMeta(
+            id=decompose_bot_id(item["SK"]),
+            title=item["Title"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item["LastBotUsed"]),
+            owned=True,
+            available=True,
+            is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
+            has_bedrock_knowledge_base=(
+                True if item.get("BedrockKnowledgeBase", None) else False
+            ),
+        )
+        for item in response["Items"]
+    ]
+    logger.info(f"Found all bots in group: {bots}")
+    return bots
 
 
 def find_public_bot_by_id(bot_id: str) -> BotModel:
@@ -578,6 +638,22 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             if item.get("ActiveModels")
             else default_active_models  # for backward compatibility
         ),
+        version=(
+            None if "Version" not in item else item["Version"]
+        ),
+        group_id=(
+            None if "GroupId" not in item else item["GroupId"]
+        ),
+        assistant_config=(
+            AssistantConfigModel(**item["AssistantConfig"])
+            if "AssistantConfig" in item
+            else None
+        ),
+        creator_config=(
+            CreatorConfigModel(**item["CreatorConfig"])
+            if "CreatorConfig" in item
+            else None
+        )
     )
     logger.info(f"Found public bot: {bot}")
     return bot

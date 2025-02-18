@@ -6,6 +6,7 @@ from app.agents.utils import get_available_tools, get_tool_by_name
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
+from app.usecases.group import get_user_name, fetch_all_groups_by_user_id
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -26,6 +27,7 @@ from app.repositories.custom_bot import (
     update_bot,
     update_bot_last_used_time,
     update_bot_pin_status,
+    find_all_bots_by_group_id
 )
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
@@ -37,6 +39,8 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    CreatorConfigModel,
+    AssistantConfigModel
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -50,6 +54,8 @@ from app.routes.schemas.bot import (
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
+    AssistantConfig,
+    CreatorConfig,
     BotSummaryOutput,
     ConversationQuickStarter,
     GenerationParams,
@@ -178,6 +184,11 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     # If user didn't provide any agent or agent.tools, we default to empty
     agent_model = AgentModel(tools=tool_instances)
 
+    logger.info(f"Get user_name for user_id: {user_id}")
+    userName = get_user_name(user_id)
+    logger.warning(f"user_name {userName}")
+
+    creatorConfigModel = CreatorConfigModel(user_id=user_id, user_name=userName)
 
     # Step 1: Construct the BotModel object
     new_bot = BotModel(
@@ -229,6 +240,14 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         active_models=ActiveModelsModel.model_validate(
             dict(bot_input.active_models) if bot_input.active_models else {}
         ),
+        version=bot_input.version or None,
+        group_id=bot_input.group_id or None,
+        assistant_config=(
+            AssistantConfigModel(**bot_input.assistant_config.model_dump())
+            if bot_input.assistant_config
+            else None
+        ),
+        creator_config=creatorConfigModel
     )
 
     # Step 2: Store the newly created bot in DB
@@ -280,6 +299,18 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         ),
         active_models=ActiveModelsOutput.model_validate(
             dict(bot_input.active_models) if bot_input.active_models else {}
+        ),
+        version=bot_input.version or None,
+        group_id=bot_input.group_id or None,
+        assistant_config=(
+            AssistantConfig(**new_bot.assistant_config.model_dump())
+            if new_bot.assistant_config
+            else None
+        ),
+        creator_config=(
+            CreatorConfig(**new_bot.creator_config.model_dump())
+            if new_bot.creator_config
+            else None
         ),
     )
 
@@ -418,6 +449,12 @@ def modify_owned_bot(
         active_models=ActiveModelsModel.model_validate(
             dict(modify_input.active_models) if modify_input.active_models else {}
         ),
+        group_id=modify_input.group_id if modify_input.group_id else None,
+        assistant_config=(
+            AssistantConfigModel(**modify_input.assistant_config.model_dump())
+            if modify_input.assistant_config
+            else None
+        )
     )
 
     return BotModifyOutput(
@@ -464,6 +501,12 @@ def modify_owned_bot(
         active_models=ActiveModelsOutput.model_validate(
             dict(modify_input.active_models) if modify_input.active_models else {}
         ),
+        group_id=modify_input.group_id if modify_input.group_id else None,
+        assistant_config=(
+            AssistantConfig(**modify_input.assistant_config.model_dump())
+            if modify_input.assistant_config
+            else None
+        )
     )
 
 
@@ -613,12 +656,44 @@ def fetch_all_bots_by_user_id(
 
     return bots
 
+def fetch_all_bots_from_groups(user_id: str) -> list[BotMetaOutput]:
+
+    logger.info(f"Find all bots from groups. user_id: {user_id}")
+    groupList = fetch_all_groups_by_user_id(user_id)
+
+    if not groupList:
+        return []
+
+    assistantList =[]
+    for group in groupList:
+        groupId = group.group_id
+        bots = find_all_bots_by_group_id(groupId)
+        assistantList.extend(bots)
+
+    bot_metas = []
+    for bot in assistantList:
+        bot_metas.append(
+            BotMetaOutput(
+                id=bot.id,
+                title=bot.title,
+                create_time=bot.create_time,
+                last_used_time=bot.last_used_time,
+                is_pinned=bot.is_pinned,
+                owned=bot.owned,
+                available=bot.available,
+                description=bot.description,
+                is_public=bot.is_public,
+                sync_status=bot.sync_status,
+            )
+        )
+    return bot_metas
+
 
 def fetch_all_bots(
     user_id: str,
     limit: int | None = None,
     pinned: bool = False,
-    kind: Literal["private", "mixed"] = "private",
+    kind: Literal["private", "mixed", "groups"] = "private",
 ) -> list[BotMetaOutput]:
     """Fetch all bots.
     The order is descending by `last_used_time`.
@@ -634,16 +709,13 @@ def fetch_all_bots(
         bots = find_private_bots_by_user_id(user_id, limit=limit)
     elif kind == "mixed":
         bots = fetch_all_bots_by_user_id(user_id, limit=limit, only_pinned=pinned)
+    elif kind == "groups":
+        bots = fetch_all_bots_from_groups(user_id)
     else:
         raise ValueError(f"Invalid kind: {kind}")
 
     bot_metas = []
     for bot in bots:
-        if not bot.has_bedrock_knowledge_base:
-            # Created bots under major version 1.4~, 2~ should have bedrock knowledge base.
-            # If the bot does not have bedrock knowledge base,
-            # it is not shown in the list.
-            continue
         bot_metas.append(
             BotMetaOutput(
                 id=bot.id,

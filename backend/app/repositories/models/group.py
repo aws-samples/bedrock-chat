@@ -7,3 +7,4 @@ class GroupModel(BaseModel):
     update_time: float
     create_by: str 
     role: str # values: TEACHER, SCHOOLADMIN, DISTRICTADMIN, SUPERADMIN
+    user_name: str # name of the user

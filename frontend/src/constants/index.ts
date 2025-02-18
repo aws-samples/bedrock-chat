@@ -1,5 +1,7 @@
 import { GenerationParams } from '../@types/bot';
 
+export const VERSION_02_17_25 = '02.17.25';
+
 export const EDGE_GENERATION_PARAMS = {
   maxTokens: {
     MAX: 4096,

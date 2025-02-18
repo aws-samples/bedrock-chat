@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
     
     try:
-        group_metas = []
         groups = find_groups_by_user_id(user_id)
 
+        group_metas = []
         for group in groups:
             group_metas.append(
                 GroupOutput(
@@ -31,6 +31,7 @@ def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
                     update_time=group.update_time,
                     create_by=group.create_by,
                     role=group.role,
+                    user_name=group.user_name,
                 )
             )
 
@@ -59,3 +60,10 @@ def is_user_authorized(action: str, user_id: str) -> bool:
     except Exception:
         logger.error("Failed to check authorization status", exc_info=True)
     return False
+
+def get_user_name(user_id: str) -> str:
+    # get name of user
+    groupList = fetch_all_groups_by_user_id(user_id)
+    if not groupList: 
+        return "Not in DB"
+    return groupList[0].user_name
