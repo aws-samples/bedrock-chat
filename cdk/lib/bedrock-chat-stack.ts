@@ -250,6 +250,10 @@ export class BedrockChatStack extends cdk.Stack {
       value: database.table.tableName,
       exportName: "BedrockClaudeChatConversationTableName",
     });
+    new CfnOutput(this, "LtiDataTable", {
+      value: database.ltiDataTable.tableName,
+      exportName: "BedrockClaudeChatLtiDataTableName",
+    });
     new CfnOutput(this, "TableAccessRoleArn", {
       value: database.tableAccessRole.roleArn,
       exportName: "BedrockClaudeChatTableAccessRoleArn",
