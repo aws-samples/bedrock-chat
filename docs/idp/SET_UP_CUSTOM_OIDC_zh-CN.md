@@ -2,31 +2,31 @@
 
 ## 步骤1：创建OIDC客户端
 
-按照目标OIDC提供商的程序，记录OIDC客户端ID和密钥的值。在后续步骤中还需要颁发者URL。如果设置过程需要重定向URI，请输入一个虚拟值，该值将在部署完成后被替换。
+按照目标OIDC提供商的流程操作，并记录OIDC客户端ID和密钥的值。在后续步骤中还需要颁发者URL。如果设置过程需要重定向URI，可以先输入一个虚拟值，该值将在部署完成后被替换。
 
 ## 步骤2：在AWS Secrets Manager中存储凭证
 
 1. 进入AWS管理控制台。
-2. 导航到Secrets Manager并选择"存储新密钥"。
+2. 导航至Secrets Manager并选择"存储新密钥"。
 3. 选择"其他类型的密钥"。
-4. 输入客户端ID和客户端密钥作为键值对。
+4. 以键值对的形式输入客户端ID和客户端密钥。
 
-   - 键：`clientId`，值：<YOUR_GOOGLE_CLIENT_ID>
-   - 键：`clientSecret`，值：<YOUR_GOOGLE_CLIENT_SECRET>
-   - 键：`issuerUrl`，值：<ISSUER_URL_OF_THE_PROVIDER>
+   - 键: `clientId`，值: <YOUR_GOOGLE_CLIENT_ID>
+   - 键: `clientSecret`，值: <YOUR_GOOGLE_CLIENT_SECRET>
+   - 键: `issuerUrl`，值: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. 按照提示为密钥命名和描述。记下密钥名称，因为您将在CDK代码中需要它（在步骤3中使用变量名 <YOUR_SECRET_NAME>）。
+5. 按照提示为密钥命名和描述。记下密钥名称，因为您将在CDK代码中使用它（在步骤3中使用变量名 <YOUR_SECRET_NAME>）。
 6. 检查并存储密钥。
 
 ### 注意
 
 键名必须完全匹配字符串 `clientId`、`clientSecret` 和 `issuerUrl`。
 
-## 步骤3：更新 cdk.json
+## 步骤 3：更新 cdk.json
 
 在您的 cdk.json 文件中，添加身份提供者和秘密名称。
 
-像这样：
+如下所示：
 
 ```json
 {
@@ -35,11 +35,11 @@
     "identityProviders": [
       {
         "service": "oidc", // 不要更改
-        "serviceName": "<您的服务名称>", // 可以设置任意值
+        "serviceName": "<您的服务名称>", // 可以设置任何您喜欢的值
         "secretName": "<您的秘密名称>"
       }
     ],
-    "userPoolDomainPrefix": "<用户池域名的唯一前缀>"
+    "userPoolDomainPrefix": "<您用户池的唯一域前缀>"
   }
 }
 ```
@@ -48,11 +48,11 @@
 
 #### 唯一性
 
-`userPoolDomainPrefix` 必须在所有 Amazon Cognito 用户中全局唯一。如果您选择的前缀已被其他 AWS 账户使用，用户池域名的创建将失败。最佳实践是在前缀中包含标识符、项目名称或环境名称，以确保唯一性。
+`userPoolDomainPrefix` 必须在所有 Amazon Cognito 用户中全局唯一。如果您选择的前缀已被其他 AWS 账户使用，用户池域的创建将失败。最好在前缀中包含标识符、项目名称或环境名称，以确保唯一性。
 
-## 步骤4：部署您的CDK堆栈
+## 步骤 4：部署您的 CDK 堆栈
 
-部署您的CDK堆栈到AWS：
+将您的 CDK 堆栈部署到 AWS：
 
 ```sh
 npx cdk deploy --require-approval never --all

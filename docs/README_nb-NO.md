@@ -29,7 +29,7 @@ Legg til din egen instruksjon og gi ekstern kunnskap som URL eller filer (også 
 ![](./imgs/bot_api_publish_screenshot3.png)
 
 > [!Viktig]
-> Av styringsmessige årsaker kan kun tillatte brukere opprette tilpassede bots. For å tillate opprettelse av tilpassede bots, må brukeren være medlem av gruppen kalt `CreatingBotAllowed`, som kan settes opp via administrasjonskonsollen > Amazon Cognito brukerpooler eller aws cli. Merk at brukerpoolen-IDen kan refereres ved å åpne CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+> Av styringsmessige årsaker kan kun tillatte brukere opprette tilpassede bots. For å tillate opprettelse av tilpassede bots, må brukeren være medlem av gruppen kalt `CreatingBotAllowed`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at brukergruppe-ID kan refereres ved å åpne CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ### Administratorpanel
 
@@ -54,9 +54,9 @@ Ved å bruke [Agent-funksjonaliteten](./AGENT_nb-NO.md) kan chatboten automatisk
 
 </details>
 
-## 🚀 Superkjapp Distribusjon
+## 🚀 Superenkelt Distribusjon
 
-- I us-east-1-regionen, åpne [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Administrer modelltilgang` > Merk alle `Anthropic / Claude 3`, alle `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` og `Cohere / Embed Multilingual`, så trykk `Lagre endringer`.
+- I us-east-1-regionen, åpne [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Administrer modelltilgang` > Merk alle `Anthropic / Claude 3`, alle `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` og `Cohere / Embed Multilingual`, og så `Lagre endringer`.
 
 <details>
 <summary>Skjermbilde</summary>
@@ -66,7 +66,7 @@ Ved å bruke [Agent-funksjonaliteten](./AGENT_nb-NO.md) kan chatboten automatisk
 </details>
 
 - Åpne [CloudShell](https://console.aws.amazon.com/cloudshell/home) i regionen der du vil distribuere
-- Kjør distribusjon via følgende kommandoer. Hvis du vil angi versjonen som skal distribueres eller trenger å bruke sikkerhetspolicyer, kan du spesifisere de aktuelle parameterne fra [Valgfrie parametere](#valgfrie-parametere).
+- Kjør distribusjon via følgende kommandoer. Hvis du vil spesifisere versjonen som skal distribueres eller trenger å anvende sikkerhetspolicyer, kan du angi de aktuelle parameterne fra [Valgfrie parametere](#valgfrie-parametere).
 
 ```sh
 git clone https://github.com/aws-samples/bedrock-claude-chat.git
@@ -75,7 +75,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- Du vil bli spurt om du er en ny bruker eller bruker v2. Hvis du ikke er en fortsettende bruker fra v0, kan du taste inn `y`.
+- Du vil bli spurt om du er en ny bruker eller bruker v2. Hvis du ikke er en fortsatt bruker fra v0, vennligst skriv `y`.
 
 ### Valgfrie parametere
 
@@ -83,14 +83,14 @@ Du kan spesifisere følgende parametere under distribusjon for å forbedre sikke
 
 - **--disable-self-register**: Deaktiver selvregistrering (standard: aktivert). Hvis dette flagget er satt, må du opprette alle brukere på Cognito, og det vil ikke tillate brukere å registrere seg selv.
 - **--enable-lambda-snapstart**: Aktiver [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (standard: deaktivert). Hvis dette flagget er satt, forbedres oppstartstider for Lambda-funksjoner, noe som gir raskere responstider for bedre brukeropplevelse.
-- **--ipv4-ranges**: Kommaseparert liste over tillatte IPv4-områder. (standard: tillater alle IPv4-adresser)
-- **--ipv6-ranges**: Kommaseparert liste over tillatte IPv6-områder. (standard: tillater alle IPv6-adresser)
+- **--ipv4-ranges**: Kommaseparert liste over tillatte IPv4-områder. (standard: tillat alle IPv4-adresser)
+- **--ipv6-ranges**: Kommaseparert liste over tillatte IPv6-områder. (standard: tillat alle IPv6-adresser)
 - **--disable-ipv6**: Deaktiver tilkoblinger over IPv6. (standard: aktivert)
-- **--allowed-signup-email-domains**: Kommaseparert liste over tillatte e-postdomener for påmelding. (standard: ingen domenebegrensning)
-- **--bedrock-region**: Definer regionen hvor Bedrock er tilgjengelig. (standard: us-east-1)
+- **--allowed-signup-email-domains**: Kommaseparert liste over tillatte e-postdomener for påmelding. (standard: ingen domenerestriksjoner)
+- **--bedrock-region**: Definer regionen der Bedrock er tilgjengelig. (standard: us-east-1)
 - **--repo-url**: Den egendefinerte repositoryen til Bedrock Claude Chat som skal distribueres, hvis den er forket eller har egendefinert kildekontroll. (standard: https://github.com/aws-samples/bedrock-claude-chat.git)
 - **--version**: Versjonen av Bedrock Claude Chat som skal distribueres. (standard: siste versjon under utvikling)
-- **--cdk-json-override**: Du kan overstyre CDK-kontekstverdier under distribusjon ved å bruke overstyrings-JSON-blokken. Dette lar deg endre konfigurasjonen uten å redigere cdk.json-filen direkte.
+- **--cdk-json-override**: Du kan overstyre alle CDK-kontekstverdier under distribusjon ved å bruke overstyrings-JSON-blokken. Dette lar deg endre konfigurasjonen uten å redigere cdk.json-filen direkte.
 
 Eksempel på bruk:
 
@@ -118,7 +118,7 @@ Overstyrings-JSON-en må følge samme struktur som cdk.json. Du kan overstyre al
 - Og andre kontekstverdier definert i cdk.json
 
 > [!Merk]
-> Overstyringsverdiene vil bli slått sammen med den eksisterende cdk.json-konfigurasjonen under distribusjon i AWS code build. Verdier som er angitt i overskriving, vil ha forrang fremfor verdiene i cdk.json.
+> Overstyringsverdiene vil bli slått sammen med den eksisterende cdk.json-konfigurasjonen under distribusjon i AWS-kodebygningen. Verdier som er angitt i overskriving, vil ha forrang fremfor verdiene i cdk.json.
 
 #### Eksempelkommando med parametere:
 
@@ -126,7 +126,7 @@ Overstyrings-JSON-en må følge samme struktur som cdk.json. Du kan overstyre al
 ./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --bedrock-region "us-west-2" --version "v1.2.6"
 ```
 
-- Etter omtrent 35 minutter vil du få følgende output, som du kan åpne i nettleseren din
+- Etter omtrent 35 minutter vil du få følgende utdata, som du kan åpne i nettleseren din
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
@@ -134,17 +134,17 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 ![](./imgs/signin.png)
 
-Påmeldingsskjermen vil vises som vist over, hvor du kan registrere e-posten din og logge inn.
+Påmeldingsskjermen vil vises som vist ovenfor, hvor du kan registrere e-posten din og logge deg på.
 
 > [!Viktig]
-> Uten å sette den valgfrie parameteren tillater denne distribusjonsmåten at alle som kjenner URL-en kan registrere seg. For produksjonsbruk anbefales det sterkt å legge til IP-adressebegrensninger og deaktivere selvregistrering for å redusere sikkerhetsrisikoer (du kan definere allowed-signup-email-domains for å begrense brukere slik at kun e-postadresser fra selskapets domene kan registrere seg). Bruk både ipv4-ranges og ipv6-ranges for IP-adressebegrensninger, og deaktiver selvregistrering ved å bruke disable-self-register når du kjører ./bin.
+> Uten å sette den valgfrie parameteren tillater denne distribusjonsmåten at hvem som helst som kjenner URL-en kan registrere seg. For produksjonsbruk anbefales det sterkt å legge til IP-adressebegrensninger og deaktivere selvregistrering for å redusere sikkerhetsrisikoer (du kan definere allowed-signup-email-domains for å begrense brukere slik at kun e-postadresser fra selskapets domene kan registrere seg). Bruk både ipv4-ranges og ipv6-ranges for IP-adressebegrensninger, og deaktiver selvregistrering ved å bruke disable-self-register når du kjører ./bin.
 
 > [!TIPS]
-> Hvis `Frontend URL` ikke vises eller Bedrock Claude Chat ikke fungerer som den skal, kan det være et problem med den siste versjonen. I så fall kan du legge til `--version "v1.2.6"` i parameterne og prøve distribusjon på nytt.
+> Hvis `Frontend URL` ikke vises eller Bedrock Claude Chat ikke fungerer riktig, kan det være et problem med den nyeste versjonen. I så fall kan du legge til `--version "v1.2.6"` til parameterne og prøve distribusjon på nytt.
 
 ## Arkitektur
 
-Det er en arkitektur bygget på AWS-administrerte tjenester, som eliminerer behovet for infrastrukturhåndtering. Ved å bruke Amazon Bedrock er det ikke behov for å kommunisere med APIer utenfor AWS. Dette muliggjør distribusjon av skalerbare, pålitelige og sikre applikasjoner.
+Det er en arkitektur bygget på AWS-administrerte tjenester, som eliminerer behovet for infrastrukturhåndtering. Ved å bruke Amazon Bedrock er det ikke nødvendig å kommunisere med APIer utenfor AWS. Dette muliggjør distribusjon av skalerbare, pålitelige og sikre applikasjoner.
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL-database for lagring av samtalehistorikk
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API-endepunkt ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
@@ -152,22 +152,22 @@ Det er en arkitektur bygget på AWS-administrerte tjenester, som eliminerer beho
 - [AWS WAF](https://aws.amazon.com/waf/): IP-adressebegrensning
 - [Amazon Cognito](https://aws.amazon.com/cognito/): Brukerautentisering
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Administrert tjeneste for å utnytte grunnleggende modeller via APIer
-- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Tilbyr et administrert grensesnitt for Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), som tilbyr tjenester for embedding og analysering av dokumenter
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Mottar hendelse fra DynamoDB-strøm og starter Step Functions for å integrere ekstern kunnskap
-- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orkestrerer innhentingspipeline for å integrere ekstern kunnskap i Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Fungerer som backend-database for Bedrock Knowledge Bases, og gir full-tekst søk og vektorsøkemuligheter, som muliggjør nøyaktig henting av relevante opplysninger
+- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Gir et administrert grensesnitt for Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), som tilbyr tjenester for embedding og parsing av dokumenter
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Mottak av hendelse fra DynamoDB-strøm og lansering av Step Functions for å embedde ekstern kunnskap
+- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orkestrering av ingestpipeline for å embedde ekstern kunnskap i Bedrock Knowledge Bases
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Fungerer som backend-database for Bedrock Knowledge Bases, og gir full tekst-søk og vektorsøkemuligheter, som muliggjør nøyaktig henting av relevant informasjon
 - [Amazon Athena](https://aws.amazon.com/athena/): Spørretjeneste for å analysere S3-bøtte
 
 ![](./imgs/arch.png)
 
-## Distribuer ved hjelp av CDK
+## Distribuer ved bruk av CDK
 
-Superenkelt Deploy bruker [AWS CodeBuild](https://aws.amazon.com/codebuild/) til å utføre distribusjon ved hjelp av CDK internt. Denne seksjonen beskriver fremgangsmåten for å distribuere direkte med CDK.
+Superenkelt distribusjon bruker [AWS CodeBuild](https://aws.amazon.com/codebuild/) til å utføre distribusjon med CDK internt. Denne seksjonen beskriver fremgangsmåten for å distribuere direkte med CDK.
 
-- Vennligst ha UNIX, Docker og et Node.js-kjøremiljø. Hvis ikke, kan du også bruke [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
+- Sørg for å ha UNIX, Docker og et Node.js-kjøretidsmiljø. Hvis ikke, kan du også bruke [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
 
 > [!Viktig]
-> Hvis det er utilstrekkelig lagringskapasitet i det lokale miljøet under distribusjon, kan CDK-bootstrapping resultere i en feil. Hvis du kjører i Cloud9 osv., anbefaler vi å øke volumstørrelsen på instansen før distribusjon.
+> Hvis det er utilstrekkelig lagringskapasitet i det lokale miljøet under distribusjon, kan CDK-bootstrapping resultere i en feil. Hvis du kjører på Cloud9 etc., anbefaler vi å øke volumstørrelsen på instansen før distribusjon.
 
 - Klone dette repositoriet
 
@@ -201,14 +201,14 @@ npx cdk bootstrap
 npx cdk deploy --require-approval never --all
 ```
 
-- Du vil få utdata som ligner følgende. URL-en til web-appen vil bli vist i `BedrockChatStack.FrontendURL`, så vennligst åpne den i nettleseren din.
+- Du vil få en utdata som ligner følgende. URL-en til web-appen vil bli vist i `BedrockChatStack.FrontendURL`, så vennligst åpne den i nettleseren din.
 
 ```sh
  ✅  BedrockChatStack
 
-✨  Deployeringstid: 78.57s
+✨  Deployment time: 78.57s
 
-Utdata:
+Outputs:
 BedrockChatStack.AuthUserPoolClientIdXXXXX = xxxxxxx
 BedrockChatStack.AuthUserPoolIdXXXXXX = ap-northeast-1_XXXX
 BedrockChatStack.BackendApiBackendApiUrlXXXXX = https://xxxxx.execute-api.ap-northeast-1.amazonaws.com
@@ -227,11 +227,11 @@ Oppdater `enableMistral` til `true` i [cdk.json](./cdk/cdk.json), og kjør `npx 
 ```
 
 > [!Viktig]
-> Dette prosjektet fokuserer på Anthropic Claude-modeller, Mistral-modellene er begrenset støttet. For eksempel er prompteksempler basert på Claude-modeller. Dette er et Mistral-spesifikt alternativ. Når du aktiverer Mistral-modeller, kan du kun bruke Mistral-modeller for alle chat-funksjonene, IKKE både Claude og Mistral-modeller.
+> Dette prosjektet fokuserer på Anthropic Claude-modeller, Mistral-modellene er begrenset støttet. For eksempel er prompteksempler basert på Claude-modeller. Dette er et Mistral-kun alternativ, når du har slått på Mistral-modeller, kan du kun bruke Mistral-modeller for alle chat-funksjonene, IKKE både Claude og Mistral-modeller.
 
 ### Konfigurer standard tekstgenerering
 
-Brukere kan justere [tekstgenererings-parameterne](https://docs.anthropic.com/claude/reference/complete_post) fra skjermen for oppretting av tilpasset bot. Hvis boten ikke brukes, vil standard parametere satt i [config.py](./backend/app/config.py) bli brukt.
+Brukere kan justere [tekstgenererings-parameterne](https://docs.anthropic.com/claude/reference/complete_post) fra skjermen for å opprette en egendefinert bot. Hvis boten ikke brukes, vil standard parametere satt i [config.py](./backend/app/config.py) bli brukt.
 
 ```py
 DEFAULT_GENERATION_CONFIG = {
@@ -245,21 +245,21 @@ DEFAULT_GENERATION_CONFIG = {
 
 ### Fjern ressurser
 
-Hvis du bruker CLI og CDK, kjør `npx cdk destroy`. Hvis ikke, gå til [CloudFormation](https://console.aws.amazon.com/cloudformation/home) og slett `BedrockChatStack` og `FrontendWafStack` manuelt. Merk at `FrontendWafStack` er i `us-east-1`-regionen.
+Hvis du bruker CLI og CDK, kjør `npx cdk destroy`. Hvis ikke, gå til [CloudFormation](https://console.aws.amazon.com/cloudformation/home) og slett `BedrockChatStack` og `FrontendWafStack` manuelt. Vær oppmerksom på at `FrontendWafStack` er i `us-east-1`-regionen.
 
 ### Språkinnstillinger
 
-Dette ressurset oppdager automatisk språket ved hjelp av [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Du kan bytte språk fra applikasjonens meny. Alternativt kan du bruke Query String for å angi språket som vist nedenfor.
+Denne ressursen oppdager automatisk språket ved hjelp av [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Du kan bytte språk fra applikasjonens meny. Alternativt kan du bruke Query String for å angi språket som vist nedenfor.
 
 > `https://example.com?lng=ja`
 
 ### Deaktiver selvregistrering
 
-Dette eksempelet har selvregistrering aktivert som standard. For å deaktivere selvregistrering, åpne [cdk.json](./cdk/cdk.json) og sett `selfSignUpEnabled` til `false`. Hvis du konfigurerer [ekstern identitetsleverandør](#external-identity-provider), vil verdien bli ignorert og automatisk deaktivert.
+Denne malen har selvregistrering aktivert som standard. For å deaktivere selvregistrering, åpne [cdk.json](./cdk/cdk.json) og endre `selfSignUpEnabled` til `false`. Hvis du konfigurerer [ekstern identitetsleverandør](#external-identity-provider), vil verdien bli ignorert og automatisk deaktivert.
 
 ### Begrens domener for påmeldingse-postadresser
 
-Som standard begrenser ikke dette eksempelet domenene for påmeldingse-postadresser. For å tillate påmelding kun fra bestemte domener, åpne `cdk.json` og angi domenene som en liste i `allowedSignUpEmailDomains`.
+Som standard begrenser ikke denne malen domenene for påmeldingse-postadresser. For å tillate påmelding kun fra bestemte domener, åpne `cdk.json` og spesifiser domenene som en liste i `allowedSignUpEmailDomains`.
 
 ```ts
 "allowedSignUpEmailDomains": ["example.com"],
@@ -267,11 +267,11 @@ Som standard begrenser ikke dette eksempelet domenene for påmeldingse-postadres
 
 ### Ekstern identitetsleverandør
 
-Dette eksempelet støtter ekstern identitetsleverandør. For øyeblikket støtter vi [Google](./idp/SET_UP_GOOGLE_nb-NO.md) og [egen OIDC-leverandør](./idp/SET_UP_CUSTOM_OIDC_nb-NO.md).
+Denne malen støtter ekstern identitetsleverandør. For øyeblikket støtter vi [Google](./idp/SET_UP_GOOGLE_nb-NO.md) og [egen OIDC-leverandør](./idp/SET_UP_CUSTOM_OIDC_nb-NO.md).
 
 ### Legg til nye brukere i grupper automatisk
 
-Dette eksempelet har følgende grupper for å gi tillatelser til brukere:
+Denne malen har følgende grupper for å gi tillatelser til brukere:
 
 - [`Admin`](./ADMINISTRATOR_nb-NO.md)
 - [`CreatingBotAllowed`](#bot-personalization)
@@ -283,11 +283,11 @@ Hvis du vil at nyopprettede brukere automatisk skal bli med i grupper, kan du sp
 "autoJoinUserGroups": ["CreatingBotAllowed"],
 ```
 
-Som standard vil nyopprettede brukere bli lagt til i `CreatingBotAllowed`-gruppen.
+Som standard vil nyopprettede brukere bli med i `CreatingBotAllowed`-gruppen.
 
 ### Konfigurer RAG-replikaer
 
-`enableRagReplicas` er et alternativ i [cdk.json](./cdk/cdk.json) som styrer replikainnstillingene for RAG-databasen, spesifikt Knowledge Bases som bruker Amazon OpenSearch Serverless.
+`enableRagReplicas` er et alternativ i [cdk.json](./cdk/cdk.json) som kontrollerer replikainnstillingene for RAG-databasen, spesifikt Knowledge Bases som bruker Amazon OpenSearch Serverless.
 
 - **Standard**: true
 - **true**: Forbedrer tilgjengelighet ved å aktivere flere replikaer, egnet for produksjonsmiljøer, men øker kostnadene.
@@ -295,12 +295,12 @@ Som standard vil nyopprettede brukere bli lagt til i `CreatingBotAllowed`-gruppe
 
 Dette er en konto-/regioninnstilling som påvirker hele applikasjonen, ikke individuelle bots.
 
-> [!Merk]
-> Per juni 2024 støtter Amazon OpenSearch Serverless 0,5 OCU, noe som senker inngangskostnadene for små arbeidsbelastninger. Produksjonsdistribusjoner kan starte med 2 OCU, mens dev/test-arbeidsbelastninger kan bruke 1 OCU. OpenSearch Serverless skaleres automatisk basert på arbeidsbelastningskrav. For mer detaljer, besøk [kunngjøringen](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+> [!Merknad]
+> Per juni 2024 støtter Amazon OpenSearch Serverless 0,5 OCU, noe som senker inngangskostnadene for små arbeidsbelastninger. Produksjonsdistribusjoner kan starte med 2 OCU, mens dev/test-arbeidsbelastninger kan bruke 1 OCU. OpenSearch Serverless skalerer automatisk basert på arbeidsbelastningskrav. For mer detaljer, besøk [kunngjøring](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
 
 ### Kryssregion-inferens
 
-[Kryssregion-inferens](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) lar Amazon Bedrock dynamisk dirigere modellinferensforespørsler på tvers av flere AWS-regioner, noe som forbedrer gjennomstrømning og motstandsdyktighet under perioder med høy etterspørsel. For å konfigurere, rediger `cdk.json`.
+[Kryssregion-inferens](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) lar Amazon Bedrock dynamisk rute modell-inferensforespørsler på tvers av flere AWS-regioner, noe som forbedrer gjennomstrømning og motstandsdyktighet under perioder med høy etterspørsel. For å konfigurere, rediger `cdk.json`.
 
 ```json
 "enableBedrockCrossRegionInference": true
@@ -308,7 +308,7 @@ Dette er en konto-/regioninnstilling som påvirker hele applikasjonen, ikke indi
 
 ### Lambda SnapStart
 
-[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) forbedrer oppstartstider for Lambda-funksjoner, noe som gir raskere responstider for bedre brukeropplevelse. På den annen side er det for Python-funksjoner en [avgift avhengig av cachestørrelse](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) og [ikke tilgjengelig i enkelte regioner](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) for øyeblikket. For å deaktivere SnapStart, rediger `cdk.json`.
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) forbedrer kaldt start-tider for Lambda-funksjoner, noe som gir raskere responstider for bedre brukeropplevelse. På den annen side er det for Python-funksjoner en [avgift avhengig av cachestørrelse](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) og [ikke tilgjengelig i noen regioner](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) for øyeblikket. For å deaktivere SnapStart, rediger `cdk.json`.
 
 ```json
 "enableLambdaSnapStart": false
@@ -326,16 +326,16 @@ Du kan konfigurere et egendefinert domene for CloudFront-distribusjonen ved å a
 ```
 
 - `alternateDomainName`: Det egendefinerte domenenavnet for chat-applikasjonen (f.eks. chat.example.com)
-- `hostedZoneId`: ID-en til din Route 53-hosted zone der domenepostene vil bli opprettet
+- `hostedZoneId`: ID-en til din Route 53-vertsone der domenepostene vil bli opprettet
 
-Når disse parameterne er angitt, vil distribusjonen automatisk:
+Når disse parameterne er oppgitt, vil distribusjonen automatisk:
 
 - Opprette et ACM-sertifikat med DNS-validering i us-east-1-regionen
-- Opprette de nødvendige DNS-postene i din Route 53-hosted zone
+- Opprette nødvendige DNS-poster i din Route 53-vertsone
 - Konfigurere CloudFront til å bruke ditt egendefinerte domene
 
-> [!Merk]
-> Domenet må administreres av Route 53 i din AWS-konto. Hosted zone-ID-en kan finnes i Route 53-konsollen.
+> [!Merknad]
+> Domenet må administreres av Route 53 i din AWS-konto. Vertssonens ID kan finnes i Route 53-konsollen.
 
 ### Lokal utvikling
 
@@ -345,7 +345,7 @@ Se [LOKAL UTVIKLING](./LOCAL_DEVELOPMENT_nb-NO.md).
 
 Takk for at du vurderer å bidra til dette repositoriet! Vi ønsker velkommen feilrettinger, språkoversettelser (i18n), forbedringer av funksjoner, [agent-verktøy](./docs/AGENT.md#how-to-develop-your-own-tools) og andre forbedringer.
 
-For funksjonsforbedringer og andre forbedringer, **før du oppretter en Pull Request, setter vi stor pris på om du kan opprette en Feature Request Issue for å diskutere implementeringsmetoden og detaljene. For feilrettinger og språkoversettelser (i18n), fortsett med å opprette en Pull Request direkte.**
+For funksjonsforbedringer og andre forbedringer, **før du oppretter en Pull Request, setter vi stor pris på om du kan opprette en Feature Request Issue for å diskutere implementeringsmetoden og detaljene. For feilrettinger og språkoversettelser (i18n), gå videre med å opprette en Pull Request direkte.**
 
 Ta også en titt på følgende retningslinjer før du bidrar:
 
