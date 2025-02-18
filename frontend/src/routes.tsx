@@ -7,6 +7,7 @@ import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
 import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx';
 import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
 import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
+import OidcLaunch from './pages/OidcLaunch.tsx';
 import { useTranslation } from 'react-i18next';
 import {
   createBrowserRouter,
@@ -56,6 +57,10 @@ const rootChildren = [
   {
     path: '/:conversationId',
     element: <ChatPage />,
+  },
+  {
+    path: '/oidc', 
+    element: <OidcLaunch />,
   },
   {
     path: '*',

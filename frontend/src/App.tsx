@@ -12,6 +12,7 @@ import { validateSocialProvider } from './utils/SocialProviderUtils';
 import AppContent from './components/AppContent';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './pages/ErrorFallback';
+import OidcLaunch from './pages/OidcLaunch';
 
 const customProviderEnabled =
   import.meta.env.VITE_APP_CUSTOM_PROVIDER_ENABLED === 'true';
@@ -60,11 +61,17 @@ const App: React.FC = () => {
           <AppContent />
         </AuthCustom>
       ) : (
-        <Authenticator.Provider>
-          <AuthAmplify socialProviders={socialProviderFromEnv}>
-            <AppContent />
-          </AuthAmplify>
-        </Authenticator.Provider>
+        <>
+        {location.pathname === '/oidc' ? (
+          <OidcLaunch />
+        ) : (
+          <Authenticator.Provider>
+            <AuthAmplify socialProviders={socialProviderFromEnv}>
+              <AppContent />
+            </AuthAmplify>
+          </Authenticator.Provider>
+        )}
+        </>
       )}
     </ErrorBoundary>
   );
