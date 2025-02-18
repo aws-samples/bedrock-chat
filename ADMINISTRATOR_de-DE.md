@@ -1,10 +1,10 @@
 # Administrator-Funktionen
 
-Die Administrator-Funktionen sind ein entscheidendes Werkzeug, da sie wichtige Einblicke in die Nutzung von benutzerdefinierten Bots und das Nutzerverhalten bieten. Ohne diese Funktionalität wäre es für Administratoren schwierig zu verstehen, welche benutzerdefinierten Bots beliebt sind, warum sie beliebt sind und wer sie nutzt. Diese Informationen sind entscheidend für die Optimierung von Instruktionsprompts, die Anpassung von RAG-Datenquellen und die Identifizierung von intensiven Nutzern, die möglicherweise Einflussträger werden könnten.
+Die Administrator-Funktionen sind ein entscheidendes Werkzeug, da sie wichtige Einblicke in die Nutzung von benutzerdefinierten Bots und das Nutzerverhalten liefern. Ohne diese Funktionalität wäre es für Administratoren schwierig zu verstehen, welche benutzerdefinierten Bots beliebt sind, warum sie beliebt sind und wer sie nutzt. Diese Informationen sind entscheidend für die Optimierung von Anweisungsprompts, die Anpassung von RAG-Datenquellen und die Identifizierung von intensiven Nutzern, die möglicherweise Influencer werden könnten.
 
 ## Feedback-Schleife
 
-Die Ausgabe des LLM entspricht möglicherweise nicht immer den Erwartungen des Benutzers. Manchmal erfüllt es die Bedürfnisse des Benutzers nicht. Um LLMs effektiv in Geschäftsprozesse und den Alltag zu "integrieren", ist die Implementierung einer Feedback-Schleife unerlässlich. Bedrock Claude Chat ist mit einer Feedbackfunktion ausgestattet, die es Benutzern ermöglicht, zu analysieren, warum Unzufriedenheit aufgetreten ist. Basierend auf den Analyseergebnissen können Benutzer die Prompts, RAG-Datenquellen und Parameter entsprechend anpassen.
+Die Ausgabe des LLM entspricht möglicherweise nicht immer den Erwartungen des Benutzers. Manchmal erfüllt sie die Bedürfnisse des Benutzers nicht. Um LLMs effektiv in Geschäftsprozesse und den Alltag zu "integrieren", ist die Implementierung einer Feedback-Schleife unerlässlich. Bedrock Claude Chat ist mit einer Feedbackfunktion ausgestattet, die es Benutzern ermöglicht, zu analysieren, warum Unzufriedenheit aufgetreten ist. Basierend auf den Analyseergebnissen können Benutzer die Prompts, RAG-Datenquellen und Parameter entsprechend anpassen.
 
 ![](./imgs/feedback_loop.png)
 
@@ -14,20 +14,20 @@ Datenanalysten können auf Gesprächsprotokolle über [Amazon Athena](https://aw
 
 ## Administrator-Dashboard
 
-Derzeit bietet es einen grundlegenden Überblick über Chatbot- und Benutzernutzung und konzentriert sich darauf, Daten für jeden Bot und Benutzer über bestimmte Zeiträume zu aggregieren und die Ergebnisse nach Nutzungsgebühren zu sortieren.
+Bietet derzeit einen grundlegenden Überblick über die Nutzung von Chatbot und Benutzern, mit Fokus auf der Aggregation von Daten für jeden Bot und Benutzer über festgelegte Zeiträume und Sortierung der Ergebnisse nach Nutzungsgebühren.
 
 ![](./imgs/admin_bot_analytics.png)
 
-> [!Note]
-> Benutzernutzungsanalysen werden in Kürze verfügbar sein.
+> [!Hinweis]
+> Benutzernutzungsanalysen kommen bald.
 
 ### Voraussetzungen
 
-Der Administrator muss Mitglied der Gruppe `Admin` sein, die über die Verwaltungskonsole > Amazon Cognito User Pools oder AWS CLI eingerichtet werden kann. Beachten Sie, dass die Benutzer-Pool-ID durch Zugriff auf CloudFormation > BedrockChatStack > Ausgaben > `AuthUserPoolIdxxxx` referenziert werden kann.
+Der Administrator-Benutzer muss Mitglied der Gruppe `Admin` sein, die über die Verwaltungskonsole > Amazon Cognito User Pools oder AWS CLI eingerichtet werden kann. Beachten Sie, dass die Benutzer-Pool-ID durch den Zugriff auf CloudFormation > BedrockChatStack > Ausgaben > `AuthUserPoolIdxxxx` referenziert werden kann.
 
 ![](./imgs/group_membership_admin.png)
 
-## Notizen
+## Hinweise
 
 - Wie in der [Architektur](../README.md#architecture) beschrieben, werden die Administratorfunktionen auf den S3-Bucket verweisen, der aus DynamoDB exportiert wurde. Bitte beachten Sie, dass die neuesten Gespräche möglicherweise nicht sofort angezeigt werden, da der Export nur einmal pro Stunde durchgeführt wird.
 
@@ -35,13 +35,13 @@ Der Administrator muss Mitglied der Gruppe `Admin` sein, die über die Verwaltun
 
 - Bei Benutzernutzungen werden Benutzer, die das System während des angegebenen Zeitraums überhaupt nicht genutzt haben, nicht aufgelistet.
 
-## Gesprächsdaten herunterladen
+## Herunterladen von Gesprächsdaten
 
-Sie können die Gesprächsprotokolle mit Athena mithilfe von SQL abfragen. Um Protokolle herunterzuladen, öffnen Sie den Athena-Abfrage-Editor über die Verwaltungskonsole und führen Sie SQL aus. Die folgenden Beispielabfragen sind nützlich zur Analyse von Anwendungsfällen. Feedback kann im `MessageMap`-Attribut nachgeschlagen werden.
+Sie können die Gesprächsprotokolle über Athena mithilfe von SQL abfragen. Um Protokolle herunterzuladen, öffnen Sie den Athena Query Editor über die Verwaltungskonsole und führen Sie SQL aus. Die folgenden Beispielabfragen sind nützlich zur Analyse von Anwendungsfällen. Feedback kann im Attribut `MessageMap` nachgeschlagen werden.
 
 ### Abfrage nach Bot-ID
 
-Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` kann auf dem Bot-Verwaltungsbildschirm nachgeschlagen werden, auf den über die Bot-Veröffentlichungs-APIs zugegriffen werden kann und der in der linken Seitenleiste angezeigt wird. Beachten Sie den URL-Endteil wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` kann auf dem Bildschirm für Bot-Verwaltung nachgeschlagen werden, auf den über die Bot Publish APIs zugegriffen werden kann und der in der linken Seitenleiste angezeigt wird. Beachten Sie das Ende der URL wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -65,10 +65,10 @@ ORDER BY
 
 ### Abfrage nach Benutzer-ID
 
-Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann auf dem Bot-Verwaltungsbildschirm nachgeschlagen werden.
+Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann auf dem Bildschirm für Bot-Verwaltung nachgeschlagen werden.
 
 > [!Hinweis]
-> Benutzer-Nutzungsanalysen sind in Kürze verfügbar.
+> Benutzernutzungsanalysen werden in Kürze verfügbar sein.
 
 ```sql
 SELECT

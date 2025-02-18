@@ -1,20 +1,20 @@
-# Fonctionnalités d'administration
+# Fonctionnalités d'administrateur
 
-Les fonctionnalités d'administration sont un outil essentiel car elles offrent des informations cruciales sur l'utilisation des bots personnalisés et le comportement des utilisateurs. Sans cette fonctionnalité, il serait difficile pour les administrateurs de comprendre quels bots personnalisés sont populaires, pourquoi ils le sont, et qui les utilise. Ces informations sont primordiales pour optimiser les invites d'instruction, personnaliser les sources de données RAG et identifier les utilisateurs intensifs qui pourraient devenir des influenceurs.
+Les fonctionnalités d'administrateur sont un outil essentiel car elles fournissent des informations cruciales sur l'utilisation des bots personnalisés et le comportement des utilisateurs. Sans cette fonctionnalité, il serait difficile pour les administrateurs de comprendre quels bots personnalisés sont populaires, pourquoi ils le sont, et qui les utilise. Ces informations sont primordiales pour optimiser les invites d'instruction, personnaliser les sources de données RAG et identifier les utilisateurs intensifs qui pourraient devenir des influenceurs.
 
 ## Boucle de rétroaction
 
-La sortie d'un LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Il arrive parfois qu'elle ne satisfasse pas ses besoins. Pour intégrer efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Claude Chat est doté d'une fonctionnalité de feedback conçue pour permettre aux utilisateurs d'analyser les raisons de leur insatisfaction. Sur la base des résultats de l'analyse, les utilisateurs peuvent ajuster les invites, les sources de données RAG et les paramètres en conséquence.
+La sortie du LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Parfois, il ne parvient pas à satisfaire ses besoins. Pour intégrer efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Claude Chat est doté d'une fonctionnalité de retour qui permet aux utilisateurs d'analyser les raisons de l'insatisfaction. Sur la base des résultats de l'analyse, les utilisateurs peuvent ajuster les invites, les sources de données RAG et les paramètres en conséquence.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Les analystes de données peuvent accéder aux journaux de conversation à l'aide d'[Amazon Athena](https://aws.amazon.com/jp/athena/). S'ils souhaitent analyser les données dans [Jupyter Notebook](https://jupyter.org/), [cet exemple de notebook](../examples/notebooks/feedback_analysis_example.ipynb) peut servir de référence.
+Les analystes de données peuvent accéder aux journaux de conversation à l'aide d'[Amazon Athena](https://aws.amazon.com/jp/athena/). S'ils souhaitent analyser les données avec [Jupyter Notebook](https://jupyter.org/), [cet exemple de notebook](../examples/notebooks/feedback_analysis_example.ipynb) peut servir de référence.
 
-## Tableau de bord Administrateur
+## Tableau de bord de l'administrateur
 
-Fournit actuellement un aperçu de base de l'utilisation du chatbot et des utilisateurs, en se concentrant sur l'agrégation des données pour chaque bot et utilisateur sur des périodes spécifiques et en triant les résultats par frais d'utilisation.
+Fournit actuellement un aperçu général de l'utilisation du chatbot et des utilisateurs, en se concentrant sur l'agrégation des données pour chaque bot et utilisateur sur des périodes spécifiées et en triant les résultats par frais d'utilisation.
 
 ![](./imgs/admin_bot_analytics.png)
 
@@ -23,7 +23,7 @@ Fournit actuellement un aperçu de base de l'utilisation du chatbot et des utili
 
 ### Prérequis
 
-L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui peut être configuré via la console de gestion > Amazon Cognito User pools ou l'interface CLI AWS. Notez que l'ID du groupe d'utilisateurs peut être référencé en accédant à CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui peut être configuré via la console de gestion > Pools d'utilisateurs Amazon Cognito ou l'interface CLI AWS. Notez que l'ID du pool d'utilisateurs peut être référencé en accédant à CloudFormation > BedrockChatStack > Sorties > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
@@ -37,11 +37,11 @@ L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui pe
 
 ## Télécharger les données de conversation
 
-Vous pouvez interroger les journaux de conversation à l'aide d'Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'Éditeur de requêtes Athena depuis la console de gestion et exécutez une requête SQL. Voici quelques exemples de requêtes utiles pour analyser les cas d'utilisation. Les retours peuvent être consultés dans l'attribut `MessageMap`.
+Vous pouvez interroger les journaux de conversation via Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'Éditeur de requêtes Athena depuis la console de gestion et exécutez une requête SQL. Voici quelques exemples de requêtes utiles pour analyser des cas d'utilisation. Les retours peuvent être référencés dans l'attribut `MessageMap`.
 
 ### Requête par ID de Bot
 
-Modifiez `bot-id` et `datehour`. L'`bot-id` peut être consulté sur l'écran de Gestion des Bots, accessible depuis les API de Publication de Bots, affiché dans la barre latérale de gauche. Notez la partie finale de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Modifiez `bot-id` et `datehour`. L'`bot-id` peut être consulté sur l'écran de Gestion des Bots, accessible depuis les API de Publication de Bots, affiché dans la barre latérale gauche. Notez la partie finale de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
