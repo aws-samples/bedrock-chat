@@ -3,6 +3,9 @@ name: Auto Translate Docs
 env:
   AWS_REGION: us-west-2
   BASE_BRANCH: v2
+  TIMEOUT_HOURS: 6
+  TIMEOUT_MINUTES: 360
+  TIMEOUT_SECONDS: 21600
 
 on:
   pull_request:
@@ -23,7 +26,7 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # 6 hours
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
     steps:
       # Check for existing auto-translate PR to avoid infinite loop
       - name: Check for existing auto-translate PR
@@ -50,6 +53,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.BEDROCK_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: ${{ env.TIMEOUT_SECONDS }}
 
       - name: Setup Python
         uses: actions/setup-python@v4

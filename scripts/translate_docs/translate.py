@@ -13,26 +13,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# # LANGUAGES = [
-# #     "ja",
-# # ]
-
-# # Target languages for translation
-# LANGUAGES = [
-#     "de",
-#     "es",
-#     "fr",
-#     "it",
-#     "ja",
-#     "ko",
-#     "ms",
-#     "nb",
-#     "th",
-#     "vi",
-#     "zh-hans",
-#     "zh-hant",
-# ]
-
 LANGUAGES = [
     "de-DE",  # German (Germany)
     "es-ES",  # Spanish (Spain)
@@ -68,7 +48,7 @@ def get_model_id(model: str) -> str:
     base_model_ids = {
         "haiku-3.5": "anthropic.claude-3-5-haiku-20241022-v1:0",
     }
-    region = os.environ.get("AWS_REGION")
+    region = os.environ.get("AWS_REGION", "")
     if region not in {"us-east-1", "us-west-2"}:
         logger.warning("Region %s is not supported; defaulting to us-east-1", region)
         region = "us-east-1"
