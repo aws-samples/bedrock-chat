@@ -30,6 +30,7 @@ import { ValidatedPythonFunction } from './validated-python-function';
 
 export interface ApiProps {
   readonly database: ITable;
+  readonly ltiDataTable: ITable;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -180,6 +181,13 @@ export class Api extends Construct {
         resources: [`arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:bing-api-key*`],
       })
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan"],
+        resources: [props.ltiDataTable.tableArn],
+      })
+    );
     props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
     props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
@@ -197,6 +205,7 @@ export class Api extends Construct {
       timeout: Duration.minutes(15),
       environment: {
         TABLE_NAME: database.tableName,
+        LTI_DATA_TABLE_NAME: props.ltiDataTable.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         USER_POOL_ID: props.auth.userPool.userPoolId,
         CLIENT_ID: props.auth.client.userPoolClientId,
@@ -217,7 +226,7 @@ export class Api extends Construct {
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
         ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
-          props.enableBedrockCrossRegionInference.toString(),
+        props.enableBedrockCrossRegionInference.toString(),
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
         BING_API_SECRET_ARN: `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:bing-api-key`,
@@ -277,11 +286,11 @@ export class Api extends Construct {
       path: "/{proxy+}",
       integration,
       methods: [
-        HttpMethod.GET,
-        HttpMethod.POST,
-        HttpMethod.PUT,
-        HttpMethod.PATCH,
-        HttpMethod.DELETE,
+      HttpMethod.GET,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
       ],
       authorizer,
     };
