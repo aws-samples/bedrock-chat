@@ -295,7 +295,20 @@ export class Api extends Construct {
       authorizer,
     };
 
+    let oidcRouteProps: any = {
+      path: "/oidc/{proxy+}",
+      integration,
+      methods: [
+      HttpMethod.GET,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
+      ],
+    };
+
     api.addRoutes(routeProps);
+    api.addRoutes(oidcRouteProps);
 
     this.api = api;
     this.handler = handler;
