@@ -3,7 +3,6 @@ name: Auto Translate Docs
 env:
   AWS_REGION: us-west-2
   BASE_BRANCH: v2
-  BEDROCK_ROLE_ARN: ${{ secrets.BEDROCK_ROLE_ARN }}
 
 on:
   pull_request:

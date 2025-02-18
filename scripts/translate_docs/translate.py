@@ -13,6 +13,26 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# # LANGUAGES = [
+# #     "ja",
+# # ]
+
+# # Target languages for translation
+# LANGUAGES = [
+#     "de",
+#     "es",
+#     "fr",
+#     "it",
+#     "ja",
+#     "ko",
+#     "ms",
+#     "nb",
+#     "th",
+#     "vi",
+#     "zh-hans",
+#     "zh-hant",
+# ]
+
 LANGUAGES = [
     "de-DE",  # German (Germany)
     "es-ES",  # Spanish (Spain)
@@ -66,23 +86,6 @@ def get_model_id(model: str) -> str:
     return model_id
 
 
-def get_bedrock_client(region: str):
-    sts_client = boto3.client("sts", region_name=region)
-    assumed_role = sts_client.assume_role(
-        RoleArn=os.environ["BEDROCK_ROLE_ARN"], RoleSessionName="bedrock_session"
-    )
-    credentials = assumed_role["Credentials"]
-
-    return boto3.client(
-        "bedrock-runtime",
-        region_name=region,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-        config=Config(read_timeout=10000),
-    )
-
-
 def split_by_h2(text: str) -> list[str]:
     """
     Split markdown text by h2 headings (##) only.
@@ -99,7 +102,7 @@ def translate_text(text: str, target_lang: str) -> str:
     Translation function using the AWS Bedrock Converse API.
     """
     logger.info("Starting translation for target language: %s", target_lang)
-    region = os.environ.get("AWS_REGION", "")
+    region = os.environ.get("AWS_REGION")
     model = "haiku-3.5"
     model_id = get_model_id(model)
 
@@ -140,7 +143,9 @@ def translate_text(text: str, target_lang: str) -> str:
             "additionalModelRequestFields": {},
         }
 
-        client = get_bedrock_client(region)
+        client = boto3.client(
+            "bedrock-runtime", region_name=region, config=Config(read_timeout=10000)
+        )
 
         response = client.converse(**payload)
 
