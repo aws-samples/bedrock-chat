@@ -66,6 +66,8 @@ BING_API_SECRET_ARN=$(aws secretsmanager describe-secret --secret-id 'bing-api-k
     BING_API_SECRET_ARN=""
 }
 echo "BING_API_SECRET_ARN=$BING_API_SECRET_ARN" >> "$OUTPUT_BACKEND_FILE"
+echo "LTI_DATA_TABLE_NAME=$(echo "$CF_OUTPUT" | jq -r '.[] | select(.OutputKey | contains("LtiDataTable")).OutputValue' | head -n 1)" >> "$OUTPUT_BACKEND_FILE"
+echo "FRONTEND_URL=http://localhost:80" >> "$OUTPUT_BACKEND_FILE"
 
 # Please duplicate this file to ".env.local" for local development
 # in production development, these values will be automatically set.
