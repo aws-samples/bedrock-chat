@@ -1,0 +1,132 @@
+name: Auto Translate Docs
+
+env:
+  AWS_REGION: us-west-2
+  BASE_BRANCH: v2
+  TIMEOUT_HOURS: 6
+  TIMEOUT_MINUTES: 360
+  TIMEOUT_SECONDS: 21600
+
+on:
+  pull_request:
+    branches:
+      - main
+      - v1
+      - v2
+    paths:
+      - "docs/**"
+      - "README.md"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360 # NOTE: cannot specify using env variable
+    steps:
+      # Check for existing auto-translate PR to avoid infinite loop
+      - name: Check for existing auto-translate PR
+        id: check_pr
+        run: |
+          owner_repo="${GITHUB_REPOSITORY}"
+          head_branch_prefix="auto-translate"
+          prs=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${owner_repo}/pulls?state=open" | jq -r ".[] | select(.head.ref | startswith(\"${head_branch_prefix}\"))")
+          if [ -n "$prs" ]; then
+            echo "An auto-translate PR already exists. Skipping further processing."
+            exit 1
+          else
+            echo "No existing auto-translate PR found."
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Assume Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.BEDROCK_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: ${{ env.TIMEOUT_SECONDS }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          mv backend/pyproject.toml backend/poetry.lock .
+          poetry install
+
+      # Identify changed files
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For PR events, get only the added/modified files (excluding deleted files)
+            changed_files=$(git diff --name-status ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | 
+                          grep -E '^[AM]' |  # Only include Added (A) or Modified (M) files
+                          awk '{print $2}' |  # Get the file path
+                          grep -E "^(docs/.*\.md|README\.md)$" || true)
+            echo "PROCESS_ALL=false" >> $GITHUB_ENV
+          else
+            # For workflow_dispatch events, process all files
+            changed_files=""
+            echo "PROCESS_ALL=true" >> $GITHUB_ENV
+          fi
+          echo "Changed files:"
+          echo "$changed_files"
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Run translation script
+        run: |
+          echo "${{ steps.changed-files.outputs.files }}" > changed_files.txt
+          echo "${{ env.PROCESS_ALL }}" > process_all.txt
+          poetry run python scripts/translate_docs/translate.py
+          mv pyproject.toml poetry.lock backend/
+          rm changed_files.txt process_all.txt
+
+      # Check for changes
+      - name: Check for changes
+        id: changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected"
+            echo "::set-output name=changed::true"
+          else
+            echo "No changes detected"
+            echo "::set-output name=changed::false"
+          fi
+
+      # If changes are detected, commit and push
+      - name: Commit and push changes if any
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          branch_name="auto-translate-${{ github.run_id }}"
+          git checkout -b $branch_name
+          git add docs/ README.md 
+          git commit -m "Auto update translated docs using AWS Bedrock (haiku 3.5)"
+          git push origin $branch_name
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base ${{ env.BASE_BRANCH }} \
+            --head "auto-translate-${{ github.run_id }}" \
+            --title "Auto update translated docs using AWS Bedrock (haiku 3.5)" \
+            --body "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with haiku 3.5 model."
