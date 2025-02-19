@@ -59,10 +59,6 @@ const rootChildren = [
     element: <ChatPage />,
   },
   {
-    path: '/oidc', 
-    element: <OidcLaunch />,
-  },
-  {
     path: '*',
     element: <NotFound />,
   },
