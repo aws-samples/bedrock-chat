@@ -4,7 +4,7 @@ import { getCurrentUser} from 'aws-amplify/auth';
 import {signOut, signIn, confirmSignIn} from 'aws-amplify/auth';
 
 
-const OidcLaunch: React.FC = () => {
+const LtiLaunch: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -152,4 +152,4 @@ const OidcLaunch: React.FC = () => {
 
 };
 
-export default OidcLaunch;
+export default LtiLaunch;

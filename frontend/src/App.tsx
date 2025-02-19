@@ -12,7 +12,7 @@ import { validateSocialProvider } from './utils/SocialProviderUtils';
 import AppContent from './components/AppContent';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './pages/ErrorFallback';
-import OidcLaunch from './pages/OidcLaunch';
+import LtiLaunch from './pages/LtiLaunch';
 
 const customProviderEnabled =
   import.meta.env.VITE_APP_CUSTOM_PROVIDER_ENABLED === 'true';
@@ -62,8 +62,8 @@ const App: React.FC = () => {
         </AuthCustom>
       ) : (
         <>
-        {location.pathname === '/oidc' ? (
-          <OidcLaunch />
+        {location.pathname === '/lti' ? (
+          <LtiLaunch />
         ) : (
           <Authenticator.Provider>
             <AuthAmplify socialProviders={socialProviderFromEnv}>

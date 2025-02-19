@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from fastapi import APIRouter, Request, HTTPException
 from fastapi import Form
 from app.repositories.lti_data import get_lti_data
-router = APIRouter(tags=["oidc"])
+router = APIRouter(tags=["lti"])
 
 # TODO - Hard code values for now. Will move to configuration later. 
 CANVAS_ISSUER = 'https://canvas.instructure.com'  # Canvas base URL
@@ -18,8 +18,8 @@ USER_POOL_ID = os.environ.get("USER_POOL_ID")
 FRONTEND_URL = os.environ.get("FRONTEND_URL")
 
 
-@router.post("/oidc/connect")
-async def oidc_connect(
+@router.post("/lti/connect")
+async def lti_connect(
     request: Request,
     iss: str = Form(),
     login_hint: str = Form(),
@@ -27,7 +27,7 @@ async def oidc_connect(
     lti_deployment_id: str = Form(),
     lti_message_hint: str = Form(),
 ):
-    """Handle connect request sent to OIDC Initiation Endpoint."""
+    """Handle connect request sent to OIDC Initiation Endpoint used by LTI protocol."""
 
     # Lookup lti_deployment_id in database
     rsp = get_lti_data(lti_deployment_id)
@@ -42,7 +42,7 @@ async def oidc_connect(
         print(f'Error: iss = {iss}, expected {CANVAS_ISSUER}, client_id = {client_id}, expected {expected_client_id}')
         raise HTTPException(status_code=400, detail="Invalid issuer or client ID")
     
-    TOOL_REDIRECT_URI = str(request.base_url)[:-1] + '/oidc/redirect'
+    TOOL_REDIRECT_URI = str(request.base_url)[:-1] + '/lti/redirect'
 
     # TODO generate a random nonce and store with TTL
     nonce = 'CHANGETHISVALUE'
@@ -94,12 +94,12 @@ def lookup_or_create_user(email):
     return user
 
 
-@router.post("/oidc/redirect")
-async def oidc_redirect(
+@router.post("/lti/redirect")
+async def lti_redirect(
     request: Request,
     id_token: str = Form(),
 ):
-    """Handle redirect request from OIDC Authorization Endpoint."""
+    """Handle redirect request from OIDC Authorization Endpoint as part of LTI protocol."""
     try:
         # Get key id from token header
         kid = jwt.get_unverified_header(id_token)['kid']
@@ -141,7 +141,7 @@ async def oidc_redirect(
 
         import urllib.parse
         query_params = urllib.parse.urlencode(payload)
-        redirect_url = f"{FRONTEND_URL}/oidc?{query_params}"
+        redirect_url = f"{FRONTEND_URL}/lti?{query_params}"
 
         return RedirectResponse(url=redirect_url, status_code=302)
 
