@@ -102,9 +102,8 @@ const LtiLaunch: React.FC = () => {
         }
       });
       if (nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE') {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const user = await confirmSignIn({challengeResponse: 'opensesame'});
-        //console.log('Confirm response', user);
+        console.log('Confirm response', user);
         goHome();
       } else {
         setPageState(PageState.ERROR);

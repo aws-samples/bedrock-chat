@@ -1,3 +1,4 @@
+import logging
 import os
 import boto3
 from jose import jwt, jwk
@@ -7,6 +8,9 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi import Form
 from app.repositories.lti_data import get_lti_data
 router = APIRouter(tags=["lti"])
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # TODO - Hard code values for now. Will move to configuration later. 
 CANVAS_ISSUER = 'https://canvas.instructure.com'  # Canvas base URL
@@ -32,14 +36,13 @@ async def lti_connect(
     # Lookup lti_deployment_id in database
     rsp = get_lti_data(lti_deployment_id)
     if rsp is None or 'client_id' not in rsp:
-        print(f'Error: LTI table lookup with {lti_deployment_id} got response {rsp}')
+        logger.error(f'Error: LTI table lookup with {lti_deployment_id} got response {rsp}')
         raise HTTPException(status_code=400, detail="Invalid LTI deployment ID or client ID not found")
 
     expected_client_id = rsp['client_id']
-    print('LTI Deployment:', lti_deployment_id, 'got client_id', expected_client_id)  # TODO remove this
 
     if iss != CANVAS_ISSUER or client_id != expected_client_id:
-        print(f'Error: iss = {iss}, expected {CANVAS_ISSUER}, client_id = {client_id}, expected {expected_client_id}')
+        logger.error(f'Error: iss = {iss}, expected {CANVAS_ISSUER}, client_id = {client_id}, expected {expected_client_id}')
         raise HTTPException(status_code=400, detail="Invalid issuer or client ID")
     
     TOOL_REDIRECT_URI = str(request.base_url)[:-1] + '/lti/redirect'
@@ -48,8 +51,7 @@ async def lti_connect(
     nonce = 'CHANGETHISVALUE'
     redirect_url = f"{CANVAS_OIDC_AUTH_URL}?client_id={client_id}&login_hint={login_hint}&scope=openid&response_type=code&redirect_uri={TOOL_REDIRECT_URI}&response_mode=form_post&nonce={nonce}&prompt=none&lti_message_hint={lti_message_hint}"
 
-    print('Redirecting to:', redirect_url)
-
+    logger.info(f'Redirecting to: {redirect_url}')
     return RedirectResponse(url=redirect_url, status_code=302)
 
 def lookup_user(cognito, user_pool_id, email):
@@ -87,9 +89,9 @@ def lookup_or_create_user(email):
     cognito_client = boto3.client('cognito-idp', region_name=REGION) 
     user = lookup_user(cognito_client, USER_POOL_ID, email)
     if user:
-        print('Found existing user')
+        logger.info(f'Existing user {user}')
     else:
-        print('User not found, creating new user...')
+        logger.info(f'Creating new user with email {email}')
         user = create_user(cognito_client, USER_POOL_ID, email, PASSWORD)
     return user
 
