@@ -1135,7 +1135,15 @@ const BotKbEditPage: React.FC = () => {
     setIsLoading(true);
     registerBot({
       agent: {
-        tools: tools.map(({ name }) => name),
+        tools: tools.map((tool) => ({
+          name: tool.name,
+          description: tool.description,
+          search_engine: tool.searchEngine,
+          firecrawl_config: tool.firecrawlConfig ? {
+            api_key: tool.firecrawlConfig.apiKey,
+            max_results: tool.firecrawlConfig.maxResults
+          } : undefined
+        })),
       },
       id: botId,
       title,
@@ -1259,7 +1267,15 @@ const BotKbEditPage: React.FC = () => {
       setIsLoading(true);
       updateBot(botId, {
         agent: {
-          tools: tools.map(({ name }) => name),
+          tools: tools.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            search_engine: tool.searchEngine,
+            firecrawl_config: tool.firecrawlConfig ? {
+              api_key: tool.firecrawlConfig.apiKey,
+              max_results: tool.firecrawlConfig.maxResults
+            } : undefined
+          })),
         },
         title,
         description,

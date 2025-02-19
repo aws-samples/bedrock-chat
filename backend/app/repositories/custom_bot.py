@@ -3,6 +3,7 @@ import base64
 import json
 import logging
 import os
+from typing import Union
 from datetime import datetime
 from decimal import Decimal as decimal
 from functools import partial
@@ -29,6 +30,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
+    InternetAgentModel,
     KnowledgeModel,
     default_active_models,
 )
@@ -49,6 +51,7 @@ DEFAULT_GENERATION_CONFIG = (
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel("INFO")
 sts_client = boto3.client("sts")
 
 

@@ -57,17 +57,33 @@ class GenerationParams(BaseSchema):
     stop_sequences: list[str]
 
 
+class FirecrawlConfig(BaseSchema):
+    api_key: str | None = None
+    max_results: int = Field(default=10, ge=1, le=100)
+
+
 class AgentTool(BaseSchema):
     name: str
     description: str
 
 
-class Agent(BaseSchema):
-    tools: list[AgentTool]
+class InternetAgentTool(AgentTool):
+    search_engine: Optional[Literal['duckduckgo', 'firecrawl']] | None = None
+    firecrawl_config: Optional[FirecrawlConfig] | None = None
 
+
+class Agent(BaseSchema):
+    tools: list[AgentTool | InternetAgentTool]
+
+
+class AgentToolInput(BaseSchema):
+    name: str
+    description: str
+    search_engine: Literal['duckduckgo', 'firecrawl'] | None = None
+    firecrawl_config: FirecrawlConfig | None = None
 
 class AgentInput(BaseSchema):
-    tools: list[str] = Field(..., description="List of tool names")
+    tools: list[AgentToolInput] = Field(..., description="List of tools")
 
 
 class Knowledge(BaseSchema):

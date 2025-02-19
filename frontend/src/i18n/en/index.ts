@@ -117,10 +117,25 @@ const translation = {
         internet_search: {
           name: 'Internet Search',
           description: 'Search the internet for information.',
+          settings: 'Search Settings',
+          engine: 'Search Engine',
+          engines: {
+            duckduckgo: 'DuckDuckGo (For Trial)',
+            duckduckgo_explain: "Limited rate, but free to use. Designed for trial use.",
+            firecrawl: 'Firecrawl (For Business)',
+            firecrawl_explain: "API key is required. Rate limits can be expanded for a fee. Designed for business use.",
+          },
         },
         knowledge_base_tool: {
           name: 'Retrieve Knowledge',
           description: 'Retrieve information from knowledge.',
+        },
+        firecrawl: {
+          name: 'Firecrawl Search',
+          description: 'Search the web using Firecrawl API.',
+          apiKey: 'Firecrawl API Key',
+          apiKeyPlaceholder: 'Enter your Firecrawl API key',
+          maxResults: 'Maximum Results'
         },
       },
     },

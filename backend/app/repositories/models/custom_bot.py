@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Type, get_args
+from typing import Any, Dict, List, Literal, Optional, Type, get_args
 
 from app.repositories.models.common import DynamicBaseModel, Float
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -60,13 +60,22 @@ class GenerationParamsModel(BaseModel):
     stop_sequences: list[str]
 
 
+class FirecrawlConfigModel(BaseModel):
+    secret_arn: str | None = None
+    max_results: int = 10
+
 class AgentToolModel(BaseModel):
     name: str
     description: str
 
 
+class InternetAgentModel(AgentToolModel):
+    search_engine: Optional[Literal['duckduckgo', 'firecrawl']] | None = None
+    firecrawl_config: Optional[FirecrawlConfigModel] | None = None
+
+
 class AgentModel(BaseModel):
-    tools: list[AgentToolModel]
+    tools: list[AgentToolModel | InternetAgentModel]
 
 
 class ConversationQuickStarterModel(BaseModel):
@@ -86,7 +95,7 @@ class BotModel(BaseModel):
     owner_user_id: str
     is_pinned: bool
     generation_params: GenerationParamsModel
-    agent: AgentModel
+    agent: AgentModel | InternetAgentModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str

@@ -170,3 +170,113 @@ def start_codebuild_project(environment_variables: dict) -> str:
         environmentVariablesOverride=environment_variables_override,
     )
     return response["build"]["id"]
+
+def store_firecrawl_api_key(user_id: str, bot_id: str, api_key: str) -> str:
+    """Store Firecrawl API key in Secrets Manager.
+    
+    Args:
+        user_id: User ID
+        bot_id: Bot ID
+        api_key: Firecrawl API key
+    
+    Returns:
+        str: Secret ARN
+    
+    Raises:
+        ClientError: If there is an error with Secrets Manager
+    """
+    secret_name = f"firecrawl/{user_id}/{bot_id}"
+    secret_value = json.dumps({"api_key": api_key})
+    
+    try:
+        secrets_client = boto3.client('secretsmanager')
+        logger.info(f"Attempting to store Firecrawl API key for {secret_name}")
+        
+        try:
+            # Try to get existing secret
+            existing_secret = secrets_client.describe_secret(SecretId=secret_name)
+            logger.info(f"Found existing secret: {secret_name}")
+            
+            # Update existing secret
+            response = secrets_client.update_secret(
+                SecretId=secret_name,
+                SecretString=secret_value
+            )
+            logger.info(f"Updated existing secret: {secret_name}")
+            return response['ARN']
+            
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                # Create new secret if it doesn't exist
+                logger.info(f"Creating new secret: {secret_name}")
+                response = secrets_client.create_secret(
+                    Name=secret_name,
+                    SecretString=secret_value
+                )
+                logger.info(f"Created new secret: {secret_name}")
+                return response['ARN']
+            else:
+                logger.error(f"Error accessing secret {secret_name}: {e}")
+                raise
+
+    except ClientError as e:
+        logger.error(f"Error storing Firecrawl API key: {e}")
+        raise
+
+def get_firecrawl_api_key(secret_arn: str) -> str:
+    """Get Firecrawl API key from Secrets Manager.
+    
+    Args:
+        secret_arn: Secret ARN
+    
+    Returns:
+        str: API key
+    
+    Raises:
+        ClientError: If there is an error with Secrets Manager
+    """
+    try:
+        secrets_client = boto3.client('secretsmanager')
+        response = secrets_client.get_secret_value(SecretId=secret_arn)
+        secret = json.loads(response['SecretString'])
+        return secret['api_key']
+    except ClientError as e:
+        logger.error(f"Error getting Firecrawl API key: {e}")
+        raise
+
+def delete_firecrawl_api_key(user_id: str, bot_id: str) -> None:
+    """Delete Firecrawl API key from Secrets Manager.
+    
+    Args:
+        user_id: User ID
+        bot_id: Bot ID
+    
+    Raises:
+        ClientError: If there is an error with Secrets Manager
+    """
+    secret_name = f"firecrawl/{user_id}/{bot_id}"
+    
+    try:
+        secrets_client = boto3.client('secretsmanager')
+        logger.info(f"Attempting to delete Firecrawl API key for {secret_name}")
+        
+        try:
+            # Delete secret
+            secrets_client.delete_secret(
+                SecretId=secret_name,
+                ForceDeleteWithoutRecovery=True
+            )
+            logger.info(f"Deleted secret: {secret_name}")
+            
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                # Secret doesn't exist, ignore
+                logger.info(f"Secret {secret_name} not found, skipping deletion")
+                return
+            else:
+                logger.error(f"Error deleting secret {secret_name}: {e}")
+                raise
+                
+    except ClientError as e:
+        logger.error(f"Error accessing Secrets Manager: {e}")
+        raise

@@ -1,3 +1,5 @@
+
+import logging
 from typing import Any, Dict, Literal
 
 from app.dependencies import check_creating_bot_allowed
@@ -21,7 +23,9 @@ from app.routes.schemas.bot import (
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ConversationQuickStarter,
+    FirecrawlConfig,
     GenerationParams,
+    InternetAgentTool,
     Knowledge,
 )
 from app.routes.schemas.conversation import type_model_name
@@ -37,8 +41,12 @@ from app.usecases.bot import (
     remove_bot_by_id,
     remove_uploaded_file,
 )
+from app.utils import get_firecrawl_api_key
 from app.user import User
 from fastapi import APIRouter, Depends, Request
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 router = APIRouter(tags=["bot"])
 
@@ -104,6 +112,31 @@ def get_private_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
 
     bot = find_private_bot_by_id(current_user.id, bot_id)
+
+    tools=[]
+    for tool in bot.agent.tools:
+        if tool.name == 'internet_search':
+            tools.append(
+                InternetAgentTool(
+                    name=tool.name,
+                    description=tool.description,
+                    search_engine=getattr(tool, 'search_engine', None),
+                    firecrawl_config=FirecrawlConfig(
+                        api_key=get_firecrawl_api_key(tool.firecrawl_config.secret_arn) if tool.firecrawl_config else None,
+                        secret_arn=tool.firecrawl_config.secret_arn,
+                        max_results=tool.firecrawl_config.max_results
+                    ) if hasattr(tool, 'firecrawl_config') else None
+                )
+            )
+        else:
+            tools.append(
+                AgentTool(
+                    name=tool.name,
+                    description=tool.description,
+                )
+            )
+
+
     output = BotOutput(
         id=bot.id,
         title=bot.title,
@@ -115,10 +148,7 @@ def get_private_bot(request: Request, bot_id: str):
         is_pinned=bot.is_pinned,
         owned=True,
         agent=Agent(
-            tools=[
-                AgentTool(name=tool.name, description=tool.description)
-                for tool in bot.agent.tools
-            ]
+            tools=tools
         ),
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,

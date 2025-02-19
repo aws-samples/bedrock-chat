@@ -118,10 +118,25 @@ const translation = {
         internet_search: {
           name: 'インターネット検索',
           description: 'インターネットで情報を検索します。',
+          settings: '検索設定',
+          engine: '検索エンジン',
+          engines: {
+            duckduckgo: 'DuckDuckGo (For Trial)',
+            duckduckgo_explain: "リミットレートが厳しいが無料で使用可能。小規模利用向け",
+            firecrawl: 'Firecrawl (For Business)',
+            firecrawl_explain: "APIキーが必要。有償でレートリミットの拡張可能。ビジネス利用向け",
+          },
         },
         knowledge_base_tool: {
           name: 'ナレッジの取得',
           description: 'ナレッジから情報を取得します。',
+        },
+        firecrawl: {
+          name: 'Firecrawl検索',
+          description: 'Firecrawl APIを使用してウェブ検索を行います。',
+          apiKey: 'Firecrawl APIキー',
+          apiKeyPlaceholder: 'APIキーを入力してください',
+          maxResults: '最大結果数'
         },
       },
     },
