@@ -75,6 +75,9 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
+from app.usecases.group import (
+    validate_user_access_to_bot
+)
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -321,6 +324,15 @@ def modify_owned_bot(
     """
     Modify an owned bot. 
     """
+
+     # Get existing bot and model first
+    bot = find_private_bot_by_id(user_id, bot_id)
+
+    if not hasattr(bot, "creator_config") or not getattr(bot.creator_config, "user_id", None):
+        raise RecordNotFoundError(f"Failed to get the creator id for bot: {bot_id}")
+    # get the creator_id to ensure the existing bot record is updated
+    creator_id = bot.creator_config.user_id
+
     source_urls = []
     sitemap_urls = []
     filenames = []
@@ -334,14 +346,14 @@ def modify_owned_bot(
 
         # Commit changes to S3
         _update_s3_documents_by_diff(
-            user_id,
+            creator_id,
             bot_id,
             modify_input.knowledge.added_filenames,
             modify_input.knowledge.deleted_filenames,
         )
         # Delete files from upload temp directory
         delete_files_with_prefix_from_s3(
-            DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_id)
+            DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(creator_id, bot_id)
         )
 
         filenames = (
@@ -360,10 +372,7 @@ def modify_owned_bot(
         if modify_input.generation_params
         else DEFAULT_GENERATION_CONFIG
     )
-
-    # Get existing bot and model first
-    bot = find_private_bot_by_id(user_id, bot_id)
-
+   
     # Build or update the agent if needed
     tool_dict = {tool.name: tool for tool in bot.agent.tools}
 
@@ -413,7 +422,7 @@ def modify_owned_bot(
         updated_kb = current_bot_kb
 
     update_bot(
-        user_id,
+        creator_id,
         bot_id,
         title=modify_input.title,
         instruction=modify_input.instruction,
@@ -764,71 +773,8 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
         pass
 
     try:
-        alias = find_alias_by_id(user_id, bot_id)
-
-        # update bot model activate if alias is found.
-        bot = find_public_bot_by_id(bot_id)
-
-        return BotSummaryOutput(
-            id=alias.id,
-            title=alias.title,
-            description=alias.description,
-            create_time=alias.create_time,
-            last_used_time=alias.last_used_time,
-            is_pinned=alias.is_pinned,
-            is_public=True,
-            has_agent=alias.has_agent,
-            owned=False,
-            sync_status=alias.sync_status,
-            has_knowledge=alias.has_knowledge,
-            conversation_quick_starters=(
-                []
-                if alias.conversation_quick_starters is None
-                else [
-                    ConversationQuickStarter(
-                        title=starter.title,
-                        example=starter.example,
-                    )
-                    for starter in alias.conversation_quick_starters
-                ]
-            ),
-            active_models=ActiveModelsOutput.model_validate(
-                dict(alias.active_models) if alias.active_models else {}
-            ),
-        )
-    except RecordNotFoundError:
-        pass
-
-    try:
         # NOTE: At the first time using shared bot, alias is not created yet.
         bot = find_public_bot_by_id(bot_id)
-        current_time = get_current_time()
-        # Store alias when opened shared bot page
-        store_alias(
-            user_id,
-            BotAliasModel(
-                id=bot.id,
-                title=bot.title,
-                description=bot.description,
-                original_bot_id=bot_id,
-                create_time=current_time,
-                last_used_time=current_time,
-                is_pinned=False,
-                sync_status=bot.sync_status,
-                has_knowledge=bot.has_knowledge(),
-                has_agent=bot.is_agent_enabled(),
-                conversation_quick_starters=[
-                    ConversationQuickStarterModel(
-                        title=starter.title,
-                        example=starter.example,
-                    )
-                    for starter in bot.conversation_quick_starters
-                ],
-                active_models=ActiveModelsModel.model_validate(
-                    dict(bot.active_models) if bot.active_models else {}
-                ),
-            ),
-        )
         return BotSummaryOutput(
             id=bot_id,
             title=bot.title,
@@ -860,39 +806,42 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
 
 def modify_pin_status(user_id: str, bot_id: str, pinned: bool):
     """Modify bot pin status."""
+    creator_id = validate_user_access_to_bot(user_id, bot_id).user_id
     try:
-        return update_bot_pin_status(user_id, bot_id, pinned)
+        return update_bot_pin_status(creator_id, bot_id, pinned)
     except RecordNotFoundError:
         pass
 
     try:
-        return update_alias_pin_status(user_id, bot_id, pinned)
+        return update_alias_pin_status(creator_id, bot_id, pinned)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
 
 def remove_bot_by_id(user_id: str, bot_id: str):
     """Remove bot by id."""
+    creator_id = validate_user_access_to_bot(user_id, bot_id).user_id
     try:
-        return delete_bot_by_id(user_id, bot_id)
+        return delete_bot_by_id(creator_id, bot_id)
     except RecordNotFoundError:
         pass
 
     try:
-        return delete_alias_by_id(user_id, bot_id)
+        return delete_alias_by_id(creator_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
 
 def modify_bot_last_used_time(user_id: str, bot_id: str):
     """Modify bot last used time."""
+    creator_id = validate_user_access_to_bot(user_id, bot_id).user_id
     try:
-        return update_bot_last_used_time(user_id, bot_id)
+        return update_bot_last_used_time(creator_id, bot_id)
     except RecordNotFoundError:
         pass
 
     try:
-        return update_alias_last_used_time(user_id, bot_id)
+        return update_alias_last_used_time(creator_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
@@ -913,9 +862,10 @@ def issue_presigned_url(
 def remove_uploaded_file(user_id: str, bot_id: str, filename: str):
     # Ignore errors when deleting a non-existent file from the S3 bucket used in knowledge bases.
     # This allows users to update bot if the uploaded file is missing after the bot is created.
+    creator_id = validate_user_access_to_bot(user_id, bot_id).user_id
     delete_file_from_s3(
         DOCUMENT_BUCKET,
-        compose_upload_temp_s3_path(user_id, bot_id, filename),
+        compose_upload_temp_s3_path(creator_id, bot_id, filename),
         ignore_not_exist=True,
     )
     return

@@ -12,6 +12,12 @@ from app.routes.schemas.group import (
     ACTION_CONFIG_MAP,
     ROLE_HIERARCHY
 )
+from app.repositories.group import (
+    find_all_creator_id_by_group_id
+)
+from app.repositories.models.custom_bot import (
+    BotCreatorModel
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,3 +73,24 @@ def get_user_name(user_id: str) -> str:
     if not groupList: 
         return "Not in DB"
     return groupList[0].user_name
+
+def validate_user_access_to_bot(user_id: str, bot_id: str) -> BotCreatorModel:
+    # Validate that the user has access to the bot
+    # Step 1: Get the user's list of groups
+    # Step 2: For each group:
+    #           iterate through the bots and
+    #           get bot_id and creator_id
+    # Step 3: Validate that the bot_id is in one of the groups
+    # Step 4: Return the bot_id and creator_id
+    logger.info(f"Validating user: {user_id} has access to bot: {bot_id}")
+    groupList = fetch_all_groups_by_user_id(user_id)
+    if not groupList:
+        raise RecordNotFoundError(f"Failed to find groups for user: {user_id}")
+    for group in groupList:
+        groupId = group.group_id
+        botListFromGroup = find_all_creator_id_by_group_id(groupId)
+        for bot in botListFromGroup:
+            if bot.bot_id == bot_id:
+                return bot
+    # Failed to find bot
+    raise RecordNotFoundError(f"Failed to find bot: {bot_id}")

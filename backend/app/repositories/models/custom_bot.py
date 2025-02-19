@@ -169,3 +169,7 @@ class BotMetaWithStackInfo(BotMeta):
     owner_user_id: str
     published_api_stack_name: str | None
     published_api_datetime: int | None
+
+class BotCreatorModel(BaseModel):
+    bot_id: str
+    user_id: str

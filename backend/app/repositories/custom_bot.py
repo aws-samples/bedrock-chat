@@ -20,6 +20,9 @@ from app.repositories.common import (
     decompose_bot_alias_id,
     decompose_bot_id,
 )
+from app.usecases.group import (
+    validate_user_access_to_bot
+)
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
@@ -33,6 +36,7 @@ from app.repositories.models.custom_bot import (
     AssistantConfigModel,
     CreatorConfigModel,
     default_active_models,
+    BotCreatorModel
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -434,9 +438,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     """Find private bot."""
     table = _get_table_client(user_id)
     logger.info(f"Finding bot with id: {bot_id}")
+    # validate that the user has access to the bot
+    bot_creator_model = validate_user_access_to_bot(user_id, bot_id)
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(compose_bot_id(user_id, bot_id)),
+        KeyConditionExpression=Key("SK").eq(compose_bot_id(bot_creator_model.user_id, bot_creator_model.bot_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Bot with id {bot_id} not found")
@@ -444,9 +450,6 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
 
     if "OriginalBotId" in item:
         raise RecordNotFoundError(f"Bot with id {bot_id} is alias")
-
-
-
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
         title=item["Title"],
@@ -456,7 +459,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
-        owner_user_id=user_id,
+        owner_user_id=bot_creator_model.user_id,
         generation_params=GenerationParamsModel.model_validate(
             item["GenerationParams"]
             if "GenerationParams" in item
@@ -699,9 +702,12 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
     table = _get_table_client(user_id)
     logger.info(f"Making bot public: {bot_id}")
 
+    creator_id = validate_user_access_to_bot(user_id, bot_id).user_id
+
+
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(compose_bot_id(user_id, bot_id)),
+        KeyConditionExpression=Key("SK").eq(compose_bot_id(creator_id, bot_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Bot with id {bot_id} not found")
@@ -710,7 +716,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
         if visible:
             # To visible (open to public)
             response = table.update_item(
-                Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
+                Key={"PK": creator_id, "SK": compose_bot_id(creator_id, bot_id)},
                 UpdateExpression="SET PublicBotId = :val",
                 ExpressionAttributeValues={":val": bot_id},
                 ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -718,7 +724,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
         else:
             # To hide (close to private)
             response = table.update_item(
-                Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
+                Key={"PK": creator_id, "SK": compose_bot_id(creator_id, bot_id)},
                 UpdateExpression="REMOVE PublicBotId",
                 ReturnValues="ALL_NEW",
                 ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
