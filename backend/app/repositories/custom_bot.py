@@ -30,7 +30,6 @@ from app.repositories.models.custom_bot import (
     BotModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
-    InternetAgentModel,
     KnowledgeModel,
     default_active_models,
 )

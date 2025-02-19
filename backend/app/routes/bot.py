@@ -7,6 +7,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
+from app.repositories.models.custom_bot import InternetToolAgentModel
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
@@ -112,25 +113,31 @@ def get_private_bot(request: Request, bot_id: str):
 
     bot = find_private_bot_by_id(current_user.id, bot_id)
 
-    tools = []
+    tools: list[AgentTool | InternetAgentTool] = []
     for tool in bot.agent.tools:
-        if tool.name == "internet_search":
+        if isinstance(tool, InternetToolAgentModel):
             tools.append(
                 InternetAgentTool(
                     name=tool.name,
                     description=tool.description,
-                    search_engine=getattr(tool, "search_engine", None),
+                    search_engine=tool.search_engine,
                     firecrawl_config=(
                         FirecrawlConfig(
                             api_key=(
                                 get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
-                                if tool.firecrawl_config
+                                if hasattr(tool, "firecrawl_config")
+                                and tool.firecrawl_config
+                                and tool.firecrawl_config.secret_arn
                                 else None
                             ),
-                            secret_arn=tool.firecrawl_config.secret_arn,
-                            max_results=tool.firecrawl_config.max_results,
+                            max_results=(
+                                int(tool.firecrawl_config.max_results)
+                                if hasattr(tool, "firecrawl_config")
+                                and tool.firecrawl_config
+                                else 10
+                            ),
                         )
-                        if hasattr(tool, "firecrawl_config")
+                        if hasattr(tool, "firecrawl_config") and tool.firecrawl_config
                         else None
                     ),
                 )

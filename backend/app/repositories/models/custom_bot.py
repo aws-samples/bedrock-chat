@@ -70,13 +70,13 @@ class AgentToolModel(BaseModel):
     description: str
 
 
-class InternetAgentModel(AgentToolModel):
+class InternetToolAgentModel(AgentToolModel):
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
 
 class AgentModel(BaseModel):
-    tools: list[AgentToolModel | InternetAgentModel]
+    tools: list[AgentToolModel | InternetToolAgentModel]
 
 
 class ConversationQuickStarterModel(BaseModel):
@@ -96,7 +96,7 @@ class BotModel(BaseModel):
     owner_user_id: str
     is_pinned: bool
     generation_params: GenerationParamsModel
-    agent: AgentModel | InternetAgentModel
+    agent: AgentModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str

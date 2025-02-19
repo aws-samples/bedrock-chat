@@ -35,10 +35,10 @@ from app.repositories.models.custom_bot import (
     BotMeta,
     BotModel,
     ConversationQuickStarterModel,
-    GenerationParamsModel,
-    KnowledgeModel,
-    InternetAgentModel,
     FirecrawlConfigModel,
+    GenerationParamsModel,
+    InternetToolAgentModel,
+    KnowledgeModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -56,6 +56,7 @@ from app.routes.schemas.bot import (
     ConversationQuickStarter,
     FirecrawlConfig,
     GenerationParams,
+    InternetAgentTool,
     Knowledge,
     type_sync_status,
 )
@@ -170,7 +171,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     tools = []
     if bot_input.agent:
         for tool in bot_input.agent.tools:
-            tool_model: AgentToolModel | InternetAgentModel
+            tool_model: AgentToolModel | InternetToolAgentModel
 
             # Handle Firecrawl configuration
             if (
@@ -178,12 +179,14 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                 and tool.search_engine == "firecrawl"
                 and tool.firecrawl_config
             ):
-                tool_model = InternetAgentModel(
+                tool_model = InternetToolAgentModel(
                     name=tool.name,
                     description=tool.description,
                     search_engine=tool.search_engine,
                 )
                 # Store API key in Secrets Manager
+                if tool.firecrawl_config.api_key is None:
+                    raise ValueError("Firecrawl API key is required")
                 secret_arn = store_firecrawl_api_key(
                     user_id, bot_input.id, tool.firecrawl_config.api_key
                 )
@@ -271,29 +274,34 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         generation_params=GenerationParams(**generation_params),
         agent=Agent(
             tools=[
-                AgentTool(
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine=getattr(tool, "search_engine", None),
-                    firecrawl_config=(
-                        FirecrawlConfig(
-                            api_key=(
-                                get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                and tool.firecrawl_config.secret_arn
-                                else None
-                            ),
-                            max_results=(
-                                tool.firecrawl_config.max_results
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                else None
-                            ),
-                        )
-                        if hasattr(tool, "firecrawl_config") and tool.firecrawl_config
-                        else None
-                    ),
+                (
+                    InternetAgentTool(
+                        name=tool.name,
+                        description=tool.description,
+                        search_engine=tool.search_engine,
+                        firecrawl_config=(
+                            FirecrawlConfig(
+                                api_key=(
+                                    get_firecrawl_api_key(
+                                        tool.firecrawl_config.secret_arn
+                                    )
+                                    if hasattr(tool, "firecrawl_config")
+                                    and tool.firecrawl_config
+                                    and tool.firecrawl_config.secret_arn
+                                    else None
+                                ),
+                                max_results=int(tool.firecrawl_config.max_results),
+                            )
+                            if hasattr(tool, "firecrawl_config")
+                            and tool.firecrawl_config
+                            else None
+                        ),
+                    )
+                    if isinstance(tool, InternetToolAgentModel)
+                    else AgentTool(
+                        name=tool.name,
+                        description=tool.description,
+                    )
                 )
                 for tool in agent.tools
             ]
@@ -383,7 +391,7 @@ def modify_owned_bot(
     tools = []
     if modify_input.agent:
         for tool in modify_input.agent.tools:
-            tool_model: AgentToolModel | InternetAgentModel
+            tool_model: AgentToolModel | InternetToolAgentModel
 
             # Handle Firecrawl configuration
             if (
@@ -391,12 +399,14 @@ def modify_owned_bot(
                 and tool.search_engine == "firecrawl"
                 and tool.firecrawl_config
             ):
-                tool_model = InternetAgentModel(
+                tool_model = InternetToolAgentModel(
                     name=tool.name,
                     description=tool.description,
                     search_engine=tool.search_engine,
                 )
                 # Store API key in Secrets Manager
+                if tool.firecrawl_config.api_key is None:
+                    raise ValueError("Firecrawl API key is required")
                 secret_arn = store_firecrawl_api_key(
                     user_id, bot_id, tool.firecrawl_config.api_key
                 )
@@ -408,7 +418,6 @@ def modify_owned_bot(
                 tool_model = AgentToolModel(
                     name=tool.name,
                     description=tool.description,
-                    search_engine=tool.search_engine,
                 )
 
             tools.append(tool_model)
@@ -493,29 +502,34 @@ def modify_owned_bot(
         generation_params=GenerationParams(**generation_params),
         agent=Agent(
             tools=[
-                AgentTool(
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine=getattr(tool, "search_engine", None),
-                    firecrawl_config=(
-                        FirecrawlConfig(
-                            api_key=(
-                                get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                and tool.firecrawl_config.secret_arn
-                                else None
-                            ),
-                            max_results=(
-                                tool.firecrawl_config.max_results
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                else None
-                            ),
-                        )
-                        if hasattr(tool, "firecrawl_config") and tool.firecrawl_config
-                        else None
-                    ),
+                (
+                    InternetAgentTool(
+                        name=tool.name,
+                        description=tool.description,
+                        search_engine=tool.search_engine,
+                        firecrawl_config=(
+                            FirecrawlConfig(
+                                api_key=(
+                                    get_firecrawl_api_key(
+                                        tool.firecrawl_config.secret_arn
+                                    )
+                                    if hasattr(tool, "firecrawl_config")
+                                    and tool.firecrawl_config
+                                    and tool.firecrawl_config.secret_arn
+                                    else None
+                                ),
+                                max_results=int(tool.firecrawl_config.max_results),
+                            )
+                            if hasattr(tool, "firecrawl_config")
+                            and tool.firecrawl_config
+                            else None
+                        ),
+                    )
+                    if isinstance(tool, InternetToolAgentModel)
+                    else AgentTool(
+                        name=tool.name,
+                        description=tool.description,
+                    )
                 )
                 for tool in agent.tools
             ]
