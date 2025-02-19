@@ -46,7 +46,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
         );
       }
     },
-    [tools, setTools, searchEngine]
+    [setTools, searchEngine]
   );
 
   const handleFirecrawlConfigChange = useCallback(

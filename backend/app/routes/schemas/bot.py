@@ -68,7 +68,7 @@ class AgentTool(BaseSchema):
 
 
 class InternetAgentTool(AgentTool):
-    search_engine: Optional[Literal['duckduckgo', 'firecrawl']] | None = None
+    search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
     firecrawl_config: Optional[FirecrawlConfig] | None = None
 
 
@@ -79,8 +79,9 @@ class Agent(BaseSchema):
 class AgentToolInput(BaseSchema):
     name: str
     description: str
-    search_engine: Literal['duckduckgo', 'firecrawl'] | None = None
+    search_engine: Literal["duckduckgo", "firecrawl"] | None = None
     firecrawl_config: FirecrawlConfig | None = None
+
 
 class AgentInput(BaseSchema):
     tools: list[AgentToolInput] = Field(..., description="List of tools")

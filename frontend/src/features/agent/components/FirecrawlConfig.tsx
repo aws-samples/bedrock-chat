@@ -46,10 +46,10 @@ export const FirecrawlConfig = ({ config, onChange }: Props) => {
         />
         <button
           type="button"
-          className="h-9 w-9 rounded border border-aws-font-color-light/50 p-2 text-sm hover:bg-gray-100 dark:border-aws-font-color-dark/50 dark:hover:bg-gray-800"
+          className="size-9 rounded border border-aws-font-color-light/50 p-2 text-sm dark:border-aws-font-color-dark/50"
           onClick={() => setShowPassword(!showPassword)}
         >
-          {showPassword ? <PiEyeLight className="h-5 w-5" /> : <PiEyeSlashLight className="h-5 w-5" />}
+          {showPassword ? <PiEyeLight className="size-5" /> : <PiEyeSlashLight className="size-5" />}
         </button>
       </div>
       <Slider

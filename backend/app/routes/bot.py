@@ -1,4 +1,3 @@
-
 import logging
 from typing import Any, Dict, Literal
 
@@ -113,19 +112,27 @@ def get_private_bot(request: Request, bot_id: str):
 
     bot = find_private_bot_by_id(current_user.id, bot_id)
 
-    tools=[]
+    tools = []
     for tool in bot.agent.tools:
-        if tool.name == 'internet_search':
+        if tool.name == "internet_search":
             tools.append(
                 InternetAgentTool(
                     name=tool.name,
                     description=tool.description,
-                    search_engine=getattr(tool, 'search_engine', None),
-                    firecrawl_config=FirecrawlConfig(
-                        api_key=get_firecrawl_api_key(tool.firecrawl_config.secret_arn) if tool.firecrawl_config else None,
-                        secret_arn=tool.firecrawl_config.secret_arn,
-                        max_results=tool.firecrawl_config.max_results
-                    ) if hasattr(tool, 'firecrawl_config') else None
+                    search_engine=getattr(tool, "search_engine", None),
+                    firecrawl_config=(
+                        FirecrawlConfig(
+                            api_key=(
+                                get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
+                                if tool.firecrawl_config
+                                else None
+                            ),
+                            secret_arn=tool.firecrawl_config.secret_arn,
+                            max_results=tool.firecrawl_config.max_results,
+                        )
+                        if hasattr(tool, "firecrawl_config")
+                        else None
+                    ),
                 )
             )
         else:
@@ -135,7 +142,6 @@ def get_private_bot(request: Request, bot_id: str):
                     description=tool.description,
                 )
             )
-
 
     output = BotOutput(
         id=bot.id,
@@ -147,9 +153,7 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
-        agent=Agent(
-            tools=tools
-        ),
+        agent=Agent(tools=tools),
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,

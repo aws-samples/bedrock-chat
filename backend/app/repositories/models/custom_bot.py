@@ -64,13 +64,14 @@ class FirecrawlConfigModel(BaseModel):
     secret_arn: str | None = None
     max_results: int = 10
 
+
 class AgentToolModel(BaseModel):
     name: str
     description: str
 
 
 class InternetAgentModel(AgentToolModel):
-    search_engine: Optional[Literal['duckduckgo', 'firecrawl']] | None = None
+    search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
 

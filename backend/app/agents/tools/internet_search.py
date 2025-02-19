@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, root_validator
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class InternetSearchInput(BaseModel):
     query: str = Field(description="The query to search for on the internet.")
     country: str = Field(
@@ -43,16 +44,20 @@ def search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
     SAFE_SEARCH = "moderate"
     MAX_RESULTS = 20
     BACKEND = "api"
-    logger.info(f"Executing DuckDuckGo search with query: {query}, region: {REGION}, time_limit: {time_limit}")
+    logger.info(
+        f"Executing DuckDuckGo search with query: {query}, region: {REGION}, time_limit: {time_limit}"
+    )
     with DDGS() as ddgs:
-        results = list(ddgs.text(
-            keywords=query,
-            region=REGION,
-            safesearch=SAFE_SEARCH,
-            timelimit=time_limit,
-            max_results=MAX_RESULTS,
-            backend=BACKEND,
-        ))
+        results = list(
+            ddgs.text(
+                keywords=query,
+                region=REGION,
+                safesearch=SAFE_SEARCH,
+                timelimit=time_limit,
+                max_results=MAX_RESULTS,
+                backend=BACKEND,
+            )
+        )
         logger.info(f"DuckDuckGo search completed. Found {len(results)} results")
         return [
             {
@@ -63,12 +68,15 @@ def search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
             for result in results
         ]
 
-def search_with_firecrawl(query: str, api_key: str, country: str, max_results: int = 10) -> list:
+
+def search_with_firecrawl(
+    query: str, api_key: str, country: str, max_results: int = 10
+) -> list:
     logger.info(f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}")
-    
+
     try:
         app = FirecrawlApp(api_key=api_key)
-        
+
         # Search using Firecrawl
         # SearchParams: https://github.com/mendableai/firecrawl/blob/main/apps/python-sdk/firecrawl/firecrawl.py#L24
         results = app.search(
@@ -76,18 +84,15 @@ def search_with_firecrawl(query: str, api_key: str, country: str, max_results: i
             {
                 "limit": max_results,
                 "lang": country,
-                "scrapeOptions": {
-                    "formats": ["markdown"],
-                    "onlyMainContent": True
-                }
-            }
+                "scrapeOptions": {"formats": ["markdown"], "onlyMainContent": True},
+            },
         )
-        
+
         if not results:
             logger.warning("No results found")
             return []
         logger.info(f"results of firecrawl: {results}")
-            
+
         # Format search results
         search_results = [
             {
@@ -98,10 +103,10 @@ def search_with_firecrawl(query: str, api_key: str, country: str, max_results: i
             for data in results.get("data", [])
             if isinstance(data, dict)
         ]
-        
+
         logger.info(f"Found {len(search_results)} results from Firecrawl")
         return search_results
-        
+
     except Exception as e:
         logger.error(f"Error searching with Firecrawl: {e}")
         return []
@@ -114,7 +119,9 @@ def internet_search(
     time_limit = tool_input.time_limit
     country = tool_input.country
 
-    logger.info(f"Internet search request - Query: {query}, Time Limit: {time_limit}, Country: {country}")
+    logger.info(
+        f"Internet search request - Query: {query}, Time Limit: {time_limit}, Country: {country}"
+    )
 
     # Check if bot has Firecrawl configuration
     if bot and bot.agent.tools:
@@ -122,12 +129,14 @@ def internet_search(
             if tool.name == "internet_search":
                 if "search_engine" in tool and "firecrawl_config" in tool:
                     try:
-                        api_key = get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
+                        api_key = get_firecrawl_api_key(
+                            tool.firecrawl_config.secret_arn
+                        )
                         return search_with_firecrawl(
                             query=query,
                             api_key=api_key,
                             country=country,
-                            max_results=tool.firecrawl_config.max_results
+                            max_results=tool.firecrawl_config.max_results,
                         )
                     except Exception as e:
                         logger.error(f"Error with Firecrawl search: {e}")
