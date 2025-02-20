@@ -5,7 +5,7 @@ from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, ConfigDict, create_model, Field
 
 
 def _create_model_activate_model(model_names: List[str]) -> Type[DynamicBaseModel]:
@@ -66,17 +66,21 @@ class FirecrawlConfigModel(BaseModel):
 
 
 class AgentToolModel(BaseModel):
+    tool_type: Literal["plain", "internet"] = Field(
+        "plain", description="ツールの種類。plainなら追加設定不要"
+    )
     name: str
     description: str
 
 
-class InternetToolAgentModel(AgentToolModel):
-    search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
+class InternetAgentToolModel(AgentToolModel):
+    tool_type: Literal["internet"] = "internet"
+    search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
 
 class AgentModel(BaseModel):
-    tools: list[AgentToolModel | InternetToolAgentModel]
+    tools: list[AgentToolModel | InternetAgentToolModel]
 
 
 class ConversationQuickStarterModel(BaseModel):

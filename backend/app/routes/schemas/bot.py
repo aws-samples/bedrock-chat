@@ -63,6 +63,7 @@ class FirecrawlConfig(BaseSchema):
 
 
 class AgentTool(BaseSchema):
+    tool_type: Literal["plain", "internet"]
     name: str
     description: str
 
@@ -77,6 +78,7 @@ class Agent(BaseSchema):
 
 
 class AgentToolInput(BaseSchema):
+    tool_type: Literal["plain", "internet"]
     name: str
     description: str
     search_engine: Literal["duckduckgo", "firecrawl"] | None = None

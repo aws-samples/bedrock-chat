@@ -1,7 +1,7 @@
 import logging
 from firecrawl.firecrawl import FirecrawlApp
 from app.agents.tools.agent_tool import AgentTool
-from app.repositories.models.custom_bot import BotModel, InternetToolAgentModel
+from app.repositories.models.custom_bot import BotModel, InternetAgentToolModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_firecrawl_api_key
 from duckduckgo_search import DDGS
@@ -127,7 +127,7 @@ def internet_search(
     if bot and bot.agent.tools:
         for tool in bot.agent.tools:
             if tool.name == "internet_search":
-                if isinstance(tool, InternetToolAgentModel) and tool.firecrawl_config:
+                if isinstance(tool, InternetAgentToolModel) and tool.firecrawl_config:
                     try:
                         if tool.firecrawl_config.secret_arn is not None:
                             api_key = get_firecrawl_api_key(

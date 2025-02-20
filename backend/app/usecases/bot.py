@@ -37,7 +37,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     FirecrawlConfigModel,
     GenerationParamsModel,
-    InternetToolAgentModel,
+    InternetAgentToolModel,
     KnowledgeModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -171,31 +171,35 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     tools = []
     if bot_input.agent:
         for tool in bot_input.agent.tools:
-            tool_model: AgentToolModel | InternetToolAgentModel
+            tool_model: AgentToolModel | InternetAgentToolModel
 
             # Handle Firecrawl configuration
-            if (
-                tool.name == "internet_search"
-                and tool.search_engine == "firecrawl"
-                and tool.firecrawl_config
-            ):
-                tool_model = InternetToolAgentModel(
+            if tool.tool_type == "internet":
+                tool_model = InternetAgentToolModel(
+                    tool_type="internet",
                     name=tool.name,
                     description=tool.description,
                     search_engine=tool.search_engine,
                 )
                 # Store API key in Secrets Manager
-                if tool.firecrawl_config.api_key is None:
-                    raise ValueError("Firecrawl API key is required")
-                secret_arn = store_firecrawl_api_key(
-                    user_id, bot_input.id, tool.firecrawl_config.api_key
-                )
-                # Store ARN in tool configuration
-                tool_model.firecrawl_config = FirecrawlConfigModel(
-                    secret_arn=secret_arn, max_results=tool.firecrawl_config.max_results
-                )
+                if tool.search_engine == "firecrawl":
+                    if (
+                        not tool.firecrawl_config
+                        or not tool.firecrawl_config.api_key
+                        or tool.firecrawl_config.api_key.strip() == ""
+                    ):
+                        raise ValueError("Firecrawl API key is required")
+                    secret_arn = store_firecrawl_api_key(
+                        user_id, bot_input.id, tool.firecrawl_config.api_key
+                    )
+                    # Store ARN in tool configuration
+                    tool_model.firecrawl_config = FirecrawlConfigModel(
+                        secret_arn=secret_arn,
+                        max_results=tool.firecrawl_config.max_results,
+                    )
             else:
                 tool_model = AgentToolModel(
+                    tool_type="plain",
                     name=tool.name,
                     description=tool.description,
                 )
@@ -276,6 +280,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             tools=[
                 (
                     InternetAgentTool(
+                        tool_type=tool.tool_type,
                         name=tool.name,
                         description=tool.description,
                         search_engine=tool.search_engine,
@@ -290,15 +295,21 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                                     and tool.firecrawl_config.secret_arn
                                     else None
                                 ),
-                                max_results=int(tool.firecrawl_config.max_results),
+                                max_results=(
+                                    int(tool.firecrawl_config.max_results)
+                                    if hasattr(tool, "firecrawl_config")
+                                    and tool.firecrawl_config
+                                    else 5  # デフォルト値
+                                ),
                             )
                             if hasattr(tool, "firecrawl_config")
                             and tool.firecrawl_config
                             else None
                         ),
                     )
-                    if isinstance(tool, InternetToolAgentModel)
+                    if isinstance(tool, InternetAgentToolModel)
                     else AgentTool(
+                        tool_type="plain",
                         name=tool.name,
                         description=tool.description,
                     )
@@ -391,31 +402,35 @@ def modify_owned_bot(
     tools = []
     if modify_input.agent:
         for tool in modify_input.agent.tools:
-            tool_model: AgentToolModel | InternetToolAgentModel
+            tool_model: AgentToolModel | InternetAgentToolModel
 
             # Handle Firecrawl configuration
-            if (
-                tool.name == "internet_search"
-                and tool.search_engine == "firecrawl"
-                and tool.firecrawl_config
-            ):
-                tool_model = InternetToolAgentModel(
+            if tool.tool_type == "internet":
+                tool_model = InternetAgentToolModel(
+                    tool_type="internet",
                     name=tool.name,
                     description=tool.description,
                     search_engine=tool.search_engine,
                 )
                 # Store API key in Secrets Manager
-                if tool.firecrawl_config.api_key is None:
-                    raise ValueError("Firecrawl API key is required")
-                secret_arn = store_firecrawl_api_key(
-                    user_id, bot_id, tool.firecrawl_config.api_key
-                )
-                # Store ARN in tool configuration
-                tool_model.firecrawl_config = FirecrawlConfigModel(
-                    secret_arn=secret_arn, max_results=tool.firecrawl_config.max_results
-                )
+                if tool.search_engine == "firecrawl":
+                    if (
+                        not tool.firecrawl_config
+                        or not tool.firecrawl_config.api_key
+                        or tool.firecrawl_config.api_key.strip() == ""
+                    ):
+                        raise ValueError("Firecrawl API key is required")
+                    secret_arn = store_firecrawl_api_key(
+                        user_id, bot_id, tool.firecrawl_config.api_key
+                    )
+                    # Store ARN in tool configuration
+                    tool_model.firecrawl_config = FirecrawlConfigModel(
+                        secret_arn=secret_arn,
+                        max_results=tool.firecrawl_config.max_results,
+                    )
             else:
                 tool_model = AgentToolModel(
+                    tool_type="plain",
                     name=tool.name,
                     description=tool.description,
                 )
@@ -504,6 +519,7 @@ def modify_owned_bot(
             tools=[
                 (
                     InternetAgentTool(
+                        tool_type=tool.tool_type,
                         name=tool.name,
                         description=tool.description,
                         search_engine=tool.search_engine,
@@ -518,15 +534,21 @@ def modify_owned_bot(
                                     and tool.firecrawl_config.secret_arn
                                     else None
                                 ),
-                                max_results=int(tool.firecrawl_config.max_results),
+                                max_results=(
+                                    int(tool.firecrawl_config.max_results)
+                                    if hasattr(tool, "firecrawl_config")
+                                    and tool.firecrawl_config
+                                    else 5  # デフォルト値
+                                ),
                             )
                             if hasattr(tool, "firecrawl_config")
                             and tool.firecrawl_config
                             else None
                         ),
                     )
-                    if isinstance(tool, InternetToolAgentModel)
+                    if isinstance(tool, InternetAgentToolModel)
                     else AgentTool(
+                        tool_type="plain",
                         name=tool.name,
                         description=tool.description,
                     )

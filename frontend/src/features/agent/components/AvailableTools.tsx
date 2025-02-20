@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { AgentTool, FirecrawlConfig, SearchEngine } from '../types';
+import { AgentTool, FirecrawlConfig, InternetAgentTool, SearchEngine, ToolType } from '../types';
+import { isInternetTool } from '../utils/typeGuards';
 import Toggle from '../../../components/Toggle';
 import { Dispatch, useCallback, useState, useEffect } from 'react';
 import { formatDescription } from '../functions/formatDescription';
@@ -31,6 +32,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
             ? [...preTools.filter(({ name }) => name != tool.name)]
             : [...preTools, { 
                 ...tool, 
+                toolType: "internet" as ToolType,
                 name: 'internet_search', 
                 searchEngine: searchEngine || 'duckduckgo' 
               } as AgentTool];
@@ -54,7 +56,13 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
       setTools((prevTools) =>
         prevTools.map((tool) => {
           if (tool.name === 'internet_search') {
-            return { ...tool, firecrawlConfig: config };
+            return {
+              ...tool,
+              toolType: "internet" as ToolType,
+              name: 'internet_search',
+              searchEngine: isInternetTool(tool) ? tool.searchEngine : 'duckduckgo',
+              firecrawlConfig: config
+            } as AgentTool;
           }
           return tool;
         })
@@ -79,10 +87,11 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
           tool.name === 'internet_search'
             ? {
                 ...tool,
+                toolType: "internet" as ToolType,
                 name: 'internet_search',
-                searchEngine: newEngine,
+                searchEngine: newEngine as SearchEngine,
                 // Reset firecrawlConfig when switching away from firecrawl
-                firecrawlConfig: newEngine === 'firecrawl' ? tool.firecrawlConfig : undefined
+                firecrawlConfig: newEngine === 'firecrawl' && isInternetTool(tool) ? tool.firecrawlConfig : undefined
               }
             : tool
         );
@@ -95,7 +104,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
   // Initialize searchEngine from existing tool if present
   useEffect(() => {
     const internetSearchTool = tools.find((t) => t.name === 'internet_search');
-    if (internetSearchTool?.searchEngine) {
+      if (internetSearchTool && isInternetTool(internetSearchTool) && internetSearchTool.searchEngine) {
       setSearchEngine(internetSearchTool.searchEngine);
     }
   }, [tools]);
@@ -160,7 +169,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                   {searchEngine === 'firecrawl' && (
                     <FirecrawlConfigComponent
                       config={
-                        tools.find((t) => t.name === 'internet_search')?.firecrawlConfig || {
+                        tools.find((t): t is InternetAgentTool => t.name === 'internet_search' && isInternetTool(t))?.firecrawlConfig || {
                           apiKey: '',
                           secretArn: undefined,
                           maxResults: 10,

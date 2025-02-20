@@ -7,7 +7,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
-from app.repositories.models.custom_bot import InternetToolAgentModel
+from app.repositories.models.custom_bot import InternetAgentToolModel
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
@@ -115,9 +115,10 @@ def get_private_bot(request: Request, bot_id: str):
 
     tools: list[AgentTool | InternetAgentTool] = []
     for tool in bot.agent.tools:
-        if isinstance(tool, InternetToolAgentModel):
+        if isinstance(tool, InternetAgentToolModel):
             tools.append(
                 InternetAgentTool(
+                    tool_type=tool.tool_type,
                     name=tool.name,
                     description=tool.description,
                     search_engine=tool.search_engine,
@@ -145,6 +146,7 @@ def get_private_bot(request: Request, bot_id: str):
         else:
             tools.append(
                 AgentTool(
+                    tool_type="plain",
                     name=tool.name,
                     description=tool.description,
                 )
@@ -238,4 +240,7 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
-    return [AgentTool(name=tool.name, description=tool.description) for tool in tools]
+    return [
+        AgentTool(tool_type="plain", name=tool.name, description=tool.description)
+        for tool in tools
+    ]

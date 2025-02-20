@@ -35,6 +35,7 @@ import Toggle from '../../../components/Toggle';
 import RadioButton from '../../../components/RadioButton';
 import { useAgent } from '../../../features/agent/hooks/useAgent';
 import { AgentTool } from '../../../features/agent/types';
+import { isInternetTool } from '../../../features/agent/utils/typeGuards';
 import { AvailableTools } from '../../../features/agent/components/AvailableTools';
 import {
   DEFAULT_FIXED_CHUNK_PARAMS,
@@ -1135,15 +1136,26 @@ const BotKbEditPage: React.FC = () => {
     setIsLoading(true);
     registerBot({
       agent: {
-        tools: tools.map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          search_engine: tool.searchEngine,
-          firecrawl_config: tool.firecrawlConfig ? {
-            api_key: tool.firecrawlConfig.apiKey,
-            max_results: tool.firecrawlConfig.maxResults
-          } : undefined
-        })),
+          tools: tools.map((tool) => {
+            const baseTool = {
+              tool_type: tool.toolType,
+              name: tool.name,
+              description: tool.description,
+            };
+            
+            if (isInternetTool(tool)) {
+              return {
+                ...baseTool,
+                search_engine: tool.searchEngine,
+                firecrawl_config: tool.firecrawlConfig ? {
+                  api_key: tool.firecrawlConfig.apiKey,
+                  max_results: tool.firecrawlConfig.maxResults
+                } : undefined
+              };
+            }
+            
+            return baseTool;
+          }),
       },
       id: botId,
       title,
@@ -1267,15 +1279,26 @@ const BotKbEditPage: React.FC = () => {
       setIsLoading(true);
       updateBot(botId, {
         agent: {
-          tools: tools.map((tool) => ({
-            name: tool.name,
-            description: tool.description,
-            search_engine: tool.searchEngine,
-            firecrawl_config: tool.firecrawlConfig ? {
-              api_key: tool.firecrawlConfig.apiKey,
-              max_results: tool.firecrawlConfig.maxResults
-            } : undefined
-          })),
+          tools: tools.map((tool) => {
+            const baseTool = {
+              tool_type: tool.toolType,
+              name: tool.name,
+              description: tool.description,
+            };
+            
+            if (isInternetTool(tool)) {
+              return {
+                ...baseTool,
+                search_engine: tool.searchEngine,
+                firecrawl_config: tool.firecrawlConfig ? {
+                  api_key: tool.firecrawlConfig.apiKey,
+                  max_results: tool.firecrawlConfig.maxResults
+                } : undefined
+              };
+            }
+            
+            return baseTool;
+          }),
         },
         title,
         description,
