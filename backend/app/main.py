@@ -17,6 +17,7 @@ from app.routes.published_api import router as published_api_router
 from app.routes.group import router as group_router
 from app.user import User
 from app.utils import is_running_on_lambda
+from app.websocket_local import register_websocket_routes
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -137,3 +138,7 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
     response = await call_next(request)  # type: ignore
 
     return response
+
+
+# Register WebSocket routes when not running on Lambda
+register_websocket_routes(app)

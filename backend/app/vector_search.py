@@ -122,7 +122,7 @@ def _bedrock_knowledge_base_search(
                     ]
                 }
 
-        logger.debug(
+        logger.info(
             "Executing Knowledge Base Search:\n"
             "- Bot ID: %s\n"
             "- Bedrock_knowledge_base: %s\n"

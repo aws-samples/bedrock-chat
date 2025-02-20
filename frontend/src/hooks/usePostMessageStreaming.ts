@@ -60,99 +60,108 @@ const usePostMessageStreaming = create<{
               )
             ) {
               return;
-            } else if (message.data === 'Session started.') {
-              chunkedPayloads.forEach((chunk, index) => {
-                ws.send(
-                  JSON.stringify({
-                    step: PostStreamingStatus.BODY,
-                    index,
-                    part: chunk,
-                  })
-                );
-              });
-              return;
-            } else if (message.data === 'Message part received.') {
-              receivedCount++;
-              if (receivedCount === chunkedPayloads.length) {
-                ws.send(
-                  JSON.stringify({
-                    step: PostStreamingStatus.END,
-                  })
-                );
-              }
-              return;
-            }
-
+            } 
+            
             const data = JSON.parse(message.data);
 
-            if (data.status) {
-              switch (data.status) {
-                case PostStreamingStatus.AGENT_THINKING:
-                  if (completion.length > 0) {
-                    dispatch('');
-                    thinkingDispatch({
-                      type: 'thought',
-                      thought: completion,
-                    });
-                    completion = '';
-                  }
-                  Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
-                    const typedToolInfo = toolInfo as {
-                      name: string;
-                      input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-                    };
-                    thinkingDispatch({
-                      type: 'go-on',
-                      toolUseId: toolUseId,
-                      name: typedToolInfo.name,
-                      input: typedToolInfo.input,
-                    });
-                  });
-                  break;
-                case PostStreamingStatus.AGENT_TOOL_RESULT:
-                  thinkingDispatch({
-                    type: 'tool-result',
-                    toolUseId: data.result.toolUseId,
-                    status: data.result.status,
-                  });
-                  break;
-                case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
-                  thinkingDispatch({
-                    type: 'related-document',
-                    toolUseId: data.result.toolUseId,
-                    relatedDocument: data.result.relatedDocument,
-                  });
-                  break;
-                case PostStreamingStatus.STREAMING:
-                  if (data.completion || data.completion === '') {
-                    completion += data.completion;
-                    dispatch(completion);
-                  }
-                  break;
-                case PostStreamingStatus.STREAMING_END:
-                  thinkingDispatch({
-                    type: 'goodbye',
-                  });
-                  ws.close();
-                  break;
-                case PostStreamingStatus.ERROR:
-                  ws.close();
-                  console.error(data);
-                  set({
-                    errorDetail:
-                      data.reason || i18next.t('error.predict.invalidResponse'),
-                  });
-                  throw new Error(
-                    data.reason || i18next.t('error.predict.invalidResponse')
+            // Add specific validation before processing
+            if (!data || typeof data !== 'object') {
+              console.error(message.data);
+              throw new Error(`Invalid message format: ${message.data}`);
+            }
+
+            if (typeof data.status === 'undefined') {
+              console.error(`${JSON.stringify(data)}`);
+              throw new Error(`Missing status in message: ${JSON.stringify(data)}`);
+            }
+
+            switch (data.status) {
+              case PostStreamingStatus.CONNECTED:
+                // Session started - send message parts
+                chunkedPayloads.forEach((chunk, index) => {
+                  ws.send(
+                    JSON.stringify({
+                      step: PostStreamingStatus.BODY,
+                      index,
+                      part: chunk,
+                    })
                   );
-                default:
+                });
+                break;
+                
+              case PostStreamingStatus.SUCCESS:
+                // Message part received
+                receivedCount++;
+                if (receivedCount === chunkedPayloads.length) {
+                  ws.send(
+                    JSON.stringify({
+                      step: PostStreamingStatus.END,
+                    })
+                  );
+                }
+                break;
+        
+              case PostStreamingStatus.AGENT_THINKING:
+                if (completion.length > 0) {
                   dispatch('');
-                  break;
-              }
-            } else {
-              ws.close();
-              console.error(data);
-              throw new Error(i18next.t('error.predict.invalidResponse'));
+                  thinkingDispatch({
+                    type: 'thought',
+                    thought: completion,
+                  });
+                  completion = '';
+                }
+                Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
+                  const typedToolInfo = toolInfo as {
+                    name: string;
+                    input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+                  };
+                  thinkingDispatch({
+                    type: 'go-on',
+                    toolUseId: toolUseId,
+                    name: typedToolInfo.name,
+                    input: typedToolInfo.input,
+                  });
+                });
+                break;
+              case PostStreamingStatus.AGENT_TOOL_RESULT:
+                thinkingDispatch({
+                  type: 'tool-result',
+                  toolUseId: data.result.toolUseId,
+                  status: data.result.status,
+                });
+                break;
+              case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
+                thinkingDispatch({
+                  type: 'related-document',
+                  toolUseId: data.result.toolUseId,
+                  relatedDocument: data.result.relatedDocument,
+                });
+                break;
+              case PostStreamingStatus.STREAMING:
+                if (data.completion || data.completion === '') {
+                  completion += data.completion;
+                  dispatch(completion);
+                }
+                break;
+              case PostStreamingStatus.STREAMING_END:
+                thinkingDispatch({
+                  type: 'goodbye',
+                });
+                ws.close();
+                break;
+              case PostStreamingStatus.ERROR:
+                ws.close();
+                console.error(data);
+                set({
+                  errorDetail:
+                    data.reason || i18next.t('error.predict.invalidResponse'),
+                });
+                throw new Error(
+                  data.reason || i18next.t('error.predict.invalidResponse')
+                );
+              default:
+                dispatch('');
+                break;
             }
           } catch (e) {
             console.error(e);
