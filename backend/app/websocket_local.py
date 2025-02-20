@@ -53,20 +53,27 @@ class InMemoryMessageStore(MessageStore):
             raise ValueError(f"No session found for connection {connection_id}")
             
         if session['expire'] < datetime.now().timestamp():
-            logger.warning(f"Session expired for connection {connection_id}")
-            del self.sessions[connection_id]
+            self._cleanup_connection(connection_id)
             raise ValueError(f"Session expired for connection {connection_id}")
             
-        logger.info(f"Retrieved user_id {session['user_id']} for connection {connection_id}")
         return session['user_id']
-
+        
     def get_message_parts(self, connection_id: str) -> list[str]:
         parts = self.messages.get(connection_id, [])
         if not parts:
             logger.warning(f"No message parts found for connection {connection_id}")
         else:
             logger.info(f"Retrieved {len(parts)} message parts for {connection_id}")
+
+        # Cleanup after successful END processing
+        self._cleanup_connection(connection_id)
         return parts
+
+    def _cleanup_connection(self, connection_id: str) -> None:
+        """Clean up both session and messages for a connection"""
+        logger.info(f"Cleaning up connection data for {connection_id}")
+        self.sessions.pop(connection_id, None)
+        self.messages.pop(connection_id, None)
 
 
 class FastAPINotificationSender(NotificationSender):
