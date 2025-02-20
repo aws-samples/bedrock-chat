@@ -451,7 +451,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             else DEFAULT_GENERATION_CONFIG
         ),
         agent=(
-            AgentModel(**item["AgentData"])
+            AgentModel.model_validate(item["AgentData"])
             if "AgentData" in item
             else AgentModel(tools=[])
         ),
@@ -533,7 +533,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             else DEFAULT_GENERATION_CONFIG
         ),
         agent=(
-            AgentModel(**item["AgentData"])
+            AgentModel.model_validate(item["AgentData"])
             if "AgentData" in item
             else AgentModel(tools=[])
         ),
