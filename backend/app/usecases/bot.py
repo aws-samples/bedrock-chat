@@ -27,7 +27,8 @@ from app.repositories.custom_bot import (
     update_bot,
     update_bot_last_used_time,
     update_bot_pin_status,
-    find_all_bots_by_group_id
+    find_all_bots_by_group_id,
+    fetch_bots_by_group_id_and_type,
 )
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
@@ -587,6 +588,22 @@ def fetch_all_bots_by_user_id(
                     is_public=True,
                     sync_status=bot.sync_status,
                     has_bedrock_knowledge_base=bot.has_bedrock_knowledge_base(),
+                    version=(
+                        None if "Version" not in item else item["Version"]
+                    ),
+                    group_id=(
+                        None if "GroupId" not in item else item["GroupId"]
+                    ),
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else None
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    )
                 )
             except RecordNotFoundError:
                 # Original bot is removed
@@ -605,6 +622,22 @@ def fetch_all_bots_by_user_id(
                     is_public=False,
                     sync_status="ORIGINAL_NOT_FOUND",
                     has_bedrock_knowledge_base=False,
+                    version=(
+                        None if "Version" not in item else item["Version"]
+                    ),
+                    group_id=(
+                        None if "GroupId" not in item else item["GroupId"]
+                    ),
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else None
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    )
                 )
 
             if is_original_available and (
@@ -660,12 +693,28 @@ def fetch_all_bots_by_user_id(
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
+                    version=(
+                        None if "Version" not in item else item["Version"]
+                    ),
+                    group_id=(
+                        None if "GroupId" not in item else item["GroupId"]
+                    ),
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else None
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    )
                 )
             )
 
     return bots
 
-def fetch_all_bots_from_groups(user_id: str) -> list[BotMetaOutput]:
+def fetch_all_bots_from_groups(user_id: str) -> list[BotMeta]:
 
     logger.info(f"Find all bots from groups. user_id: {user_id}")
     groupList = fetch_all_groups_by_user_id(user_id)
@@ -678,24 +727,7 @@ def fetch_all_bots_from_groups(user_id: str) -> list[BotMetaOutput]:
         groupId = group.group_id
         bots = find_all_bots_by_group_id(groupId)
         assistantList.extend(bots)
-
-    bot_metas = []
-    for bot in assistantList:
-        bot_metas.append(
-            BotMetaOutput(
-                id=bot.id,
-                title=bot.title,
-                create_time=bot.create_time,
-                last_used_time=bot.last_used_time,
-                is_pinned=bot.is_pinned,
-                owned=bot.owned,
-                available=bot.available,
-                description=bot.description,
-                is_public=bot.is_public,
-                sync_status=bot.sync_status,
-            )
-        )
-    return bot_metas
+    return assistantList
 
 
 def fetch_all_bots(
@@ -703,6 +735,7 @@ def fetch_all_bots(
     limit: int | None = None,
     pinned: bool = False,
     kind: Literal["private", "mixed", "groups"] = "private",
+    group_id: str | None = None,
 ) -> list[BotMetaOutput]:
     """Fetch all bots.
     The order is descending by `last_used_time`.
@@ -714,7 +747,10 @@ def fetch_all_bots(
         - Cannot specify both `pinned` and `limit`.
     """
     bots = []
-    if kind == "private":
+    if group_id:
+        # get public, available, learning assistants
+        bots = fetch_bots_by_group_id_and_type(user_id, group_id)
+    elif kind == "private":
         bots = find_private_bots_by_user_id(user_id, limit=limit)
     elif kind == "mixed":
         bots = fetch_all_bots_by_user_id(user_id, limit=limit, only_pinned=pinned)
@@ -737,6 +773,18 @@ def fetch_all_bots(
                 description=bot.description,
                 is_public=bot.is_public,
                 sync_status=bot.sync_status,
+                version=bot.version or None,
+                group_id=bot.group_id or None,
+                assistant_config=(
+                    AssistantConfig(**bot.assistant_config.model_dump())
+                    if bot.assistant_config
+                    else None
+                ),
+                creator_config=(
+                    CreatorConfig(**bot.creator_config.model_dump())
+                    if bot.creator_config
+                    else None
+                ),
             )
         )
     return bot_metas

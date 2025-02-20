@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BotSyncStatus, RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
+import useLocalStorage from './useLocalStorage';
 import { produce } from 'immer';
 import { BASE_REFRESH_INTERVAL } from '../constants';
 
@@ -44,9 +45,15 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
       : undefined
   );
 
+  const [groupId] = useLocalStorage(
+    'groupId',
+    // default value for testing. Will need to change 
+    '353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-15'
+  );
+
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
-    kind: 'mixed',
-    pinned: true,
+    // getting the groupId from localstorage
+    group_id: groupId,
   });
 
   const { data: recentlyUsedBots, mutate: mutateRecentlyUsedBots } = api.bots({
@@ -57,9 +64,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
   return {
     myBots,
     starredBots: starredBots?.filter((bot) => bot.available),
-    recentlyUsedUnsterredBots: recentlyUsedBots?.filter(
-      (bot) => !bot.isPinned && bot.available
-    ),
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getMyBot: async (botId: string) => {
       return (await api.getOnceMyBot(botId)).data;

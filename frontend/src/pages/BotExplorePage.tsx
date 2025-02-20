@@ -30,7 +30,7 @@ import { TooltipDirection } from '../constants';
 const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAllowCreatingBot, isAllowApiSettings } = useUser();
+  const { isAllowApiSettings } = useUser();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
@@ -140,7 +140,6 @@ const BotExplorePage: React.FC = () => {
 
               <Button
                 className="text-sm"
-                disabled={!isAllowCreatingBot}
                 outlined
                 icon={<PiPlus />}
                 onClick={onClickNewBot}>

@@ -188,6 +188,9 @@ export type GetBotsRequest =
     }
   | {
     kind: 'groups';
+  }
+  | {
+    group_id: string;
   };
 
 export type GetBotsResponse = BotListItem[];

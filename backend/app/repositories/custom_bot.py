@@ -354,6 +354,19 @@ def update_guardrails_params(
     return response
 
 
+def fetch_bots_by_group_id_and_type(user_id: str, group_id: str) -> list[BotMeta]:
+    """Find all bots that belong to the group_id
+       That are also public and type learning_assistant.
+    """
+    logger.info(f"Finding bots by group and type for user: {user_id}")
+    bots = find_all_bots_by_group_id(group_id)
+    filtered_bots = []
+    for item in bots:
+        if item.is_public and item.assistant_config and item.assistant_config.assistant_type == "learning_assistant":
+            filtered_bots.append(item)
+    return filtered_bots
+
+
 def find_private_bots_by_user_id(
     user_id: str, limit: int | None = None
 ) -> list[BotMeta]:
@@ -389,6 +402,22 @@ def find_private_bots_by_user_id(
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
             ),
+            version=(
+                None if "Version" not in item else item["Version"]
+            ),
+            group_id=(
+                None if "GroupId" not in item else item["GroupId"]
+            ),
+            assistant_config=(
+                AssistantConfigModel(**item["AssistantConfig"])
+                if "AssistantConfig" in item
+                else None
+            ),
+            creator_config=(
+                CreatorConfigModel(**item["CreatorConfig"])
+                if "CreatorConfig" in item
+                else None
+            )
         )
         for item in response["Items"]
     ]
@@ -414,6 +443,22 @@ def find_private_bots_by_user_id(
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
+                    version=(
+                        None if "Version" not in item else item["Version"]
+                    ),
+                    group_id=(
+                        None if "GroupId" not in item else item["GroupId"]
+                    ),
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else None
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    )
                 )
                 for item in response["Items"]
             ]
@@ -558,6 +603,22 @@ def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
             ),
+            version=(
+                None if "Version" not in item else item["Version"]
+            ),
+            group_id=(
+                None if "GroupId" not in item else item["GroupId"]
+            ),
+            assistant_config=(
+                AssistantConfigModel(**item["AssistantConfig"])
+                if "AssistantConfig" in item
+                else None
+            ),
+            creator_config=(
+                CreatorConfigModel(**item["CreatorConfig"])
+                if "CreatorConfig" in item
+                else None
+            )
         )
         for item in response["Items"]
     ]

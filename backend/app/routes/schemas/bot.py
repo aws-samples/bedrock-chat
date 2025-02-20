@@ -305,6 +305,13 @@ class BotMetaOutput(BaseSchema):
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
     sync_status: type_sync_status
+    version: str | None
+    # passing all the fields back
+    group_id: str | None
+    assistant_config: AssistantConfig | None
+    creator_config: CreatorConfig | None
+    
+
 
 
 class BotSummaryOutput(BaseSchema):
@@ -336,8 +343,8 @@ class BotPresignedUrlOutput(BaseSchema):
 
 class AssistantConfig(BaseSchema):
     # api access object
-    assistantType: str
-    assistantTopics: str
+    assistant_type: str
+    assistant_topics: str
 
 class CreatorConfig(BaseSchema):
     # api access object

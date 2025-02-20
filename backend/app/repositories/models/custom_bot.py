@@ -75,8 +75,8 @@ class ConversationQuickStarterModel(BaseModel):
 
 class AssistantConfigModel(BaseModel):
     # database access object
-    assistantType: str
-    assistantTopics: str
+    assistant_type: str
+    assistant_topics: str
 
 class CreatorConfigModel(BaseModel):
     # database access object
@@ -163,6 +163,11 @@ class BotMeta(BaseModel):
     available: bool
     sync_status: type_sync_status
     has_bedrock_knowledge_base: bool
+    version: str | None
+    group_id: str | None
+    assistant_config: AssistantConfigModel | None
+    creator_config: CreatorConfigModel | None
+    
 
 
 class BotMetaWithStackInfo(BotMeta):

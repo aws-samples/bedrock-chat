@@ -88,6 +88,7 @@ def get_all_bots(
     kind: Literal["private", "mixed", "groups"] = "private",
     pinned: bool = False,
     limit: int | None = None,
+    group_id: str | None = None,
 ):
     """Get all bots. The order is descending by `last_used_time`.
     - If `kind` is `private`, only private bots will be returned.
@@ -100,7 +101,7 @@ def get_all_bots(
     """
     current_user: User = request.state.current_user
 
-    bots = fetch_all_bots(current_user.id, limit, pinned, kind)
+    bots = fetch_all_bots(current_user.id, limit, pinned, kind, group_id)
     return bots
 
 
