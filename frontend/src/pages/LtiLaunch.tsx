@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate} from 'react-router-dom';
 import { getCurrentUser} from 'aws-amplify/auth';
 import {signOut, signIn, confirmSignIn} from 'aws-amplify/auth';
@@ -43,11 +43,13 @@ const LtiLaunch: React.FC = () => {
   // On succesful authetnication, we will navigate to the main page. 
 
 
-
   // Run this effect only once when the component is mounted
+  const alreadyRanOnce = useRef(false);
   useEffect(() => {
     const setInitialPageState = async (_username: string) => {
         setUsername(_username);
+        if (alreadyRanOnce.current) return;
+        alreadyRanOnce.current = true;
 
         // LTI session info is passed in as query params. Extract and save state. 
         const queryParams = new URLSearchParams(location.search);
@@ -79,7 +81,7 @@ const LtiLaunch: React.FC = () => {
         setInitialPageState('');
       });
 
-  }, [location]);
+  }, []);
 
 
   const goHome = () => {
@@ -93,7 +95,6 @@ const LtiLaunch: React.FC = () => {
       if (logoutUser === true) {
         await signOut();
       }
-      console.log(`login with *${ltiSession.email}*`);
 
       const {nextStep} = await signIn({
         username: ltiSession.email,
@@ -102,8 +103,7 @@ const LtiLaunch: React.FC = () => {
         }
       });
       if (nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE') {
-        const user = await confirmSignIn({challengeResponse: 'opensesame'});
-        console.log('Confirm response', user);
+        await confirmSignIn({challengeResponse: 'opensesame'});
         goHome();
       } else {
         setPageState(PageState.ERROR);
@@ -115,6 +115,26 @@ const LtiLaunch: React.FC = () => {
     }
   }
 
+  // For REDIRECTING state, we will navigate to the main page after 1 second
+  // For SIGNING_IN state, we will call startSignIn after 1 second
+  useEffect(() => {
+    let action = null;
+    if (pageState === PageState.REDIRECTING) {
+      action = goHome;
+    } else if (pageState === PageState.LOGGING_IN) {
+      action = () => startSignIn(false);
+    }
+    if (action === null) return;
+
+    // schedule a call to nextStep.action after few seconds 
+    console.log(`Run ${action} Take next step after 3 second`);
+    const timer = setTimeout(() => {
+      action();
+    }, 3000);
+    return () => clearTimeout(timer);  // cancel if component unmounts
+  }, [pageState, navigate]);
+
+
   //
   // Render logic for the component 
   // 
@@ -124,21 +144,12 @@ const LtiLaunch: React.FC = () => {
     [PageState.LOADING]: { message: "Loading state. This screen should only be visible for 1-2 seconds.", action: null },
     [PageState.ERROR]: { message: "Something went wrong !!", action: null },
     [PageState.CONFIRM]: { message: `You are already logged in Qikr chat with ${username}. This request will switch your session to user ${ltiSession?.email}. Do you want to proceed ?`, action: () => startSignIn(true) },
-    [PageState.LOGGING_IN]: { message: `Logging in as ${ltiSession?.email}` , action: () => startSignIn(false) },
-    [PageState.REDIRECTING]: { message: "Logged in. Redirecting to the main app.", action: goHome }
+    [PageState.LOGGING_IN]: { message: `Logging in as ${ltiSession?.email}` , action: null },
+    [PageState.REDIRECTING]: { message: `Logged in as ${ltiSession?.email}. Redirecting to the main app.`, action: null}
   };
   const nextStep = NextStep[pageState];
+  console.log('pageState', pageState); 
 
-  /*
-  if (pageState === PageState.REDIRECTING) {
-    console.log('Redirecting to home page');
-    goHome();
-  }
-  if (pageState === PageState.LOGGING_IN) {
-    console.log('Proceeding to log in directly');
-    startSignIn(false);
-  }
-  */
 
   return (<div> 
     <div> {nextStep.message} </div> 
