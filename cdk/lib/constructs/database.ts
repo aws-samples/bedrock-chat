@@ -17,6 +17,7 @@ export class Database extends Construct {
   readonly table: Table;
   readonly tableAccessRole: Role;
   readonly websocketSessionTable: Table;
+  readonly ltiDataTable: Table;
 
   constructor(scope: Construct, id: string, props?: DatabaseProps) {
     super(scope, id);
@@ -67,12 +68,27 @@ export class Database extends Construct {
       timeToLiveAttribute: "expire",
     });
 
+    // Create the lti_data table
+    const ltiDataTable = new Table(this, "LtiDataTable", {
+      partitionKey: { name: "lti_id", type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    // Grant access to the lti_data table in the existing tableAccessRole
+    ltiDataTable.grantReadData(tableAccessRole);
+
     this.table = table;
     this.tableAccessRole = tableAccessRole;
     this.websocketSessionTable = websocketSessionTable;
+    this.ltiDataTable = ltiDataTable;
 
     new CfnOutput(this, "ConversationTableName", {
       value: table.tableName,
+    });
+
+    new CfnOutput(this, "LtiDataTableName", {
+      value: ltiDataTable.tableName,
     });
   }
 }

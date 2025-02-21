@@ -22,6 +22,7 @@ interface ApiPublishmentStackProps extends StackProps {
   readonly deploymentStage?: string;
   readonly largeMessageBucketName: string;
   readonly corsOptions?: apigateway.CorsOptions;
+  readonly userPoolId: string; 
 }
 
 export class ApiPublishmentStack extends Stack {
@@ -96,6 +97,7 @@ export class ApiPublishmentStack extends Stack {
         BEDROCK_REGION: props.bedrockRegion,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucketName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
+        USER_POOL_ID: props.userPoolId,
       },
       role: handlerRole,
       logRetention: logs.RetentionDays.THREE_MONTHS,
