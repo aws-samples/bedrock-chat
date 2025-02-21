@@ -22,8 +22,6 @@ const useConversationApi = () => {
     getConversations: () => {
       return http.get<ConversationMeta[]>('conversations', {
         keepPreviousData: true,
-        refreshInterval: 0,  // Disable auto refresh
-        revalidateOnFocus: false  // Disable refresh on window focus
       });
     },
     getConversation: (conversationId?: string) => {
