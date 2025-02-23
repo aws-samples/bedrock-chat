@@ -16,6 +16,9 @@ export type BotMeta = {
   isPinned: boolean;
   owned: boolean;
   syncStatus: BotSyncStatus;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig | null;
+  groupId: string;
 };
 
 export type BotKnowledge = {
@@ -45,6 +48,7 @@ export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
 export type BotListItem = BotMeta & {
   available: boolean;
+
 };
 
 export type GenerationParams = {
@@ -116,6 +120,7 @@ export type RegisterBotRequest = {
   version: string;
   groupId: string;
   assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig | null;
 };
 
 export type AssistantConfig = {
@@ -124,8 +129,8 @@ export type AssistantConfig = {
 }
 
 export type CreatorConfig = {
-  user_id: string;
-  user_name: string;
+  userId: string;
+  userName: string;
 }
 
 export type RegisterBotResponse = BotDetails;

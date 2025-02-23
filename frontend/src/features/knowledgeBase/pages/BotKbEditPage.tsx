@@ -5,7 +5,7 @@ import Button from '../../../components/Button';
 import useBot from '../../../hooks/useBot';
 import useGroup from '../../../hooks/useGroup';
 import { AssistantGroupType } from '../../../@types/group';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { PiCaretLeft, PiNote, PiPlus, PiTrash } from 'react-icons/pi';
 import Textarea from '../../../components/Textarea';
 import DialogInstructionsSamples from '../../../components/DialogInstructionsSamples';
@@ -29,6 +29,8 @@ import {
   DEFAULT_MISTRAL_GENERATION_CONFIG,
   TooltipDirection,
   VERSION_02_17_25,
+  COURSE_ID_MAP,
+  ValidCourseId,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
@@ -83,10 +85,16 @@ const defaultGenerationConfig =
     ? DEFAULT_MISTRAL_GENERATION_CONFIG
     : DEFAULT_GENERATION_CONFIG;
 
+interface AssistantState {
+  assistantType: string; // Ensure this matches the actual data being passed
+}
+
 const BotKbEditPage: React.FC = () => {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
+  const location = useLocation();
+  const state = location.state as AssistantState | null;
   const { getMyBot, registerBot, updateBot } = useBot();
   const { getGroupList } = useGroup();
   const { availableTools } = useAgent();
@@ -95,7 +103,7 @@ const BotKbEditPage: React.FC = () => {
   const [groupOptionsList, setGroupOptionsList] = useState<AssistantGroupType[]>([]);
   const [groupId, setGroupId] = useState('');
   const [assistantTopics, setAssistantTopics] = useState('');
-  const [assistantType, setAssistantType] = useState('learning_assistant');
+  const [assistantType, setAssistantType] = useState('');
   const [isBasicEditView, setIsBasicEditView] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -355,8 +363,8 @@ const BotKbEditPage: React.FC = () => {
 			prompt: t('bot.samples.learningAssistant.prompt')
 		},
 		{
-			label: 'My Own Assistant',
-			value: 'my_own_assistant',
+			label: 'Custom Assistant',
+			value: 'custom_assistant',
 			description: 'Create an assistant by providing your custom instructions in the "Instructions" box',
 			prompt: ''
 		},
@@ -436,6 +444,22 @@ const BotKbEditPage: React.FC = () => {
     [webCrawlingFilters]
   );
 
+  function generatePrompt() {
+		const COURSE_NAME_PLACEHOLDER = t('bot.samples.placeholder.groupName')
+		const COURSE_TOPICS_PLACEHOLDER = t('bot.samples.placeholder.assistantTopics')
+		const RESPONSE_EXAMPLES_PLACEHOLDER = t('bot.samples.placeholder.examples')
+    
+    const courseId: ValidCourseId = groupId as ValidCourseId;
+    const courseName = COURSE_ID_MAP[courseId]
+
+		if (assistantType == 'learning_assistant') {
+			return instruction.replaceAll(COURSE_NAME_PLACEHOLDER, courseName)
+				.replaceAll(COURSE_TOPICS_PLACEHOLDER, assistantTopics)
+				.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, conversationQuickStarters.toString());
+		}
+		return instruction;
+	}
+
   const onClickAddIncludePattern = useCallback(() => {
     setWebCrawlingFilters(
       produce(webCrawlingFilters, (draft) => {
@@ -504,6 +528,12 @@ const BotKbEditPage: React.FC = () => {
           setGroupId(options[0].value);
         }
       })
+    if (isNewBot && state?.assistantType) {
+      const currType = state?.assistantType;
+      const prompt = assistantTypeOptions.find(option => option.value === currType)?.prompt;
+      setInstruction(prompt ?? '');
+      setAssistantType(state?.assistantType);
+    }
     if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
@@ -1199,9 +1229,10 @@ const BotKbEditPage: React.FC = () => {
         assistantType,
         assistantTopics,
       },
+      creatorConfig: null,
       title,
       description,
-      instruction,
+      instruction: generatePrompt(),
       generationParams: {
         maxTokens,
         temperature,

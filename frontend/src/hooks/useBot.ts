@@ -60,7 +60,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     kind: 'mixed',
     limit: 30,
   });
-
   return {
     myBots,
     starredBots: starredBots?.filter((bot) => bot.available),
@@ -82,6 +81,9 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
             isPublic: false,
             owned: true,
             syncStatus: 'QUEUED',
+            assistantConfig: params.assistantConfig,
+            creatorConfig: null,
+            groupId: params.groupId
           });
         }),
         {
@@ -99,6 +101,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
           if (draft) {
             draft[idx].title = params.title;
             draft[idx].description = params.description ?? '';
+            draft[idx].description = params.assistantConfig.assistantType;
           }
         }),
         {

@@ -8,3 +8,175 @@
     --amplify-components-button-primary-background-color
   ) !important;
 }
+
+.container-bot-explore {
+  display: flex;
+  width: 100%;
+  height: 50%;
+}
+
+.first-half-bot-explore {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: left; /* Center horizontally */
+}
+
+.first-half-bot-explore:last-child {
+  border-right: none;
+}
+
+.second-half-bot-explore {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: left; /* Center horizontally */
+}
+
+.second-half-bot-explore:last-child {
+  border-right: none;
+}
+
+.create-assistant-btn {
+  width: 85%;
+  height: 75%;
+}
+
+.create-assistant-btn-text-box {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  text-align: left;
+}
+
+.create-assistant-btn-title {
+  font-size: 20px;
+}
+
+.create-assistant-btn-description {
+  font-size: 10px;
+  font-weight: 300;
+  /* mt-1 overflow-hidden text-ellipsis text-[9px] dark:text-aws-font-color-dark */
+}
+
+.create-assistant-btn-logo {
+  width: 15%;
+  padding-right: 15px;
+}
+
+/* *************************************** */
+/* Styling for the Assistant List Items */
+/* *************************************** */
+.assistant-item-row {
+  width: 100%;
+  display: flex;                  /* flex: Enables Flexbox layout */
+  height: 100%;                    /* h-full: Makes the container take full height */
+  flex-grow: 1;                    /* grow: Allows the container to grow and fill available space */
+  background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
+  padding: 8px;                   /* p-2: Adds padding of 0.5rem (8px) */
+}
+
+.assistant-item-row-no-buttons-container {
+  display: flex;
+  width: 75%;
+  flex-grow: 1;                    /* grow: Allows the container to grow and fill available space */
+  background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
+  height: 100%;
+}
+
+.assistant-item-buttons-container {
+  width: 25%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.assistant-item-logo {
+  width: 50px;
+  max-height: 100%; /* Ensures the height scales properly */
+  object-fit: contain; /* Maintains aspect ratio within set size */
+  padding-right: 15px;
+}
+
+.assistant-item-title-and-description {
+  width: 33%;               /* w-full: Full width */
+  overflow: hidden;          /* Prevents overflow */
+  text-overflow: ellipsis;   /* Truncates text with "..." */
+  white-space: nowrap;       /* Ensures text stays on a single line */
+  font-size: 0.875rem;       /* text-sm: Equivalent to 14px */
+  font-weight: 600;          /* font-semibold: Semi-bold */
+}
+
+.assistant-item-attribute-no-buttons {
+  width: 66%;
+  display: flex;  
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
+.assistant-item-course {
+  width: 100px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assistant-item-canvas {
+  width: 75px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assistant-item-type-and-name {
+  width: 150px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* *************************************** */
+/* Styling for Table Column Names */
+/* *************************************** */
+
+.assistant-list-column-headers-row {
+  width: 100%;
+  display: flex;
+}
+.assistant-list-column-headers-row-title {
+  width: 33%;
+}
+.assistant-list-column-headers-row-attributes {
+  width: 42%;
+  display: flex;
+  font-size: 10px;
+  font-weight: 300;
+}
+.assistant-list-column-headers-row-buttons {
+  width: 25%;
+  display: flex;
+  font-size: 10px;
+  font-weight: 300;
+}
+
+.assistant-list-column-attribute-items {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.assistant-list-column-btn-items {
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.assistant-list-column-btn-sync-status {
+  min-width: 45%;
+}

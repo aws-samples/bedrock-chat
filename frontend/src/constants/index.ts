@@ -1,4 +1,6 @@
 import { GenerationParams } from '../@types/bot';
+import { AssistantType } from '../features/knowledgeBase/types';
+
 
 export const VERSION_02_17_25 = '02.17.25';
 
@@ -195,3 +197,46 @@ export const AVAILABLE_MODEL_KEYS = Object.entries(MODEL_REGISTRY)
 
 // Refresh Interval
 export const BASE_REFRESH_INTERVAL = 15000;
+
+export const COURSE_ID_MAP = {
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-9": "Algebra 1",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-10": "Chemistry",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-11": "US History",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-12": "Algebra 1",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-13": "Chemistry",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-14": "US History",
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-15": "Intro to Qikr"
+
+}
+
+export type ValidCourseId = keyof typeof COURSE_ID_MAP;
+
+export const LTI_DEPLOYMENT_ID_MAP = {
+  "353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f": "SDCC"
+}
+
+export type ValidLTIDeploymentId = keyof typeof LTI_DEPLOYMENT_ID_MAP;
+
+
+
+export const ASSISTANT_TYPE_MAP: {
+  label: string;
+  value: AssistantType;
+}[] = [
+  {
+    label: 'Learning Assistant',
+    value: 'learning_assistant',
+  },
+  {
+    label: 'Quiz Assistant',
+    value: 'quiz_assistant',
+  },
+  {
+    label: 'Lesson Plan Assistant',
+    value: 'lesson_plan_assistant',
+  },
+  {
+    label: 'Custom Assistant',
+    value: 'custom_assistant',
+  },
+];
