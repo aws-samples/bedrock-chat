@@ -118,7 +118,7 @@
 
 .assistant-item-title-and-description {
   width: 35%;
-  min-width: 300px;               /* w-full: Full width */
+  max-width: 300px;               /* w-full: Full width */
   overflow: hidden;          /* Prevents overflow */
   text-overflow: ellipsis;   /* Truncates text with "..." */
   white-space: nowrap;       /* Ensures text stays on a single line */
