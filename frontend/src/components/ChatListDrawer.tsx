@@ -39,6 +39,7 @@ import Toggle from '../components/Toggle.tsx';
 
 type Props = BaseProps & {
   isAdmin: boolean;
+  isAssistantCreator: boolean;
   conversations?: ConversationMeta[];
   starredBots?: BotListItem[];
   updateConversationTitle: (conversationId: string, title: string) => Promise<void>;
@@ -301,13 +302,13 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               onClick={onClickNewChat}
               labelComponent={t('button.newChat')}
             />
-            <DrawerItem
+            {props.isAssistantCreator && <DrawerItem
               isActive={false}
               icon={<PiCompass />}
               to="/bot/explore"
               labelComponent={getPageLabel('/bot/explore')}
               onClick={closeSamllDrawer}
-            />
+            />}
             {props.isAdmin && (
               <ExpandableDrawerGroup
                 label={t('app.adminConsoles')}

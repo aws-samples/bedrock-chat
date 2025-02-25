@@ -14,28 +14,17 @@ import useScroll from '../hooks/useScroll';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   PiArrowsCounterClockwise,
-  PiLink,
   PiPenNib,
-  PiPencilLine,
-  PiStar,
-  PiStarFill,
   PiWarningCircleFill,
 } from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import useSnackbar from '../hooks/useSnackbar';
-import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
-import ButtonPopover from '../components/PopoverMenu';
-import PopoverItem from '../components/PopoverItem';
 import { ActiveModels } from '../@types/bot';
 
-import { copyBotUrl } from '../utils/BotUtils';
 import { toCamelCase } from '../utils/StringUtils';
-import { produce } from 'immer';
-import ButtonIcon from '../components/ButtonIcon';
-import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
@@ -119,7 +108,6 @@ const ChatPage: React.FC = () => {
     data: bot,
     error: botError,
     isLoading: isLoadingBot,
-    mutate: mutateBot,
   } = useBotSummary(botId ?? undefined);
 
   const [pageTitle, setPageTitle] = useState('');
@@ -227,55 +215,6 @@ const ChatPage: React.FC = () => {
       scrollToTop();
     }
   }, [messages, scrollToBottom, scrollToTop]);
-
-  const { updateMyBotStarred, updateSharedBotStarred } = useBot();
-  const onClickBotEdit = useCallback(
-    (botId: string) => {
-      navigate(`/bot/edit/${botId}`);
-    },
-    [navigate]
-  );
-
-  const onClickStar = useCallback(() => {
-    if (!bot) {
-      return;
-    }
-    const isStarred = !bot.isPinned;
-    mutateBot(
-      produce(bot, (draft) => {
-        draft.isPinned = isStarred;
-      }),
-      {
-        revalidate: false,
-      }
-    );
-
-    try {
-      if (bot.owned) {
-        updateMyBotStarred(bot.id, isStarred);
-      } else {
-        updateSharedBotStarred(bot.id, isStarred);
-      }
-    } finally {
-      mutateBot();
-    }
-  }, [bot, mutateBot, updateMyBotStarred, updateSharedBotStarred]);
-
-  const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
-  const onClickCopyUrl = useCallback(
-    (botId: string) => {
-      copyBotUrl(botId);
-      setCopyLabel(t('bot.titleSubmenu.copiedLink'));
-      setTimeout(() => {
-        setCopyLabel(t('bot.titleSubmenu.copyLink'));
-      }, 3000);
-    },
-    [t]
-  );
-
-  const onClickSyncError = useCallback(() => {
-    navigate(`/bot/edit/${bot?.id}`);
-  }, [bot?.id, navigate]);
 
   const { disabledImageUpload } = useModel();
   const [dndMode, setDndMode] = useState(false);
@@ -447,48 +386,6 @@ const ChatPage: React.FC = () => {
               </div>
             </div>
 
-            {isAvailabilityBot && (
-              <div className="absolute -top-1 right-0 flex h-full items-center">
-                <div className="h-full bg-gradient-to-r from-transparent to-aws-paper-light dark:to-aws-paper-dark"></div>
-                <div className="flex items-center bg-aws-paper-light dark:bg-aws-paper-dark">
-                  {bot?.owned && (
-                    <StatusSyncBot
-                      syncStatus={bot.syncStatus}
-                      onClickError={onClickSyncError}
-                    />
-                  )}
-                  <ButtonIcon onClick={onClickStar}>
-                    {bot?.isPinned ? (
-                      <PiStarFill className="text-aws-aqua" />
-                    ) : (
-                      <PiStar />
-                    )}
-                  </ButtonIcon>
-                  <ButtonPopover className="mx-1" target="bottom-right">
-                    {bot?.owned && (
-                      <PopoverItem
-                        onClick={() => {
-                          onClickBotEdit(bot.id);
-                        }}>
-                        <PiPencilLine />
-                        {t('bot.titleSubmenu.edit')}
-                      </PopoverItem>
-                    )}
-                    {bot?.isPublic && (
-                      <PopoverItem
-                        onClick={() => {
-                          if (bot) {
-                            onClickCopyUrl(bot.id);
-                          }
-                        }}>
-                        <PiLink />
-                        {copyLabel}
-                      </PopoverItem>
-                    )}
-                  </ButtonPopover>
-                </div>
-              </div>
-            )}
           </div>
           {getPostedModel() && (
             <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
@@ -579,7 +476,7 @@ const ChatPage: React.FC = () => {
                 key={idx}
                 className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink-light/20 dark:border-aws-squid-ink-dark/20 bg-white p-2  text-sm text-dark-gray dark:text-light-gray  hover:shadow-lg hover:shadow-gray"
                 onClick={() => {
-                  onSend(qs.example);
+                  onSend(qs.title);
                 }}>
                 <div>
                   <PiPenNib />

@@ -452,10 +452,14 @@ const BotKbEditPage: React.FC = () => {
     const courseId: ValidCourseId = groupId as ValidCourseId;
     const courseName = COURSE_ID_MAP[courseId]
 
+    let examples = conversationQuickStarters
+    .map((convo: ConversationQuickStarter) => `Question: ${convo.title} Answer: ${convo.example}.`)
+    .join(" ");
+
 		if (assistantType == 'learning_assistant') {
 			return instruction.replaceAll(COURSE_NAME_PLACEHOLDER, courseName)
 				.replaceAll(COURSE_TOPICS_PLACEHOLDER, assistantTopics)
-				.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, conversationQuickStarters.toString());
+				.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, examples);
 		}
 		return instruction;
 	}
