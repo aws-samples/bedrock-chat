@@ -87,6 +87,9 @@ export const PostStreamingStatus = {
   AGENT_RELATED_DOCUMENT: 'AGENT_RELATED_DOCUMENT',
   ERROR: 'ERROR',
   END: 'END',
+  // Additional statuses for responses
+  CONNECTED: 'CONNECTED',
+  SUCCESS: 'SUCCESS',
 } as const;
 
 export const GUARDRAILS_FILTERS_THRESHOLD = {

@@ -87,7 +87,8 @@ export class WebSocket extends Construct {
 
     const handler =  new PythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
-      index: "app/websocket.py",
+      index: "app/websocket_lambda.py",
+      handler: "handler",
       bundling: {
         assetExcludes: [...excludeDockerImage],
         buildArgs: { POETRY_VERSION: "1.8.3" },
