@@ -38,6 +38,7 @@
 }
 
 .create-assistant-btn {
+  min-width: 400px;
   width: 85%;
   height: 75%;
 }
@@ -56,7 +57,10 @@
 .create-assistant-btn-description {
   font-size: 10px;
   font-weight: 300;
-  /* mt-1 overflow-hidden text-ellipsis text-[9px] dark:text-aws-font-color-dark */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 15px;
 }
 
 .create-assistant-btn-logo {
@@ -67,10 +71,22 @@
 /* *************************************** */
 /* Styling for the Assistant List Items */
 /* *************************************** */
+
+.assistant-item-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: lightgray; /* Change to the actual color if needed */
+  overflow: hidden;
+}
+
 .assistant-item-row {
   width: 100%;
-  display: flex;                  /* flex: Enables Flexbox layout */
   height: 100%;                    /* h-full: Makes the container take full height */
+  display: flex;                  /* flex: Enables Flexbox layout */
   flex-grow: 1;                    /* grow: Allows the container to grow and fill available space */
   background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
   padding: 8px;                   /* p-2: Adds padding of 0.5rem (8px) */
@@ -78,16 +94,19 @@
 
 .assistant-item-row-no-buttons-container {
   display: flex;
-  width: 75%;
-  flex-grow: 1;                    /* grow: Allows the container to grow and fill available space */
+  /* grow: Allows the container to grow and fill available space */
+  flex-grow: 1;                    
   background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
   height: 100%;
 }
 
 .assistant-item-buttons-container {
-  width: 25%;
+  width: 20%;
+  min-width: 200px;
+  /* width: fit-content; */
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0; /* Ensures it does NOT shrink */
 }
 
 .assistant-item-logo {
@@ -98,34 +117,34 @@
 }
 
 .assistant-item-title-and-description {
-  width: 33%;               /* w-full: Full width */
+  width: 35%;
+  min-width: 300px;               /* w-full: Full width */
   overflow: hidden;          /* Prevents overflow */
   text-overflow: ellipsis;   /* Truncates text with "..." */
   white-space: nowrap;       /* Ensures text stays on a single line */
   font-size: 0.875rem;       /* text-sm: Equivalent to 14px */
   font-weight: 600;          /* font-semibold: Semi-bold */
+  flex-shrink: 0; /* Ensures it does NOT shrink */
 }
 
 .assistant-item-attribute-no-buttons {
-  width: 66%;
+  /* width: 66%; */
   display: flex;  
   justify-content: center;
   align-items: center;
+  flex-grow: 1; /* Allows it to shrink while A and C stay fixed */
+  
 }
 
-
-
-
 .assistant-item-course {
-  width: 100px;
+  min-width: 100px;
   padding-right: 8px;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .assistant-item-canvas {
-  width: 75px;
+  min-width: 75px;
   padding-right: 8px;
   white-space: nowrap;
   overflow: hidden;
@@ -133,12 +152,14 @@
 }
 
 .assistant-item-type-and-name {
-  width: 150px;
+  min-width: 150px;
   padding-right: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+
 
 /* *************************************** */
 /* Styling for Table Column Names */
@@ -149,19 +170,20 @@
   display: flex;
 }
 .assistant-list-column-headers-row-title {
-  width: 33%;
+  width: 40%;
+  min-width: 300px;
 }
 .assistant-list-column-headers-row-attributes {
-  width: 42%;
   display: flex;
   font-size: 10px;
   font-weight: 300;
 }
 .assistant-list-column-headers-row-buttons {
-  width: 25%;
   display: flex;
   font-size: 10px;
   font-weight: 300;
+  margin-left: auto;
+  padding-right: 13%;
 }
 
 .assistant-list-column-attribute-items {
@@ -175,8 +197,9 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  white-space: nowrap;       /* Ensures text stays on a single line */
 }
 
 .assistant-list-column-btn-sync-status {
-  min-width: 45%;
+  padding-left: 10px;
 }

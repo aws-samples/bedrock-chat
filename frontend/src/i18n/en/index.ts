@@ -365,7 +365,7 @@ How would you categorize this email?`,
       },
       explore: {
         label: {
-          pageTitle: 'Bot Console',
+          pageTitle: 'Assistant List',
         },
       },
       apiSettings: {

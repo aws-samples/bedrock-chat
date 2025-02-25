@@ -106,7 +106,7 @@ const BotExplorePage: React.FC = () => {
                   </div>
                   <div className="first-half-bot-explore">
                     <Button
-                      className="text-xl font-bold create-assistant-btn"
+                      className="text-l font-bold create-assistant-btn"
                       outlined
                       onClick={() => onClickNewBot("custom_assistant")}>
                       <img src="/images/custom_assistant.png" className="create-assistant-btn-logo"/>
@@ -120,7 +120,7 @@ const BotExplorePage: React.FC = () => {
                 <div className="container-bot-explore">
                   <div className="second-half-bot-explore">
                     <Button
-                      className="text-xl font-bold create-assistant-btn"
+                      className="text-l font-bold create-assistant-btn"
                       outlined
                       onClick={() => onClickNewBot("quiz_assistant")}>
                       <img src="/images/quiz_assistant.png" className="create-assistant-btn-logo"/>
@@ -132,7 +132,7 @@ const BotExplorePage: React.FC = () => {
                   </div>
                   <div className="second-half-bot-explore">
                     <Button
-                      className="text-xl font-bold create-assistant-btn"
+                      className="text-l font-bold create-assistant-btn"
                       outlined
                       onClick={() => onClickNewBot("lesson_plan_assistant")}>
                       <img src="/images/lesson_plan_assistant.png" className="create-assistant-btn-logo"/>
@@ -152,11 +152,10 @@ const BotExplorePage: React.FC = () => {
               <div className='assistant-list-column-headers-row-attributes'>
                 <div className='assistant-list-column-attribute-items assistant-item-course'>Course Name</div>
                 <div className='assistant-list-column-attribute-items assistant-item-canvas'>District</div>
-                <div className='assistant-list-column-attribute-items assistant-item-type-and-name'>Assistant Type</div>
                 <div className='assistant-list-column-attribute-items assistant-item-type-and-name'>Created By</div>
               </div>
               <div className='assistant-list-column-headers-row-buttons'>
-                <div className='assistant-list-column-btn-items assistant-list-column-btn-sync-status'>Sync Status</div>
+                <div className='assistant-list-column-btn-items'>Sync Status</div>
                 <div className='assistant-list-column-btn-items'>Public</div>
               </div>
             </div>

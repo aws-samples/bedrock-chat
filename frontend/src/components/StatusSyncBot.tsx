@@ -33,15 +33,6 @@ const StatusSyncBot: React.FC<Props> = (props) => {
       </div>
 
       <div className="whitespace-nowrap text-sm text-dark-gray dark:text-light-gray">
-        {props.syncStatus === SyncStatus.QUEUED && (
-          <>{t('bot.label.syncStatus.queue')}</>
-        )}
-        {props.syncStatus === SyncStatus.RUNNING && (
-          <>{t('bot.label.syncStatus.running')}</>
-        )}
-        {props.syncStatus === SyncStatus.SUCCEEDED && (
-          <>{t('bot.label.syncStatus.success')}</>
-        )}
         {props.syncStatus === SyncStatus.FAILED && (
           <>
             {props.onClickError ? (

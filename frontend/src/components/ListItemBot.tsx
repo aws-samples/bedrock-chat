@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { BaseProps } from '../@types/common';
 import { useTranslation } from 'react-i18next';
 import { AssistantConfig, CreatorConfig } from '../@types/bot';
-import { ASSISTANT_TYPE_MAP, COURSE_ID_MAP, LTI_DEPLOYMENT_ID_MAP, ValidCourseId, ValidLTIDeploymentId } from '../constants';
+import { COURSE_ID_MAP, LTI_DEPLOYMENT_ID_MAP, ValidCourseId, ValidLTIDeploymentId } from '../constants';
 
 type Props = BaseProps & {
   bot: {
@@ -46,10 +46,6 @@ const ListItemBot: React.FC<Props> = (props) => {
     return COURSE_ID_MAP[courseId];
   }
 
-  const getAssistantTypeName = (): string | undefined => {
-    return ASSISTANT_TYPE_MAP.find(option => option.value === props.bot.assistantConfig.assistantType)?.label;
-  };
-
   const getCreatorName = (): string | undefined => {
     if (!props.bot.creatorConfig || !props.bot.creatorConfig.userName) {
       return "";
@@ -60,13 +56,8 @@ const ListItemBot: React.FC<Props> = (props) => {
   
 
   return (
-    <div
-      key={props.bot.id}
-      className={`${
-        props.className ?? ''
-      } relative flex w-full justify-between border-b border-light-gray`}>
-      <div
-        className={`assistant-item-row`}>
+    <div className="assistant-item-container">
+      <div className="assistant-item-row">
           <div 
             className={`assistant-item-row-no-buttons-container ${
               props.bot.available
@@ -99,10 +90,9 @@ const ListItemBot: React.FC<Props> = (props) => {
                 </div>
                 )}
             </div>
-            <div className="assistant-item-attribute-no-buttons">
+            <div className="assistant-item-attribute-no-buttons"> 
               <div className="assistant-item-course">{getCourseName()}</div>
               <div className="assistant-item-canvas">{getCanvasInstanceName()}</div>
-              <div className="assistant-item-type-and-name">{getAssistantTypeName()}</div>
               <div className="assistant-item-type-and-name">{getCreatorName()}</div>
             </div>
           </div>
