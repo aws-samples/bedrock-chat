@@ -108,6 +108,12 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
           },
           {
+            modelId: 'claude-v3.7-sonnet',
+            label: t('model.claude-v3.7-sonnet.label'),
+            description: t('model.claude-v3.7-sonnet.description'),
+            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+          },
+          {
             modelId: 'claude-v3-opus',
             label: t('model.claude-v3-opus.label'),
             description: t('model.claude-v3-opus.description'),
@@ -252,9 +258,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    botId,
-  ]);
+  }, [botId]);
 
   const model = useMemo(() => {
     return filteredModels.find(

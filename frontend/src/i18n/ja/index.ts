@@ -38,6 +38,10 @@ const translation = {
         description:
           'Claude 3.5の最新バージョン。v1をさらに強化し、より高い精度とパフォーマンスを提供',
       },
+      'claude-v3.7-sonnet': {
+        label: 'Claude 3.7 Sonnet',
+        description: '迅速な応答と深い分析能力を両立するハイブリッド推論モデル',
+      },
       'claude-v3.5-haiku': {
         label: 'Claude 3.5 (Haiku) v1',
         description: 'Haiku最新バージョン。精度を保ち、高速な応答を実現',
@@ -48,14 +52,17 @@ const translation = {
       },
       'mistral-7b-instruct': {
         label: 'Mistral 7B',
-        description: '自然なコーディング機能で英語のテキスト生成タスクをサポートします'
+        description:
+          '自然なコーディング機能で英語のテキスト生成タスクをサポートします',
       },
       'mixtral-8x7b-instruct': {
         label: 'Mistral-8x7B',
-        description: 'Mixtral-8x7BはMistral AIによって開発された基盤モデルで、英語、フランス語、ドイツ語、イタリア語、スペイン語のテキストをサポートし、コード生成機能を備えています。'
+        description:
+          'Mixtral-8x7BはMistral AIによって開発された基盤モデルで、英語、フランス語、ドイツ語、イタリア語、スペイン語のテキストをサポートし、コード生成機能を備えています。',
       },
       'mistral-large': {
-        label: '実質的な推論機能を必要とする複雑なタスクや、合成テキスト生成およびコード生成などの高度に専門化されたタスクに最適です',
+        label:
+          '実質的な推論機能を必要とする複雑なタスクや、合成テキスト生成およびコード生成などの高度に専門化されたタスクに最適です',
       },
       'amazon-nova-pro': {
         label: 'Amazon Nova Pro',
@@ -718,16 +725,17 @@ const translation = {
       },
       advancedConfigration: {
         existKnowledgeBaseId: {
-          label: "既存のAmazon Bedrock Knowledge BaseのID",
-          description: "既存のAmazon Bedrock Knowledge Baseを使用することができる",
+          label: '既存のAmazon Bedrock Knowledge BaseのID',
+          description:
+            '既存のAmazon Bedrock Knowledge Baseを使用することができる',
           createNewKb: {
             label: '新規のナレッジを作成する',
           },
           existing: {
             label: '外部のナレッジ(Knowledge Base)を利用する',
-          }
+          },
         },
-      }
+      },
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',

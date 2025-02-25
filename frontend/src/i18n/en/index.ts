@@ -35,6 +35,11 @@ const translation = {
         description:
           'The latest version of Claude 3.5. An enhanced model that builds on v1 with higher accuracy and performance.',
       },
+      'claude-v3.7-sonnet': {
+        label: 'Claude 3.7 Sonnet',
+        description:
+          'Hybrid reasoning model balancing quick responses and deep analytical capabilities.',
+      },
       'claude-v3.5-haiku': {
         label: 'Claude 3.5 (Haiku) v1',
         description:
@@ -46,15 +51,18 @@ const translation = {
       },
       'mistral-7b-instruct': {
         label: 'Mistral 7B',
-        description: 'Supports English text generation tasks with natural coding capabilities'
+        description:
+          'Supports English text generation tasks with natural coding capabilities',
       },
       'mixtral-8x7b-instruct': {
         label: 'Mistral-8x7B',
-        description: "A popular, high-quality, sparse Mixture-of-Experts (MoE) model, that is ideal for text summarization, question and answering, text classification, text completion, and code generation."
+        description:
+          'A popular, high-quality, sparse Mixture-of-Experts (MoE) model, that is ideal for text summarization, question and answering, text classification, text completion, and code generation.',
       },
       'mistral-large': {
         label: 'Mistral Large',
-        description: "Ideal for complex tasks that require substantial reasoning capabilities, or ones that are highly specialized, such as Synthetic Text Generation or Code Generation."
+        description:
+          'Ideal for complex tasks that require substantial reasoning capabilities, or ones that are highly specialized, such as Synthetic Text Generation or Code Generation.',
       },
       'amazon-nova-pro': {
         label: 'Amazon Nova Pro',
@@ -723,15 +731,16 @@ How would you categorize this email?`,
       },
       advancedConfigration: {
         existKnowledgeBaseId: {
-          label: "ID for the Amazon Bedrock Knowledge Base",
-          description: "Please specify ID that your existing Amazon Bedrock knowledge base.",
+          label: 'ID for the Amazon Bedrock Knowledge Base',
+          description:
+            'Please specify ID that your existing Amazon Bedrock knowledge base.',
           createNewKb: {
             label: 'Create New Knowledge Base',
           },
           existing: {
             label: 'Use your existing knowledge base',
-          }
-        }
+          },
+        },
       },
     },
     error: {
