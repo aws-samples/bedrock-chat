@@ -36,8 +36,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                 name: 'internet_search', 
                 searchEngine: searchEngine || 'duckduckgo' 
               } as AgentTool];
-          
-          console.log('New tools:', newTools); // デバッグログ
+
           return newTools;
         });
       } else {
@@ -146,11 +145,11 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                         name="searchEngine"
                         value="duckduckgo"
                         checked={searchEngine === 'duckduckgo'}
-                        label={t('agent.tools.internet_search.engines.duckduckgo')}
+                        label={t('agent.tools.internet_search.engines.duckduckgo.label')}
                         onChange={handleSearchEngineChange}
                       />
                       <div className="ml-6 text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                        {t('agent.tools.internet_search.engines.duckduckgo_explain')}
+                        {t('agent.tools.internet_search.engines.duckduckgo.hint')}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -158,11 +157,11 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                         name="searchEngine"
                         value="firecrawl"
                         checked={searchEngine === 'firecrawl'}
-                        label={t('agent.tools.internet_search.engines.firecrawl')}
+                        label={t('agent.tools.internet_search.engines.firecrawl.label')}
                         onChange={handleSearchEngineChange}
                       />
                       <div className="ml-6 text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                        {t('agent.tools.internet_search.engines.firecrawl_explain')}
+                        {t('agent.tools.internet_search.engines.firecrawl.hint')}
                       </div>
                     </div>
                   </div>
@@ -171,7 +170,6 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                       config={
                         tools.find((t): t is InternetAgentTool => t.name === 'internet_search' && isInternetTool(t))?.firecrawlConfig || {
                           apiKey: '',
-                          secretArn: undefined,
                           maxResults: 10,
                         }
                       }

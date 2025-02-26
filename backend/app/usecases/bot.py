@@ -30,14 +30,14 @@ from app.repositories.custom_bot import (
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
+    PlainToolModel,
     BotAliasModel,
     BotMeta,
     BotModel,
     ConversationQuickStarterModel,
     FirecrawlConfigModel,
     GenerationParamsModel,
-    InternetAgentToolModel,
+    InternetToolModel,
     KnowledgeModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -46,7 +46,6 @@ from app.routes.schemas.bot import (
     ActiveModelsInput,
     ActiveModelsOutput,
     Agent,
-    AgentTool,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -56,7 +55,6 @@ from app.routes.schemas.bot import (
     ConversationQuickStarter,
     FirecrawlConfig,
     GenerationParams,
-    InternetAgentTool,
     Knowledge,
     type_sync_status,
 )
@@ -71,9 +69,7 @@ from app.utils import (
     generate_presigned_url,
     get_current_time,
     move_file_in_s3,
-    store_firecrawl_api_key,
-    get_firecrawl_api_key,
-    delete_firecrawl_api_key,
+    store_secret_manager,
 )
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -108,6 +104,38 @@ def _update_s3_documents_by_diff(
         # Ignore errors when deleting a non-existent file from the S3 bucket used in knowledge bases.
         # This allows users to update bot if the uploaded file is missing after the bot is created.
         delete_file_from_s3(DOCUMENT_BUCKET, document_path, ignore_not_exist=True)
+
+def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentModel:
+    if not hasattr(bot_input.agent, "tools"):
+        return AgentModel(tools=[])
+    
+    tools = []
+    for tool in bot_input.agent.tools:
+        # Special processing only for firecrawl
+        if tool.tool_type == "internet" and tool.search_engine == "firecrawl":
+            api_key = tool.firecrawl_config.api_key
+            secret_arn = store_secret_manager(user_id, bot_id, "firecrawl", api_key)
+            
+            tool_dict = dict(tool)
+            # Replace API key with secret ARN
+            tool_dict["firecrawl_config"] = {
+                "secret_arn": secret_arn,
+                "max_results": tool.firecrawl_config.max_results,
+            }
+            tools.append(InternetToolModel.model_validate(tool_dict))
+        else:
+            # Process non-firecrawl tools directly with model_validate
+            if tool.tool_type == "plain":
+                tools.append(PlainToolModel.model_validate(tool))
+            elif tool.tool_type == "internet":
+                tools.append(InternetToolModel.model_validate(dict(tool)))
+
+    agent_model = AgentModel.model_validate({"tools": tools})
+    # model_validate automatically sets the api_key. Remove API key when registering to DynamoDB.
+    for tool in agent_model.tools:
+        if hasattr(tool, "firecrawl_config") and hasattr(tool.firecrawl_config, "api_key"):
+            delattr(tool.firecrawl_config, "api_key")
+    return agent_model
 
 
 def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
@@ -167,49 +195,6 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_GENERATION_CONFIG
     )
 
-    # Create agent model with tools
-    tools = []
-    if bot_input.agent:
-        for tool in bot_input.agent.tools:
-            tool_model: AgentToolModel | InternetAgentToolModel
-
-            # Handle Firecrawl configuration
-            if tool.tool_type == "internet":
-                tool_model = InternetAgentToolModel(
-                    tool_type="internet",
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine=tool.search_engine,
-                )
-                # Store API key in Secrets Manager
-                if tool.search_engine == "firecrawl":
-                    if (
-                        not tool.firecrawl_config
-                        or not tool.firecrawl_config.api_key
-                        or tool.firecrawl_config.api_key.strip() == ""
-                    ):
-                        raise ValueError("Firecrawl API key is required")
-                    secret_arn = store_firecrawl_api_key(
-                        user_id, bot_input.id, tool.firecrawl_config.api_key
-                    )
-                    # Store ARN in tool configuration
-                    tool_model.firecrawl_config = FirecrawlConfigModel(
-                        secret_arn=secret_arn,
-                        max_results=tool.firecrawl_config.max_results,
-                    )
-            else:
-                tool_model = AgentToolModel(
-                    tool_type="plain",
-                    name=tool.name,
-                    description=tool.description,
-                )
-
-            tools.append(tool_model)
-
-        agent = AgentModel(tools=tools)
-    else:
-        agent = AgentModel(tools=[])
-
     store_bot(
         user_id,
         BotModel(
@@ -223,7 +208,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             generation_params=GenerationParamsModel(**generation_params),
-            agent=agent,
+            agent=_process_agent_model(bot_input, user_id, bot_input.id),
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
                 sitemap_urls=sitemap_urls,
@@ -276,47 +261,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_pinned=False,
         owned=True,
         generation_params=GenerationParams(**generation_params),
-        agent=Agent(
-            tools=[
-                (
-                    InternetAgentTool(
-                        tool_type=tool.tool_type,
-                        name=tool.name,
-                        description=tool.description,
-                        search_engine=tool.search_engine,
-                        firecrawl_config=(
-                            FirecrawlConfig(
-                                api_key=(
-                                    get_firecrawl_api_key(
-                                        tool.firecrawl_config.secret_arn
-                                    )
-                                    if hasattr(tool, "firecrawl_config")
-                                    and tool.firecrawl_config
-                                    and tool.firecrawl_config.secret_arn
-                                    else None
-                                ),
-                                max_results=(
-                                    int(tool.firecrawl_config.max_results)
-                                    if hasattr(tool, "firecrawl_config")
-                                    and tool.firecrawl_config
-                                    else 5  # デフォルト値
-                                ),
-                            )
-                            if hasattr(tool, "firecrawl_config")
-                            and tool.firecrawl_config
-                            else None
-                        ),
-                    )
-                    if isinstance(tool, InternetAgentToolModel)
-                    else AgentTool(
-                        tool_type="plain",
-                        name=tool.name,
-                        description=tool.description,
-                    )
-                )
-                for tool in agent.tools
-            ]
-        ),
+        agent=Agent.model_validate(bot_input.agent.model_dump()) if bot_input.agent else None,
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -398,49 +343,6 @@ def modify_owned_bot(
         else DEFAULT_GENERATION_CONFIG
     )
 
-    # Create agent model with tools
-    tools = []
-    if modify_input.agent:
-        for tool in modify_input.agent.tools:
-            tool_model: AgentToolModel | InternetAgentToolModel
-
-            # Handle Firecrawl configuration
-            if tool.tool_type == "internet":
-                tool_model = InternetAgentToolModel(
-                    tool_type="internet",
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine=tool.search_engine,
-                )
-                # Store API key in Secrets Manager
-                if tool.search_engine == "firecrawl":
-                    if (
-                        not tool.firecrawl_config
-                        or not tool.firecrawl_config.api_key
-                        or tool.firecrawl_config.api_key.strip() == ""
-                    ):
-                        raise ValueError("Firecrawl API key is required")
-                    secret_arn = store_firecrawl_api_key(
-                        user_id, bot_id, tool.firecrawl_config.api_key
-                    )
-                    # Store ARN in tool configuration
-                    tool_model.firecrawl_config = FirecrawlConfigModel(
-                        secret_arn=secret_arn,
-                        max_results=tool.firecrawl_config.max_results,
-                    )
-            else:
-                tool_model = AgentToolModel(
-                    tool_type="plain",
-                    name=tool.name,
-                    description=tool.description,
-                )
-
-            tools.append(tool_model)
-
-        agent = AgentModel(tools=tools)
-    else:
-        agent = AgentModel(tools=[])
-
     # if knowledge is not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
@@ -477,7 +379,7 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParamsModel(**generation_params),
-        agent=agent,
+        agent=_process_agent_model(modify_input, user_id, bot_id),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -515,47 +417,7 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParams(**generation_params),
-        agent=Agent(
-            tools=[
-                (
-                    InternetAgentTool(
-                        tool_type=tool.tool_type,
-                        name=tool.name,
-                        description=tool.description,
-                        search_engine=tool.search_engine,
-                        firecrawl_config=(
-                            FirecrawlConfig(
-                                api_key=(
-                                    get_firecrawl_api_key(
-                                        tool.firecrawl_config.secret_arn
-                                    )
-                                    if hasattr(tool, "firecrawl_config")
-                                    and tool.firecrawl_config
-                                    and tool.firecrawl_config.secret_arn
-                                    else None
-                                ),
-                                max_results=(
-                                    int(tool.firecrawl_config.max_results)
-                                    if hasattr(tool, "firecrawl_config")
-                                    and tool.firecrawl_config
-                                    else 5  # デフォルト値
-                                ),
-                            )
-                            if hasattr(tool, "firecrawl_config")
-                            and tool.firecrawl_config
-                            else None
-                        ),
-                    )
-                    if isinstance(tool, InternetAgentToolModel)
-                    else AgentTool(
-                        tool_type="plain",
-                        name=tool.name,
-                        description=tool.description,
-                    )
-                )
-                for tool in agent.tools
-            ]
-        ),
+        agent=Agent.model_validate(modify_input.agent.model_dump()) if modify_input.agent else None,
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -918,11 +780,6 @@ def modify_pin_status(user_id: str, bot_id: str, pinned: bool):
 def remove_bot_by_id(user_id: str, bot_id: str):
     """Remove bot by id and its associated secrets."""
     try:
-        try:
-            delete_firecrawl_api_key(user_id, bot_id)
-        except ClientError as e:
-            logger.error(f"Error deleting Firecrawl API key for bot {bot_id}: {e}")
-
         return delete_bot_by_id(user_id, bot_id)
     except RecordNotFoundError:
         pass

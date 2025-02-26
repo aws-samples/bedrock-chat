@@ -1,9 +1,9 @@
 import logging
 from firecrawl.firecrawl import FirecrawlApp
 from app.agents.tools.agent_tool import AgentTool
-from app.repositories.models.custom_bot import BotModel, InternetAgentToolModel
+from app.repositories.models.custom_bot import BotModel, InternetToolModel
 from app.routes.schemas.conversation import type_model_name
-from app.utils import get_firecrawl_api_key
+from app.utils import get_secret_manager
 from duckduckgo_search import DDGS
 from pydantic import BaseModel, Field, root_validator
 
@@ -39,7 +39,7 @@ class InternetSearchInput(BaseModel):
         return values
 
 
-def search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
+def _search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
     REGION = country
     SAFE_SEARCH = "moderate"
     MAX_RESULTS = 20
@@ -69,7 +69,7 @@ def search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
         ]
 
 
-def search_with_firecrawl(
+def _search_with_firecrawl(
     query: str, api_key: str, country: str, max_results: int = 10
 ) -> list:
     logger.info(f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}")
@@ -112,7 +112,7 @@ def search_with_firecrawl(
         return []
 
 
-def internet_search(
+def _internet_search(
     tool_input: InternetSearchInput, bot: BotModel | None, model: type_model_name | None
 ) -> list:
     query = tool_input.query
@@ -123,35 +123,34 @@ def internet_search(
         f"Internet search request - Query: {query}, Time Limit: {time_limit}, Country: {country}"
     )
 
-    # Check if bot has Firecrawl configuration
-    if bot and bot.agent.tools:
-        for tool in bot.agent.tools:
-            if tool.name == "internet_search":
-                if isinstance(tool, InternetAgentToolModel) and tool.firecrawl_config:
-                    try:
-                        if tool.firecrawl_config.secret_arn is not None:
-                            api_key = get_firecrawl_api_key(
-                                tool.firecrawl_config.secret_arn
-                            )
-                            return search_with_firecrawl(
-                                query=query,
-                                api_key=api_key,
-                                country=country,
-                                max_results=tool.firecrawl_config.max_results,
-                            )
-                    except Exception as e:
-                        logger.error(f"Error with Firecrawl search: {e}")
-                        return []
-                else:
-                    # Default to DuckDuckGo
-                    return search_with_duckduckgo(query, time_limit, country)
-    # Default to DuckDuckGo if no bot or no tools
-    return search_with_duckduckgo(query, time_limit, country)
+    # Check, bot has Firecrawl configuration
+    for tool in bot.agent.tools:
+        # to firecrawl
+        if tool.name == "internet_search" and tool.search_engine == "firecrawl":
+            # If ftool.name is firecrawl but firecrawl_config is not set, an error will occur
+            if tool.firecrawl_config is None and isinstance(tool, InternetToolModel):
+                raise ValueError("Firecrawl configuration is not set in the bot.")
+
+            try:
+                api_key = get_secret_manager(
+                    tool.firecrawl_config.secret_arn
+                )
+                return _search_with_firecrawl(
+                    query=query,
+                    api_key=api_key,
+                    country=country,
+                    max_results=tool.firecrawl_config.max_results,
+                )
+            except Exception as e:
+                logger.error(f"Error with Firecrawl search: {e}")
+                return []
+    # Default to DuckDuckGo, if there is no Firecrawl configration in the bot.agent.tools
+    return _search_with_duckduckgo(query, time_limit, country)
 
 
 internet_search_tool = AgentTool(
     name="internet_search",
     description="Search the internet for information.",
     args_schema=InternetSearchInput,
-    function=internet_search,
+    function=_internet_search,
 )

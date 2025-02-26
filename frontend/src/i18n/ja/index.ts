@@ -121,10 +121,14 @@ const translation = {
           settings: '検索設定',
           engine: '検索エンジン',
           engines: {
-            duckduckgo: 'DuckDuckGo (For Trial)',
-            duckduckgo_explain: "リミットレートが厳しいが無料で使用可能。小規模利用向け",
-            firecrawl: 'Firecrawl (For Business)',
-            firecrawl_explain: "APIキーが必要。有償でレートリミットの拡張可能。ビジネス利用向け",
+            duckduckgo: {
+              'label': 'DuckDuckGo (For Trial)',
+              'hint': "リミットレートが厳しいが無料で使用可能。小規模利用向け",
+            },
+            firecrawl: {
+              'label': 'Firecrawl (For Business)',
+              'hint': "レートリミットの拡張可能。ビジネス利用向け。APIキーが必要. https://www.firecrawl.dev/",
+            }
           },
         },
         knowledge_base_tool: {
@@ -132,10 +136,7 @@ const translation = {
           description: 'ナレッジから情報を取得します。',
         },
         firecrawl: {
-          name: 'Firecrawl検索',
-          description: 'Firecrawl APIを使用してウェブ検索を行います。',
           apiKey: 'Firecrawl APIキー',
-          apiKeyPlaceholder: 'APIキーを入力してください',
           maxResults: '最大結果数'
         },
       },

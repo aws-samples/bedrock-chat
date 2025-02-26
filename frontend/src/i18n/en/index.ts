@@ -120,10 +120,14 @@ const translation = {
           settings: 'Search Settings',
           engine: 'Search Engine',
           engines: {
-            duckduckgo: 'DuckDuckGo (For Trial)',
-            duckduckgo_explain: "Limited rate, but free to use. Designed for trial use.",
-            firecrawl: 'Firecrawl (For Business)',
-            firecrawl_explain: "API key is required. Rate limits can be expanded for a fee. Designed for business use.",
+            duckduckgo: {
+              'label': 'DuckDuckGo (For Trial)',
+              'hint': "Limited rate, but free to use. Designed for trial use.",
+            },
+            firecrawl: {
+              'label': 'Firecrawl (For Business)',
+              'hint': "Rate limits can be expanded. Designed for business use. API key is required. https://www.firecrawl.dev/",
+            }
           },
         },
         knowledge_base_tool: {
@@ -131,10 +135,7 @@ const translation = {
           description: 'Retrieve information from knowledge.',
         },
         firecrawl: {
-          name: 'Firecrawl Search',
-          description: 'Search the web using Firecrawl API.',
           apiKey: 'Firecrawl API Key',
-          apiKeyPlaceholder: 'Enter your Firecrawl API key',
           maxResults: 'Maximum Results'
         },
       },

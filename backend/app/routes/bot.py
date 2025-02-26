@@ -7,11 +7,9 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
-from app.repositories.models.custom_bot import InternetAgentToolModel
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
-    AgentTool,
     BedrockGuardrailsOutput,
     BedrockKnowledgeBaseOutput,
     BotInput,
@@ -25,8 +23,8 @@ from app.routes.schemas.bot import (
     ConversationQuickStarter,
     FirecrawlConfig,
     GenerationParams,
-    InternetAgentTool,
     Knowledge,
+    PlainTool,
 )
 from app.routes.schemas.conversation import type_model_name
 from app.usecases.bot import (
@@ -41,7 +39,6 @@ from app.usecases.bot import (
     remove_bot_by_id,
     remove_uploaded_file,
 )
-from app.utils import get_firecrawl_api_key
 from app.user import User
 from fastapi import APIRouter, Depends, Request
 
@@ -112,46 +109,6 @@ def get_private_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
 
     bot = find_private_bot_by_id(current_user.id, bot_id)
-
-    tools: list[AgentTool | InternetAgentTool] = []
-    for tool in bot.agent.tools:
-        if isinstance(tool, InternetAgentToolModel):
-            tools.append(
-                InternetAgentTool(
-                    tool_type=tool.tool_type,
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine=tool.search_engine,
-                    firecrawl_config=(
-                        FirecrawlConfig(
-                            api_key=(
-                                get_firecrawl_api_key(tool.firecrawl_config.secret_arn)
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                and tool.firecrawl_config.secret_arn
-                                else None
-                            ),
-                            max_results=(
-                                int(tool.firecrawl_config.max_results)
-                                if hasattr(tool, "firecrawl_config")
-                                and tool.firecrawl_config
-                                else 10
-                            ),
-                        )
-                        if hasattr(tool, "firecrawl_config") and tool.firecrawl_config
-                        else None
-                    ),
-                )
-            )
-        else:
-            tools.append(
-                AgentTool(
-                    tool_type="plain",
-                    name=tool.name,
-                    description=tool.description,
-                )
-            )
-
     output = BotOutput(
         id=bot.id,
         title=bot.title,
@@ -162,7 +119,7 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
-        agent=Agent(tools=tools),
+        agent=Agent.model_validate(bot.agent.model_dump()) if bot.agent else None,
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,
@@ -236,11 +193,11 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     remove_uploaded_file(current_user.id, bot_id, filename)
 
 
-@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[AgentTool])
+@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[PlainTool])
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
     return [
-        AgentTool(tool_type="plain", name=tool.name, description=tool.description)
+        PlainTool(tool_type="plain", name=tool.name, description=tool.description)
         for tool in tools
     ]

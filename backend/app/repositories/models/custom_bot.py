@@ -5,7 +5,7 @@ from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel, ConfigDict, create_model, Field
+from pydantic import BaseModel, ConfigDict, create_model, Field, model_validator
 
 
 def _create_model_activate_model(model_names: List[str]) -> Type[DynamicBaseModel]:
@@ -61,26 +61,45 @@ class GenerationParamsModel(BaseModel):
 
 
 class FirecrawlConfigModel(BaseModel):
-    secret_arn: str | None = None
+    secret_arn: str
+    api_key: str
     max_results: int = 10
 
+    @model_validator(mode='before')
+    @classmethod
+    def validate_model(cls, data):
+        if isinstance(data, dict) and 'api_key' not in data and 'secret_arn' in data:
+            try:
+                from app.utils import get_secret_manager
+                data['api_key'] = get_secret_manager(data['secret_arn'])
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error retrieving API key from secret_arn: {e}")
+        return data
 
-class AgentToolModel(BaseModel):
-    tool_type: Literal["plain", "internet"] = Field(
-        "plain", description="ツールの種類。plainなら追加設定不要"
+
+class PlainToolModel(BaseModel):
+    tool_type: Literal["plain"] = Field(
+        "plain", description="Type of tool. It does not need additional settings for the plain."
     )
     name: str
     description: str
 
 
-class InternetAgentToolModel(AgentToolModel):
-    tool_type: Literal["internet"] = "internet"
+class InternetToolModel(PlainToolModel):
+    tool_type: Literal["internet"] = Field(
+        "internet", description="Type of tool. It does need additional settings for the internet search."
+    )
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
 
+Tool = PlainToolModel | InternetToolModel
+
+
 class AgentModel(BaseModel):
-    tools: list[AgentToolModel | InternetAgentToolModel]
+    tools: list[Tool]
 
 
 class ConversationQuickStarterModel(BaseModel):

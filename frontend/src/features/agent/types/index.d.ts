@@ -3,8 +3,7 @@ export type AgentInput = {
 };
 
 export type FirecrawlConfig = {
-  apiKey?: string;
-  secretArn?: string;
+  apiKey: string;
   maxResults: number;
 };
 

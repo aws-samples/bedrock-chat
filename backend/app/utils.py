@@ -172,13 +172,14 @@ def start_codebuild_project(environment_variables: dict) -> str:
     return response["build"]["id"]
 
 
-def store_firecrawl_api_key(user_id: str, bot_id: str, api_key: str) -> str:
-    """Store Firecrawl API key in Secrets Manager.
+def store_secret_manager(user_id: str, bot_id: str, prefix: str, api_key: str) -> str:
+    """Store API key in Secrets Manager.
 
     Args:
         user_id: User ID
         bot_id: Bot ID
-        api_key: Firecrawl API key
+        prefix: Prefix
+        api_key: API key
 
     Returns:
         str: Secret ARN
@@ -186,7 +187,7 @@ def store_firecrawl_api_key(user_id: str, bot_id: str, api_key: str) -> str:
     Raises:
         ClientError: If there is an error with Secrets Manager
     """
-    secret_name = f"firecrawl/{user_id}/{bot_id}"
+    secret_name = f"{prefix}/{user_id}/{bot_id}"
     secret_value = json.dumps({"api_key": api_key})
 
     try:
@@ -223,7 +224,7 @@ def store_firecrawl_api_key(user_id: str, bot_id: str, api_key: str) -> str:
         raise
 
 
-def get_firecrawl_api_key(secret_arn: str) -> str:
+def get_secret_manager(secret_arn: str) -> str:
     """Get Firecrawl API key from Secrets Manager.
 
     Args:
@@ -245,7 +246,7 @@ def get_firecrawl_api_key(secret_arn: str) -> str:
         raise
 
 
-def delete_firecrawl_api_key(user_id: str, bot_id: str) -> None:
+def delete_secret_manager(user_id: str, bot_id: str, prefix: str) -> None:
     """Delete Firecrawl API key from Secrets Manager.
 
     Args:
@@ -255,7 +256,7 @@ def delete_firecrawl_api_key(user_id: str, bot_id: str) -> None:
     Raises:
         ClientError: If there is an error with Secrets Manager
     """
-    secret_name = f"firecrawl/{user_id}/{bot_id}"
+    secret_name = f"{prefix}/{user_id}/{bot_id}"
 
     try:
         secrets_client = boto3.client("secretsmanager")

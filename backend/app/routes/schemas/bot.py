@@ -58,23 +58,27 @@ class GenerationParams(BaseSchema):
 
 
 class FirecrawlConfig(BaseSchema):
-    api_key: str | None = None
+    api_key: str
     max_results: int = Field(default=10, ge=1, le=100)
 
 
-class AgentTool(BaseSchema):
-    tool_type: Literal["plain", "internet"]
+class PlainTool(BaseSchema):
+    tool_type: Literal["plain"]
     name: str
     description: str
 
 
-class InternetAgentTool(AgentTool):
+class InternetTool(PlainTool):
+    tool_type: Literal["internet"]
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
     firecrawl_config: Optional[FirecrawlConfig] | None = None
 
 
+Tool = PlainTool | InternetTool
+
+
 class Agent(BaseSchema):
-    tools: list[AgentTool | InternetAgentTool]
+    tools: list[Tool]
 
 
 class AgentToolInput(BaseSchema):
