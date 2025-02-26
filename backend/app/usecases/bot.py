@@ -37,6 +37,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     FirecrawlConfigModel,
     GenerationParamsModel,
+    Tool,
     InternetToolModel,
     KnowledgeModel,
 )
@@ -105,22 +106,26 @@ def _update_s3_documents_by_diff(
         # This allows users to update bot if the uploaded file is missing after the bot is created.
         delete_file_from_s3(DOCUMENT_BUCKET, document_path, ignore_not_exist=True)
 
+
 def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentModel:
-    if not hasattr(bot_input.agent, "tools"):
-        return AgentModel(tools=[])
-    
-    tools = []
+    if not hasattr(bot_input, "agent") or not hasattr(bot_input.agent, "tools"):
+        return AgentModel.model_validate({"tools": []})
+
+    tools: list[Tool] = []
     for tool in bot_input.agent.tools:
         # Special processing only for firecrawl
         if tool.tool_type == "internet" and tool.search_engine == "firecrawl":
+            if not tool.firecrawl_config:
+                continue
+            
             api_key = tool.firecrawl_config.api_key
             secret_arn = store_secret_manager(user_id, bot_id, "firecrawl", api_key)
-            
+
             tool_dict = dict(tool)
             # Replace API key with secret ARN
             tool_dict["firecrawl_config"] = {
                 "secret_arn": secret_arn,
-                "max_results": tool.firecrawl_config.max_results,
+                "max_results": tool.firecrawl_config.max_results if tool.firecrawl_config else 10,  # デフォルト値を設定
             }
             tools.append(InternetToolModel.model_validate(tool_dict))
         else:
@@ -133,9 +138,12 @@ def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentMod
     agent_model = AgentModel.model_validate({"tools": tools})
     # model_validate automatically sets the api_key. Remove API key when registering to DynamoDB.
     for tool in agent_model.tools:
-        if hasattr(tool, "firecrawl_config") and hasattr(tool.firecrawl_config, "api_key"):
+        if hasattr(tool, "firecrawl_config") and hasattr(
+            tool.firecrawl_config, "api_key"
+        ):
             delattr(tool.firecrawl_config, "api_key")
-    return agent_model
+
+    return AgentModel.model_validate(agent_model)
 
 
 def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
@@ -208,7 +216,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             generation_params=GenerationParamsModel(**generation_params),
-            agent=_process_agent_model(bot_input, user_id, bot_input.id),
+            # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
+            agent=_process_agent_model(bot_input, user_id, bot_input.id), # type: ignore
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
                 sitemap_urls=sitemap_urls,
@@ -261,7 +270,11 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_pinned=False,
         owned=True,
         generation_params=GenerationParams(**generation_params),
-        agent=Agent.model_validate(bot_input.agent.model_dump()) if bot_input.agent else None,
+        agent=(
+            Agent.model_validate(bot_input.agent.model_dump())
+            if bot_input.agent
+            else Agent.model_validate({"tool": []})
+        ),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -379,7 +392,8 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParamsModel(**generation_params),
-        agent=_process_agent_model(modify_input, user_id, bot_id),
+        # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
+        agent=_process_agent_model(modify_input, user_id, bot_id), # type: ignore
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -417,7 +431,11 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParams(**generation_params),
-        agent=Agent.model_validate(modify_input.agent.model_dump()) if modify_input.agent else None,
+        agent=(
+            Agent.model_validate(modify_input.agent.model_dump())
+            if modify_input.agent
+            else Agent.model_validate({"tool": []})
+        ),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

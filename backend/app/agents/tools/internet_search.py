@@ -123,27 +123,36 @@ def _internet_search(
         f"Internet search request - Query: {query}, Time Limit: {time_limit}, Country: {country}"
     )
 
+    # Check if bot is None
+    if bot is None:
+        logger.warning("Bot is None, defaulting to DuckDuckGo search")
+        return _search_with_duckduckgo(query, time_limit, country)
+
     # Check, bot has Firecrawl configuration
     for tool in bot.agent.tools:
         # to firecrawl
-        if tool.name == "internet_search" and tool.search_engine == "firecrawl":
-            # If ftool.name is firecrawl but firecrawl_config is not set, an error will occur
-            if tool.firecrawl_config is None and isinstance(tool, InternetToolModel):
-                raise ValueError("Firecrawl configuration is not set in the bot.")
+        if (
+            tool.name == "internet_search"
+            and hasattr(tool, "search_engine")
+            and tool.search_engine == "firecrawl"
+        ):
+            # Check if tool is InternetToolModel and has firecrawl_config
+            if isinstance(tool, InternetToolModel):
+                if tool.firecrawl_config is None:
+                    raise ValueError("Firecrawl configuration is not set in the bot.")
 
-            try:
-                api_key = get_secret_manager(
-                    tool.firecrawl_config.secret_arn
-                )
-                return _search_with_firecrawl(
-                    query=query,
-                    api_key=api_key,
-                    country=country,
-                    max_results=tool.firecrawl_config.max_results,
-                )
-            except Exception as e:
-                logger.error(f"Error with Firecrawl search: {e}")
-                return []
+                try:
+                    api_key = get_secret_manager(tool.firecrawl_config.secret_arn)
+                    return _search_with_firecrawl(
+                        query=query,
+                        api_key=api_key,
+                        country=country,
+                        max_results=tool.firecrawl_config.max_results,
+                    )
+                except Exception as e:
+                    logger.error(f"Error with Firecrawl search: {e}")
+                    return []
+
     # Default to DuckDuckGo, if there is no Firecrawl configration in the bot.agent.tools
     return _search_with_duckduckgo(query, time_limit, country)
 

@@ -52,6 +52,7 @@ DEFAULT_GENERATION_CONFIG = (
 logger = logging.getLogger(__name__)
 logger.setLevel("INFO")
 
+
 class BotNotFoundException(Exception):
     """Exception raised when a bot is not found."""
 

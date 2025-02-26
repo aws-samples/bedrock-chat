@@ -65,15 +65,17 @@ class FirecrawlConfigModel(BaseModel):
     api_key: str
     max_results: int = 10
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def validate_model(cls, data):
-        if isinstance(data, dict) and 'api_key' not in data and 'secret_arn' in data:
+        if isinstance(data, dict) and "api_key" not in data and "secret_arn" in data:
             try:
                 from app.utils import get_secret_manager
-                data['api_key'] = get_secret_manager(data['secret_arn'])
+
+                data["api_key"] = get_secret_manager(data["secret_arn"])
             except Exception as e:
                 import logging
+
                 logger = logging.getLogger(__name__)
                 logger.error(f"Error retrieving API key from secret_arn: {e}")
         return data
@@ -81,16 +83,20 @@ class FirecrawlConfigModel(BaseModel):
 
 class PlainToolModel(BaseModel):
     tool_type: Literal["plain"] = Field(
-        "plain", description="Type of tool. It does not need additional settings for the plain."
+        "plain",
+        description="Type of tool. It does not need additional settings for the plain.",
     )
     name: str
     description: str
 
 
-class InternetToolModel(PlainToolModel):
+class InternetToolModel(BaseModel):
     tool_type: Literal["internet"] = Field(
-        "internet", description="Type of tool. It does need additional settings for the internet search."
+        "internet",
+        description="Type of tool. It does need additional settings for the internet search.",
     )
+    name: str
+    description: str
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 

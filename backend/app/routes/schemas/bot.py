@@ -61,6 +61,13 @@ class FirecrawlConfig(BaseSchema):
     api_key: str
     max_results: int = Field(default=10, ge=1, le=100)
 
+    @validator("api_key")
+    def validate_api_key(cls, v):
+        # ""はエラーにする
+        if v == "":
+            raise ValueError("Firecrawl API key is empty")
+        return v
+
 
 class PlainTool(BaseSchema):
     tool_type: Literal["plain"]
@@ -68,14 +75,21 @@ class PlainTool(BaseSchema):
     description: str
 
 
-class InternetTool(PlainTool):
+class InternetTool(BaseSchema):
     tool_type: Literal["internet"]
-    search_engine: Optional[Literal["duckduckgo", "firecrawl"]] | None = None
+    name: str
+    description: str
+    search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfig] | None = None
+
+    @validator("search_engine")
+    def validate_search_engine(cls, v):
+        if v not in ["duckduckgo", "firecrawl"]:
+            raise ValueError(f"Invalid search engine: {v}")
+        return v
 
 
 Tool = PlainTool | InternetTool
-
 
 class Agent(BaseSchema):
     tools: list[Tool]
