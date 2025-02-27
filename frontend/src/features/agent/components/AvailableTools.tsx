@@ -163,19 +163,21 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                       <div className="ml-6 text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('agent.tools.internet_search.engines.firecrawl.hint')}
                       </div>
+                      <div className="ml-6 text-sm">
+                        {searchEngine === 'firecrawl' && (
+                        <FirecrawlConfigComponent
+                          config={
+                            tools.find((t): t is InternetAgentTool => t.name === 'internet_search' && isInternetTool(t))?.firecrawlConfig || {
+                              apiKey: '',
+                              maxResults: 10,
+                            }
+                          }
+                          onChange={handleFirecrawlConfigChange}
+                        />
+                      )}
+                      </div>
                     </div>
                   </div>
-                  {searchEngine === 'firecrawl' && (
-                    <FirecrawlConfigComponent
-                      config={
-                        tools.find((t): t is InternetAgentTool => t.name === 'internet_search' && isInternetTool(t))?.firecrawlConfig || {
-                          apiKey: '',
-                          maxResults: 10,
-                        }
-                      }
-                      onChange={handleFirecrawlConfigChange}
-                    />
-                  )}
                 </div>
               </ExpandableDrawerGroup>
             )}
