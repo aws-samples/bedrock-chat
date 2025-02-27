@@ -91,6 +91,7 @@ class InternetTool(BaseSchema):
 
 Tool = PlainTool | InternetTool
 
+
 class Agent(BaseSchema):
     tools: list[Tool]
 

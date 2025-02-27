@@ -117,7 +117,7 @@ def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentMod
         if tool.tool_type == "internet" and tool.search_engine == "firecrawl":
             if not tool.firecrawl_config:
                 continue
-            
+
             api_key = tool.firecrawl_config.api_key
             secret_arn = store_secret_manager(user_id, bot_id, "firecrawl", api_key)
 
@@ -125,7 +125,9 @@ def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentMod
             # Replace API key with secret ARN
             tool_dict["firecrawl_config"] = {
                 "secret_arn": secret_arn,
-                "max_results": tool.firecrawl_config.max_results if tool.firecrawl_config else 10,  # デフォルト値を設定
+                "max_results": (
+                    tool.firecrawl_config.max_results if tool.firecrawl_config else 10
+                ),  # デフォルト値を設定
             }
             tools.append(InternetToolModel.model_validate(tool_dict))
         else:
@@ -217,7 +219,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             owner_user_id=user_id,  # Owner is the creator
             generation_params=GenerationParamsModel(**generation_params),
             # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
-            agent=_process_agent_model(bot_input, user_id, bot_input.id), # type: ignore
+            agent=_process_agent_model(bot_input, user_id, bot_input.id),  # type: ignore
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
                 sitemap_urls=sitemap_urls,
@@ -393,7 +395,7 @@ def modify_owned_bot(
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParamsModel(**generation_params),
         # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
-        agent=_process_agent_model(modify_input, user_id, bot_id), # type: ignore
+        agent=_process_agent_model(modify_input, user_id, bot_id),  # type: ignore
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
