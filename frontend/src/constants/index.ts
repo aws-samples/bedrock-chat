@@ -2,9 +2,11 @@ import { GenerationParams } from '../@types/bot';
 
 export const EDGE_GENERATION_PARAMS = {
   maxTokens: {
-    MAX: 4096,
+    // Claude 3.7 with extend thinking can generate up to 64k tokens
+    // Ref: https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison
+    MAX: 64000,
     MIN: 1,
-    STEP: 1,
+    STEP: 10,
   },
   temperature: {
     MAX: 1,
@@ -20,6 +22,11 @@ export const EDGE_GENERATION_PARAMS = {
     MAX: 500,
     MIN: 0,
     STEP: 1,
+  },
+  budgetTokens: {
+    MIN: 1024,
+    MAX: 64000,
+    STEP: 10,
   },
 };
 
@@ -44,6 +51,11 @@ export const EDGE_MISTRAL_GENERATION_PARAMS = {
     MIN: 0,
     STEP: 1,
   },
+  budgetTokens: {
+    MIN: 1024,
+    MAX: 64000,
+    STEP: 10,
+  },
 };
 
 export const DEFAULT_GENERATION_CONFIG: GenerationParams = {
@@ -52,6 +64,9 @@ export const DEFAULT_GENERATION_CONFIG: GenerationParams = {
   topP: 0.999,
   temperature: 0.6,
   stopSequences: ['Human: ', 'Assistant: '],
+  reasoningParams: {
+    budgetTokens: 1024,
+  },
 };
 
 export const DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
@@ -60,6 +75,9 @@ export const DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
   topP: 0.9,
   temperature: 0.5,
   stopSequences: ['[INST]', '[/INST]'],
+  reasoningParams: {
+    budgetTokens: 1024,
+  },
 };
 
 export const SyncStatus = {
@@ -85,6 +103,7 @@ export const PostStreamingStatus = {
   AGENT_THINKING: 'AGENT_THINKING',
   AGENT_TOOL_RESULT: 'AGENT_TOOL_RESULT',
   AGENT_RELATED_DOCUMENT: 'AGENT_RELATED_DOCUMENT',
+  REASONING: 'REASONING',
   ERROR: 'ERROR',
   END: 'END',
 } as const;

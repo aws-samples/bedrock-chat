@@ -14,6 +14,8 @@ import {
   DisplayMessageContent,
   RelatedDocument,
   PutFeedbackRequest,
+  ReasoningContent,
+  TextContent,
 } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
@@ -27,9 +29,12 @@ import AgentToolList from '../features/agent/components/AgentToolList';
 import { AgentToolsProps } from '../features/agent/xstates/agentThink';
 import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
 import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
+import ReasoningCard from '../features/reasoning/components/ReasoningCard';
+import { ReasoningContext } from '../features/reasoning/xstates/reasoningState';
 
 type Props = BaseProps & {
   tools?: AgentToolsProps[];
+  reasoning?: ReasoningContext;
   chatContent?: DisplayMessageContent;
   isStreaming?: boolean;
   relatedDocuments?: RelatedDocument[];
@@ -71,15 +76,38 @@ const ChatMessage: React.FC<Props> = (props) => {
   const relatedDocuments = useMemo(() => {
     if (chatContent?.usedChunks) {
       return [
-        ...props.relatedDocuments ?? [],
-        ...chatContent.usedChunks.map(chunk => (
+        ...(props.relatedDocuments ?? []),
+        ...chatContent.usedChunks.map((chunk) =>
           convertUsedChunkToRelatedDocument(chunk)
-        )),
+        ),
       ];
     } else {
       return props.relatedDocuments;
     }
   }, [props.relatedDocuments, chatContent]);
+
+  const reasoning = useMemo(() => {
+    if (props.reasoning != null && props.reasoning.content != '') {
+      return props.reasoning;
+    }
+
+    if (chatContent?.content == null) {
+      return undefined;
+    }
+
+    const reasoningContent = chatContent.content.find(
+      (content): content is ReasoningContent =>
+        content.contentType === 'reasoning'
+    );
+
+    if (reasoningContent) {
+      return {
+        content: reasoningContent.text,
+      };
+    }
+
+    return undefined;
+  }, [props.reasoning, chatContent]);
 
   const tools = useMemo(() => {
     if (props.tools != null) {
@@ -88,7 +116,10 @@ const ChatMessage: React.FC<Props> = (props) => {
     if (chatContent?.thinkingLog == null) {
       return undefined;
     }
-    return convertThinkingLogToAgentToolProps(chatContent.thinkingLog, relatedDocuments);
+    return convertThinkingLogToAgentToolProps(
+      chatContent.thinkingLog,
+      relatedDocuments
+    );
   }, [props.tools, chatContent, relatedDocuments]);
 
   const nodeIndex = useMemo(() => {
@@ -151,7 +182,7 @@ const ChatMessage: React.FC<Props> = (props) => {
 
       <div className="order-first col-span-12 flex lg:order-none lg:col-span-8 lg:col-start-3">
         {chatContent?.role === 'user' && (
-          <div className="h-min rounded bg-aws-sea-blue-light dark:bg-aws-sea-blue-dark p-2 text-xl text-white">
+          <div className="h-min rounded bg-aws-sea-blue-light p-2 text-xl text-white dark:bg-aws-sea-blue-dark">
             <PiUserFill />
           </div>
         )}
@@ -162,19 +193,27 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
 
         <div className="ml-5 grow ">
-          {chatContent?.role === 'assistant' && tools != null && tools.length > 0 && (
-            <div className="flex flex-col">
-              {tools.map((tools, index) => (
-                <div key={index} className="mb-3 mt-0">
-                  <AgentToolList
-                    messageId={chatContent.id}
-                    tools={tools}
-                    relatedDocuments={relatedDocuments}
-                  />
-                </div>
-              ))}
-            </div>
+          {chatContent?.role == 'assistant' && reasoning?.content && (
+            <ReasoningCard
+              content={reasoning.content}
+              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
+            />
           )}
+          {chatContent?.role === 'assistant' &&
+            tools != null &&
+            tools.length > 0 && (
+              <div className="flex flex-col">
+                {tools.map((tools, index) => (
+                  <div key={index} className="mb-3 mt-0">
+                    <AgentToolList
+                      messageId={chatContent.id}
+                      tools={tools}
+                      relatedDocuments={relatedDocuments}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           {chatContent?.role === 'user' && !isEdit && (
             <div>
               {chatContent.content.some(
@@ -302,19 +341,25 @@ const ChatMessage: React.FC<Props> = (props) => {
               isStreaming={props.isStreaming}
               relatedDocuments={relatedDocuments}
               messageId={chatContent.id}>
-              {chatContent.content[0].body}
+              {chatContent.content
+                .filter((content) => content.contentType === 'text')
+                .map((content) => (content as TextContent).body)
+                .join('\n')}
             </ChatMessageMarkdown>
           )}
         </div>
       </div>
 
-      <div className="col-start-11 col-span-2">
+      <div className="col-span-2 col-start-11">
         <div className="flex flex-col items-end lg:items-start">
           {chatContent?.role === 'user' && !isEdit && (
             <ButtonIcon
               className="text-dark-gray dark:text-light-gray"
               onClick={() => {
-                setChangedContent(chatContent.content[firstTextContent].body);
+                const textContent = chatContent.content[
+                  firstTextContent
+                ] as TextContent;
+                setChangedContent(textContent.body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />
@@ -333,7 +378,15 @@ const ChatMessage: React.FC<Props> = (props) => {
               </ButtonIcon>
               <ButtonCopy
                 className="text-dark-gray dark:text-light-gray"
-                text={chatContent.content[0].body}
+                text={
+                  chatContent.content.find((c) => c.contentType === 'text')
+                    ? (
+                        chatContent.content.find(
+                          (c) => c.contentType === 'text'
+                        ) as TextContent
+                      ).body
+                    : ''
+                }
               />
             </div>
           )}

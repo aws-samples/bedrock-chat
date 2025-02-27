@@ -47,12 +47,17 @@ export type BotListItem = BotMeta & {
   available: boolean;
 };
 
+export type ReasoningParams = {
+  budgetTokens: number;
+};
+
 export type GenerationParams = {
   maxTokens: number;
   topK: number;
   topP: number;
   temperature: number;
   stopSequences: string[];
+  reasoningParams: ReasoningParams;
 };
 
 export type GuardrailsParams = {

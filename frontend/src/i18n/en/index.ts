@@ -8,7 +8,7 @@ const translation = {
     app: {
       name: 'Bedrock Claude Chat',
       nameWithoutClaude: 'Bedrock Chat',
-      inputMessage: 'Can I Help You?',
+      inputMessage: 'How can I Help You?',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
@@ -577,6 +577,10 @@ How would you categorize this email?`,
         label: 'End token/end sequence',
         hint: 'Specify sequences of characters that stop the model from generating further tokens. Use commas to separate multiple words',
       },
+      budgetTokens: {
+        label: 'Reasoning Budget Tokens',
+        hint: 'The maximum number of tokens to allocate for reasoning steps. Larger values allow for more complex reasoning but may increase response time',
+      },
     },
     searchSettings: {
       title: 'Search Settings',
@@ -775,6 +779,9 @@ How would you categorize this email?`,
       minRange: {
         message: 'The minimum value that can be set is {{size}}',
       },
+      maxBudgetTokens: {
+        message: 'The maxBudgetToken cannot exceed the maxTokens {{size}}',
+      },
       chunkOverlapLessThanChunkSize: {
         message: 'Chunk overlap must be set to less than Chunk size',
       },
@@ -855,6 +862,14 @@ How would you categorize this email?`,
           label: 'Relevance',
           hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything",
         },
+      },
+    },
+    reasoning: {
+      button: {
+        label: 'Reasoning',
+      },
+      card: {
+        label: 'Reasoning Process',
       },
     },
   },

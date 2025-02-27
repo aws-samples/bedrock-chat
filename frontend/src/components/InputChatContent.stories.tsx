@@ -1,70 +1,80 @@
-import { useTranslation } from 'react-i18next';
 import InputChatContent from './InputChatContent';
+import { useState } from 'react';
 
-export const Ideal = () => (
-  <InputChatContent
-    canRegenerate={false}
-    canContinue={false}
-    isLoading={false}
-    isNewChat={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-    continueGenerate={() => {}}
-  />
-);
+const defaultProps = {
+  reasoningEnabled: false,
+  onChangeReasoning: () => {},
+  supportReasoning: true,
+  isLoading: false,
+  isNewChat: false,
+  onSend: () => {},
+  onRegenerate: () => {},
+  continueGenerate: () => {},
+};
 
-export const IdealLoading = () => (
-  <InputChatContent
-    disabledSend={true}
-    disabledRegenerate={true}
-    disabledContinue={true}
-    canRegenerate={false}
-    canContinue={false}
-    isLoading={true}
-    isNewChat={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-    continueGenerate={() => {}}
-  />
-);
-
-export const IdealDisabled = () => {
-  const { t } = useTranslation();
+export const Ideal = () => {
+  const [reasoningEnabled, setReasoningEnabled] = useState(false);
   return (
     <InputChatContent
+      {...defaultProps}
       canRegenerate={false}
       canContinue={false}
-      isLoading={false}
-      isNewChat={false}
-      disabled={true}
-      placeholder={t('bot.label.notAvailableBotInputMessage')}
-      onSend={() => {}}
-      onRegenerate={() => {}}
-      continueGenerate={() => {}}
+      reasoningEnabled={reasoningEnabled}
+      onChangeReasoning={() => setReasoningEnabled(!reasoningEnabled)}
     />
   );
 };
 
-export const WithRegenerate = () => (
-  <InputChatContent
-    canRegenerate={true}
-    canContinue={false}
-    isLoading={false}
-    isNewChat={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-    continueGenerate={() => {}}
-  />
-);
+export const IdealLoading = () => {
+  const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  return (
+    <InputChatContent
+      {...defaultProps}
+      canRegenerate={false}
+      canContinue={false}
+      reasoningEnabled={reasoningEnabled}
+      onChangeReasoning={() => setReasoningEnabled(!reasoningEnabled)}
+      isLoading={true}
+    />
+  );
+};
 
-export const WithContinue = () => (
-  <InputChatContent
-    canRegenerate={true}
-    canContinue={true}
-    isLoading={false}
-    isNewChat={false}
-    onSend={() => {}}
-    onRegenerate={() => {}}
-    continueGenerate={() => {}}
-  />
-);
+export const IdealDisabled = () => {
+  const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  return (
+    <InputChatContent
+      {...defaultProps}
+      canRegenerate={false}
+      canContinue={false}
+      reasoningEnabled={reasoningEnabled}
+      onChangeReasoning={() => setReasoningEnabled(!reasoningEnabled)}
+      disabled={true}
+    />
+  );
+};
+
+export const WithRegenerate = () => {
+  const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  return (
+    <InputChatContent
+      {...defaultProps}
+      canRegenerate={true}
+      canContinue={false}
+      reasoningEnabled={reasoningEnabled}
+      onChangeReasoning={() => setReasoningEnabled(!reasoningEnabled)}
+    />
+  );
+};
+
+export const withContinue = () => {
+  const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  return (
+    <InputChatContent
+      {...defaultProps}
+      canRegenerate={true}
+      canContinue={true}
+      reasoningEnabled={reasoningEnabled}
+      onChangeReasoning={() => setReasoningEnabled(!reasoningEnabled)}
+    />
+  );
+};

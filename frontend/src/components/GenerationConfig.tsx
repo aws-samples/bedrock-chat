@@ -24,6 +24,8 @@ interface GenerationConfigProps {
   setTemperature: React.Dispatch<React.SetStateAction<number>>;
   stopSequences: string;
   setStopSequences: React.Dispatch<React.SetStateAction<string>>;
+  budgetTokens: number;
+  setBudgetTokens: React.Dispatch<React.SetStateAction<number>>;
   isLoading: boolean;
   errorMessages: { [label: string]: string };
 }
@@ -129,6 +131,36 @@ const GenerationConfig: React.FC<GenerationConfigProps> = ({
           onChange={props.setStopSequences}
           hint={t('generationConfig.stopSequences.hint')}
           errorMessage={errorMessages['stopSequences']}
+        />
+      </div>
+      <div className="mt-2">
+        <Slider
+          value={props.budgetTokens}
+          hint={t('generationConfig.budgetTokens.hint', {
+            defaultValue:
+              'Maximum tokens to allocate for reasoning steps (must be ≤ Max Tokens)',
+          })}
+          label={
+            <div className="flex items-center gap-1">
+              {t('generationConfig.budgetTokens.label', {
+                defaultValue: 'Budget Tokens',
+              })}
+              <Help
+                direction="right"
+                message={t('generationConfig.budgetTokens.help', {
+                  defaultValue:
+                    'Sets the token budget for reasoning steps. Cannot exceed the Max Tokens value.',
+                })}
+              />
+            </div>
+          }
+          range={{
+            min: generationConfigParam.budgetTokens.MIN,
+            max: props.maxTokens, // Limit to maxTokens
+            step: generationConfigParam.budgetTokens.STEP,
+          }}
+          onChange={props.setBudgetTokens}
+          errorMessage={errorMessages['budgetTokens']}
         />
       </div>
     </div>

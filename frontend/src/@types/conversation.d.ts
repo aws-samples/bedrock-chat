@@ -1,11 +1,15 @@
-import {
-  AVAILABLE_MODEL_KEYS
-} from '../constants/index'
+import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 export type Role = 'system' | 'assistant' | 'user';
 
 export type Model = (typeof AVAILABLE_MODEL_KEYS)[number];
 
-export type Content = TextContent | ImageContent | AttachmentContent;
+export type Content =
+  | TextContent
+  | ImageContent
+  | AttachmentContent
+  | ReasoningContent
+  | ToolUseContent
+  | ToolResultContent;
 
 export type TextContent = {
   contentType: 'text';
@@ -22,6 +26,13 @@ export type AttachmentContent = {
   contentType: 'attachment';
   fileName?: string;
   body: string;
+};
+
+export type ReasoningContent = {
+  contentType: 'reasoning';
+  text: string;
+  signature: string;
+  redactedContent: string;
 };
 
 export type ToolUseContent = {
@@ -105,6 +116,7 @@ export type PostMessageRequest = {
   };
   botId?: string;
   continueGenerate?: boolean;
+  enableReasoning: boolean;
 };
 
 export type PostMessageResponse = {

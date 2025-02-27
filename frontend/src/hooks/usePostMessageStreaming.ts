@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import i18next from 'i18next';
 import { AgentEvent } from '../features/agent/xstates/agentThink';
 import { PostStreamingStatus } from '../constants';
+import { ReasoningEvent } from '../features/reasoning/xstates/reasoningState';
 
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
 const CHUNK_SIZE = 32 * 1024; //32KB
@@ -14,12 +15,13 @@ const usePostMessageStreaming = create<{
     hasKnowledge?: boolean;
     dispatch: (completion: string) => void;
     thinkingDispatch: (event: AgentEvent) => void;
+    reasoningDispatch: (event: ReasoningEvent) => void;
   }) => Promise<string>;
   errorDetail: string | null;
 }>((set) => {
   return {
     errorDetail: null,
-    post: async ({ input, dispatch, thinkingDispatch }) => {
+    post: async ({ input, dispatch, thinkingDispatch, reasoningDispatch }) => {
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
         ...input,
@@ -123,6 +125,12 @@ const usePostMessageStreaming = create<{
                     relatedDocument: data.result.relatedDocument,
                   });
                   break;
+                case PostStreamingStatus.REASONING:
+                  reasoningDispatch({
+                    type: 'write',
+                    content: data.completion,
+                  });
+                  break;
                 case PostStreamingStatus.STREAMING:
                   if (data.completion || data.completion === '') {
                     completion += data.completion;
@@ -133,6 +141,8 @@ const usePostMessageStreaming = create<{
                   thinkingDispatch({
                     type: 'goodbye',
                   });
+                  reasoningDispatch({ type: 'end' });
+
                   ws.close();
                   break;
                 case PostStreamingStatus.ERROR:

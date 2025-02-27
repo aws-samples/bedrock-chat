@@ -52,7 +52,7 @@ import {
   Model,
   PutFeedbackRequest,
 } from '../@types/conversation.ts';
-import { AVAILABLE_MODEL_KEYS } from '../constants/index'
+import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import usePostMessageStreaming from '../hooks/usePostMessageStreaming.ts';
 
 // Default model activation settings when no bot is selected
@@ -70,6 +70,7 @@ const ChatPage: React.FC = () => {
 
   const {
     agentThinking,
+    reasoningThinking,
     conversationError,
     postingMessage,
     newChat,
@@ -87,6 +88,9 @@ const ChatPage: React.FC = () => {
     getShouldContinue,
     relatedDocuments,
     giveFeedback,
+    reasoningEnabled,
+    setReasoningEnabled,
+    supportReasoning,
   } = useChat();
 
   // Error Handling
@@ -172,6 +176,7 @@ const ChatPage: React.FC = () => {
   const onSend = useCallback(
     (
       content: string,
+      enableReasoning: boolean,
       base64EncodedImages?: string[],
       attachments?: AttachmentType[]
     ) => {
@@ -180,6 +185,7 @@ const ChatPage: React.FC = () => {
         base64EncodedImages,
         attachments,
         bot: inputBotParams,
+        enableReasoning,
       });
     },
     [inputBotParams, postChat]
@@ -198,23 +204,29 @@ const ChatPage: React.FC = () => {
         retryPostChat({
           content,
           bot: inputBotParams,
+          enableReasoning: reasoningEnabled,
         });
       } else {
         regenerate({
           messageId,
           content,
           bot: inputBotParams,
+          enableReasoning: reasoningEnabled,
         });
       }
     },
-    [hasError, inputBotParams, regenerate, retryPostChat]
+    [hasError, inputBotParams, regenerate, retryPostChat, reasoningEnabled]
   );
 
-  const onRegenerate = useCallback(() => {
-    regenerate({
-      bot: inputBotParams,
-    });
-  }, [inputBotParams, regenerate]);
+  const onRegenerate = useCallback(
+    (enableReasoning: boolean) => {
+      regenerate({
+        bot: inputBotParams,
+        enableReasoning,
+      });
+    },
+    [inputBotParams, regenerate]
+  );
 
   const onContinueGenerate = useCallback(() => {
     continueGenerate({ bot: inputBotParams });
@@ -338,6 +350,14 @@ const ChatPage: React.FC = () => {
   }> = React.memo((props) => {
     const { chatContent: message } = props;
 
+    const isReasoningActive = reasoningThinking.matches('active');
+    const reasoning = useMemo(
+      () => ({
+        content: isReasoningActive ? reasoningThinking.context.content : '',
+      }),
+      [isReasoningActive]
+    );
+
     const isAgentThinking = useMemo(
       () =>
         [AgentState.THINKING, AgentState.LEAVING].some(
@@ -412,6 +432,7 @@ const ChatPage: React.FC = () => {
     return (
       <ChatMessage
         tools={tools}
+        reasoning={reasoning}
         chatContent={message}
         isStreaming={props.isStreaming}
         relatedDocuments={relatedDocumentsForCitation}
@@ -438,7 +459,7 @@ const ChatPage: React.FC = () => {
       onDrop={endDnd}
       onDragEnd={endDnd}>
       <div className="flex-1 overflow-hidden">
-        <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light dark:bg-aws-paper-dark p-2">
+        <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light p-2 dark:bg-aws-paper-dark">
           <div className="flex w-full justify-between">
             <div className="p-2">
               <div className="mr-10 font-bold">{pageTitle}</div>
@@ -518,7 +539,9 @@ const ChatPage: React.FC = () => {
                     <div
                       key={idx}
                       className={`${
-                        message.role === 'assistant' ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/35' : ''
+                        message.role === 'assistant'
+                          ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/35'
+                          : ''
                       }`}>
                       <ChatMessageWithRelatedDocuments
                         chatContent={message}
@@ -549,6 +572,7 @@ const ChatPage: React.FC = () => {
                     outlined
                     onClick={() => {
                       retryPostChat({
+                        enableReasoning: reasoningEnabled,
                         bot: inputBotParams,
                       });
                     }}>
@@ -577,9 +601,9 @@ const ChatPage: React.FC = () => {
             {bot?.conversationQuickStarters?.map((qs, idx) => (
               <div
                 key={idx}
-                className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink-light/20 dark:border-aws-squid-ink-dark/20 bg-white p-2  text-sm text-dark-gray dark:text-light-gray  hover:shadow-lg hover:shadow-gray"
+                className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink-light/20 bg-white p-2 text-sm  text-dark-gray hover:shadow-lg hover:shadow-gray  dark:border-aws-squid-ink-dark/20 dark:text-light-gray"
                 onClick={() => {
-                  onSend(qs.example);
+                  onSend(qs.example, reasoningEnabled);
                 }}>
                 <div>
                   <PiPenNib />
@@ -609,6 +633,9 @@ const ChatPage: React.FC = () => {
           onRegenerate={onRegenerate}
           continueGenerate={onContinueGenerate}
           ref={focusInputRef}
+          supportReasoning={supportReasoning}
+          reasoningEnabled={reasoningEnabled}
+          onChangeReasoning={setReasoningEnabled}
         />
       </div>
       <BottomHelper />
