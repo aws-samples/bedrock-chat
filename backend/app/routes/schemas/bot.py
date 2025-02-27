@@ -87,6 +87,13 @@ class InternetTool(BaseSchema):
         if v not in ["duckduckgo", "firecrawl"]:
             raise ValueError(f"Invalid search engine: {v}")
         return v
+    
+    @validator("firecrawl_config")
+    def validate_firecrawl_config(cls, v, values):
+        if values.get("search_engine") == "firecrawl" and v is None:
+            raise ValueError("Firecrawl config is required when search engine is firecrawl")
+        return v
+        
 
 
 Tool = PlainTool | InternetTool
