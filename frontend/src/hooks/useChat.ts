@@ -594,7 +594,7 @@ const useChat = () => {
           (content) => content.contentType === 'text'
         );
         if (textIndex >= 0) {
-          (draft.content[textIndex] as any).body = props.content;
+          (draft.content[textIndex] as TextContent).body = props.content;
         }
       }
     });

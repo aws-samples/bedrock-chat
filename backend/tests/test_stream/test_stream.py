@@ -17,7 +17,10 @@ from app.repositories.models.conversation import (
     MessageModel,
     TextContentModel,
 )
-from app.repositories.models.custom_bot import GenerationParamsModel, ReasoningParamsModel
+from app.repositories.models.custom_bot import (
+    GenerationParamsModel,
+    ReasoningParamsModel,
+)
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.stream import ConverseApiStreamHandler, OnStopInput
 from get_aws_logo import get_aws_logo, get_cdk_logo

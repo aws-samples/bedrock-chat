@@ -219,7 +219,6 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       clearAttachedFiles,
       content,
       disabledImageUpload,
-      reasoningEnabled,
       props,
     ]);
 

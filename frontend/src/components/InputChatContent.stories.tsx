@@ -66,7 +66,7 @@ export const WithRegenerate = () => {
   );
 };
 
-export const withContinue = () => {
+export const WithContinue = () => {
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
   return (
     <InputChatContent
