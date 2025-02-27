@@ -34,6 +34,15 @@ export CLIENT_ID=xxxxxxxxx
 poetry run uvicorn app.main:app  --reload --host 0.0.0.0 --port 8000
 ```
 
+Alternatively, you can use the convenience script run_backend_local.sh that will setup the environment variables and launch uvicorn app. 
+
+```sh 
+   cd <repo-root> 
+   ./generate-env.sh             # generates env file with stack info
+   python ./run_backend_local.sh # uses env file to launch
+```
+
+
 - To refer the specification, access to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for [Swagger](https://swagger.io/) and [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) for [Redoc](https://github.com/Redocly/redoc).
 
 ## Unit test
