@@ -858,6 +858,34 @@ const BotKbEditPage: React.FC = () => {
     [setErrorMessages, t]
   );
 
+  const isToolValid = useCallback((): boolean => {
+    clearErrorMessages();
+  
+    // Early return if no tools
+    if (!tools.length) return true;
+  
+    // Use some() instead of every() since we want to find invalid tools
+    const hasInvalidTool = tools.some((tool, idx) => {
+      if (!isInternetTool(tool)) return false;
+  
+      const isFirecrawlTool = tool.searchEngine === 'firecrawl';
+      const hasInvalidConfig = !tool.firecrawlConfig || !tool.firecrawlConfig.apiKey;
+  
+      if (isFirecrawlTool && hasInvalidConfig) {
+        setErrorMessages(
+          `tools-${idx}-firecrawlConfig.apiKey`, 
+          t('input.validationError.required')
+        );
+        return true; // Found an invalid tool
+      }
+  
+      return false; // Tool is valid
+    });
+  
+    return !hasInvalidTool;
+  }, [clearErrorMessages, tools, setErrorMessages, t]);
+  
+
   const isValid = useCallback((): boolean => {
     clearErrorMessages();
 
@@ -871,6 +899,10 @@ const BotKbEditPage: React.FC = () => {
       }
     });
     if (!isS3UrlsValid) {
+      return false;
+    }
+
+    if (!isToolValid()){
       return false;
     }
 
@@ -1115,6 +1147,7 @@ const BotKbEditPage: React.FC = () => {
     stopSequences.length,
     searchParams.maxResults,
     conversationQuickStarters,
+    isToolValid,
     isValidGenerationConfigParam,
     maxTokens,
     topK,
@@ -1232,6 +1265,7 @@ const BotKbEditPage: React.FC = () => {
       });
   }, [
     isValid,
+    isToolValid,
     registerBot,
     tools,
     botId,
