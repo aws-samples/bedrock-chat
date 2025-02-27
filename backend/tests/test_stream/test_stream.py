@@ -1,18 +1,23 @@
 import base64
+import os
 import sys
 
+os.environ["REGION"] = "us-west-2"
+os.environ["BEDROCK_REGION"] = "us-west-2"
+os.environ["ENABLE_BEDROCK_CROSS_REGION_INFERENCE"] = "true"
 sys.path.append(".")
 
 import unittest
+from pprint import pprint
 
 import boto3
 from app.repositories.models.conversation import (
-    TextContentModel,
-    ImageContentModel,
     AttachmentContentModel,
+    ImageContentModel,
     MessageModel,
+    TextContentModel,
 )
-from app.repositories.models.custom_bot import GenerationParamsModel
+from app.repositories.models.custom_bot import GenerationParamsModel, ReasoningParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.stream import ConverseApiStreamHandler, OnStopInput
 from get_aws_logo import get_aws_logo, get_cdk_logo
@@ -21,7 +26,7 @@ from ulid import ULID
 
 
 def on_stream(x: str) -> None:
-    print(x)
+    print(f"Stream: {x}")
 
 
 def on_stop(x: OnStopInput) -> None:
@@ -29,11 +34,17 @@ def on_stop(x: OnStopInput) -> None:
     print(f"Price: {x['price']}")
     print(f"Input token count: {x['input_token_count']}")
     print(f"Output token count: {x['output_token_count']}")
+    pprint(x["message"])
+
+
+def on_reasoning(x: str) -> None:
+    print(f"Reasoning: {x}")
 
 
 class TestConverseApiStreamHandler(unittest.TestCase):
-    MODEL = "claude-v3-sonnet"
+    # MODEL = "claude-v3-sonnet"
     # MODEL = "mistral-7b-instruct"
+    MODEL = "claude-v3.7-sonnet"
 
     def _run(self, message, instructions=[], generation_params=None, guardrail=None):
         self.stream_handler = ConverseApiStreamHandler(
@@ -42,6 +53,7 @@ class TestConverseApiStreamHandler(unittest.TestCase):
             generation_params=generation_params,
             guardrail=guardrail,
             on_stream=on_stream,
+            on_reasoning=on_reasoning,
         )
         result = self.stream_handler.run(
             messages=[message],
@@ -66,6 +78,37 @@ class TestConverseApiStreamHandler(unittest.TestCase):
             thinking_log=None,
         )
         self._run(message)
+
+    def test_run_with_reasoning(self):
+        message = MessageModel(
+            role="user",
+            content=[
+                TextContentModel(
+                    content_type="text",
+                    body="「本日のお買い得品はこれさ。」「山がアリ地獄になったとき、新しい山は高くなっていく。全てはガラスの向こうの出来事」「何かが分かったら、更に半額で売ってあげるよ。ひらがな5文字で答えられるかな。」",
+                )
+            ],
+            model=self.MODEL,
+            children=[],
+            parent=None,
+            create_time=0,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self._run(
+            message,
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=50,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+                reasoning_params=ReasoningParamsModel(
+                    budget_tokens=1024,
+                ),
+            ),
+        )
 
     def test_run_with_instruction(self):
         message = MessageModel(
@@ -112,6 +155,9 @@ class TestConverseApiStreamHandler(unittest.TestCase):
             top_p=0.999,
             temperature=0.6,
             stop_sequences=["Human: ", "Assistant: "],
+            reasoning_params=ReasoningParamsModel(
+                budget_tokens=1024,
+            ),
         )
         self._run(message, generation_params=generation_params)
 

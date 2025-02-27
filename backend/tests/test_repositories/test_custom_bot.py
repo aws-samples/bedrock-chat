@@ -29,6 +29,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import (
@@ -110,6 +111,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.generation_params.top_k, 250)
         self.assertEqual(bot.generation_params.top_p, 0.999)
         self.assertEqual(bot.generation_params.temperature, 0.6)
+        self.assertEqual(bot.generation_params.reasoning_params.budget_tokens, 1024)
 
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
@@ -249,6 +251,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_p=0.99,
                 temperature=0.2,
                 stop_sequences=["Human: ", "Assistant: "],
+                reasoning_params=ReasoningParamsModel(budget_tokens=2048),
             ),
             agent=AgentModel(
                 tools=[
@@ -312,6 +315,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.generation_params.top_k, 250)
         self.assertEqual(bot.generation_params.top_p, 0.99)
         self.assertEqual(bot.generation_params.temperature, 0.2)
+        self.assertEqual(bot.generation_params.reasoning_params.budget_tokens, 2048)
 
         self.assertEqual(bot.agent.tools[0].name, "updated_tool")
         self.assertEqual(bot.agent.tools[0].description, "updated description")

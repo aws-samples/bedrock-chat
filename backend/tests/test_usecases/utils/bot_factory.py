@@ -12,6 +12,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
 )
 
 
@@ -38,11 +39,14 @@ def create_test_private_bot(
         public_bot_id=None,
         owner_user_id=owner_user_id,
         generation_params=GenerationParamsModel(
-            max_tokens=2000,
+            max_tokens=20000,
             top_k=250,
             top_p=0.999,
-            temperature=0.6,
+            temperature=1.0,
             stop_sequences=["Human: ", "Assistant: "],
+            reasoning_params=ReasoningParamsModel(
+                budget_tokens=1024,
+            ),
         ),
         agent=AgentModel(
             tools=(
@@ -64,9 +68,7 @@ def create_test_private_bot(
                 s3_urls=["s3://example/doc/"],
             )
             if set_dummy_knowledge
-            else KnowledgeModel(
-                source_urls=[], sitemap_urls=[], filenames=[], s3_urls=[]
-            )
+            else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[], s3_urls=[])
         ),
         sync_status=sync_status,
         sync_status_reason="reason",
@@ -107,6 +109,9 @@ def create_test_public_bot(
             top_p=0.999,
             temperature=0.6,
             stop_sequences=["Human: ", "Assistant: "],
+            reasoning_params=ReasoningParamsModel(
+                budget_tokens=1024,
+            ),
         ),
         agent=AgentModel(
             # tools=[

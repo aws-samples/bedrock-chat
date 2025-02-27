@@ -1,7 +1,12 @@
+import os
 import sys
 
 import boto3
 from ulid import ULID
+
+os.environ["REGION"] = "us-west-2"
+os.environ["BEDROCK_REGION"] = "us-west-2"
+os.environ["ENABLE_BEDROCK_CROSS_REGION_INFERENCE"] = "true"
 
 sys.path.append(".")
 
@@ -14,7 +19,8 @@ from app.repositories.models.conversation import SimpleMessageModel, TextContent
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 
-MODEL: type_model_name = "claude-v3-haiku"
+# MODEL: type_model_name = "claude-v3-haiku"
+MODEL: type_model_name = "claude-v3.7-sonnet"
 
 
 class TestGetModelId(unittest.TestCase):

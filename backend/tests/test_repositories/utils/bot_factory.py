@@ -15,6 +15,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
 )
 from app.routes.schemas.bot import type_sync_status
 
@@ -49,6 +50,7 @@ def create_test_private_bot(
             top_p=0.999,
             temperature=0.6,
             stop_sequences=["Human: ", "Assistant: "],
+            reasoning_params=ReasoningParamsModel(budget_tokens=1024),
         ),
         agent=AgentModel(
             tools=[
@@ -104,6 +106,7 @@ def create_test_public_bot(
             top_p=0.999,
             temperature=0.6,
             stop_sequences=["Human: ", "Assistant: "],
+            reasoning_params=ReasoningParamsModel(budget_tokens=1024),
         ),
         agent=AgentModel(
             tools=[

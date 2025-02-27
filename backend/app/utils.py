@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 REGION = os.environ.get("REGION", "us-east-1")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+
+logger.debug(f"REGION: {REGION}")
+logger.debug(f"BEDROCK_REGION: {BEDROCK_REGION}")
+
 PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
     "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
 )
