@@ -36,7 +36,7 @@ from app.repositories.models.custom_bot import (
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
-from app.utils import get_current_time, delete_secret_manager
+from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -706,13 +706,6 @@ def delete_bot_publication(user_id: str, bot_id: str):
 def delete_bot_by_id(user_id: str, bot_id: str):
     table = _get_table_client(user_id)
     logger.info(f"Deleting bot with id: {bot_id}")
-
-    try:
-        # delete api key for firecrawl
-        delete_secret_manager(user_id, bot_id, "firecrawl")
-    except ClientError as e:
-        logger.error(f"Error deleting Firecrawl API key for bot {bot_id}: {e}")
-        raise e
 
     try:
         response = table.delete_item(
