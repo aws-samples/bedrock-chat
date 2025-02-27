@@ -9,16 +9,12 @@ from threading import Thread
 from typing import BinaryIO, Literal, TypedDict
 
 import boto3
+from app.agents.tools.agent_tool import ToolRunResult
 from app.auth import verify_token
-from app.agents.tools.agent_tool import (
-    ToolRunResult,
-)
 from app.repositories.conversation import RecordNotFoundError
 from app.routes.schemas.conversation import ChatInput
 from app.stream import OnStopInput, OnThinking
-from app.usecases.chat import (
-    chat,
-)
+from app.usecases.chat import chat
 from boto3.dynamodb.conditions import Attr, Key
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
@@ -160,6 +156,15 @@ class NotificationSender:
                 ).encode("utf-8")
             )
 
+    def on_reasoning(self, token: str):
+        payload = json.dumps(
+            dict(
+                status="REASONING",
+                completion=token,
+            )
+        ).encode("utf-8")
+        self.notify(payload=payload)
+
 
 def process_chat_input(
     user_id: str,
@@ -184,6 +189,9 @@ def process_chat_input(
             ),
             on_tool_result=lambda run_result: notificator.on_agent_tool_result(
                 run_result=run_result
+            ),
+            on_reasoning=lambda token: notificator.on_reasoning(
+                token=token,
             ),
         )
 

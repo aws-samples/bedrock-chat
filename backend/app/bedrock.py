@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from mypy_boto3_bedrock_runtime.type_defs import (
         ContentBlockTypeDef,
         ConverseResponseTypeDef,
-        ConverseStreamRequestRequestTypeDef,
+        ConverseStreamRequestTypeDef,
         GuardrailConverseContentBlockTypeDef,
         InferenceConfigurationTypeDef,
         MessageTypeDef,
@@ -105,7 +105,8 @@ def compose_args_for_converse_api(
     grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
     tools: dict[str, AgentTool] | None = None,
     stream: bool = True,
-) -> ConverseStreamRequestRequestTypeDef:
+    enable_reasoning: bool = False,
+) -> ConverseStreamRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         if c.content_type == "text":
             if (
@@ -142,6 +143,7 @@ def compose_args_for_converse_api(
     inference_config: InferenceConfigurationTypeDef
     additional_model_request_fields: dict[str, Any]
     system_prompts: list[SystemContentBlockTypeDef]
+
     if is_nova_model(model):
         # Special handling for Nova models
         inference_config, additional_model_request_fields = _prepare_nova_model_params(
@@ -159,35 +161,76 @@ def compose_args_for_converse_api(
 
     else:
         # Standard handling for non-Nova models
-        inference_config = {
-            "maxTokens": (
+        if enable_reasoning:
+            budget_tokens = (
+                generation_params.reasoning_params.budget_tokens
+                if generation_params and generation_params.reasoning_params
+                else DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # type: ignore
+            )
+            max_tokens = (
                 generation_params.max_tokens
                 if generation_params
                 else DEFAULT_GENERATION_CONFIG["max_tokens"]
-            ),
-            "temperature": (
-                generation_params.temperature
-                if generation_params
-                else DEFAULT_GENERATION_CONFIG["temperature"]
-            ),
-            "topP": (
-                generation_params.top_p
-                if generation_params
-                else DEFAULT_GENERATION_CONFIG["top_p"]
-            ),
-            "stopSequences": (
-                generation_params.stop_sequences
-                if generation_params
-                else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
-            ),
-        }
-        additional_model_request_fields = {
-            "top_k": (
-                generation_params.top_k
-                if generation_params
-                else DEFAULT_GENERATION_CONFIG["top_k"]
             )
-        }
+
+            if max_tokens <= budget_tokens:
+                logger.warning(
+                    f"max_tokens ({max_tokens}) must be greater than budget_tokens ({budget_tokens}). "
+                    f"Setting max_tokens to {budget_tokens + 1024}"
+                )
+                max_tokens = budget_tokens + 1024
+
+            inference_config = {
+                "maxTokens": max_tokens,
+                "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
+                "topP": (
+                    generation_params.top_p
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["top_p"]
+                ),
+                "stopSequences": (
+                    generation_params.stop_sequences
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                ),
+            }
+            additional_model_request_fields = {
+                # top_k cannot be used with reasoning
+                "thinking": {
+                    "type": "enabled",
+                    "budget_tokens": budget_tokens,
+                },
+            }
+        else:
+            inference_config = {
+                "maxTokens": (
+                    generation_params.max_tokens
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["max_tokens"]
+                ),
+                "temperature": (
+                    generation_params.temperature
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["temperature"]
+                ),
+                "topP": (
+                    generation_params.top_p
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["top_p"]
+                ),
+                "stopSequences": (
+                    generation_params.stop_sequences
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                ),
+            }
+            additional_model_request_fields = {
+                "top_k": (
+                    generation_params.top_k
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["top_k"]
+                ),
+            }
         system_prompts = [
             {
                 "text": instruction,
@@ -197,7 +240,7 @@ def compose_args_for_converse_api(
         ]
 
     # Construct the base arguments
-    args: ConverseStreamRequestRequestTypeDef = {
+    args: ConverseStreamRequestTypeDef = {
         "inferenceConfig": inference_config,
         "modelId": get_model_id(model),
         "messages": arg_messages,
@@ -230,7 +273,7 @@ def compose_args_for_converse_api(
 
 
 def call_converse_api(
-    args: ConverseStreamRequestRequestTypeDef,
+    args: ConverseStreamRequestTypeDef,
 ) -> ConverseResponseTypeDef:
     client = get_bedrock_runtime_client()
 
