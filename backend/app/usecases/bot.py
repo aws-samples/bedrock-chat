@@ -37,6 +37,7 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -147,16 +148,19 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         filenames = bot_input.knowledge.filenames
 
-    generation_params: GenerationParamsDict = (
-        {
-            "max_tokens": bot_input.generation_params.max_tokens,
-            "top_k": bot_input.generation_params.top_k,
-            "top_p": bot_input.generation_params.top_p,
-            "temperature": bot_input.generation_params.temperature,
-            "stop_sequences": bot_input.generation_params.stop_sequences,
-        }
+    generation_params = (
+        GenerationParamsModel(
+            max_tokens=bot_input.generation_params.max_tokens,
+            top_k=bot_input.generation_params.top_k,
+            top_p=bot_input.generation_params.top_p,
+            temperature=bot_input.generation_params.temperature,
+            stop_sequences=bot_input.generation_params.stop_sequences,
+            reasoning_params=ReasoningParamsModel(
+                budget_tokens=bot_input.generation_params.reasoning_params.budget_tokens
+            ),
+        )
         if bot_input.generation_params
-        else DEFAULT_GENERATION_CONFIG
+        else GenerationParamsModel.model_validate(DEFAULT_GENERATION_CONFIG)
     )
 
     agent = (
@@ -184,7 +188,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             public_bot_id=None,
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
-            generation_params=GenerationParamsModel(**generation_params),
+            generation_params=generation_params,
             agent=agent,
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
@@ -237,7 +241,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
-        generation_params=GenerationParams(**generation_params),
+        generation_params=GenerationParams.model_validate(
+            generation_params.model_dump()
+        ),
         agent=Agent(
             tools=[
                 AgentTool(name=tool.name, description=tool.description)
@@ -313,16 +319,19 @@ def modify_owned_bot(
             + modify_input.knowledge.unchanged_filenames
         )
 
-    generation_params: GenerationParamsDict = (
-        {
-            "max_tokens": modify_input.generation_params.max_tokens,
-            "top_k": modify_input.generation_params.top_k,
-            "top_p": modify_input.generation_params.top_p,
-            "temperature": modify_input.generation_params.temperature,
-            "stop_sequences": modify_input.generation_params.stop_sequences,
-        }
+    generation_params = (
+        GenerationParamsModel(
+            max_tokens=modify_input.generation_params.max_tokens,
+            top_k=modify_input.generation_params.top_k,
+            top_p=modify_input.generation_params.top_p,
+            temperature=modify_input.generation_params.temperature,
+            stop_sequences=modify_input.generation_params.stop_sequences,
+            reasoning_params=ReasoningParamsModel(
+                budget_tokens=modify_input.generation_params.reasoning_params.budget_tokens
+            ),
+        )
         if modify_input.generation_params
-        else DEFAULT_GENERATION_CONFIG
+        else GenerationParamsModel.model_validate(DEFAULT_GENERATION_CONFIG)
     )
 
     agent = (
@@ -374,7 +383,7 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
-        generation_params=GenerationParamsModel(**generation_params),
+        generation_params=generation_params,
         agent=agent,
         knowledge=KnowledgeModel(
             source_urls=source_urls,
@@ -412,7 +421,9 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
-        generation_params=GenerationParams(**generation_params),
+        generation_params=GenerationParams.model_validate(
+            generation_params.model_dump()
+        ),
         agent=Agent(
             tools=[
                 AgentTool(name=tool.name, description=tool.description)

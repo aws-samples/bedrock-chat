@@ -1,9 +1,7 @@
 import logging
 from typing import Callable
 
-from app.agents.tools.agent_tool import (
-    ToolRunResult,
-)
+from app.agents.tools.agent_tool import ToolRunResult
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import call_converse_api, compose_args_for_converse_api
@@ -18,6 +16,7 @@ from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
+    ReasoningContentModel,
     RelatedDocumentModel,
     SimpleMessageModel,
     TextContentModel,
@@ -28,6 +27,7 @@ from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotModel,
     ConversationQuickStarterModel,
+    GenerationParamsModel,
 )
 from app.routes.schemas.conversation import (
     ChatInput,
@@ -232,6 +232,7 @@ def chat(
     on_stop: Callable[[OnStopInput], None] | None = None,
     on_thinking: Callable[[OnThinking], None] | None = None,
     on_tool_result: Callable[[ToolRunResult], None] | None = None,
+    on_reasoning: Callable[[str], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
@@ -358,6 +359,7 @@ def chat(
         tools=tools,
         on_stream=on_stream,
         on_thinking=on_thinking,
+        on_reasoning=on_reasoning,
     )
 
     thinking_log: list[SimpleMessageModel] = []
@@ -366,6 +368,7 @@ def chat(
             messages=messages,
             grounding_source=grounding_source,
             message_for_continue_generate=message_for_continue_generate,
+            enable_reasoning=chat_input.enable_reasoning,
         )
 
         message = result["message"]
@@ -374,11 +377,40 @@ def chat(
         conversation.total_price += result["price"]
         conversation.should_continue = stop_reason == "max_tokens"
 
-        if stop_reason != "tool_use":
+        if stop_reason != "tool_use":  # Tool use converged
             message.parent = user_msg_id
 
-            if len(thinking_log) > 0:
-                message.thinking_log = thinking_log
+            # If there is a thinking_log that includes reasoning, add it to the beginning of the content.
+            reasoning_log = next(
+                (
+                    log
+                    for log in thinking_log
+                    if any(
+                        isinstance(content, ReasoningContentModel)
+                        for content in log.content
+                    )
+                ),
+                None,
+            )
+            if reasoning_log:
+                reasoning_content = next(
+                    content
+                    for content in reasoning_log.content
+                    if isinstance(content, ReasoningContentModel)
+                )
+                message.content.insert(0, reasoning_content)
+
+            # Retain tool use and its result logs
+            tool_logs = [
+                log
+                for log in thinking_log
+                if any(
+                    isinstance(content, (ToolUseContentModel, ToolResultContentModel))
+                    for content in log.content
+                )
+            ]
+            if tool_logs:
+                message.thinking_log = tool_logs
 
             if chat_input.continue_generate:
                 # For continue generate
@@ -559,6 +591,7 @@ def propose_conversation_title(
             if not any(
                 isinstance(content, ToolUseContentModel)
                 or isinstance(content, ToolResultContentModel)
+                or isinstance(content, ReasoningContentModel)
                 for content in message.content
             )
         ],

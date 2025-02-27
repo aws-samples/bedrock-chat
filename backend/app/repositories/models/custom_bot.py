@@ -1,11 +1,11 @@
-from typing import Any, Dict, List, Literal, Type, get_args
+from typing import Any, Dict, List, Type, get_args
 
 from app.repositories.models.common import DynamicBaseModel, Float
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, create_model, field_validator
 
 
 def _create_model_activate_model(model_names: List[str]) -> Type[DynamicBaseModel]:
@@ -52,12 +52,23 @@ class KnowledgeModel(BaseModel):
         return f"{_source_urls}{_sitemap_urls}{_filenames}{_s3_urls}"
 
 
+class ReasoningParamsModel(BaseModel):
+    budget_tokens: int
+
+    @field_validator("budget_tokens")
+    def validate_budget_tokens(cls, v: int) -> int:
+        if v < 1024:
+            raise ValueError("budget_tokens must be greater than or equal to 1024")
+        return v
+
+
 class GenerationParamsModel(BaseModel):
     max_tokens: int
     top_k: int
     top_p: Float
     temperature: Float
     stop_sequences: list[str]
+    reasoning_params: ReasoningParamsModel
 
 
 class AgentToolModel(BaseModel):

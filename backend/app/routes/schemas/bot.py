@@ -49,12 +49,17 @@ def create_model_activate_output(model_names: List[str]) -> Type[BaseSchema]:
 ActiveModelsOutput = create_model_activate_output(list(get_args(type_model_name)))
 
 
+class ReasoningParams(BaseSchema):
+    budget_tokens: int
+
+
 class GenerationParams(BaseSchema):
     max_tokens: int
     top_k: int
     top_p: float
     temperature: float
     stop_sequences: list[str]
+    reasoning_params: ReasoningParams
 
 
 class AgentTool(BaseSchema):

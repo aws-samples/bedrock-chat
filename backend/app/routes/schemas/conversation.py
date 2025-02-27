@@ -135,8 +135,22 @@ class ToolResultContent(BaseSchema):
     body: ToolResultContentBody
 
 
+class ReasoningContent(BaseSchema):
+    content_type: Literal["reasoning"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
+    text: str
+    signature: str
+    redacted_content: Base64EncodedBytes
+
+
 Content = Annotated[
-    TextContent | ImageContent | AttachmentContent | ToolUseContent | ToolResultContent,
+    TextContent
+    | ImageContent
+    | AttachmentContent
+    | ToolUseContent
+    | ToolResultContent
+    | ReasoningContent,
     Discriminator("content_type"),
 ]
 
@@ -172,6 +186,7 @@ class ChatInput(BaseSchema):
     message: MessageInput
     bot_id: str | None = Field(None)
     continue_generate: bool = Field(False)
+    enable_reasoning: bool = Field(False)
 
 
 class ChatOutput(BaseSchema):

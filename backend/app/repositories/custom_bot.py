@@ -444,9 +444,16 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
         generation_params=GenerationParamsModel.model_validate(
-            item["GenerationParams"]
-            if "GenerationParams" in item
-            else DEFAULT_GENERATION_CONFIG
+            {
+                **item.get("GenerationParams", DEFAULT_GENERATION_CONFIG),
+                # For backward compatibility
+                "reasoning_params": item.get("GenerationParams", {}).get(
+                    "reasoning_params",
+                    {
+                        "budget_tokens": DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"],  # type: ignore
+                    },
+                ),
+            }
         ),
         agent=(
             AgentModel(**item["AgentData"])
@@ -526,9 +533,16 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         public_bot_id=item["PublicBotId"],
         owner_user_id=item["PK"],
         generation_params=GenerationParamsModel.model_validate(
-            item["GenerationParams"]
-            if "GenerationParams" in item
-            else DEFAULT_GENERATION_CONFIG
+            {
+                **item.get("GenerationParams", DEFAULT_GENERATION_CONFIG),
+                # For backward compatibility
+                "reasoning_params": item.get("GenerationParams", {}).get(
+                    "reasoning_params",
+                    {
+                        "budget_tokens": DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"],  # type: ignore
+                    },
+                ),
+            }
         ),
         agent=(
             AgentModel(**item["AgentData"])
