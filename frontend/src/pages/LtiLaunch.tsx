@@ -61,6 +61,16 @@ const LtiLaunch: React.FC = () => {
         setLtiSession(queryParamsObject);
         const _email = queryParamsObject?.email;
 
+        // Store the query params in local storage 
+        localStorage.setItem('ltiSession', JSON.stringify(queryParamsObject))
+        // set individual keys for every query param
+        if (queryParamsObject) {
+          console.log('setting indiviudal keys')
+          Object.keys(queryParamsObject).forEach((key) => {
+            localStorage.setItem(key, queryParamsObject[key]);
+          });
+        }
+
         if (_email === null) {
           setPageState(PageState.ERROR);
         } else if (_username === '') {
@@ -127,7 +137,7 @@ const LtiLaunch: React.FC = () => {
     if (action === null) return;
 
     // schedule a call to nextStep.action after few seconds 
-    console.log(`Run ${action} Take next step after 3 second`);
+    console.log(`Waiting 3 seconds ..`);
     const timer = setTimeout(() => {
       action();
     }, 3000);
