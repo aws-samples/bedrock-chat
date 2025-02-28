@@ -1,15 +1,17 @@
 import logging
-from typing import Any, Dict, List, Literal, Optional, Self, Type, get_args
+from typing import Annotated, Any, Dict, List, Literal, Optional, Self, Type, get_args
 
 from app.repositories.models.common import DynamicBaseModel, Float, SecureString
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import (
+    Agent,
     AgentInput,
     AgentToolInput,
     FirecrawlConfig,
     InternetTool,
     PlainTool,
+    Tool,
     type_sync_status,
 )
 from app.routes.schemas.conversation import type_model_name
@@ -17,6 +19,7 @@ from app.utils import get_api_key_from_secret_manager, store_api_key_to_secret_m
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Discriminator,
     Field,
     create_model,
     field_validator,
@@ -144,13 +147,25 @@ class InternetToolModel(BaseModel):
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
-    @field_validator("firecrawl_config")
-    def validate_firecrawl_config(cls, value, values):
-        if values["search_engine"] == "firecrawl" and not value:
-            raise ValueError(
-                "Firecrawl configuration is required for Firecrawl search."
+    @model_validator(mode="before")
+    @classmethod
+    def load_firecrawl_secret(cls, data):
+        """Ensures validation of nested `FirecrawlConfigModel` with secret loading.
+
+        This validator is specifically for InternetToolModel and handles the nested `FirecrawlConfigModel` validation.
+        Without this explicit validation, the `load_secret_from_arn` validator in `FirecrawlConfigModel`
+        would not be triggered during the normal nested model validation process and
+        `model_validate` would not load the API key from Secrets Manager.
+        """
+        if (
+            isinstance(data, dict)
+            and data.get("firecrawl_config")
+            and isinstance(data["firecrawl_config"], dict)
+        ):
+            data["firecrawl_config"] = FirecrawlConfigModel.model_validate(
+                data["firecrawl_config"]
             )
-        return value
+        return data
 
     @classmethod
     def from_tool_input(cls, tool: AgentToolInput, user_id: str, bot_id: str) -> Self:
@@ -169,11 +184,26 @@ class InternetToolModel(BaseModel):
         )
 
 
-ToolModel = PlainToolModel | InternetToolModel
+ToolModel = Annotated[PlainToolModel | InternetToolModel, Discriminator("tool_type")]
 
 
 class AgentModel(BaseModel):
     tools: list[ToolModel]
+
+    @field_validator("tools", mode="before")
+    def handle_legacy_tools(cls, v):
+        """For backward compatibility, convert legacy tools to the new format.
+        If the tool is legacy such that it does not have a `tool_type` field,
+        it will be converted to a `plain` tool.
+        """
+        if isinstance(v, list):
+            converted_tools = []
+            for tool in v:
+                if isinstance(tool, dict) and "tool_type" not in tool:
+                    tool["tool_type"] = "plain"
+                converted_tools.append(tool)
+            return converted_tools
+        return v
 
     @classmethod
     def from_agent_input(
@@ -192,6 +222,39 @@ class AgentModel(BaseModel):
                 )
 
         return cls(tools=tools)
+
+    def to_agent(self) -> Agent:
+        """Convert to Agent schema while preserving secure strings."""
+
+        tools: List[Tool] = []
+        for tool in self.tools:
+            if isinstance(tool, InternetToolModel):
+                # Special handling for FirecrawlConfigModel
+                firecrawl_config = None
+                if tool.firecrawl_config:
+                    firecrawl_config = FirecrawlConfig(
+                        # return the secret ARN as the API key
+                        api_key=tool.firecrawl_config.api_key,
+                        max_results=tool.firecrawl_config.max_results,
+                    )
+
+                tools.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=tool.name,
+                        description=tool.description,
+                        search_engine=tool.search_engine,
+                        firecrawl_config=firecrawl_config,
+                    )
+                )
+            else:
+                tools.append(
+                    PlainTool(
+                        tool_type="plain", name=tool.name, description=tool.description
+                    )
+                )
+
+        return Agent(tools=tools)
 
 
 class ConversationQuickStarterModel(BaseModel):

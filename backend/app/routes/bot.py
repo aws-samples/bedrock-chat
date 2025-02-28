@@ -119,7 +119,7 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
-        agent=Agent.model_validate(bot.agent.model_dump()),
+        agent=bot.agent.to_agent(),
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,
