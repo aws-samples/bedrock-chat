@@ -1,11 +1,30 @@
-from typing import Any, Dict, List, Literal, Optional, Type, get_args
+import logging
+from typing import Any, Dict, List, Literal, Optional, Self, Type, get_args
 
-from app.repositories.models.common import DynamicBaseModel, Float
+from app.repositories.models.common import DynamicBaseModel, Float, SecureString
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
-from app.routes.schemas.bot import type_sync_status
+from app.routes.schemas.bot import (
+    AgentInput,
+    AgentToolInput,
+    FirecrawlConfig,
+    InternetTool,
+    PlainTool,
+    type_sync_status,
+)
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel, ConfigDict, create_model, Field, model_validator
+from app.utils import get_api_key_from_secret_manager, store_api_key_to_secret_manager
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    create_model,
+    field_validator,
+    model_validator,
+)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def _create_model_activate_model(model_names: List[str]) -> Type[DynamicBaseModel]:
@@ -62,22 +81,43 @@ class GenerationParamsModel(BaseModel):
 
 class FirecrawlConfigModel(BaseModel):
     secret_arn: str
-    api_key: str
+    api_key: SecureString
     max_results: int = 10
+
+    @classmethod
+    def from_firecrawl_config(
+        cls, config: FirecrawlConfig, user_id: str, bot_id: str
+    ) -> Self:
+        """Create a configuration model from the input and save the API key to Secrets Manager"""
+        secret_arn = store_api_key_to_secret_manager(
+            user_id, bot_id, "firecrawl", config.api_key
+        )
+
+        return cls(
+            secret_arn=secret_arn,
+            api_key=config.api_key,
+            max_results=config.max_results,
+        )
 
     @model_validator(mode="before")
     @classmethod
-    def validate_model(cls, data):
-        if isinstance(data, dict) and "api_key" not in data and "secret_arn" in data:
+    def load_secret_from_arn(cls, data):
+        """Load the API key from Secrets Manager when the API key is empty"""
+        if (
+            isinstance(data, dict)
+            and "api_key" in data
+            and data["api_key"] == ""  # API key is empty
+            and "secret_arn" in data
+        ):
             try:
-                from app.utils import get_secret_manager
-
-                data["api_key"] = get_secret_manager(data["secret_arn"])
+                api_key = get_api_key_from_secret_manager(data["secret_arn"])
+                data["api_key"] = api_key
             except Exception as e:
-                import logging
+                logger.error(f"Failed to retrieve secret from ARN: {e}")
+                raise ValueError(
+                    f"Failed to retrieve secret from ARN: {data['secret_arn']}"
+                )
 
-                logger = logging.getLogger(__name__)
-                logger.error(f"Error retrieving API key from secret_arn: {e}")
         return data
 
 
@@ -88,6 +128,10 @@ class PlainToolModel(BaseModel):
     )
     name: str
     description: str
+
+    @classmethod
+    def from_tool_input(cls, tool: AgentToolInput) -> Self:
+        return cls(tool_type="plain", name=tool.name, description=tool.description)
 
 
 class InternetToolModel(BaseModel):
@@ -100,12 +144,54 @@ class InternetToolModel(BaseModel):
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfigModel] | None = None
 
+    @field_validator("firecrawl_config")
+    def validate_firecrawl_config(cls, value, values):
+        if values["search_engine"] == "firecrawl" and not value:
+            raise ValueError(
+                "Firecrawl configuration is required for Firecrawl search."
+            )
+        return value
 
-Tool = PlainToolModel | InternetToolModel
+    @classmethod
+    def from_tool_input(cls, tool: AgentToolInput, user_id: str, bot_id: str) -> Self:
+        firecrawl_config = None
+        if tool.search_engine == "firecrawl" and tool.firecrawl_config:
+            firecrawl_config = FirecrawlConfigModel.from_firecrawl_config(
+                tool.firecrawl_config, user_id, bot_id
+            )
+
+        return cls(
+            tool_type="internet",
+            name=tool.name,
+            description=tool.description,
+            search_engine=tool.search_engine,
+            firecrawl_config=firecrawl_config,
+        )
+
+
+ToolModel = PlainToolModel | InternetToolModel
 
 
 class AgentModel(BaseModel):
-    tools: list[Tool]
+    tools: list[ToolModel]
+
+    @classmethod
+    def from_agent_input(
+        cls, agent_input: Optional[AgentInput], user_id: str, bot_id: str
+    ) -> Self:
+        if not agent_input or not hasattr(agent_input, "tools"):
+            return cls(tools=[])
+
+        tools: List[ToolModel] = []
+        for tool_input in agent_input.tools:
+            if tool_input.tool_type == "plain":
+                tools.append(PlainToolModel.from_tool_input(tool_input))
+            elif tool_input.tool_type == "internet":
+                tools.append(
+                    InternetToolModel.from_tool_input(tool_input, user_id, bot_id)
+                )
+
+        return cls(tools=tools)
 
 
 class ConversationQuickStarterModel(BaseModel):

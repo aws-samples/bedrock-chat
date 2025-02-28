@@ -30,21 +30,16 @@ from app.repositories.custom_bot import (
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    PlainToolModel,
     BotAliasModel,
     BotMeta,
     BotModel,
     ConversationQuickStarterModel,
-    FirecrawlConfigModel,
     GenerationParamsModel,
-    Tool,
-    InternetToolModel,
     KnowledgeModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import (
-    ActiveModelsInput,
     ActiveModelsOutput,
     Agent,
     BotInput,
@@ -54,7 +49,6 @@ from app.routes.schemas.bot import (
     BotOutput,
     BotSummaryOutput,
     ConversationQuickStarter,
-    FirecrawlConfig,
     GenerationParams,
     Knowledge,
     type_sync_status,
@@ -70,7 +64,7 @@ from app.utils import (
     generate_presigned_url,
     get_current_time,
     move_file_in_s3,
-    store_secret_manager,
+    store_api_key_to_secret_manager,
 )
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -105,47 +99,6 @@ def _update_s3_documents_by_diff(
         # Ignore errors when deleting a non-existent file from the S3 bucket used in knowledge bases.
         # This allows users to update bot if the uploaded file is missing after the bot is created.
         delete_file_from_s3(DOCUMENT_BUCKET, document_path, ignore_not_exist=True)
-
-
-def _process_agent_model(bot_input: dict, user_id: str, bot_id: str) -> AgentModel:
-    if not hasattr(bot_input, "agent") or not hasattr(bot_input.agent, "tools"):
-        return AgentModel.model_validate({"tools": []})
-
-    tools: list[Tool] = []
-    for tool in bot_input.agent.tools:
-        # Special processing only for firecrawl
-        if tool.tool_type == "internet" and tool.search_engine == "firecrawl":
-            if not tool.firecrawl_config:
-                continue
-
-            api_key = tool.firecrawl_config.api_key
-            secret_arn = store_secret_manager(user_id, bot_id, "firecrawl", api_key)
-
-            tool_dict = dict(tool)
-            # Replace API key with secret ARN
-            tool_dict["firecrawl_config"] = {
-                "secret_arn": secret_arn,
-                "max_results": (
-                    tool.firecrawl_config.max_results if tool.firecrawl_config else 10
-                ),  # デフォルト値を設定
-            }
-            tools.append(InternetToolModel.model_validate(tool_dict))
-        else:
-            # Process non-firecrawl tools directly with model_validate
-            if tool.tool_type == "plain":
-                tools.append(PlainToolModel.model_validate(tool))
-            elif tool.tool_type == "internet":
-                tools.append(InternetToolModel.model_validate(dict(tool)))
-
-    agent_model = AgentModel.model_validate({"tools": tools})
-    # model_validate automatically sets the api_key. Remove API key when registering to DynamoDB.
-    for tool in agent_model.tools:
-        if hasattr(tool, "firecrawl_config") and hasattr(
-            tool.firecrawl_config, "api_key"
-        ):
-            delattr(tool.firecrawl_config, "api_key")
-
-    return AgentModel.model_validate(agent_model)
 
 
 def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
@@ -218,8 +171,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             generation_params=GenerationParamsModel(**generation_params),
-            # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
-            agent=_process_agent_model(bot_input, user_id, bot_input.id),  # type: ignore
+            agent=AgentModel.from_agent_input(bot_input.agent, user_id, bot_input.id),
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
                 sitemap_urls=sitemap_urls,
@@ -394,8 +346,7 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParamsModel(**generation_params),
-        # When executing model_validate, deleted API keys are restored, therefore model_validate is not performed.
-        agent=_process_agent_model(modify_input, user_id, bot_id),  # type: ignore
+        agent=AgentModel.from_agent_input(modify_input.agent, user_id, bot_id),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

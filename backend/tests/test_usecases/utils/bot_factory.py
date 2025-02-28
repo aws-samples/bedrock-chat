@@ -7,11 +7,12 @@ from app.agents.tools.internet_search import internet_search_tool
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
     BotAliasModel,
     BotModel,
     GenerationParamsModel,
+    InternetToolModel,
     KnowledgeModel,
+    ToolModel,
 )
 
 
@@ -47,9 +48,11 @@ def create_test_private_bot(
         agent=AgentModel(
             tools=(
                 [
-                    AgentToolModel(
+                    InternetToolModel(
+                        tool_type="internet",
                         name=internet_search_tool.name,
                         description=internet_search_tool.description,
+                        firecrawl_config=None,
                     )
                 ]
                 if include_internet_tool
@@ -110,7 +113,7 @@ def create_test_public_bot(
         ),
         agent=AgentModel(
             # tools=[
-            #     AgentToolModel(
+            #     ToolModel(
             #         name=internet_search_tool.name,
             #         description=internet_search_tool.description,
             #     )

@@ -37,11 +37,11 @@ from app.repositories.models.conversation import (
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
     BotModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ToolModel,
 )
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -633,8 +633,8 @@ class TestConversationBotRepository(unittest.TestCase):
             ),
             agent=AgentModel(
                 tools=[
-                    AgentToolModel(name="tool1", description="tool1 description"),
-                    AgentToolModel(name="tool2", description="tool2 description"),
+                    ToolModel(name="tool1", description="tool1 description"),
+                    ToolModel(name="tool2", description="tool2 description"),
                 ]
             ),
             knowledge=KnowledgeModel(
@@ -677,8 +677,8 @@ class TestConversationBotRepository(unittest.TestCase):
             ),
             agent=AgentModel(
                 tools=[
-                    AgentToolModel(name="tool1", description="tool1 description"),
-                    AgentToolModel(name="tool2", description="tool2 description"),
+                    ToolModel(name="tool1", description="tool1 description"),
+                    ToolModel(name="tool2", description="tool2 description"),
                 ]
             ),
             knowledge=KnowledgeModel(

@@ -37,6 +37,14 @@ Base64EncodedBytes = Annotated[
     ),
 ]
 
+# Ensure that the value is set to empty when serializing.
+# When deserializing, need to care to fetch the value from the secret store
+# such as Secrets Manager.
+SecureString = Annotated[
+    str,
+    PlainSerializer(lambda v: "", return_type=str),
+]
+
 
 class DynamicBaseModel(BaseModel):
     model_config = ConfigDict(extra="allow")

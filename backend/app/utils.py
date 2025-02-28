@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Any, Literal
 
 import boto3
-from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
@@ -172,7 +171,9 @@ def start_codebuild_project(environment_variables: dict) -> str:
     return response["build"]["id"]
 
 
-def store_secret_manager(user_id: str, bot_id: str, prefix: str, api_key: str) -> str:
+def store_api_key_to_secret_manager(
+    user_id: str, bot_id: str, prefix: str, api_key: str
+) -> str:
     """Store API key in Secrets Manager.
 
     Args:
@@ -220,12 +221,12 @@ def store_secret_manager(user_id: str, bot_id: str, prefix: str, api_key: str) -
                 raise
 
     except ClientError as e:
-        logger.error(f"Error storing Firecrawl API key: {e}")
+        logger.error(f"Error storing API key: {e}")
         raise
 
 
-def get_secret_manager(secret_arn: str) -> str:
-    """Get Firecrawl API key from Secrets Manager.
+def get_api_key_from_secret_manager(secret_arn: str) -> str:
+    """Get API key from Secrets Manager.
 
     Args:
         secret_arn: Secret ARN
@@ -242,7 +243,7 @@ def get_secret_manager(secret_arn: str) -> str:
         secret = json.loads(response["SecretString"])
         return secret["api_key"]
     except ClientError as e:
-        logger.error(f"Error getting Firecrawl API key: {e}")
+        logger.error(f"Error getting API key: {e}")
         raise
 
 

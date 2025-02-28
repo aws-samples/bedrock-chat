@@ -1,10 +1,11 @@
 import logging
-from firecrawl.firecrawl import FirecrawlApp
+
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel, InternetToolModel
 from app.routes.schemas.conversation import type_model_name
-from app.utils import get_secret_manager
+from app.utils import get_api_key_from_secret_manager
 from duckduckgo_search import DDGS
+from firecrawl.firecrawl import FirecrawlApp
 from pydantic import BaseModel, Field, root_validator
 
 logger = logging.getLogger(__name__)
@@ -142,7 +143,9 @@ def _internet_search(
                     raise ValueError("Firecrawl configuration is not set in the bot.")
 
                 try:
-                    api_key = get_secret_manager(tool.firecrawl_config.secret_arn)
+                    api_key = get_api_key_from_secret_manager(
+                        tool.firecrawl_config.secret_arn
+                    )
                     return _search_with_firecrawl(
                         query=query,
                         api_key=api_key,

@@ -12,7 +12,7 @@ from app.routes.schemas.bot_kb import (
     BedrockKnowledgeBaseOutput,
 )
 from app.routes.schemas.conversation import type_model_name
-from pydantic import Field, create_model, validator
+from pydantic import Field, create_model, field_validator, validator
 
 if TYPE_CHECKING:
     from app.repositories.models.custom_bot import BotModel
@@ -61,9 +61,8 @@ class FirecrawlConfig(BaseSchema):
     api_key: str
     max_results: int = Field(default=10, ge=1, le=100)
 
-    @validator("api_key")
+    @field_validator("api_key")
     def validate_api_key(cls, v):
-        # ""はエラーにする
         if v == "":
             raise ValueError("Firecrawl API key is empty")
         return v
@@ -82,7 +81,7 @@ class InternetTool(BaseSchema):
     search_engine: Optional[Literal["duckduckgo", "firecrawl"]]
     firecrawl_config: Optional[FirecrawlConfig] | None = None
 
-    @validator("search_engine")
+    @field_validator("search_engine")
     def validate_search_engine(cls, v):
         if v not in ["duckduckgo", "firecrawl"]:
             raise ValueError(f"Invalid search engine: {v}")
