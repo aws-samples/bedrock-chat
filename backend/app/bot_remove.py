@@ -9,6 +9,7 @@ from app.repositories.api_publication import (
     find_usage_plan_by_id,
 )
 from app.repositories.common import RecordNotFoundError, decompose_bot_id
+from app.utils import delete_api_key_from_secret_manager
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
@@ -75,6 +76,7 @@ def handler(event: dict, context: Any) -> None:
 
     delete_from_s3(user_id, bot_id)
     delete_custom_bot_stack_by_bot_id(bot_id)
+    delete_api_key_from_secret_manager(user_id, bot_id, "firecrawl")
 
     # Check if api published stack exists
     try:

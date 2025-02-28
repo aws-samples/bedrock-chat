@@ -24,11 +24,11 @@ from app.repositories.custom_bot import (
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
     BotAliasModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    PlainToolModel,
     ReasoningParamsModel,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -255,8 +255,10 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             agent=AgentModel(
                 tools=[
-                    AgentToolModel(
-                        name="updated_tool", description="updated description"
+                    PlainToolModel(
+                        tool_type="plain",
+                        name="updated_tool",
+                        description="updated description",
                     ),
                 ]
             ),

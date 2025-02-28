@@ -35,6 +35,7 @@ import Toggle from '../../../components/Toggle';
 import RadioButton from '../../../components/RadioButton';
 import { useAgent } from '../../../features/agent/hooks/useAgent';
 import { AgentTool } from '../../../features/agent/types';
+import { isInternetTool } from '../../../features/agent/utils/typeGuards';
 import { AvailableTools } from '../../../features/agent/components/AvailableTools';
 import {
   DEFAULT_FIXED_CHUNK_PARAMS,
@@ -894,6 +895,37 @@ const BotKbEditPage: React.FC = () => {
     },
     [setErrorMessages, t, maxTokens]
   );
+  const isToolValid = useCallback((): boolean => {
+    clearErrorMessages();
+
+    // Early return if no tools
+    if (!tools.length) {
+      return true;
+    }
+
+    // Use some() instead of every() since we want to find invalid tools
+    const hasInvalidTool = tools.some((tool, idx) => {
+      if (!isInternetTool(tool)) {
+        return false;
+      }
+
+      const isFirecrawlTool = tool.searchEngine === 'firecrawl';
+      const hasInvalidConfig =
+        !tool.firecrawlConfig || !tool.firecrawlConfig.apiKey;
+
+      if (isFirecrawlTool && hasInvalidConfig) {
+        setErrorMessages(
+          `tools-${idx}-firecrawlConfig.apiKey`,
+          t('input.validationError.required')
+        );
+        return true; // Found an invalid tool
+      }
+
+      return false; // Tool is valid
+    });
+
+    return !hasInvalidTool;
+  }, [clearErrorMessages, tools, setErrorMessages, t]);
 
   const isValid = useCallback((): boolean => {
     clearErrorMessages();
@@ -908,6 +940,10 @@ const BotKbEditPage: React.FC = () => {
       }
     });
     if (!isS3UrlsValid) {
+      return false;
+    }
+
+    if (!isToolValid()) {
       return false;
     }
 
@@ -1156,6 +1192,7 @@ const BotKbEditPage: React.FC = () => {
     stopSequences.length,
     searchParams.maxResults,
     conversationQuickStarters,
+    isToolValid,
     isValidGenerationConfigParam,
     budgetTokens,
     isValidBudgetTokens,
@@ -1179,7 +1216,28 @@ const BotKbEditPage: React.FC = () => {
     setIsLoading(true);
     registerBot({
       agent: {
-        tools: tools.map(({ name }) => name),
+        tools: tools.map((tool) => {
+          const baseTool = {
+            tool_type: tool.toolType,
+            name: tool.name,
+            description: tool.description,
+          };
+
+          if (isInternetTool(tool)) {
+            return {
+              ...baseTool,
+              search_engine: tool.searchEngine,
+              firecrawl_config: tool.firecrawlConfig
+                ? {
+                    api_key: tool.firecrawlConfig.apiKey,
+                    max_results: tool.firecrawlConfig.maxResults,
+                  }
+                : undefined,
+            };
+          }
+
+          return baseTool;
+        }),
       },
       id: botId,
       title,
@@ -1307,7 +1365,28 @@ const BotKbEditPage: React.FC = () => {
       setIsLoading(true);
       updateBot(botId, {
         agent: {
-          tools: tools.map(({ name }) => name),
+          tools: tools.map((tool) => {
+            const baseTool = {
+              tool_type: tool.toolType,
+              name: tool.name,
+              description: tool.description,
+            };
+
+            if (isInternetTool(tool)) {
+              return {
+                ...baseTool,
+                search_engine: tool.searchEngine,
+                firecrawl_config: tool.firecrawlConfig
+                  ? {
+                      api_key: tool.firecrawlConfig.apiKey,
+                      max_results: tool.firecrawlConfig.maxResults,
+                    }
+                  : undefined,
+              };
+            }
+
+            return baseTool;
+          }),
         },
         title,
         description,

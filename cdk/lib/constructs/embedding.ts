@@ -561,6 +561,16 @@ export class Embedding extends Construct {
         resources: ["arn:aws:logs:*:*:*"],
       })
     )
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "secretsmanager:DeleteSecret",
+        ],
+        resources: [
+          `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:firecrawl/*/*`  
+        ],
+      })
+    )
     props.database.grantStreamRead(removeHandlerRole);
     props.documentBucket.grantReadWrite(removeHandlerRole);
 

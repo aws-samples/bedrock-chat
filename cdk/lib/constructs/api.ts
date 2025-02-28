@@ -171,6 +171,28 @@ export class Api extends Construct {
         resources: [props.auth.userPool.userPoolArn],
       })
     );
+    // For Firecrawl api key
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "secretsmanager:CreateSecret",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:RestoreSecret",
+          "secretsmanager:PutSecretValue",
+          "secretsmanager:UpdateSecretVersionStage",
+          "secretsmanager:DeleteSecret",
+          "secretsmanager:RotateSecret",
+          "secretsmanager:CancelRotateSecret",
+          "secretsmanager:UpdateSecret",
+        ],
+        resources: [
+          `arn:aws:secretsmanager:${Stack.of(this).region}:${
+            Stack.of(this).account
+          }:secret:firecrawl/*/*`,
+        ],
+      })
+    );
     props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
     props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);

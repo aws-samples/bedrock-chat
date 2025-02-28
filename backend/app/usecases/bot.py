@@ -30,7 +30,6 @@ from app.repositories.custom_bot import (
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
     BotAliasModel,
     BotMeta,
     BotModel,
@@ -42,10 +41,8 @@ from app.repositories.models.custom_bot import (
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import (
-    ActiveModelsInput,
     ActiveModelsOutput,
     Agent,
-    AgentTool,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -68,11 +65,13 @@ from app.utils import (
     generate_presigned_url,
     get_current_time,
     move_file_in_s3,
+    store_api_key_to_secret_manager,
 )
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
 ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
@@ -163,19 +162,6 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else GenerationParamsModel.model_validate(DEFAULT_GENERATION_CONFIG)
     )
 
-    agent = (
-        AgentModel(
-            tools=[
-                AgentToolModel(name=t.name, description=t.description)
-                for t in [
-                    get_tool_by_name(tool_name) for tool_name in bot_input.agent.tools
-                ]
-            ]
-        )
-        if bot_input.agent
-        else AgentModel(tools=[])
-    )
-
     store_bot(
         user_id,
         BotModel(
@@ -189,7 +175,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             generation_params=generation_params,
-            agent=agent,
+            agent=AgentModel.from_agent_input(bot_input.agent, user_id, bot_input.id),
             knowledge=KnowledgeModel(
                 source_urls=source_urls,
                 sitemap_urls=sitemap_urls,
@@ -244,11 +230,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         generation_params=GenerationParams.model_validate(
             generation_params.model_dump()
         ),
-        agent=Agent(
-            tools=[
-                AgentTool(name=tool.name, description=tool.description)
-                for tool in agent.tools
-            ]
+        agent=(
+            Agent.model_validate(bot_input.agent.model_dump())
+            if bot_input.agent
+            else Agent.model_validate({"tool": []})
         ),
         knowledge=Knowledge(
             source_urls=source_urls,
@@ -334,20 +319,6 @@ def modify_owned_bot(
         else GenerationParamsModel.model_validate(DEFAULT_GENERATION_CONFIG)
     )
 
-    agent = (
-        AgentModel(
-            tools=[
-                AgentToolModel(name=t.name, description=t.description)
-                for t in [
-                    get_tool_by_name(tool_name)
-                    for tool_name in modify_input.agent.tools
-                ]
-            ]
-        )
-        if modify_input.agent
-        else AgentModel(tools=[])
-    )
-
     # if knowledge is not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
@@ -384,7 +355,7 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=generation_params,
-        agent=agent,
+        agent=AgentModel.from_agent_input(modify_input.agent, user_id, bot_id),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -424,11 +395,10 @@ def modify_owned_bot(
         generation_params=GenerationParams.model_validate(
             generation_params.model_dump()
         ),
-        agent=Agent(
-            tools=[
-                AgentTool(name=tool.name, description=tool.description)
-                for tool in agent.tools
-            ]
+        agent=(
+            Agent.model_validate(modify_input.agent.model_dump())
+            if modify_input.agent
+            else Agent.model_validate({"tool": []})
         ),
         knowledge=Knowledge(
             source_urls=source_urls,
@@ -790,7 +760,7 @@ def modify_pin_status(user_id: str, bot_id: str, pinned: bool):
 
 
 def remove_bot_by_id(user_id: str, bot_id: str):
-    """Remove bot by id."""
+    """Remove bot by id and its associated secrets."""
     try:
         return delete_bot_by_id(user_id, bot_id)
     except RecordNotFoundError:

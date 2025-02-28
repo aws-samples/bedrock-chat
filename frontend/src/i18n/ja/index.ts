@@ -125,10 +125,26 @@ const translation = {
         internet_search: {
           name: 'インターネット検索',
           description: 'インターネットで情報を検索します。',
+          settings: '検索設定',
+          engine: '検索エンジン',
+          engines: {
+            duckduckgo: {
+              'label': 'DuckDuckGo (For Trial)',
+              'hint': "リミットレートが厳しいが無料で使用可能。小規模利用向け",
+            },
+            firecrawl: {
+              'label': 'Firecrawl (For Business)',
+              'hint': "レートリミットの拡張可能。ビジネス利用向け。APIキーが必要. https://www.firecrawl.dev/",
+            }
+          },
         },
         knowledge_base_tool: {
           name: 'ナレッジの取得',
           description: 'ナレッジから情報を取得します。',
+        },
+        firecrawl: {
+          apiKey: 'Firecrawl APIキー',
+          maxResults: '最大結果数'
         },
       },
     },

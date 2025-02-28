@@ -7,14 +7,15 @@ sys.path.append(".")
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
     AgentModel,
-    AgentToolModel,
     BedrockGuardrailsModel,
     BedrockKnowledgeBaseModel,
     BotAliasModel,
     BotModel,
     ConversationQuickStarterModel,
     GenerationParamsModel,
+    InternetToolModel,
     KnowledgeModel,
+    PlainToolModel,
     ReasoningParamsModel,
 )
 from app.routes.schemas.bot import type_sync_status
@@ -54,8 +55,12 @@ def create_test_private_bot(
         ),
         agent=AgentModel(
             tools=[
-                AgentToolModel(name="tool1", description="tool1 description"),
-                AgentToolModel(name="tool2", description="tool2 description"),
+                PlainToolModel(
+                    tool_type="plain", name="tool1", description="tool1 description"
+                ),
+                PlainToolModel(
+                    tool_type="plain", name="tool2", description="tool2 description"
+                ),
             ]
         ),
         knowledge=KnowledgeModel(
@@ -110,8 +115,12 @@ def create_test_public_bot(
         ),
         agent=AgentModel(
             tools=[
-                AgentToolModel(name="tool1", description="tool1 description"),
-                AgentToolModel(name="tool2", description="tool2 description"),
+                PlainToolModel(
+                    tool_type="plain", name="tool1", description="tool1 description"
+                ),
+                PlainToolModel(
+                    tool_type="plain", name="tool2", description="tool2 description"
+                ),
             ]
         ),
         knowledge=KnowledgeModel(

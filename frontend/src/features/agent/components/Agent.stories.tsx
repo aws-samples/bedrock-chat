@@ -7,30 +7,38 @@ import AgentToolList from './AgentToolList';
 export const Tools = () => {
   const availableTools: AgentTool[] = [
     {
+      toolType: "plain",
       name: 'get_weather',
       description: '',
     },
     {
+      toolType: "plain",
       name: 'sql_db_query',
       description: '',
     },
     {
+      toolType: "plain",
       name: 'sql_db_schema',
       description: '',
     },
     {
+      toolType: "plain",
       name: 'sql_db_list_tables',
       description: '',
     },
     {
+      toolType: "plain",
       name: 'sql_db_query_checker',
       description: '',
     },
     {
+      toolType: "internet",
       name: 'internet_search',
       description: '',
+      searchEngine: 'duckduckgo',
     },
     {
+      toolType: "plain",
       name: 'knowledge_base_tool',
       description: '',
     },
