@@ -33,7 +33,10 @@ PUBLISHED_API_ID = os.environ.get("PUBLISHED_API_ID", None)
 
 is_published_api = PUBLISHED_API_ID is not None
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:%(name)s:%(lineno)d - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 if not is_published_api:

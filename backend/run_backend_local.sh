@@ -13,4 +13,4 @@ fi
 export $(grep -v '^#' "$ENV_FILE" | xargs)
 
 # Run the program
-exec python  -m uvicorn app.main:app --port $PORT  
+exec python  -m uvicorn app.main:app --reload --port $PORT  
