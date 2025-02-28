@@ -193,7 +193,7 @@ def store_api_key_to_secret_manager(
 
     try:
         secrets_client = boto3.client("secretsmanager")
-        logger.info(f"Attempting to store Firecrawl API key for {secret_name}")
+        logger.info(f"Attempting to store API key for {secret_name}")
 
         try:
             # Try to get existing secret
@@ -247,8 +247,8 @@ def get_api_key_from_secret_manager(secret_arn: str) -> str:
         raise
 
 
-def delete_secret_manager(user_id: str, bot_id: str, prefix: str) -> None:
-    """Delete Firecrawl API key from Secrets Manager.
+def delete_api_key_from_secret_manager(user_id: str, bot_id: str, prefix: str) -> None:
+    """Delete API key from Secrets Manager.
 
     Args:
         user_id: User ID
@@ -261,7 +261,7 @@ def delete_secret_manager(user_id: str, bot_id: str, prefix: str) -> None:
 
     try:
         secrets_client = boto3.client("secretsmanager")
-        logger.info(f"Attempting to delete Firecrawl API key for {secret_name}")
+        logger.info(f"Attempting to delete API key for {secret_name}")
 
         try:
             # Delete secret
