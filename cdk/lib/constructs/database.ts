@@ -39,6 +39,11 @@ export class Database extends Construct {
       partitionKey: { name: "SK", type: AttributeType.STRING },
     });
     table.addGlobalSecondaryIndex({
+      // Used to fetch bot by GroupId
+      indexName: "GroupIdIndex",
+      partitionKey: { name: "GroupId", type: AttributeType.STRING },
+    });
+    table.addGlobalSecondaryIndex({
       // Used to fetch public bots
       indexName: "PublicBotIdIndex",
       partitionKey: { name: "PublicBotId", type: AttributeType.STRING },
