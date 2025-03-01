@@ -183,7 +183,13 @@ def prepare_conversation(
             message_id = str(ULID())
 
         conversation.message_map[message_id] = new_message
-        conversation.message_map[parent_id].children.append(message_id)  # type: ignore
+        
+        if parent_id in conversation.message_map:
+            conversation.message_map[parent_id].children.append(message_id)
+        else:
+            fallback_parent = "instruction" if "instruction" in conversation.message_map else "system"
+            new_message.parent = fallback_parent
+            conversation.message_map[fallback_parent].children.append(message_id)
 
     # If the "Generate continue" button is pressed, a new_message is not generated.
     else:
@@ -259,7 +265,7 @@ def chat(
         if bot.is_agent_enabled():
             if bot.has_knowledge():
                 # Add knowledge tool
-                knowledge_tool = create_knowledge_tool(bot=bot)
+                knowledge_tool = create_knowledge_tool()
                 tools[knowledge_tool.name] = knowledge_tool
 
             if display_citation:

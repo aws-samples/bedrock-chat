@@ -1,43 +1,68 @@
-import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
+import { useState } from 'react';
+import { BotSyncStatus, RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
+import useLocalStorage from './useLocalStorage';
 import { produce } from 'immer';
+import { BASE_REFRESH_INTERVAL } from '../constants';
+
+interface SyncState {
+  interval: number;
+  lastStatus?: BotSyncStatus;
+ }
 
 const useBot = (shouldAutoRefreshMyBots?: boolean) => {
+  const [syncState, setSyncState] = useState<SyncState>({
+    interval: BASE_REFRESH_INTERVAL,
+    lastStatus: undefined
+  });
+
   const api = useBotApi();
 
   const { data: myBots, mutate: mutateMyBots } = api.bots(
-    {
-      kind: 'private',
-    },
+    { kind: 'groups' },
     shouldAutoRefreshMyBots
       ? (data) => {
-          if (!data) {
+          if (!data) return 0;
+          
+          const runningBot = data.find(bot => 
+            bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
+          );
+
+          if (!runningBot) {
             return 0;
           }
-          const index = data.findIndex(
-            (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
-          );
-          return index > -1 ? 5000 : 0;
+
+          if (runningBot.syncStatus !== syncState.lastStatus) {
+            setSyncState({
+              interval: BASE_REFRESH_INTERVAL,
+              lastStatus: runningBot.syncStatus
+            });
+            return BASE_REFRESH_INTERVAL;
+          }
+
+          return syncState.interval;
         }
       : undefined
   );
 
+  const [groupId] = useLocalStorage(
+    'groupId',
+    // default value for testing. Will need to change 
+    '353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-15'
+  );
+
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
-    kind: 'mixed',
-    pinned: true,
+    // getting the groupId from localstorage
+    group_id: groupId,
   });
 
   const { data: recentlyUsedBots, mutate: mutateRecentlyUsedBots } = api.bots({
     kind: 'mixed',
     limit: 30,
   });
-
   return {
     myBots,
     starredBots: starredBots?.filter((bot) => bot.available),
-    recentlyUsedUnsterredBots: recentlyUsedBots?.filter(
-      (bot) => !bot.isPinned && bot.available
-    ),
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getMyBot: async (botId: string) => {
       return (await api.getOnceMyBot(botId)).data;
@@ -56,6 +81,9 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
             isPublic: false,
             owned: true,
             syncStatus: 'QUEUED',
+            assistantConfig: params.assistantConfig,
+            creatorConfig: null,
+            groupId: params.groupId
           });
         }),
         {
@@ -73,6 +101,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
           if (draft) {
             draft[idx].title = params.title;
             draft[idx].description = params.description ?? '';
+            draft[idx].description = params.assistantConfig.assistantType;
           }
         }),
         {

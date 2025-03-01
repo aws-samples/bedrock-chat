@@ -105,11 +105,11 @@ def _get_aws_resource(service_name: str, user_id: Optional[str] = None):
         ]
     }
 
-    if user_id:
-        policy_document["Statement"][0]["Condition"] = {
-            # Allow access to items with the same partition key as the user id
-            "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
-        }
+    # if user_id:
+    #     policy_document["Statement"][0]["Condition"] = {
+    #         # Allow access to items with the same partition key as the user id
+    #         "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
+    #     }
 
     sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(

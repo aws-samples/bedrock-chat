@@ -38,7 +38,8 @@ To enable the Agent functionality for your customized chatbot, follow these step
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It's suitable for PoC or demo purpose, but if you'd like to use for production environment, we recommend to use another search API.
+This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It's suitable for PoC or demo purpose. Bing Search is provided as an alternative when DuckDuckGo API fails. For production use modify this tool as needed to match your needs. To utilize Bing Search you need to create and setup BING Search API Key in AWS Secrets. AWS Command line equivalent for this: aws secretsmanager create-secret --name "bing-api-key" --secret-string '{"search_api_key":"<BING_API_KEY>"}'.
+Note: Utilize best practices for AWS Secrets management(AWS CLI commandline might not be best practice due to secrets being kept in shell history)
 
 5. You can develop and add your own custom tools to extend the capabilities of the Agent. Refer to the [How to develop your own tools](#how-to-develop-your-own-tools) section for more information on creating and integrating custom tools.
 

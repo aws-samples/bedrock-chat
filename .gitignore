@@ -5,3 +5,6 @@ verification
 __pycache__/
 .venv
 .DS_Store
+.idea/
+.vscode/*
+!.vscode/launch.json

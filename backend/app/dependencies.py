@@ -5,6 +5,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 
+from app.usecases.group import (
+    is_user_authorized,
+)
+
 security = HTTPBearer()
 
 
@@ -46,4 +50,11 @@ def check_publish_allowed(user: User = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User is not allowed to publish bot.",
+        )
+
+def check_is_user_authotized(action: str, user: User = Depends(get_current_user)):
+    if not is_user_authorized(action, user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"User is not allowed to perform action: {action}.",
         )

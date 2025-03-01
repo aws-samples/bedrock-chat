@@ -26,6 +26,8 @@ class UsagePerBotOutput(BaseSchema):
     owner_user_id: str
     # model_id: str
     total_price: float
+    num_of_users: int
+    num_of_convos: int
 
 
 class UsagePerUserOutput(BaseSchema):

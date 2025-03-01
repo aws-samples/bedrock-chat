@@ -124,6 +124,10 @@ class BotInput(BaseSchema):
     bedrock_knowledge_base: BedrockKnowledgeBaseInput | None = None
     bedrock_guardrails: BedrockGuardrailsInput | None = None
     active_models: ActiveModelsInput  # type: ignore
+    version: str
+    group_id: str
+    # no need for creatorConfig since we have the user_id
+    assistant_config: AssistantConfig
 
 
 class BotModifyInput(BaseSchema):
@@ -138,6 +142,9 @@ class BotModifyInput(BaseSchema):
     bedrock_knowledge_base: BedrockKnowledgeBaseInput | None = None
     bedrock_guardrails: BedrockGuardrailsInput | None = None
     active_models: ActiveModelsInput  # type: ignore
+    # version and creatorConfig will not change
+    group_id: str | None
+    assistant_config: AssistantConfig | None
 
     def _has_update_files(self) -> bool:
         return self.knowledge is not None and (
@@ -252,6 +259,9 @@ class BotModifyOutput(BaseSchema):
     bedrock_knowledge_base: BedrockKnowledgeBaseOutput | None
     bedrock_guardrails: BedrockGuardrailsOutput | None
     active_models: ActiveModelsOutput  # type: ignore
+    group_id: str | None
+    # version and creatorConfig will not change
+    assistant_config: AssistantConfig | None
 
 
 class BotOutput(BaseSchema):
@@ -276,7 +286,11 @@ class BotOutput(BaseSchema):
     bedrock_knowledge_base: BedrockKnowledgeBaseOutput | None
     bedrock_guardrails: BedrockGuardrailsOutput | None
     active_models: ActiveModelsOutput  # type: ignore
-
+    version: str | None
+    # passing all the fields back
+    group_id: str | None
+    assistant_config: AssistantConfig | None
+    creator_config: CreatorConfig | None
 
 class BotMetaOutput(BaseSchema):
     id: str
@@ -291,6 +305,13 @@ class BotMetaOutput(BaseSchema):
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
     sync_status: type_sync_status
+    version: str | None
+    # passing all the fields back
+    group_id: str | None
+    assistant_config: AssistantConfig | None
+    creator_config: CreatorConfig | None
+    
+
 
 
 class BotSummaryOutput(BaseSchema):
@@ -319,3 +340,13 @@ class BotPinnedInput(BaseSchema):
 
 class BotPresignedUrlOutput(BaseSchema):
     url: str
+
+class AssistantConfig(BaseSchema):
+    # api access object
+    assistant_type: str
+    assistant_topics: str
+
+class CreatorConfig(BaseSchema):
+    # api access object
+    user_id: str # needed for an update from a non-creator
+    user_name: str # needed for assistantList

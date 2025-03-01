@@ -161,6 +161,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const backendApi = new Api(this, "BackendApi", {
       database: database.table,
+      ltiDataTable: database.ltiDataTable,
       auth,
       bedrockRegion: props.bedrockRegion,
       tableAccessRole: database.tableAccessRole,
@@ -171,8 +172,9 @@ export class BedrockChatStack extends cdk.Stack {
       largeMessageBucket,
       enableMistral: props.enableMistral,
       enableBedrockCrossRegionInference:
-        props.enableBedrockCrossRegionInference,
+      props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
+      frontendURL: frontend.getOrigin(),
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
 
@@ -247,6 +249,10 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "ConversationTableName", {
       value: database.table.tableName,
       exportName: "BedrockClaudeChatConversationTableName",
+    });
+    new CfnOutput(this, "LtiDataTable", {
+      value: database.ltiDataTable.tableName,
+      exportName: "BedrockClaudeChatLtiDataTableName",
     });
     new CfnOutput(this, "TableAccessRoleArn", {
       value: database.tableAccessRole.roleArn,

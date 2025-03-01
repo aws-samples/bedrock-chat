@@ -26,8 +26,11 @@ import { UsageAnalysis } from "./usage-analysis";
 import { excludeDockerImage } from "../constants/docker";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
+import { ValidatedPythonFunction } from './validated-python-function';
+
 export interface ApiProps {
   readonly database: ITable;
+  readonly ltiDataTable: ITable;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -40,6 +43,7 @@ export interface ApiProps {
   readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
+  readonly frontendURL: string;
 }
 
 export class Api extends Construct {
@@ -167,15 +171,34 @@ export class Api extends Construct {
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["cognito-idp:AdminGetUser"],
+        actions: [
+          "cognito-idp:ListUsers",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminSetUserPassword",
+        ],
         resources: [props.auth.userPool.userPoolArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['secretsmanager:GetSecretValue'],
+        resources: [`arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:bing-api-key*`],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan"],
+        resources: [props.ltiDataTable.tableArn],
       })
     );
     props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
     props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
 
-    const handler = new PythonFunction(this, "HandlerV2", {
+    const handler = new ValidatedPythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
       index: "app/main.py",
       bundling: {
@@ -188,6 +211,7 @@ export class Api extends Construct {
       timeout: Duration.minutes(15),
       environment: {
         TABLE_NAME: database.tableName,
+        LTI_DATA_TABLE_NAME: props.ltiDataTable.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         USER_POOL_ID: props.auth.userPool.userPoolId,
         CLIENT_ID: props.auth.client.userPoolClientId,
@@ -206,11 +230,13 @@ export class Api extends Construct {
           props.usageAnalysis?.ddbExportTable.tableName || "",
         USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis?.workgroupName || "",
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
+        FRONTEND_URL: props.frontendURL,
         ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
-          props.enableBedrockCrossRegionInference.toString(),
+        props.enableBedrockCrossRegionInference.toString(),
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
+        BING_API_SECRET_ARN: `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:bing-api-key`,
       },
       role: handlerRole,
       logRetention: logs.RetentionDays.THREE_MONTHS,
@@ -267,16 +293,29 @@ export class Api extends Construct {
       path: "/{proxy+}",
       integration,
       methods: [
-        HttpMethod.GET,
-        HttpMethod.POST,
-        HttpMethod.PUT,
-        HttpMethod.PATCH,
-        HttpMethod.DELETE,
+      HttpMethod.GET,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
       ],
       authorizer,
     };
 
+    let ltiRouteProps: any = {
+      path: "/lti/{proxy+}",
+      integration,
+      methods: [
+      HttpMethod.GET,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
+      ],
+    };
+
     api.addRoutes(routeProps);
+    api.addRoutes(ltiRouteProps);
 
     this.api = api;
     this.handler = handler;

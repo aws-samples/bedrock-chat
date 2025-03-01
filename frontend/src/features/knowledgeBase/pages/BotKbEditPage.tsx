@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import InputText from '../../../components/InputText';
 import Button from '../../../components/Button';
 import useBot from '../../../hooks/useBot';
-import { useNavigate, useParams } from 'react-router-dom';
+import useGroup from '../../../hooks/useGroup';
+import { AssistantGroupType } from '../../../@types/group';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { PiCaretLeft, PiNote, PiPlus, PiTrash } from 'react-icons/pi';
 import Textarea from '../../../components/Textarea';
 import DialogInstructionsSamples from '../../../components/DialogInstructionsSamples';
@@ -18,7 +20,7 @@ import {
   ConversationQuickStarter,
   ActiveModels,
 } from '../../../@types/bot';
-import { ParsingModel } from '../types';
+import { AssistantType, ParsingModel } from '../types';
 import { ulid } from 'ulid';
 import {
   EDGE_GENERATION_PARAMS,
@@ -26,6 +28,9 @@ import {
   DEFAULT_GENERATION_CONFIG,
   DEFAULT_MISTRAL_GENERATION_CONFIG,
   TooltipDirection,
+  VERSION_02_17_25,
+  COURSE_ID_MAP,
+  ValidCourseId,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
@@ -80,15 +85,26 @@ const defaultGenerationConfig =
     ? DEFAULT_MISTRAL_GENERATION_CONFIG
     : DEFAULT_GENERATION_CONFIG;
 
+interface AssistantState {
+  assistantType: string; // Ensure this matches the actual data being passed
+}
+
 const BotKbEditPage: React.FC = () => {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
+  const location = useLocation();
+  const state = location.state as AssistantState | null;
   const { getMyBot, registerBot, updateBot } = useBot();
+  const { getGroupList } = useGroup();
   const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const [groupOptionsList, setGroupOptionsList] = useState<AssistantGroupType[]>([]);
+  const [groupId, setGroupId] = useState('');
+  const [assistantTopics, setAssistantTopics] = useState('');
+  const [assistantType, setAssistantType] = useState('');
+  const [isBasicEditView, setIsBasicEditView] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
@@ -133,11 +149,11 @@ const BotKbEditPage: React.FC = () => {
   const [embeddingsModel, setEmbeddingsModel] =
     useState<EmbeddingsModel>('titan_v2');
 
-  const [hateThreshold, setHateThreshold] = useState<number>(0);
-  const [insultsThreshold, setInsultsThreshold] = useState<number>(0);
-  const [sexualThreshold, setSexualThreshold] = useState<number>(0);
-  const [violenceThreshold, setViolenceThreshold] = useState<number>(0);
-  const [misconductThreshold, setMisconductThreshold] = useState<number>(0);
+  const [hateThreshold, setHateThreshold] = useState<number>(2);
+  const [insultsThreshold, setInsultsThreshold] = useState<number>(2);
+  const [sexualThreshold, setSexualThreshold] = useState<number>(2);
+  const [violenceThreshold, setViolenceThreshold] = useState<number>(2);
+  const [misconductThreshold, setMisconductThreshold] = useState<number>(2);
   const [groundingThreshold, setGroundingThreshold] = useState<number>(0);
   const [relevanceThreshold, setRelevanceThreshold] = useState<number>(0);
   const [guardrailArn, setGuardrailArn] = useState<string>('');
@@ -322,6 +338,38 @@ const BotKbEditPage: React.FC = () => {
       : OPENSEARCH_ANALYZER['none']
   );
 
+  const assistantTypeOptions: {
+		label: string;
+		value: AssistantType;
+		description: string;
+		prompt: string;
+	}[] = [
+		{
+			label: 'Learning Assistant',
+			value: 'learning_assistant',
+			description: 'Assists the students by answering questions within the scope of the class',
+			prompt: t('bot.samples.learningAssistant.prompt')
+		},
+		{
+			label: 'Quiz Assistant',
+			value: 'quiz_assistant',
+			description: 'Generates a quiz within the scope of the class material',
+			prompt: t('bot.samples.quizAssistant.prompt')
+		},
+		{
+			label: 'Lesson Plan Assistant',
+			value: 'lesson_plan_assistant',
+			description: 'Generates a lesson plan within the scope of the class material',
+			prompt: t('bot.samples.learningAssistant.prompt')
+		},
+		{
+			label: 'Custom Assistant',
+			value: 'custom_assistant',
+			description: 'Create an assistant by providing your custom instructions in the "Instructions" box',
+			prompt: ''
+		},
+	];
+
   const analyzerOptions: {
     label: string;
     value: string;
@@ -396,6 +444,26 @@ const BotKbEditPage: React.FC = () => {
     [webCrawlingFilters]
   );
 
+  function generatePrompt() {
+		const COURSE_NAME_PLACEHOLDER = t('bot.samples.placeholder.groupName')
+		const COURSE_TOPICS_PLACEHOLDER = t('bot.samples.placeholder.assistantTopics')
+		const RESPONSE_EXAMPLES_PLACEHOLDER = t('bot.samples.placeholder.examples')
+    
+    const courseId: ValidCourseId = groupId as ValidCourseId;
+    const courseName = COURSE_ID_MAP[courseId]
+
+    let examples = conversationQuickStarters
+    .map((convo: ConversationQuickStarter) => `Question: ${convo.title} Answer: ${convo.example}.`)
+    .join(" ");
+
+		if (assistantType == 'learning_assistant') {
+			return instruction.replaceAll(COURSE_NAME_PLACEHOLDER, courseName)
+				.replaceAll(COURSE_TOPICS_PLACEHOLDER, assistantTopics)
+				.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, examples);
+		}
+		return instruction;
+	}
+
   const onClickAddIncludePattern = useCallback(() => {
     setWebCrawlingFilters(
       produce(webCrawlingFilters, (draft) => {
@@ -452,12 +520,33 @@ const BotKbEditPage: React.FC = () => {
   );
 
   useEffect(() => {
+    
+    getGroupList()
+      .then((groupList) => {
+        const options = groupList.map(({ groupId, groupName }) => ({
+          value: groupId,
+          label: groupName,
+        }));
+        setGroupOptionsList(options);
+        if (options.length && isNewBot) {
+          setGroupId(options[0].value);
+        }
+      })
+    if (isNewBot && state?.assistantType) {
+      const currType = state?.assistantType;
+      const prompt = assistantTypeOptions.find(option => option.value === currType)?.prompt;
+      setInstruction(prompt ?? '');
+      setAssistantType(state?.assistantType);
+    }
     if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
           setTools(bot.agent.tools);
           setTitle(bot.title);
+          setGroupId(bot.groupId);
+          setAssistantType(bot.assistantConfig.assistantType);
+          setAssistantTopics(bot.assistantConfig.assistantTopics);
           setDescription(bot.description);
           setInstruction(bot.instruction);
           setUrls(
@@ -545,27 +634,27 @@ const BotKbEditPage: React.FC = () => {
           setHateThreshold(
             bot.bedrockGuardrails.hateThreshold
               ? bot.bedrockGuardrails.hateThreshold
-              : 0
+              : 2
           );
           setInsultsThreshold(
             bot.bedrockGuardrails.insultsThreshold
               ? bot.bedrockGuardrails.insultsThreshold
-              : 0
+              : 2
           );
           setSexualThreshold(
             bot.bedrockGuardrails.sexualThreshold
               ? bot.bedrockGuardrails.sexualThreshold
-              : 0
+              : 2
           );
           setViolenceThreshold(
             bot.bedrockGuardrails.violenceThreshold
               ? bot.bedrockGuardrails.violenceThreshold
-              : 0
+              : 2
           );
           setMisconductThreshold(
             bot.bedrockGuardrails.misconductThreshold
               ? bot.bedrockGuardrails.misconductThreshold
-              : 0
+              : 2
           );
           setGroundingThreshold(
             bot.bedrockGuardrails.groundingThreshold
@@ -1138,9 +1227,16 @@ const BotKbEditPage: React.FC = () => {
         tools: tools.map(({ name }) => name),
       },
       id: botId,
+      version: VERSION_02_17_25,
+      groupId,
+      assistantConfig: {
+        assistantType,
+        assistantTopics,
+      },
+      creatorConfig: null,
       title,
       description,
-      instruction,
+      instruction: generatePrompt(),
       generationParams: {
         maxTokens,
         temperature,
@@ -1260,6 +1356,11 @@ const BotKbEditPage: React.FC = () => {
       updateBot(botId, {
         agent: {
           tools: tools.map(({ name }) => name),
+        },
+        groupId,
+        assistantConfig: {
+          assistantType,
+          assistantTopics,
         },
         title,
         description,
@@ -1400,9 +1501,22 @@ const BotKbEditPage: React.FC = () => {
         <div className="w-2/3">
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
-              {isNewBot ? t('bot.create.pageTitle') : t('bot.edit.pageTitle')}
+              {isNewBot ? 
+                isBasicEditView ? t('bot.create.pageTitle') : t('bot.create.advancedPageTitle') : 
+                isBasicEditView ? t('bot.edit.pageTitle'): t('bot.edit.advancedPageTitle')}
             </div>
-
+            <div className="mt-4">
+							<div className="font-semibold">{t('bot.toggleView.title')}</div>
+							<div className="flex">
+								<Toggle
+									value={isBasicEditView}
+									onChange={setIsBasicEditView}
+								/>
+								<div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
+									{t('bot.toggleView.description')}
+								</div>
+							</div>
+						</div>
             <div className="mt-3 flex flex-col gap-3">
               <InputText
                 label={t('bot.item.title')}
@@ -1411,12 +1525,36 @@ const BotKbEditPage: React.FC = () => {
                 onChange={setTitle}
                 hint={t('input.hint.required')}
               />
-              <InputText
+              {!isBasicEditView && <InputText
                 label={t('bot.item.description')}
                 disabled={isLoading}
                 value={description}
                 onChange={setDescription}
-              />
+              />}
+              <div className="mt-3">
+                <Select
+                  label={"Assistant Type"}
+                  value={assistantType}
+                  options={assistantTypeOptions}
+                  onChange={setAssistantType}
+                />
+              </div>
+              <div className="mt-3">
+                <Select
+                  label={"Course"}
+                  value={groupId}
+                  options={groupOptionsList}
+                  onChange={setGroupId}
+                />
+              </div>
+              <div className="mt-3">
+                <InputText
+                    label={"Topics"}
+                    disabled={isLoading}
+                    value={assistantTopics}
+                    onChange={setAssistantTopics}
+                  />
+              </div>
               <div className="relative mt-3">
                 <Button
                   className="absolute -top-3 right-0 text-xs"
@@ -1437,12 +1575,113 @@ const BotKbEditPage: React.FC = () => {
                 />
               </div>
 
+              <div className="mt-3">
+                <div className="flex items-center gap-1">
+                  <div className="text-lg font-bold">
+                    {"Examples"}
+                  </div>
+                </div>
+
+                <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                  {t('bot.help.quickStarter.overview')}
+                </div>
+
+                <div className="mt-2">
+                  <div className="mt-2 flex w-full flex-col gap-1">
+                    {conversationQuickStarters.map(
+                      (conversationQuickStarter, idx) => (
+                        <div
+                          className="flex w-full flex-col gap-2 rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50 p-2"
+                          key={idx}>
+                          <InputText
+                            className="w-full"
+                            label={"Question"}
+                            placeholder={"What is 2x+3=7?"}
+                            disabled={isLoading}
+                            value={conversationQuickStarter.title}
+                            onChange={(s) => {
+                              updateQuickStarter(
+                                {
+                                  ...conversationQuickStarter,
+                                  title: s,
+                                },
+                                idx
+                              );
+                            }}
+                            errorMessage={
+                              errorMessages[`conversationQuickStarter${idx}`]
+                            }
+                          />
+
+                          <Textarea
+                            className="w-full"
+                            label={"Response"}
+                            placeholder={"Let's solve this problem by using Linear Equations.\nStart by isolating x and subtract 3 from both sides: 2x=4\nSolve for x by dividing both sides by 2: x=2. Then, check your answer: 2(2)+3=7"}
+                            disabled={isLoading}
+                            rows={3}
+                            value={conversationQuickStarter.example}
+                            onChange={(s) => {
+                              updateQuickStarter(
+                                {
+                                  ...conversationQuickStarter,
+                                  example: s,
+                                },
+                                idx
+                              );
+                            }}
+                          />
+                          <div className="flex justify-end">
+                            <Button
+                              className="bg-red"
+                              disabled={
+                                (conversationQuickStarters.length === 1 &&
+                                  !conversationQuickStarters[0].title &&
+                                  !conversationQuickStarters[0].example) ||
+                                isLoading
+                              }
+                              icon={<PiTrash />}
+                              onClick={() => {
+                                removeQuickStarter(idx);
+                              }}>
+                              {t('button.delete')}
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  <div className="mt-2">
+                    <Button
+                      outlined
+                      icon={<PiPlus />}
+                      onClick={addQuickStarter}>
+                      {t('button.add')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-3" />
               <AvailableTools
                 availableTools={availableTools}
                 tools={tools}
                 setTools={setTools}
               />
+
+                <div className="mt-4">
+                  <div className="font-semibold">
+                    {t('bot.label.citeRetrievedContexts')}
+                  </div>
+                  <div className="flex">
+                    <Toggle
+                      value={displayRetrievedChunks}
+                      onChange={setDisplayRetrievedChunks}
+                    />
+                    <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                      {t('bot.help.knowledge.citeRetrievedContexts')}
+                    </div>
+                  </div>
+                </div>
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">
@@ -1606,7 +1845,7 @@ const BotKbEditPage: React.FC = () => {
                         </Button>
                       </div>
 
-                      <ExpandableDrawerGroup
+                      {!isBasicEditView && <ExpandableDrawerGroup
                         isDefaultShow={false}
                         label={t('knowledgeBaseSettings.webCrawlerConfig.title')}
                         className="py-2">
@@ -1725,116 +1964,15 @@ const BotKbEditPage: React.FC = () => {
                             </Button>
                           </div>
                         </div>
-                      </ExpandableDrawerGroup>
+                      </ExpandableDrawerGroup>}
                     </div>
                   </div>
                     );
                   }
                 })()}
-
-                <div className="mt-4">
-                  <div className="font-semibold">
-                    {t('bot.label.citeRetrievedContexts')}
-                  </div>
-                  <div className="flex">
-                    <Toggle
-                      value={displayRetrievedChunks}
-                      onChange={setDisplayRetrievedChunks}
-                    />
-                    <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                      {t('bot.help.knowledge.citeRetrievedContexts')}
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <div className="mt-3">
-                <div className="flex items-center gap-1">
-                  <div className="text-lg font-bold">
-                    {t('bot.label.quickStarter.title')}
-                  </div>
-                </div>
-
-                <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                  {t('bot.help.quickStarter.overview')}
-                </div>
-
-                <div className="mt-2">
-                  <div className="mt-2 flex w-full flex-col gap-1">
-                    {conversationQuickStarters.map(
-                      (conversationQuickStarter, idx) => (
-                        <div
-                          className="flex w-full flex-col gap-2 rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50 p-2"
-                          key={idx}>
-                          <InputText
-                            className="w-full"
-                            placeholder={t(
-                              'bot.label.quickStarter.exampleTitle'
-                            )}
-                            disabled={isLoading}
-                            value={conversationQuickStarter.title}
-                            onChange={(s) => {
-                              updateQuickStarter(
-                                {
-                                  ...conversationQuickStarter,
-                                  title: s,
-                                },
-                                idx
-                              );
-                            }}
-                            errorMessage={
-                              errorMessages[`conversationQuickStarter${idx}`]
-                            }
-                          />
-
-                          <Textarea
-                            className="w-full"
-                            label={t('bot.label.quickStarter.example')}
-                            disabled={isLoading}
-                            rows={3}
-                            value={conversationQuickStarter.example}
-                            onChange={(s) => {
-                              updateQuickStarter(
-                                {
-                                  ...conversationQuickStarter,
-                                  example: s,
-                                },
-                                idx
-                              );
-                            }}
-                          />
-                          <div className="flex justify-end">
-                            <Button
-                              className="bg-red"
-                              disabled={
-                                (conversationQuickStarters.length === 1 &&
-                                  !conversationQuickStarters[0].title &&
-                                  !conversationQuickStarters[0].example) ||
-                                isLoading
-                              }
-                              icon={<PiTrash />}
-                              onClick={() => {
-                                removeQuickStarter(idx);
-                              }}>
-                              {t('button.delete')}
-                            </Button>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <Button
-                      outlined
-                      icon={<PiPlus />}
-                      onClick={addQuickStarter}>
-                      {t('button.add')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <ExpandableDrawerGroup
+              {!isBasicEditView && <><ExpandableDrawerGroup
                 isDefaultShow={false}
                 label={t('generationConfig.title')}
                 className="py-2">
@@ -2467,7 +2605,7 @@ const BotKbEditPage: React.FC = () => {
                     ))}
                   </div>
                 </div>
-              </ExpandableDrawerGroup>
+              </ExpandableDrawerGroup></>}
 
               {errorMessages['syncChunkError'] && (
                 <Alert
@@ -2499,7 +2637,7 @@ const BotKbEditPage: React.FC = () => {
                     onClick={onClickEdit}
                     loading={isLoading}
                     disabled={disabledRegister}>
-                    {t('bot.button.edit')}
+                    {t('bot.button.save')}
                   </Button>
                 )}
               </div>

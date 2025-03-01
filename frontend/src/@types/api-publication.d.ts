@@ -1,3 +1,5 @@
+import { AssistantConfig, CreatorConfig } from "./bot";
+
 export type QuotaPeriod = 'DAY' | 'WEEK' | 'MONTH';
 
 export type BotPublicationQuota = {
@@ -24,6 +26,9 @@ export type ListBotApisResponse = {
     publishedStackName: string;
     publishedDatetime: Date;
     ownerUserId: string;
+    assistantConfig: AssistantConfig;
+    creatorConfig: CreatorConfig | null;
+    groupId: string;
   }[];
   nextToken?: string;
 };
@@ -42,6 +47,11 @@ export type ListPublicBotsResponse = {
   publishedDatetime: Date;
   ownerUserId: string;
   totalPrice: number;
+  numOfUsers: number;
+  numOfConvos: number;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig | null;
+  groupId: string;
 }[];
 
 export type PublishBotRequest = {

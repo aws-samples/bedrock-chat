@@ -1,0 +1,36 @@
+# Build artifacts and virtual environments
+**/.venv/*
+**/node_modules/*
+**/cdk.out/*
+**/__pycache__/*
+**/.pytest_cache/*
+
+# CDK build directories
+**/cdk.out/*
+**/asset-output/*
+**/asset-input/*
+
+# Test directories (if you want to exclude)
+**/tests/*
+
+# Any other build/deployment artifacts
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/env/
+**/build/
+**/develop-eggs/
+**/dist/
+**/downloads/
+**/eggs/
+**/.eggs/
+**/lib/
+**/lib64/
+**/parts/
+**/sdist/
+**/var/
+**/wheels/
+**/*.egg-info/
+**/.installed.cfg
+**/*.egg

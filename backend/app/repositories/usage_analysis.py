@@ -142,6 +142,7 @@ PreAggregatedData AS (
     SELECT
         d.newimage.BotId.S AS BotId,
         d.newimage.SK.S AS SK,
+        d.newimage.PK.S AS UserId,
         d.datehour,
         d.newimage.TotalPrice.N AS TotalPrice
     FROM
@@ -153,19 +154,23 @@ PreAggregatedData AS (
 AggregatedData AS (
     SELECT
         p.BotId,
-        p.TotalPrice
+        SUM(p.TotalPrice) AS TotalPrice,
+        COUNT(DISTINCT p.UserId) AS UniqueUsers,
+        COUNT(DISTINCT p.SK) AS UniqueConversations
     FROM
         PreAggregatedData p
     JOIN
         LatestRecords lr ON p.BotId = lr.BotId AND p.SK = lr.SK AND p.datehour = lr.LatestDateHour
+    GROUP BY
+        p.BotId
 )
 SELECT
     BotId,
-    SUM(TotalPrice) AS TotalPrice
+    TotalPrice,
+    UniqueUsers,
+    UniqueConversations
 FROM
     AggregatedData
-GROUP BY
-    BotId
 ORDER BY
     TotalPrice DESC
 LIMIT {limit};
@@ -195,6 +200,8 @@ LIMIT {limit};
     for row in rows:
         bot_id = row["Data"][0].get("VarCharValue", "")
         total_price = float(row["Data"][1].get("VarCharValue", 0))
+        num_of_users = row["Data"][2].get("VarCharValue", 0)
+        num_of_convos = row["Data"][3].get("VarCharValue", 0)
 
         bot = bots_dict.get(bot_id)
 
@@ -208,6 +215,8 @@ LIMIT {limit};
                     published_api_datetime=bot.published_api_datetime,
                     owner_user_id=bot.owner_user_id,
                     total_price=total_price,
+                    num_of_users=num_of_users,
+                    num_of_convos=num_of_convos,
                 )
             )
 

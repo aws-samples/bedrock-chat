@@ -8,3 +8,198 @@
     --amplify-components-button-primary-background-color
   ) !important;
 }
+
+.container-bot-explore {
+  display: flex;
+  width: 100%;
+  height: 50%;
+}
+
+.first-half-bot-explore {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: left; /* Center horizontally */
+}
+
+.first-half-bot-explore:last-child {
+  border-right: none;
+}
+
+.second-half-bot-explore {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: left; /* Center horizontally */
+}
+
+.second-half-bot-explore:last-child {
+  border-right: none;
+}
+
+.create-assistant-btn {
+  min-width: 400px;
+  width: 85%;
+  height: 75%;
+}
+
+.create-assistant-btn-text-box {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  text-align: left;
+}
+
+.create-assistant-btn-title {
+  font-size: 20px;
+}
+
+.create-assistant-btn-description {
+  font-size: 10px;
+  font-weight: 300;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 15px;
+}
+
+.create-assistant-btn-logo {
+  width: 15%;
+  padding-right: 15px;
+}
+
+/* *************************************** */
+/* Styling for the Assistant List Items */
+/* *************************************** */
+
+.assistant-item-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: lightgray; /* Change to the actual color if needed */
+  overflow: hidden;
+}
+
+.assistant-item-row {
+  width: 100%;
+  height: 100%;                    /* h-full: Makes the container take full height */
+  display: flex;                  /* flex: Enables Flexbox layout */
+  flex-grow: 1;                    /* grow: Allows the container to grow and fill available space */
+  background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
+  padding: 8px;                   /* p-2: Adds padding of 0.5rem (8px) */
+}
+
+.assistant-item-row-no-buttons-container {
+  display: flex;
+  /* grow: Allows the container to grow and fill available space */
+  flex-grow: 1;                    
+  background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
+  height: 100%;
+}
+
+.assistant-item-buttons-container {
+  width: 20%;
+  min-width: 200px;
+  /* width: fit-content; */
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0; /* Ensures it does NOT shrink */
+}
+
+.assistant-item-logo {
+  width: 50px;
+  max-height: 100%; /* Ensures the height scales properly */
+  object-fit: contain; /* Maintains aspect ratio within set size */
+  padding-right: 15px;
+}
+
+.assistant-item-title-and-description {
+  width: 35%;
+  max-width: 300px;               /* w-full: Full width */
+  overflow: hidden;          /* Prevents overflow */
+  text-overflow: ellipsis;   /* Truncates text with "..." */
+  white-space: nowrap;       /* Ensures text stays on a single line */
+  font-size: 0.875rem;       /* text-sm: Equivalent to 14px */
+  font-weight: 600;          /* font-semibold: Semi-bold */
+  flex-shrink: 0; /* Ensures it does NOT shrink */
+}
+
+.assistant-item-attribute-no-buttons {
+  /* width: 66%; */
+  display: flex;  
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1; /* Allows it to shrink while A and C stay fixed */
+  
+}
+
+.assistant-item-course {
+  min-width: 100px;
+  padding-right: 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.assistant-item-canvas {
+  min-width: 75px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assistant-item-type-and-name {
+  min-width: 150px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* *************************************** */
+/* Styling for Table Column Names */
+/* *************************************** */
+
+.assistant-list-column-headers-row {
+  width: 100%;
+  display: flex;
+}
+.assistant-list-column-headers-row-title {
+  width: 40%;
+  min-width: 300px;
+}
+.assistant-list-column-headers-row-attributes {
+  display: flex;
+  font-size: 10px;
+  font-weight: 300;
+}
+.assistant-list-column-headers-row-buttons {
+  display: flex;
+  font-size: 10px;
+  font-weight: 300;
+  margin-left: auto;
+  padding-right: 13%;
+}
+
+.assistant-list-column-attribute-items {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.assistant-list-column-btn-items {
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  white-space: nowrap;       /* Ensures text stays on a single line */
+}
+
+.assistant-list-column-btn-sync-status {
+  padding-left: 10px;
+}

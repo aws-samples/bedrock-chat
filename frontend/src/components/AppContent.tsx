@@ -13,6 +13,7 @@ import useDrawer from '../hooks/useDrawer';
 import useConversation from '../hooks/useConversation';
 import useBot from '../hooks/useBot';
 import useChat from '../hooks/useChat';
+import useGroup from '../hooks/useGroup';
 import { usePageLabel, usePageTitlePathPattern } from '../routes';
 import useUser from '../hooks/useUser';
 import DialogConfirmDeleteChat from './DialogConfirmDeleteChat';
@@ -31,10 +32,11 @@ const AppContent: React.FC<Props> = (props) => {
   const navigate = useNavigate();
   const { conversationId } = useParams();
   const { conversations, getTitle, updateTitle, deleteConversation, clearConversations: clear } = useConversation();
-  const { starredBots, recentlyUsedUnsterredBots } = useBot();
+  const { starredBots } = useBot();
   const { newChat, isGeneratedTitle } = useChat();
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
   const { isAdmin } = useUser();
+  const { myGroups } = useGroup();
   const [theme] = useLocalStorage(
     'theme',
     'light'
@@ -85,9 +87,9 @@ const AppContent: React.FC<Props> = (props) => {
     <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
       <ChatListDrawer
         isAdmin={isAdmin}
+        isAssistantCreator={(myGroups && Array.isArray(myGroups) && myGroups.length > 0) ?? false}
         conversations={conversations}
         starredBots={starredBots}
-        recentlyUsedUnsterredBots={recentlyUsedUnsterredBots}
         updateConversationTitle={async (conversationId, title) => {
           await updateTitle(conversationId, title);
         }}

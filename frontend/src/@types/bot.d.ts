@@ -16,6 +16,9 @@ export type BotMeta = {
   isPinned: boolean;
   owned: boolean;
   syncStatus: BotSyncStatus;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig | null;
+  groupId: string;
 };
 
 export type BotKnowledge = {
@@ -45,6 +48,7 @@ export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
 export type BotListItem = BotMeta & {
   available: boolean;
+
 };
 
 export type GenerationParams = {
@@ -79,6 +83,10 @@ export type BotDetails = BotMeta & {
   bedrockGuardrails: GuardrailsParams;
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  version: string;
+  groupId: string;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig;
 };
 
 export type BotSummary = BotMeta & {
@@ -109,7 +117,21 @@ export type RegisterBotRequest = {
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  version: string;
+  groupId: string;
+  assistantConfig: AssistantConfig;
+  creatorConfig: CreatorConfig | null;
 };
+
+export type AssistantConfig = {
+  assistantType: string;
+  assistantTopics: string;
+}
+
+export type CreatorConfig = {
+  userId: string;
+  userName: string;
+}
 
 export type RegisterBotResponse = BotDetails;
 
@@ -125,6 +147,8 @@ export type UpdateBotRequest = {
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  groupId: string;
+  assistantConfig: AssistantConfig;
 };
 
 export type UpdateBotResponse = {
@@ -138,6 +162,8 @@ export type UpdateBotResponse = {
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;
+  groupId: string;
+  assistantConfig: AssistantConfig;
 };
 
 export type UpdateBotPinnedRequest = {
@@ -164,7 +190,13 @@ export type GetBotsRequest =
   | {
       kind: 'mixed';
       pinned: boolean;
-    };
+    }
+  | {
+    kind: 'groups';
+  }
+  | {
+    group_id: string;
+  };
 
 export type GetBotsResponse = BotListItem[];
 

@@ -73,6 +73,16 @@ class ConversationQuickStarterModel(BaseModel):
     title: str
     example: str
 
+class AssistantConfigModel(BaseModel):
+    # database access object
+    assistant_type: str
+    assistant_topics: str
+
+class CreatorConfigModel(BaseModel):
+    # database access object
+    user_id: str
+    user_name: str
+
 
 class BotModel(BaseModel):
     id: str
@@ -99,6 +109,10 @@ class BotModel(BaseModel):
     bedrock_knowledge_base: BedrockKnowledgeBaseModel | None
     bedrock_guardrails: BedrockGuardrailsModel | None
     active_models: ActiveModelsModel  # type: ignore
+    version: str | None
+    group_id: str | None
+    assistant_config: AssistantConfigModel | None
+    creator_config: CreatorConfigModel | None
 
     def has_knowledge(self) -> bool:
         return (
@@ -149,9 +163,18 @@ class BotMeta(BaseModel):
     available: bool
     sync_status: type_sync_status
     has_bedrock_knowledge_base: bool
+    version: str | None
+    group_id: str | None
+    assistant_config: AssistantConfigModel | None
+    creator_config: CreatorConfigModel | None
+    
 
 
 class BotMetaWithStackInfo(BotMeta):
     owner_user_id: str
     published_api_stack_name: str | None
     published_api_datetime: int | None
+
+class BotCreatorModel(BaseModel):
+    bot_id: str
+    user_id: str

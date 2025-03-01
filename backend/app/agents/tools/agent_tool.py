@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Callable, Generic, Literal, TypedDict, TypeVar
 
 from app.repositories.models.conversation import (
@@ -13,6 +14,8 @@ from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from mypy_boto3_bedrock_runtime.type_defs import (
     ToolSpecificationTypeDef,
 )
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -78,9 +81,21 @@ class AgentTool(Generic[T]):
         bot: BotModel | None = None,
     ) -> ToolRunResult:
         try:
+            logger.info(f"Starting tool run: {self.name} with tool_use_id: {tool_use_id}")
+            logger.info(f"Input parameters: {input}")
+
+            # Log before validation
+            logger.info(f"Validating input against schema: {self.args_schema}")
             arg = self.args_schema.model_validate(input)
+            logger.info(f"Input validation successful: {arg}")
+            
+            # Log before function execution
+            logger.info(f"Executing function {self.function.__name__} with bot: {bot} and {model}")
             res = self.function(arg, bot, model)
+            logger.info(f"Function execution completed with result type: {type(res)}")
+
             if isinstance(res, list):
+                logger.info(f"Processing list result with {len(res)} items")
                 related_documents = [
                     _function_result_to_related_document(
                         tool_name=self.name,
@@ -92,6 +107,7 @@ class AgentTool(Generic[T]):
                 ]
 
             else:
+                logger.info(f"Processing single result")
                 related_documents = [
                     _function_result_to_related_document(
                         tool_name=self.name,
@@ -107,6 +123,8 @@ class AgentTool(Generic[T]):
             )
 
         except Exception as e:
+            logger.error(f"Tool: {self.name}, Input: {input}")
+            logger.exception(f"Tool execution failed: {str(e)}")
             return ToolRunResult(
                 tool_use_id=tool_use_id,
                 status="error",

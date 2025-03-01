@@ -157,11 +157,11 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
         {chatContent?.role === 'assistant' && (
           <div className="min-w-[2.3rem] max-w-[2.3rem]">
-            <img src="/images/bedrock_icon_64.png" className="rounded" />
+            <img src="/images/qikr_logo_64.png" className="rounded" />
           </div>
         )}
 
-        <div className="ml-5 grow ">
+        <div className="break-words ml-5 grow">
           {chatContent?.role === 'assistant' && tools != null && tools.length > 0 && (
             <div className="flex flex-col">
               {tools.map((tools, index) => (

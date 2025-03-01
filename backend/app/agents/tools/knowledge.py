@@ -1,4 +1,5 @@
 import logging
+from typing import List, Optional
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
@@ -14,12 +15,34 @@ logger = logging.getLogger(__name__)
 class KnowledgeToolInput(BaseModel):
     query: str = Field(description="User's original question string.")
 
+    # Add documents field for specific source documents
+    documents: Optional[List[str]] = Field(
+        default=None,
+        description="List of source document names to search in knowledge base"
+    )
+
 
 def search_knowledge(
     tool_input: KnowledgeToolInput, bot: BotModel | None, model: type_model_name | None
-) -> list:
-    assert bot is not None
-
+) -> List:
+    """
+    Search the knowledge base for relevant documents using the provided query.
+    
+    Args:
+        tool_input: The input containing the search query
+        bot: The bot instance containing the knowledge base
+        model: The model type name
+        
+    Returns:
+        List of search results
+        
+    Raises:
+        ValueError: If bot is not provided
+        Exception: If search fails
+    """
+    if bot is None:
+        raise ValueError("Bot instance is required for knowledge base search")
+        
     query = tool_input.query
     logger.info(f"Running AnswerWithKnowledgeTool with query: {query}")
 
@@ -27,6 +50,7 @@ def search_knowledge(
         search_results = search_related_docs(
             bot,
             query=query,
+            doc_filter=tool_input.documents,
         )
 
         # # For testing purpose
@@ -39,15 +63,21 @@ def search_knowledge(
         raise e
 
 
-def create_knowledge_tool(bot: BotModel) -> AgentTool:
+def create_knowledge_tool() -> AgentTool:
+    """
+    Create a knowledge base search tool instance
+    
+    Returns:
+        AgentTool instance configured for knowledge base search
+    """
     description = (
-        "Answer a user's question using information. The description is: {}".format(
-            bot.knowledge.__str_in_claude_format__()
-        )
+        "Search and answer questions using the knowledge base."
     )
+    
     logger.info(f"Creating knowledge base tool with description: {description}")
+    
     return AgentTool(
-        name=f"knowledge_base_tool",
+        name="knowledge_base_tool",
         description=description,
         args_schema=KnowledgeToolInput,
         function=search_knowledge,

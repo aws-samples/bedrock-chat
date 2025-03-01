@@ -1,64 +1,36 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import {
-  PiGlobe,
-  PiLink,
-  PiLockKey,
-  PiPlus,
-  PiStar,
-  PiStarFill,
-  PiTrash,
   PiTrashBold,
-  PiUsers,
+  PiPencilBold,
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
 import { BotMeta } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
-import DialogConfirmShareBot from '../components/DialogShareBot';
-import ButtonIcon from '../components/ButtonIcon';
-import PopoverMenu from '../components/PopoverMenu';
-import PopoverItem from '../components/PopoverItem';
 import useChat from '../hooks/useChat';
 import Help from '../components/Help';
 import StatusSyncBot from '../components/StatusSyncBot';
-import useUser from '../hooks/useUser';
 import ListItemBot from '../components/ListItemBot';
 import { TooltipDirection } from '../constants';
+import Toggle from '../components/Toggle';
 
 const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAllowCreatingBot, isAllowApiSettings } = useUser();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
-  const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
-  const [targetShareIndex, setTargetShareIndex] = useState<number>();
 
   const { newChat } = useChat();
   const {
     myBots,
-    recentlyUsedSharedBots,
     deleteMyBot,
-    deleteRecentlyUsedBot,
     updateBotSharing,
-    updateMyBotStarred,
-    updateSharedBotStarred,
   } = useBot(true);
 
-  const targetShareBot = useMemo(() => {
-    if (myBots) {
-      if ((targetShareIndex ?? -1) < 0) {
-        return undefined;
-      }
-      return myBots[targetShareIndex!];
-    }
-    return undefined;
-  }, [myBots, targetShareIndex]);
-
-  const onClickNewBot = useCallback(() => {
-    navigate('/bot/new');
+  const onClickNewBot = useCallback((assistantType: string) => {
+    navigate('/bot/new', { state: { assistantType: assistantType } });
   }, [navigate]);
 
   const onClickEditBot = useCallback(
@@ -82,23 +54,9 @@ const BotExplorePage: React.FC = () => {
     }
   }, [deleteMyBot, targetDelete]);
 
-  const onClickShare = useCallback((targetIndex: number) => {
-    setIsOpenShareDialog(true);
-    setTargetShareIndex(targetIndex);
+  const onToggleShare = useCallback((botId: string, isPublic: boolean) => {
+      updateBotSharing(botId, !isPublic);
   }, []);
-
-  const onClickApiSettings = useCallback(
-    (botId: string) => {
-      navigate(`/bot/api-settings/${botId}`);
-    },
-    [navigate]
-  );
-
-  const onToggleShare = useCallback(() => {
-    if (targetShareBot) {
-      updateBotSharing(targetShareBot.id, !targetShareBot.isPublic);
-    }
-  }, [targetShareBot, updateBotSharing]);
 
   const onClickBot = useCallback(
     (botId: string) => {
@@ -107,7 +65,6 @@ const BotExplorePage: React.FC = () => {
     },
     [navigate, newChat]
   );
-
   return (
     <>
       <DialogConfirmDeleteBot
@@ -118,184 +75,127 @@ const BotExplorePage: React.FC = () => {
           setIsOpenDeleteDialog(false);
         }}
       />
-      <DialogConfirmShareBot
-        isOpen={isOpenShareDialog}
-        target={targetShareBot}
-        onToggleShare={onToggleShare}
-        onClose={() => {
-          setIsOpenShareDialog(false);
-        }}
-      />
       <div className="flex h-full justify-center">
         <div className="w-full max-w-screen-xl px-4 lg:w-4/5">
-          <div className="h-1/2 w-full pt-8">
+          <div className="h-1/4 w-full pt-8">
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2">
-                <div className="text-xl font-bold">{t('bot.label.myBots')}</div>
+                <div className="text-xl font-bold">{"Create Assistant"}</div>
                 <Help
                   direction={TooltipDirection.RIGHT}
                   message={t('bot.help.overview')}
                 />
               </div>
-
-              <Button
-                className="text-sm"
-                disabled={!isAllowCreatingBot}
-                outlined
-                icon={<PiPlus />}
-                onClick={onClickNewBot}>
-                {t('bot.button.newBot')}
-              </Button>
             </div>
             <div className="mt-2 border-b border-gray"></div>
 
             <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
               <div className="h-full min-w-[480px]">
-                {myBots?.length === 0 && (
-                  <div className="flex size-full items-center justify-center italic text-dark-gray dark:text-light-gray">
-                    {t('bot.label.noBots')}
+                <div className="container-bot-explore">
+                  <div className="first-half-bot-explore">
+                    <Button
+                      className="text-l font-bold create-assistant-btn"
+                      outlined
+                      onClick={() => onClickNewBot("learning_assistant")}>
+                      <img src="/images/learning_assistant.png" className="create-assistant-btn-logo"/>
+                      <div className="create-assistant-btn-text-box">
+                        <div className="create-assistant-btn-title">Learning Assistant</div>
+                        <div className="create-assistant-btn-description">Build an assistant to generate responses based on specific material for students.</div>  
+                      </div>
+                    </Button>
                   </div>
-                )}
-                {myBots?.map((bot, idx) => (
+                  <div className="first-half-bot-explore">
+                    <Button
+                      className="text-l font-bold create-assistant-btn"
+                      outlined
+                      onClick={() => onClickNewBot("custom_assistant")}>
+                      <img src="/images/custom_assistant.png" className="create-assistant-btn-logo"/>
+                      <div className="create-assistant-btn-text-box">
+                        <div className="create-assistant-btn-title">Custom Assistant</div>
+                        <div className="create-assistant-btn-description">Build an assistant based on your custom use case.</div>  
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+                <div className="container-bot-explore">
+                  <div className="second-half-bot-explore">
+                    <Button
+                      className="text-l font-bold create-assistant-btn"
+                      outlined
+                      onClick={() => onClickNewBot("quiz_assistant")}>
+                      <img src="/images/quiz_assistant.png" className="create-assistant-btn-logo"/>
+                      <div className="create-assistant-btn-text-box">
+                        <div className="create-assistant-btn-title">Quiz Assistant</div>
+                        <div className="create-assistant-btn-description">Build an assistant to generate quizzes based on specific material.</div>  
+                      </div>
+                    </Button>
+                  </div>
+                  <div className="second-half-bot-explore">
+                    <Button
+                      className="text-l font-bold create-assistant-btn"
+                      outlined
+                      onClick={() => onClickNewBot("lesson_plan_assistant")}>
+                      <img src="/images/lesson_plan_assistant.png" className="create-assistant-btn-logo"/>
+                      <div className="create-assistant-btn-text-box">
+                        <div className="create-assistant-btn-title">Lesson Plan Assistant</div>
+                        <div className="create-assistant-btn-description">Build an assistant to generate lesson plans based on specific material.</div>  
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="h-3/4 w-full">
+            <div className='assistant-list-column-headers-row'>
+              <div className="text-xl font-bold assistant-list-column-headers-row-title">Assistant List</div>
+              <div className='assistant-list-column-headers-row-attributes'>
+                <div className='assistant-list-column-attribute-items assistant-item-course'>Course Name</div>
+                <div className='assistant-list-column-attribute-items assistant-item-canvas'>District</div>
+                <div className='assistant-list-column-attribute-items assistant-item-type-and-name'>Created By</div>
+              </div>
+              <div className='assistant-list-column-headers-row-buttons'>
+                <div className='assistant-list-column-btn-items'>Sync Status</div>
+                <div className='assistant-list-column-btn-items'>Public</div>
+              </div>
+            </div>
+            <div className="mt-2 border-b border-gray"></div>
+            <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+              <div className="h-full min-w-[480px]">
+                {myBots?.map((bot) => (
                   <ListItemBot
                     key={bot.id}
                     bot={bot}
                     onClick={onClickBot}
                     className="last:border-b-0">
                     <div className="flex items-center">
-                      {bot.owned && (
-                        <StatusSyncBot
-                          className="mr-5"
-                          syncStatus={bot.syncStatus}
-                          onClickError={() => {
-                            navigate(`/bot/edit/${bot.id}`);
-                          }}
-                        />
-                      )}
-
-                      <div className="mr-5 flex justify-end">
-                        {bot.isPublic ? (
-                          <div className="flex items-center">
-                            <PiUsers className="mr-1" />
-                            <ButtonIcon
-                              className="-mr-3"
-                              onClick={() => {
-                                onClickShare(idx);
-                              }}>
-                              <PiLink />
-                            </ButtonIcon>
-                          </div>
-                        ) : (
-                          <div className="ml-7">
-                            <PiLockKey />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mr-5">
-                        {bot.isPinned ? (
-                          <ButtonIcon
-                            disabled={!bot.available}
-                            onClick={() => {
-                              updateMyBotStarred(bot.id, false);
-                            }}>
-                            <PiStarFill className="text-aws-aqua" />
-                          </ButtonIcon>
-                        ) : (
-                          <ButtonIcon
-                            disabled={!bot.available}
-                            onClick={() => {
-                              updateMyBotStarred(bot.id, true);
-                            }}>
-                            <PiStar />
-                          </ButtonIcon>
-                        )}
-                      </div>
-
+                      <StatusSyncBot
+                        className="mr-5"
+                        syncStatus={bot.syncStatus}
+                        onClickError={() => {
+                          navigate(`/bot/edit/${bot.id}`);
+                        }}
+                      />
+                      <Toggle
+                        value={bot.isPublic}
+                        onChange={() => onToggleShare(bot.id, bot.isPublic)}/>
                       <Button
                         className="mr-2 h-8 text-sm font-semibold"
                         outlined
                         onClick={() => {
                           onClickEditBot(bot.id);
                         }}>
-                        {t('bot.button.edit')}
+                        <PiPencilBold />
                       </Button>
-                      <div className="relative">
-                        <PopoverMenu className="h-8" target="bottom-right">
-                          <PopoverItem
-                            onClick={() => {
-                              onClickShare(idx);
-                            }}>
-                            <PiUsers />
-                            {t('bot.button.share')}
-                          </PopoverItem>
-                          {isAllowApiSettings && (
-                            <PopoverItem
-                              onClick={() => {
-                                onClickApiSettings(bot.id);
-                              }}>
-                              <PiGlobe />
-                              {t('bot.button.apiSettings')}
-                            </PopoverItem>
-                          )}
-                          <PopoverItem
-                            className="font-bold text-red"
-                            onClick={() => {
-                              onClickDelete(bot);
-                            }}>
-                            <PiTrashBold />
-                            {t('bot.button.delete')}
-                          </PopoverItem>
-                        </PopoverMenu>
-                      </div>
+                      <Button
+                        className="mr-2 h-8 text-sm font-semibold"
+                        outlined
+                        onClick={() => {
+                          onClickDelete(bot);
+                        }}>
+                        <PiTrashBold />
+                      </Button>
                     </div>
-                  </ListItemBot>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="h-1/2 w-full">
-            <div className="text-xl font-bold">
-              {t('bot.label.recentlyUsedBots')}
-            </div>
-            <div className="mt-2 border-b border-gray"></div>
-            <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
-              <div className="h-full min-w-[480px]">
-                {recentlyUsedSharedBots?.length === 0 && (
-                  <div className="flex size-full items-center justify-center italic text-dark-gray dark:text-light-gray">
-                    {t('bot.label.noBotsRecentlyUsed')}
-                  </div>
-                )}
-                {recentlyUsedSharedBots?.map((bot) => (
-                  <ListItemBot
-                    key={bot.id}
-                    bot={bot}
-                    onClick={onClickBot}
-                    className="last:border-b-0">
-                    {bot.isPinned ? (
-                      <ButtonIcon
-                        disabled={!bot.available}
-                        onClick={() => {
-                          updateSharedBotStarred(bot.id, false);
-                        }}>
-                        <PiStarFill className="text-aws-aqua" />
-                      </ButtonIcon>
-                    ) : (
-                      <ButtonIcon
-                        disabled={!bot.available}
-                        onClick={() => {
-                          updateSharedBotStarred(bot.id, true);
-                        }}>
-                        <PiStar />
-                      </ButtonIcon>
-                    )}
-                    <ButtonIcon
-                      className="text-red"
-                      onClick={() => {
-                        deleteRecentlyUsedBot(bot.id);
-                      }}>
-                      <PiTrash />
-                    </ButtonIcon>
                   </ListItemBot>
                 ))}
               </div>

@@ -165,6 +165,12 @@ const AdminSharedBotAnalyticsPage: React.FC = () => {
                     onClickViewBot(bot.id);
                   }}>
                   <div className="relative flex h-full items-center">
+                    <div className="text-lg font-bold" style={{paddingRight: '50px'}}>
+                      {bot.numOfConvos} Conversations
+                    </div>
+                    <div className="text-lg font-bold" style={{paddingRight: '50px'}}>
+                      {bot.numOfUsers} Users
+                    </div>
                     <div className="text-lg font-bold">
                       {(Math.floor(bot.totalPrice * 100) / 100).toFixed(2)} USD
                     </div>

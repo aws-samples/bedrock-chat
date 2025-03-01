@@ -26,6 +26,7 @@ const useBotApi = () => {
     ) => {
       return http.get<GetBotsResponse>(['bot', req], {
         refreshInterval: refreshIntervalFunction,
+        revalidateOnFocus: false  // Disable refresh on window focus
       });
     },
     getOnceMyBot: (botId: string) => {
@@ -43,7 +44,7 @@ const useBotApi = () => {
               data?.syncStatus === 'QUEUED' ||
               data?.syncStatus === 'RUNNING'
             ) {
-              return 5000;
+              return 15000;
             }
             return 0;
           },
