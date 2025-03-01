@@ -360,8 +360,8 @@ Please also take a look at the following guidelines before contributing:
 
 ## 🏆 Significant Contributors
 
-- [k70suK3-k06a7ash1](https://github.com/k70suK3-k06a7ash1)
 - [fsatsuki](https://github.com/fsatsuki)
+- [k70suK3-k06a7ash1](https://github.com/k70suK3-k06a7ash1)
 
 ## Contributors
 
