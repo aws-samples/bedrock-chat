@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TypeGuard, Dict, Any, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
 from app.config import BEDROCK_PRICING
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
-
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -15,20 +14,17 @@ from app.utils import get_bedrock_runtime_client
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import AgentTool
-    from app.repositories.models.conversation import (
-        SimpleMessageModel,
-        ContentModel,
-    )
+    from app.repositories.models.conversation import ContentModel, SimpleMessageModel
+    from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
     from mypy_boto3_bedrock_runtime.type_defs import (
-        ConverseStreamRequestRequestTypeDef,
-        MessageTypeDef,
-        ConverseResponseTypeDef,
         ContentBlockTypeDef,
+        ConverseResponseTypeDef,
+        ConverseStreamRequestRequestTypeDef,
         GuardrailConverseContentBlockTypeDef,
         InferenceConfigurationTypeDef,
+        MessageTypeDef,
         SystemContentBlockTypeDef,
     )
-    from mypy_boto3_bedrock_runtime.literals import ConversationRoleType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -275,6 +271,7 @@ def get_model_id(
         "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
         "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
         "claude-v3.5-sonnet-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "claude-v3.7-sonnet": "anthropic.claude-3-7-sonnet-20250219-v1:0",
         "claude-v3.5-haiku": "anthropic.claude-3-5-haiku-20241022-v1:0",
         "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
         "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
@@ -292,6 +289,7 @@ def get_model_id(
         "claude-v3-opus",
         "claude-v3.5-sonnet",
         "claude-v3.5-sonnet-v2",
+        "claude-v3.7-sonnet",
         "claude-v3.5-haiku",
         "amazon-nova-pro",
         "amazon-nova-lite",
