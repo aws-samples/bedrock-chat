@@ -26,6 +26,7 @@ LANGUAGES = [
     "vi-VN",  # Vietnamese (Vietnam)
     "zh-CN",  # Chinese (Simplified, China)
     "zh-TW",  # Chinese (Traditional, Taiwan)
+    "pl-PL",  # Polish (Poland)
 ]
 
 
