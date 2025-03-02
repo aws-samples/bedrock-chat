@@ -16,8 +16,6 @@ from app.websocket_handler import WebSocketHandler, NotificationSender, MessageS
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
-
 class InMemoryMessageStore(MessageStore):
     """In-memory implementation of message storage for local development"""
     def __init__(self):
@@ -268,14 +266,6 @@ async def local_websocket_endpoint(websocket: WebSocket):
 def register_websocket_routes(app):
     """Register WebSocket routes if not running on Lambda"""
     if not is_running_on_lambda():
-        # Add CORS middleware
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=ALLOWED_ORIGINS,  # Your frontend dev server
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
 
         @app.websocket("/ws")
         async def websocket_endpoint(websocket: WebSocket):
