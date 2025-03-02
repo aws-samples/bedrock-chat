@@ -282,26 +282,151 @@ def get_model_id(
         "amazon-nova-micro": "amazon.nova-micro-v1:0",
     }
 
+    # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html
-    cross_region_inference_models = {
-        "claude-v3-sonnet",
-        "claude-v3-haiku",
-        "claude-v3-opus",
-        "claude-v3.5-sonnet",
-        "claude-v3.5-sonnet-v2",
-        "claude-v3.7-sonnet",
-        "claude-v3.5-haiku",
-        "amazon-nova-pro",
-        "amazon-nova-lite",
-        "amazon-nova-micro",
-    }
-
-    supported_region_prefixes = {
-        "us-east-1": "us",
-        "us-west-2": "us",
-        "eu-west-1": "eu",
-        "eu-central-1": "eu",
-        "eu-west-3": "eu",
+    supported_regions = {
+        "us-east-1": {
+            "area": "us",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-opus",
+                "claude-v3-sonnet",
+                "claude-v3.5-haiku",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+                "claude-v3.7-sonnet",
+            ],
+        },
+        "us-east-2": {
+            "area": "us",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3.5-haiku",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+                "claude-v3.7-sonnet",
+            ],
+        },
+        "us-west-2": {
+            "area": "us",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-opus",
+                "claude-v3-sonnet",
+                "claude-v3.5-haiku",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+                "claude-v3.7-sonnet",
+            ],
+        },
+        "eu-central-1": {
+            "area": "eu",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+            ],
+        },
+        "eu-west-1": {
+            "area": "eu",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+            ],
+        },
+        "eu-west-2": {"area": "eu", "models": []},
+        "eu-west-3": {
+            "area": "eu",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+            ],
+        },
+        "eu-north-1": {
+            "area": "eu",
+            "models": ["amazon-nova-lite", "amazon-nova-micro", "amazon-nova-pro"],
+        },
+        "ap-south-1": {
+            "area": "apac",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+            ],
+        },
+        "ap-northeast-1": {
+            "area": "apac",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+            ],
+        },
+        "ap-northeast-2": {
+            "area": "apac",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+            ],
+        },
+        "ap-northeast-3": {"area": "apac", "models": ["claude-v3.5-sonnet-v2"]},
+        "ap-southeast-1": {
+            "area": "apac",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+            ],
+        },
+        "ap-southeast-2": {
+            "area": "apac",
+            "models": [
+                "amazon-nova-lite",
+                "amazon-nova-micro",
+                "amazon-nova-pro",
+                "claude-v3-haiku",
+                "claude-v3-sonnet",
+                "claude-v3.5-sonnet",
+                "claude-v3.5-sonnet-v2",
+            ],
+        },
     }
 
     base_model_id = base_model_ids.get(model)
@@ -309,9 +434,13 @@ def get_model_id(
         raise ValueError(f"Unsupported model: {model}")
 
     model_id = base_model_id
-    if enable_cross_region and model in cross_region_inference_models:
-        region_prefix = supported_region_prefixes.get(bedrock_region)
-        if region_prefix:
+
+    if enable_cross_region:
+        if (
+            bedrock_region in supported_regions
+            and model in supported_regions[bedrock_region]["models"]
+        ):
+            region_prefix = supported_regions[bedrock_region]["area"]
             model_id = f"{region_prefix}.{base_model_id}"
             logger.info(
                 f"Using cross-region model ID: {model_id} for model '{model}' in region '{BEDROCK_REGION}'"
