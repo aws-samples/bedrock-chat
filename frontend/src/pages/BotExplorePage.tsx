@@ -100,7 +100,7 @@ const BotExplorePage: React.FC = () => {
                       <img src="/images/learning_assistant.png" className="create-assistant-btn-logo"/>
                       <div className="create-assistant-btn-text-box">
                         <div className="create-assistant-btn-title">Learning Assistant</div>
-                        <div className="create-assistant-btn-description">Answer student questions based on uploaded material.</div>  
+                        <div className="create-assistant-btn-description">Answer student questions using provided material.</div>  
                       </div>
                     </Button>
                   </div>
@@ -112,7 +112,7 @@ const BotExplorePage: React.FC = () => {
                       <img src="/images/custom_assistant.png" className="create-assistant-btn-logo"/>
                       <div className="create-assistant-btn-text-box">
                         <div className="create-assistant-btn-title">Custom Assistant</div>
-                        <div className="create-assistant-btn-description">Build an assistant tailored to your needs.</div>  
+                        <div className="create-assistant-btn-description">Fully customize an assistant to your needs.</div>  
                       </div>
                     </Button>
                   </div>
@@ -126,7 +126,7 @@ const BotExplorePage: React.FC = () => {
                       <img src="/images/quiz_assistant.png" className="create-assistant-btn-logo"/>
                       <div className="create-assistant-btn-text-box">
                         <div className="create-assistant-btn-title">Quiz Assistant</div>
-                        <div className="create-assistant-btn-description">Generate quiz questions based on uploaded material.</div>  
+                        <div className="create-assistant-btn-description">Generate quiz questions using provided material.</div>  
                       </div>
                     </Button>
                   </div>
@@ -138,7 +138,7 @@ const BotExplorePage: React.FC = () => {
                       <img src="/images/lesson_plan_assistant.png" className="create-assistant-btn-logo"/>
                       <div className="create-assistant-btn-text-box">
                         <div className="create-assistant-btn-title">Lesson Plan Assistant</div>
-                        <div className="create-assistant-btn-description">Generate lesson plans based on uploaded material.</div>  
+                        <div className="create-assistant-btn-description">Generate lesson plans using provided material.</div>  
                       </div>
                     </Button>
                   </div>
