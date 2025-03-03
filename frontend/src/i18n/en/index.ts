@@ -212,8 +212,8 @@ const translation = {
             body: 'An error occurred while synchronizing Knowledge. Please check the following message:',
           },
           incomplete: {
-            title: 'Update in Progress',
-            body: 'Your professor has made changes to this assistant. You can still chat while the assistant updates.',
+            title: 'NOT Ready',
+            body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
           },
         },
       },
