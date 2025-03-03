@@ -11,6 +11,8 @@ from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
+from botocore.exceptions import ClientError
+from retry import retry
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import AgentTool
@@ -25,6 +27,7 @@ if TYPE_CHECKING:
         MessageTypeDef,
         SystemContentBlockTypeDef,
     )
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -41,6 +44,9 @@ ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
 )
 
 client = get_bedrock_runtime_client()
+
+
+class BedrockThrottlingException(Exception): ...
 
 
 def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
@@ -272,12 +278,26 @@ def compose_args_for_converse_api(
     return args
 
 
+@retry(
+    exceptions=(BedrockThrottlingException,),
+    tries=3,
+    delay=60,
+    backoff=2,
+    jitter=(0, 2),
+    logger=logger,
+)
 def call_converse_api(
     args: ConverseStreamRequestTypeDef,
 ) -> ConverseResponseTypeDef:
     client = get_bedrock_runtime_client()
-
-    return client.converse(**args)
+    try:
+        return client.converse(**args)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ThrottlingException":
+            raise BedrockThrottlingException(
+                "Bedrock API is throttling requests"
+            ) from e
+        raise
 
 
 def calculate_price(

@@ -3,7 +3,11 @@ import logging
 from typing import Callable, TypedDict, TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool
-from app.bedrock import calculate_price, compose_args_for_converse_api
+from app.bedrock import (
+    BedrockThrottlingException,
+    calculate_price,
+    compose_args_for_converse_api,
+)
 from app.repositories.models.conversation import (
     ContentModel,
     MessageModel,
@@ -17,9 +21,11 @@ from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client, get_current_time
+from botocore.exceptions import ClientError
 from mypy_boto3_bedrock_runtime.literals import ConversationRoleType, StopReasonType
 from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 from pydantic import JsonValue
+from retry import retry
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -174,6 +180,14 @@ class ConverseApiStreamHandler:
         self.on_thinking = on_thinking
         self.on_reasoning = on_reasoning
 
+    @retry(
+        exceptions=(BedrockThrottlingException,),
+        tries=3,
+        delay=60,
+        backoff=2,
+        jitter=(0, 2),
+        logger=logger,
+    )
     def run(
         self,
         messages: list[SimpleMessageModel],
@@ -196,7 +210,14 @@ class ConverseApiStreamHandler:
             logger.info(f"args for converse_stream: {args}")
 
             client = get_bedrock_runtime_client()
-            response = client.converse_stream(**args)
+            try:
+                response = client.converse_stream(**args)
+            except ClientError as e:
+                if e.response["Error"]["Code"] == "ThrottlingException":
+                    raise BedrockThrottlingException(
+                        "Bedrock API is throttling requests"
+                    ) from e
+                raise
 
             current_message = _PartialMessage(
                 role="assistant",
