@@ -213,7 +213,7 @@ const translation = {
           },
           incomplete: {
             title: 'Update in Progress',
-            body: 'Your professor has made changes to this assistant. You can still chat while the assistant updates.',
+            body: 'This assistant is being updated. You can continue chatting while updates are pending. ',
           },
         },
       },
