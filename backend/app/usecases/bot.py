@@ -377,9 +377,9 @@ def modify_owned_bot(
     )
    
     # Build or update the agent if needed
-    tool_dict = {tool.name: tool for tool in bot.agent.tools}
+    tool_dict = {}
 
-    if modify_input.agent:
+    if modify_input.agent:        
         # Create or update AgentToolModel entries
         for tool_name in modify_input.agent.tools:
             try:
