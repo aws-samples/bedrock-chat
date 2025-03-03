@@ -4,17 +4,13 @@ import os
 from decimal import Decimal as decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
-from pydantic import TypeAdapter
-
 from app.repositories.common import (
     TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
     _get_table_client,
     compose_conv_id,
-    decompose_conv_id,
     compose_related_document_source_id,
+    decompose_conv_id,
     decompose_related_document_source_id,
 )
 from app.repositories.models.conversation import (
@@ -25,9 +21,12 @@ from app.repositories.models.conversation import (
     RelatedDocumentModel,
     ToolResultModel,
 )
+from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
+from pydantic import TypeAdapter
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 THRESHOLD_LARGE_MESSAGE = 300 * 1024  # 300KB
 LARGE_MESSAGE_BUCKET = os.environ.get("LARGE_MESSAGE_BUCKET")

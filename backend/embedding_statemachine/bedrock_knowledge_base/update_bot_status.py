@@ -14,7 +14,7 @@ from app.routes.schemas.bot import type_sync_status
 from retry import retry
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource("dynamodb")
 
