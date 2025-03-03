@@ -375,14 +375,9 @@ def modify_owned_bot(
     )
    
     # Build or update the agent if needed
-    tool_dict = {tool.name: tool for tools in bot.agent.tools}
+    tool_dict = {}
 
-    if modify_input.agent:
-        # Remove tools that are turned off
-        removed_tools = set(tool_dict.keys()) - set(modify_input.agent.tools)
-        for tool_name in removed_tools:
-            del tool_dict[tool_name]
-        
+    if modify_input.agent:        
         # Create or update AgentToolModel entries
         for tool_name in modify_input.agent.tools:
             try:
