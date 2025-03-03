@@ -4,6 +4,7 @@ import { PiEyeLight, PiEyeSlashLight } from 'react-icons/pi';
 import InputText from '../../../components/InputText';
 import { Slider } from '../../../components/Slider';
 import { FirecrawlConfig as FirecrawlConfigType } from '../types';
+import { EDGE_FIRECRAWL_CONFIG } from '../constants';
 
 type Props = {
   config: FirecrawlConfigType;
@@ -47,9 +48,12 @@ export const FirecrawlConfig = ({ config, onChange }: Props) => {
         <button
           type="button"
           className="size-9 rounded border border-aws-font-color-light/50 p-2 text-sm dark:border-aws-font-color-dark/50"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? <PiEyeLight className="size-5" /> : <PiEyeSlashLight className="size-5" />}
+          onClick={() => setShowPassword(!showPassword)}>
+          {showPassword ? (
+            <PiEyeLight className="size-5" />
+          ) : (
+            <PiEyeSlashLight className="size-5" />
+          )}
         </button>
       </div>
       <Slider
@@ -57,9 +61,9 @@ export const FirecrawlConfig = ({ config, onChange }: Props) => {
         value={config.maxResults}
         onChange={handleMaxResultsChange}
         range={{
-          min: 1,
-          max: 50,
-          step: 1,
+          min: EDGE_FIRECRAWL_CONFIG.maxResults.MIN,
+          max: EDGE_FIRECRAWL_CONFIG.maxResults.MAX,
+          step: EDGE_FIRECRAWL_CONFIG.maxResults.STEP,
         }}
       />
     </div>
