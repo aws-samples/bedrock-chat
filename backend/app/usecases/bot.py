@@ -212,9 +212,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                 if bot_input.bedrock_guardrails
                 else None
             ),
-            active_models=ActiveModelsModel.model_validate(
-                dict(bot_input.active_models)
-            ),
+            active_models=ActiveModelsModel.model_validate(dict(bot_input.active_models)),
         ),
     )
     return BotOutput(
@@ -227,9 +225,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
-        generation_params=GenerationParams.model_validate(
-            generation_params.model_dump()
-        ),
+        generation_params=GenerationParams.model_validate(generation_params.model_dump()),
         agent=(
             Agent.model_validate(bot_input.agent.model_dump())
             if bot_input.agent
@@ -257,9 +253,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             ]
         ),
         bedrock_knowledge_base=(
-            BedrockKnowledgeBaseOutput(
-                **(bot_input.bedrock_knowledge_base.model_dump())
-            )
+            BedrockKnowledgeBaseOutput(**(bot_input.bedrock_knowledge_base.model_dump()))
             if bot_input.bedrock_knowledge_base
             else None
         ),
@@ -382,9 +376,7 @@ def modify_owned_bot(
             if modify_input.bedrock_guardrails
             else None
         ),
-        active_models=ActiveModelsOutput.model_validate(
-            dict(modify_input.active_models)
-        ),
+        active_models=ActiveModelsOutput.model_validate(dict(modify_input.active_models)),
     )
 
     return BotModifyOutput(
@@ -392,9 +384,7 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
-        generation_params=GenerationParams.model_validate(
-            generation_params.model_dump()
-        ),
+        generation_params=GenerationParams.model_validate(generation_params.model_dump()),
         agent=(
             Agent.model_validate(modify_input.agent.model_dump())
             if modify_input.agent
@@ -429,9 +419,7 @@ def modify_owned_bot(
             if modify_input.bedrock_guardrails
             else None
         ),
-        active_models=ActiveModelsOutput.model_validate(
-            dict(modify_input.active_models)
-        ),
+        active_models=ActiveModelsOutput.model_validate(dict(modify_input.active_models)),
     )
 
 
