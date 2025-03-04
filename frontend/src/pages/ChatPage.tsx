@@ -11,6 +11,7 @@ import useChat from '../hooks/useChat';
 import { AttachmentType } from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
 import useScroll from '../hooks/useScroll';
+import useUser from '../hooks/useUser';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   PiArrowsCounterClockwise,
@@ -56,6 +57,7 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { open: openSnackbar } = useSnackbar();
   const { errorDetail } = usePostMessageStreaming();
+  const { emailId } = useUser();
 
   const {
     agentThinking,
@@ -71,7 +73,6 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     continueGenerate,
-    getPostedModel,
     loadingConversation,
     getShouldContinue,
     relatedDocuments,
@@ -387,11 +388,9 @@ const ChatPage: React.FC = () => {
             </div>
 
           </div>
-          {getPostedModel() && (
             <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
-              model: {getPostedModel()}
+              {emailId}
             </div>
-          )}
         </div>
         <section className="relative size-full flex-1 overflow-auto pb-9">
           <div className="h-full">

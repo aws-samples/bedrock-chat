@@ -15,7 +15,6 @@ import useBot from '../hooks/useBot';
 import useChat from '../hooks/useChat';
 import useGroup from '../hooks/useGroup';
 import { usePageLabel, usePageTitlePathPattern } from '../routes';
-import useUser from '../hooks/useUser';
 import DialogConfirmDeleteChat from './DialogConfirmDeleteChat';
 import DialogConfirmClearConversations from './DialogConfirmClearConversations';
 import DialogSelectLanguage from './DialogSelectLanguage';
@@ -35,8 +34,7 @@ const AppContent: React.FC<Props> = (props) => {
   const { starredBots } = useBot();
   const { newChat, isGeneratedTitle } = useChat();
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
-  const { isAdmin } = useUser();
-  const { myGroups } = useGroup();
+  const { myGroups, isAdmin } = useGroup();
   const [theme] = useLocalStorage(
     'theme',
     'light'

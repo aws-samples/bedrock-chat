@@ -9,7 +9,7 @@ const GROUP_ADMIN = 'Admin';
 const useUser = () => {
   const [isAllowApiSettings, setIsAllowApiSettings] = useState(false);
   const [isAllowCreatingBot, setIsAllowCreatingBot] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [emailId, setEmailId] = useState('');
 
   const { data: session } = useSWR('current-session', () =>
     fetchAuthSession()
@@ -17,6 +17,10 @@ const useUser = () => {
 
   useEffect(() => {
     const groups = session?.tokens?.idToken?.payload?.['cognito:groups'];
+    const emailId = session?.tokens?.signInDetails?.loginId;
+    if (emailId) {
+      setEmailId(emailId);
+    }
 
     if (Array.isArray(groups)) {
       setIsAllowApiSettings(groups.some(group =>
@@ -25,19 +29,15 @@ const useUser = () => {
       setIsAllowCreatingBot(groups.some(group =>
         group === GROUP_CREATING_BOT_ALLOWED || group === GROUP_ADMIN
       ));
-      setIsAdmin(groups.some(group =>
-        group === GROUP_ADMIN
-      ));
     } else {
       setIsAllowApiSettings(false);
       setIsAllowCreatingBot(false);
-      setIsAdmin(false);
     }
   }, [session]);
   return {
     isAllowApiSettings,
     isAllowCreatingBot,
-    isAdmin,
+    emailId,
   };
 };
 

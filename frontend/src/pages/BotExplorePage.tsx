@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import {
   PiTrashBold,
@@ -10,15 +9,14 @@ import useBot from '../hooks/useBot';
 import { BotMeta } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import useChat from '../hooks/useChat';
-import Help from '../components/Help';
+import useUser from '../hooks/useUser';
 import StatusSyncBot from '../components/StatusSyncBot';
 import ListItemBot from '../components/ListItemBot';
-import { TooltipDirection } from '../constants';
 import Toggle from '../components/Toggle';
 
 const BotExplorePage: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { emailId } = useUser(); 
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
 
@@ -81,14 +79,12 @@ const BotExplorePage: React.FC = () => {
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2">
                 <div className="text-xl font-bold">{"Create Assistant"}</div>
-                <Help
-                  direction={TooltipDirection.RIGHT}
-                  message={t('bot.help.overview')}
-                />
               </div>
             </div>
+            <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
+              {emailId}
+            </div>
             <div className="mt-2 border-b border-gray"></div>
-
             <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
               <div className="h-full min-w-[480px]">
                 <div className="container-bot-explore">

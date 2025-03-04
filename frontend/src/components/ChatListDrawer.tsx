@@ -15,7 +15,6 @@ import {
   PiChat,
   PiCheck,
   PiCompass,
-  PiGlobe,
   PiNotePencil,
   PiPencilLine,
   PiRobot,
@@ -311,20 +310,13 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             />}
             {props.isAdmin && (
               <ExpandableDrawerGroup
-                label={t('app.adminConsoles')}
+                label={"Admin"}
                 className="border-t pt-1">
                 <DrawerItem
                   isActive={false}
                   icon={<PiShareNetwork />}
                   to="/admin/shared-bot-analytics"
                   labelComponent={getPageLabel('/admin/shared-bot-analytics')}
-                  onClick={closeSamllDrawer}
-                />
-                <DrawerItem
-                  isActive={false}
-                  icon={<PiGlobe />}
-                  to="/admin/api-management"
-                  labelComponent={getPageLabel('/admin/api-management')}
                   onClick={closeSamllDrawer}
                 />
               </ExpandableDrawerGroup>
