@@ -258,7 +258,7 @@ def chat(
     search_results: list[SearchResult] = []
     if bot is not None:
         if bot.is_agent_enabled():
-            # If it have a knowledge base, always process it in agent mode 
+            # If it have a knowledge base, always process it in agent mode
             if bot.has_knowledge():
                 # Add knowledge tool
                 knowledge_tool = create_knowledge_tool(bot=bot)

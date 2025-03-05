@@ -13,7 +13,9 @@ logger.setLevel(logging.INFO)
 
 
 class KnowledgeToolInput(BaseModel):
-    query: str = Field(description="A search string for querying the Amazon Bedrock Knowledge base.")
+    query: str = Field(
+        description="A search string for querying the Amazon Bedrock Knowledge base."
+    )
 
 
 def search_knowledge(
