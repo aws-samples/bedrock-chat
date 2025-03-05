@@ -156,6 +156,6 @@ export const EDGE_SEARCH_PARAMS = {
 };
 
 export const DEFAULT_SEARCH_CONFIG: SearchParams = {
-  maxResults: 20,
+  maxResults: 5,
   searchType: 'hybrid',
 };
