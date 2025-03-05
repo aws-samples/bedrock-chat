@@ -223,6 +223,10 @@ const translation = {
             title: 'NOT Ready',
             body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
           },
+          noAvailableAssistants: {
+            title: 'No Assistants are Avaialble at this Time',
+            body: 'Please check again later',
+          }
         },
       },
       samples: {
