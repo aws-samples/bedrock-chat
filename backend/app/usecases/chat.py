@@ -258,6 +258,7 @@ def chat(
     search_results: list[SearchResult] = []
     if bot is not None:
         if bot.is_agent_enabled():
+            # If it have a knowledge base, always process it in agent mode 
             if bot.has_knowledge():
                 # Add knowledge tool
                 knowledge_tool = create_knowledge_tool(bot=bot)
@@ -267,51 +268,6 @@ def chat(
                 instructions.append(
                     get_prompt_to_cite_tool_results(
                         model=chat_input.message.model,
-                    )
-                )
-
-        elif bot.has_knowledge():
-            # Fetch most related documents from vector store
-            # NOTE: Currently embedding not support multi-modal. For now, use the last content.
-            content = conversation.message_map[user_msg_id].content[-1]
-            if isinstance(content, TextContentModel):
-                pseudo_tool_use_id = "new-message-assistant"
-
-                if on_thinking:
-                    on_thinking(
-                        {
-                            "tool_use_id": pseudo_tool_use_id,
-                            "name": "knowledge_base_tool",
-                            "input": {
-                                "query": content.body,
-                            },
-                        }
-                    )
-
-                search_results = search_related_docs(bot=bot, query=content.body)
-                logger.info(f"Search results from vector store: {search_results}")
-
-                if on_tool_result:
-                    on_tool_result(
-                        {
-                            "tool_use_id": pseudo_tool_use_id,
-                            "status": "success",
-                            "related_documents": [
-                                search_result_to_related_document(
-                                    search_result=result,
-                                    source_id_base=pseudo_tool_use_id,
-                                )
-                                for result in search_results
-                            ],
-                        }
-                    )
-
-                # Insert contexts to instruction
-                instructions.append(
-                    build_rag_prompt(
-                        search_results=search_results,
-                        model=chat_input.message.model,
-                        display_citation=display_citation,
                     )
                 )
 

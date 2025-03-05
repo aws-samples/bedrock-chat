@@ -309,7 +309,8 @@ class BotModel(BaseModel):
         )
 
     def is_agent_enabled(self) -> bool:
-        return len(self.agent.tools) > 0
+        # Always consider agents active, even if they have a knowledge base
+        return len(self.agent.tools) > 0 or self.has_knowledge()
 
     def has_bedrock_knowledge_base(self) -> bool:
         return self.bedrock_knowledge_base is not None and (
