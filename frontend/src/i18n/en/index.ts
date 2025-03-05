@@ -220,8 +220,8 @@ const translation = {
             body: 'An error occurred while synchronizing Knowledge. Please check the following message:',
           },
           incomplete: {
-            title: 'NOT Ready',
-            body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
+            title: 'Update in Progress',
+            body: 'This assistant is being updated. You can continue chatting while updates are pending. ',
           },
           noAvailableAssistants: {
             title: 'No Assistants are Avaialble at this Time',
