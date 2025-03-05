@@ -4,7 +4,7 @@ Las características del administrador son una herramienta vital ya que proporci
 
 ## Bucle de retroalimentación
 
-La salida del LLM puede no cumplir siempre con las expectativas del usuario. A veces no logra satisfacer sus necesidades. Para "integrar" efectivamente los LLM en las operaciones empresariales y la vida diaria, implementar un bucle de retroalimentación es esencial. Bedrock Claude Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los indicadores, las fuentes de datos RAG y los parámetros en consecuencia.
+La salida de LLM puede no cumplir siempre con las expectativas del usuario. A veces no logra satisfacer sus necesidades. Para "integrar" efectivamente los LLM en operaciones comerciales y en la vida diaria, implementar un bucle de retroalimentación es esencial. Bedrock Claude Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los prompts, las fuentes de datos RAG y los parámetros en consecuencia.
 
 ![](./imgs/feedback_loop.png)
 
@@ -14,34 +14,34 @@ Los analistas de datos pueden acceder a los registros de conversación mediante 
 
 ## Panel de administración
 
-Actualmente proporciona una descripción general básica del uso de chatbots y usuarios, centrándose en agregar datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados por tarifas de uso.
+Actualmente proporciona una visión general básica del uso del chatbot y de los usuarios, centrándose en agregar datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados por tarifas de uso.
 
 ![](./imgs/admin_bot_analytics.png)
 
 > [!Note]
-> Las analíticas de uso de usuarios próximamente estarán disponibles.
+> Los análisis de uso de usuarios próximamente estarán disponibles.
 
 ### Requisitos previos
 
-El usuario administrador debe ser miembro del grupo llamado `Admin`, que se puede configurar a través de la consola de administración > Grupos de usuarios de Amazon Cognito o la CLI de AWS. Tenga en cuenta que el ID del grupo de usuarios se puede consultar accediendo a CloudFormation > BedrockChatStack > Salidas > `AuthUserPoolIdxxxx`.
+El usuario administrador debe ser miembro del grupo llamado `Admin`, que se puede configurar a través de la consola de administración > Grupos de usuarios de Amazon Cognito o aws cli. Ten en cuenta que el ID del grupo de usuarios se puede consultar accediendo a CloudFormation > BedrockChatStack > Salidas > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
 ## Notas
 
-- Como se indica en la [arquitectura](../README.md#architecture), las funciones de administración harán referencia al bucket de S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza cada hora, es posible que las conversaciones más recientes no se reflejen de inmediato.
+- Como se indica en la [arquitectura](../README.md#architecture), las características de administración harán referencia al bucket de S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza una vez cada hora, las conversaciones más recientes pueden no reflejarse inmediatamente.
 
-- En usos públicos de bots, los bots que no se hayan utilizado durante el período especificado no se mostrarán.
+- En los usos públicos de bots, los bots que no se hayan utilizado durante el período especificado no se mostrarán.
 
-- En usos de usuarios, los usuarios que no hayan utilizado el sistema durante el período especificado no se mostrarán.
+- En los usos de usuarios, los usuarios que no hayan utilizado el sistema durante el período especificado no se mostrarán.
 
 ## Descargar datos de conversación
 
-Puede consultar los registros de conversaciones mediante Athena, utilizando SQL. Para descargar los registros, abra el Editor de Consultas de Athena desde la consola de administración y ejecute SQL. A continuación, se muestran algunos ejemplos de consultas útiles para analizar casos de uso. Los comentarios pueden consultarse en el atributo `MessageMap`.
+Puede consultar los registros de conversaciones mediante Athena, utilizando SQL. Para descargar los registros, abra el Editor de Consultas de Athena desde la consola de administración y ejecute SQL. A continuación, se presentan algunas consultas de ejemplo útiles para analizar casos de uso. La retroalimentación se puede consultar en el atributo `MessageMap`.
 
 ### Consulta por ID de Bot
 
-Edite `bot-id` y `datehour`. El `bot-id` se puede consultar en la pantalla de Administración de Bots, a la que se puede acceder desde las API de Publicación de Bots, que se muestra en la barra lateral izquierda. Tenga en cuenta la parte final de la URL, como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edite `bot-id` y `datehour`. El `bot-id` se puede encontrar en la pantalla de Administración de Bots, a la que se puede acceder desde las API de Publicación de Bots, que se muestra en la barra lateral izquierda. Tenga en cuenta la parte final de la URL como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -65,7 +65,7 @@ ORDER BY
 
 ### Consulta por ID de Usuario
 
-Edite `user-id` y `datehour`. El `user-id` se puede consultar en la pantalla de Administración de Bots.
+Edite `user-id` y `datehour`. El `user-id` se puede encontrar en la pantalla de Administración de Bots.
 
 > [!Nota]
 > Los análisis de uso de usuario están próximamente disponibles.

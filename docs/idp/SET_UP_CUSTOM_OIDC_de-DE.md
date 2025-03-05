@@ -1,8 +1,8 @@
-# Externe Identitätsanbieter einrichten
+# Einrichten eines externen Identitätsanbieters
 
 ## Schritt 1: OIDC-Client erstellen
 
-Folgen Sie den Verfahren des Ziel-OIDC-Providers und notieren Sie die Werte für die OIDC-Client-ID und das Geheimnis. Auch die Aussteller-URL (Issuer URL) wird in den folgenden Schritten benötigt. Falls für den Einrichtungsprozess eine Umleitungs-URI (Redirect URI) erforderlich ist, geben Sie einen Platzhalter-Wert ein, der nach Abschluss der Bereitstellung ersetzt wird.
+Folgen Sie den Verfahren des jeweiligen OIDC-Providers und notieren Sie sich die Werte für die OIDC-Client-ID und das Geheimnis. Auch die Aussteller-URL (Issuer URL) wird in den folgenden Schritten benötigt. Falls für den Einrichtungsprozess eine Umleitungs-URI (Redirect URI) erforderlich ist, geben Sie einen Platzhalter-Wert ein, der nach Abschluss der Bereitstellung ersetzt wird.
 
 ## Schritt 2: Anmeldeinformationen in AWS Secrets Manager speichern
 
@@ -15,16 +15,16 @@ Folgen Sie den Verfahren des Ziel-OIDC-Providers und notieren Sie die Werte für
    - Schlüssel: `clientSecret`, Wert: <YOUR_GOOGLE_CLIENT_SECRET>
    - Schlüssel: `issuerUrl`, Wert: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Folgen Sie den Aufforderungen, um das Geheimnis zu benennen und zu beschreiben. Notieren Sie sich den Geheimnsnamen, da Sie ihn in Ihrem CDK-Code benötigen (Wird in Schritt 3 als Variable <YOUR_SECRET_NAME> verwendet).
-6. Überprüfen und speichern Sie das Geheimnis.
+5. Folgen Sie den Aufforderungen, um das Geheimnis zu benennen und zu beschreiben. Notieren Sie sich den Geheimnsnamen, da Sie ihn in Ihrem CDK-Code benötigen (Verwendet in Schritt 3 Variablenname <YOUR_SECRET_NAME>).
+6. Überprüfen Sie das Geheimnis und speichern Sie es.
 
 ### Achtung
 
 Die Schlüsselnamen müssen genau den Zeichenfolgen `clientId`, `clientSecret` und `issuerUrl` entsprechen.
 
-## Schritt 3: Aktualisieren von cdk.json
+## Schritt 3: Aktualisieren der cdk.json
 
-Fügen Sie in Ihrer cdk.json-Datei den ID-Anbieter und den Geheimnisnamen zur cdk.json-Datei hinzu.
+Fügen Sie in Ihrer cdk.json-Datei die ID-Anbieter und den Geheimnisnamen zur cdk.json-Datei hinzu.
 
 wie folgt:
 
@@ -36,10 +36,10 @@ wie folgt:
       {
         "service": "oidc", // Nicht ändern
         "serviceName": "<IHR_DIENSTNAME>", // Wählen Sie einen beliebigen Wert
-        "secretName": "<IHR_GEHEIMNAME>"
+        "secretName": "<IHR_GEHEIMER_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<EINDEUTIGES_DOMAIN_PRÄFIX_FÜR_IHREN_BENUTZER-POOL>"
+    "userPoolDomainPrefix": "<EINDEUTIGES_DOMAIN_PRÄFIX_FÜR_IHREN_BENUTZERPOOL>"
   }
 }
 ```
@@ -48,7 +48,7 @@ wie folgt:
 
 #### Eindeutigkeit
 
-Das `userPoolDomainPrefix` muss global eindeutig über alle Amazon Cognito-Benutzer hinweg sein. Wenn Sie ein Präfix wählen, das bereits von einem anderen AWS-Konto verwendet wird, schlägt die Erstellung der Benutzer-Pool-Domain fehl. Es ist eine gute Praxis, Bezeichner, Projektnamen oder Umgebungsnamen in das Präfix einzubeziehen, um die Eindeutigkeit sicherzustellen.
+Das `userPoolDomainPrefix` muss global eindeutig über alle Amazon Cognito-Benutzer hinweg sein. Wenn Sie ein Präfix wählen, das bereits von einem anderen AWS-Konto verwendet wird, schlägt die Erstellung der Benutzerpooldomäne fehl. Es ist eine gute Praxis, Bezeichner, Projektnamen oder Umgebungsnamen in das Präfix einzubeziehen, um Eindeutigkeit zu gewährleisten.
 
 ## Schritt 4: Bereitstellen Ihres CDK-Stacks
 
@@ -58,6 +58,6 @@ Stellen Sie Ihren CDK-Stack in AWS bereit:
 npx cdk deploy --require-approval never --all
 ```
 
-## Schritt 5: OIDC-Client mit Cognito-Weiterleitungs-URIs aktualisieren
+## Schritt 5: OIDC-Client mit Cognito-Umleitungs-URIs aktualisieren
 
-Nach der Bereitstellung des Stacks wird `AuthApprovedRedirectURI` in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zu Ihrer OIDC-Konfiguration und aktualisieren Sie diese mit den korrekten Weiterleitungs-URIs.
+Nach der Bereitstellung des Stacks wird `AuthApprovedRedirectURI` in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zu Ihrer OIDC-Konfiguration und aktualisieren Sie diese mit den korrekten Umleitungs-URIs.

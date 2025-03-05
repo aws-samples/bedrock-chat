@@ -1,10 +1,10 @@
 # Panduan Migrasi Pangkalan Data
 
-Panduan ini menggariskan langkah-langkah untuk memindahkan data semasa mengemas kini Bedrock Claude Chat yang mengandungi penggantian kluster Aurora. Prosedur berikut memastikan peralihan yang lancar sambil meminimumkan masa henti dan kehilangan data.
+Panduan ini menggariskan langkah-langkah untuk memindahkan data semasa melakukan kemas kini Bedrock Claude Chat yang mengandungi penggantian kluster Aurora. Prosedur berikut memastikan peralihan yang lancar sambil meminimumkan masa henti dan kehilangan data.
 
 ## Gambaran Keseluruhan
 
-Proses migrasi melibatkan pengimbasan semua bot dan melancarkan tugas ECS penyematan untuk setiap bot. Pendekatan ini memerlukan pengiraan semula penyematan, yang boleh mengambil masa dan menimbulkan kos tambahan disebabkan oleh pelaksanaan tugas ECS dan yuran penggunaan Bedrock Cohere. Jika anda lebih suka mengelakkan kos dan keperluan masa ini, sila merujuk kepada [pilihan migrasi alternatif](#alternative-migration-options) yang disediakan kemudian dalam panduan ini.
+Proses migrasi melibatkan pengimbasan semua bot dan melancarkan tugas ECS pembenam untuk setiap satunya. Pendekatan ini memerlukan pengiraan semula pembenam, yang boleh mengambil masa dan menimbulkan kos tambahan disebabkan oleh pelaksanaan tugas ECS dan yuran penggunaan Bedrock Cohere. Jika anda lebih suka mengelakkan kos dan keperluan masa ini, sila merujuk kepada [pilihan migrasi alternatif](#alternative-migration-options) yang disediakan kemudian dalam panduan ini.
 
 ## Langkah Migrasi
 
@@ -25,17 +25,17 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Jalankan skrip `migrate.py` untuk memulakan proses migrasi. Skrip ini akan mengimbas semua bot, melancarkan tugas ECS pembenam, dan membuat data ke kluster Aurora baharu. Ambil perhatian bahawa:
+- Jalankan skrip `migrate.py` untuk memulakan proses migrasi. Skrip ini akan mengimbas semua bot, melancarkan tugas ECS penyematan, dan membuat data ke kluster Aurora yang baru. Ambil perhatian bahawa:
   - Skrip memerlukan `boto3`.
-  - Persekitaran memerlukan izin IAM untuk mengakses jadual dynamodb dan melancarkan tugas ECS.
+  - Persekitaran memerlukan keizinan IAM untuk mengakses jadual dynamodb dan melancarkan tugas ECS.
 
 ## Pilihan Alternatif Migrasi
 
-Jika anda tidak menyukai kaedah di atas kerana pertimbangan masa dan kos, pertimbangkan pendekatan alternatif berikut:
+Jika anda tidak menyukai kaedah di atas kerana implikasi masa dan kos, pertimbangkan pendekatan alternatif berikut:
 
 ### Pemulihan Snapshot dan Migrasi DMS
 
-Pertama, catat kata laluan untuk mengakses kluster Aurora semasa. Kemudian jalankan `npx cdk deploy`, yang akan mencetus penggantian kluster. Selepas itu, buat pangkalan data sementara dengan memulihkan dari snapshot pangkalan data asal.
+Pertama, catat kata laluan untuk mengakses kluster Aurora semasa. Kemudian jalankan `npx cdk deploy`, yang mencetuskan penggantian kluster. Selepas itu, buat pangkalan data sementara dengan memulihkan dari snapshot pangkalan data asal.
 Gunakan [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/) untuk memindahkan data dari pangkalan data sementara ke kluster Aurora baru.
 
 Nota: Sehingga 29 Mei 2024, DMS tidak menyokong sambungan pgvector secara asli. Walau bagaimanapun, anda boleh meneroka pilihan berikut untuk mengatasi had ini:

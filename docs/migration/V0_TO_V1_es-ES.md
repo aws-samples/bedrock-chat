@@ -1,6 +1,6 @@
 # Guía de Migración (v0 a v1)
 
-Si ya está utilizando Bedrock Claude Chat con una versión anterior (~`0.4.x`), debe seguir los pasos que se indican a continuación para migrar.
+Si ya está utilizando Bedrock Claude Chat con una versión anterior (~`0.4.x`), debe seguir los siguientes pasos para migrar.
 
 ## ¿Por qué necesito hacerlo?
 
@@ -11,14 +11,14 @@ Esta actualización importante incluye actualizaciones de seguridad importantes.
 
 ## Requisitos previos
 
-Lea la [Guía de Migración de Base de Datos](./DATABASE_MIGRATION_es-ES.md) y determine el método para restaurar elementos.
+Lea la [Guía de migración de base de datos](./DATABASE_MIGRATION_es-ES.md) y determine el método para restaurar elementos.
 
 ## Pasos
 
 ### Migración de almacén de vectores
 
-- Abre tu terminal y navega al directorio del proyecto
-- Cambia a la rama que deseas desplegar. A continuación, cambia a la rama deseada (en este caso, `v1`) y obtén los últimos cambios:
+- Abre tu terminal y navega hasta el directorio del proyecto
+- Extrae la rama que deseas desplegar. A continuación, cambia a la rama deseada (en este caso, `v1`) y extrae los últimos cambios:
 
 ```sh
 git fetch
@@ -35,5 +35,5 @@ git pull origin v1
 ### Adjuntar permiso CreatingBotAllowed
 
 - Después del despliegue, todos los usuarios no podrán crear nuevos bots.
-- Si quieres que usuarios específicos puedan crear bots, agrega esos usuarios al grupo `CreatingBotAllowed` usando la consola de administración o CLI.
+- Si quieres que usuarios específicos puedan crear bots, añade esos usuarios al grupo `CreatingBotAllowed` usando la consola de administración o CLI.
 - Verifica si el usuario puede crear un bot. Ten en cuenta que los usuarios necesitan volver a iniciar sesión.

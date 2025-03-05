@@ -2,23 +2,23 @@
 
 ## Qu'est-ce que l'Agent (ReAct) ?
 
-Un Agent est un système d'IA avancé qui utilise des modèles de langage de grande taille (LLM) comme moteur computationnel central. Il combine les capacités de raisonnement des LLM avec des fonctionnalités supplémentaires telles que la planification et l'utilisation d'outils pour réaliser des tâches complexes de manière autonome. Les Agents peuvent décomposer des requêtes complexes, générer des solutions étape par étape et interagir avec des outils externes ou des API pour recueillir des informations ou exécuter des sous-tâches.
+Un Agent est un système d'IA avancé qui utilise des modèles de langage de grande taille (LLM) comme moteur de calcul central. Il combine les capacités de raisonnement des LLM avec des fonctionnalités supplémentaires telles que la planification et l'utilisation d'outils pour effectuer des tâches complexes de manière autonome. Les Agents peuvent décomposer des requêtes compliquées, générer des solutions étape par étape et interagir avec des outils externes ou des API pour collecter des informations ou exécuter des sous-tâches.
 
-Cet exemple met en œuvre un Agent en utilisant l'approche [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct permet à l'agent de résoudre des tâches complexes en combinant raisonnement et actions dans une boucle de rétroaction itérative. L'agent passe successivement par trois étapes clés : Pensée, Action et Observation. Il analyse la situation actuelle en utilisant le LLM, décide de l'action suivante à entreprendre, exécute l'action en utilisant des outils ou des API disponibles, et apprend des résultats observés. Ce processus continu permet à l'agent de s'adapter à des environnements dynamiques, d'améliorer sa précision dans la résolution de tâches et de fournir des solutions contextuelles.
+Cet exemple met en œuvre un Agent en utilisant l'approche [ReAct (Raisonnement + Action)](https://www.promptingguide.ai/techniques/react). ReAct permet à l'agent de résoudre des tâches complexes en combinant raisonnement et actions dans une boucle de rétroaction itérative. L'agent passe à plusieurs reprises par trois étapes clés : Pensée, Action et Observation. Il analyse la situation actuelle à l'aide du LLM, décide de l'action suivante à entreprendre, exécute l'action en utilisant des outils ou des API disponibles, et apprend des résultats observés. Ce processus continu permet à l'agent de s'adapter aux environnements dynamiques, d'améliorer sa précision de résolution de tâches et de fournir des solutions contextuelles.
 
 ## Exemple de Cas d'Utilisation
 
-Un Agent utilisant ReAct peut être appliqué dans divers scénarios, fournissant des solutions précises et efficaces.
+Un Agent utilisant ReAct peut être appliqué dans divers scénarios, offrant des solutions précises et efficaces.
 
 ### Texte-vers-SQL
 
 Un utilisateur demande "le total des ventes du dernier trimestre". L'Agent interprète cette requête, la convertit en une requête SQL, l'exécute sur la base de données et présente les résultats.
 
-### Prévisions Financières
+### Prévision Financière
 
 Un analyste financier a besoin de prévoir le chiffre d'affaires du prochain trimestre. L'Agent collecte les données pertinentes, effectue les calculs nécessaires en utilisant des modèles financiers et génère un rapport de prévision détaillé, garantissant la précision des projections.
 
-## Pour utiliser la fonctionnalité Agent
+## Utilisation de la fonctionnalité Agent
 
 Pour activer la fonctionnalité Agent pour votre chatbot personnalisé, suivez ces étapes :
 
@@ -38,7 +38,7 @@ Pour activer la fonctionnalité Agent pour votre chatbot personnalisé, suivez c
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-Cet outil dépend de [DuckDuckGo](https://duckduckgo.com/) qui a une limite de débit. Il convient aux preuves de concept ou aux démos, mais si vous souhaitez l'utiliser dans un environnement de production, nous vous recommandons d'utiliser une autre API de recherche.
+Cet outil dépend de [DuckDuckGo](https://duckduckgo.com/) qui a une limite de débit. Il est adapté pour les PoC ou les démonstrations, mais si vous souhaitez l'utiliser dans un environnement de production, nous vous recommandons d'utiliser une autre API de recherche.
 
 5. Vous pouvez développer et ajouter vos propres outils personnalisés pour étendre les capacités de l'Agent. Reportez-vous à la section [Comment développer vos propres outils](#how-to-develop-your-own-tools) pour plus d'informations sur la création et l'intégration d'outils personnalisés.
 
@@ -46,11 +46,11 @@ Cet outil dépend de [DuckDuckGo](https://duckduckgo.com/) qui a une limite de d
 
 Pour développer vos propres outils personnalisés pour l'Agent, suivez ces directives :
 
-- Créez une nouvelle classe qui hérite de la classe `AgentTool`. Bien que l'interface soit compatible avec LangChain, cette implémentation d'exemple fournit sa propre classe `AgentTool`, dont vous devez hériter ([source](../backend/app/agents/tools/agent_tool.py)).
+- Créez une nouvelle classe qui hérite de la classe `AgentTool`. Bien que l'interface soit compatible avec LangChain, cette implémentation d'exemple fournit sa propre classe `AgentTool`, à partir de laquelle vous devez hériter ([source](../backend/app/agents/tools/agent_tool.py)).
 
-- Référez-vous à l'implémentation exemple d'un [outil de calcul de l'IMC](../examples/agents/tools/bmi/bmi.py). Cet exemple montre comment créer un outil qui calcule l'Indice de Masse Corporelle (IMC) en fonction de la saisie de l'utilisateur.
+- Reportez-vous à l'implémentation exemple d'un [outil de calcul de l'IMC](../examples/agents/tools/bmi/bmi.py). Cet exemple montre comment créer un outil qui calcule l'Indice de Masse Corporelle (IMC) en fonction de la saisie de l'utilisateur.
 
-  - Le nom et la description déclarés sur l'outil sont utilisés lorsque le LLM considère quel outil doit être utilisé pour répondre à la question de l'utilisateur. En d'autres termes, ils sont intégrés dans l'invite lors de l'appel du LLM. Il est donc recommandé de les décrire le plus précisément possible.
+  - Le nom et la description déclarés sur l'outil sont utilisés lorsque le LLM considère quel outil doit être utilisé pour répondre à la question de l'utilisateur. En d'autres termes, ils sont intégrés dans l'invite lors de l'invocation du LLM. Il est donc recommandé de les décrire le plus précisément possible.
 
 - [Optionnel] Une fois que vous avez implémenté votre outil personnalisé, il est recommandé de vérifier sa fonctionnalité à l'aide d'un script de test ([exemple](../examples/agents/tools/bmi/test_bmi.py)). Ce script vous aidera à vous assurer que votre outil fonctionne comme prévu.
 
@@ -59,7 +59,7 @@ Pour développer vos propres outils personnalisés pour l'Agent, suivez ces dire
 - [Optionnel] Ajoutez des noms et des descriptions clairs pour le frontend. Cette étape est facultative, mais si vous ne la faites pas, le nom et la description de l'outil déclarés dans votre outil seront utilisés. Ils sont destinés au LLM mais pas à l'utilisateur, il est donc recommandé d'ajouter une explication dédiée pour une meilleure expérience utilisateur.
 
   - Modifiez les fichiers i18n. Ouvrez [en/index.ts](../frontend/src/i18n/en/index.ts) et ajoutez votre propre `name` et `description` dans `agent.tools`.
-  - Modifiez également `xx/index.ts`. Où `xx` représente le code de pays souhaité.
+  - Modifiez également `xx/index.ts`. Où `xx` représente le code de pays que vous souhaitez.
 
 - Exécutez `npx cdk deploy` pour déployer vos modifications. Cela rendra votre outil personnalisé disponible dans l'écran du bot personnalisé.
 

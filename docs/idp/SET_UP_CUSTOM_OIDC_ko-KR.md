@@ -2,7 +2,7 @@
 
 ## 1단계: OIDC 클라이언트 생성
 
-대상 OIDC 제공자의 절차를 따르고 OIDC 클라이언트 ID와 비밀키 값을 기록하세요. 또한 다음 단계에서는 발급자 URL이 필요합니다. 설정 과정에서 리디렉션 URI가 필요한 경우, 배포가 완료된 후 대체될 더미 값을 입력하세요.
+대상 OIDC 제공자의 절차를 따르고 OIDC 클라이언트 ID와 비밀키의 값을 기록하세요. 또한 다음 단계에서 발급자 URL이 필요합니다. 설정 과정에서 리디렉션 URI가 필요한 경우, 배포가 완료된 후 대체될 더미 값을 입력하세요.
 
 ## 2단계: AWS Secrets Manager에 자격 증명 저장
 
@@ -15,7 +15,7 @@
    - 키: `clientSecret`, 값: <YOUR_GOOGLE_CLIENT_SECRET>
    - 키: `issuerUrl`, 값: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. 프롬프트를 따라 비밀의 이름과 설명을 입력합니다. CDK 코드에서 사용할 비밀 이름을 기록해 두세요(3단계 변수 이름 <YOUR_SECRET_NAME>에 사용됨).
+5. 프롬프트를 따라 비밀의 이름과 설명을 입력합니다. CDK 코드에서 사용할 비밀 이름을 기록해 두세요 (3단계 변수 이름 <YOUR_SECRET_NAME>에 사용됨).
 6. 비밀을 검토하고 저장합니다.
 
 ### 주의
@@ -48,9 +48,9 @@ cdk.json 파일에 ID 제공자와 SecretName을 추가하세요.
 
 #### 고유성
 
-`userPoolDomainPrefix`는 모든 Amazon Cognito 사용자 간에 전역적으로 고유해야 합니다. 이미 다른 AWS 계정에서 사용 중인 접두사를 선택하면 사용자 풀 도메인 생성에 실패합니다. 고유성을 보장하기 위해 식별자, 프로젝트 이름 또는 환경 이름을 접두사에 포함하는 것이 좋습니다.
+`userPoolDomainPrefix`는 모든 Amazon Cognito 사용자 간에 전역적으로 고유해야 합니다. 다른 AWS 계정에서 이미 사용 중인 접두사를 선택하면 사용자 풀 도메인 생성이 실패합니다. 고유성을 보장하기 위해 식별자, 프로젝트 이름 또는 환경 이름을 접두사에 포함하는 것이 좋습니다.
 
-## 4단계: CDK 스택 배포하기
+## 4단계: CDK 스택 배포
 
 AWS에 CDK 스택을 배포합니다:
 
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## 5단계: Cognito 리디렉션 URI로 OIDC 클라이언트 업데이트
 
-스택을 배포한 후, CloudFormation 출력에 `AuthApprovedRedirectURI`가 표시됩니다. OIDC 구성으로 돌아가서 올바른 리디렉션 URI로 업데이트하세요.
+스택을 배포한 후, CloudFormation 출력에서 `AuthApprovedRedirectURI`를 확인할 수 있습니다. OIDC 구성으로 돌아가서 올바른 리디렉션 URI로 업데이트하세요.
