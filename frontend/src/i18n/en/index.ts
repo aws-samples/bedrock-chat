@@ -507,7 +507,7 @@ How would you categorize this email?`,
     admin: {
       sharedBotAnalytics: {
         label: {
-          pageTitle: 'Shared Bot Analytics',
+          pageTitle: 'Usage Analytics',
           noPublicBotUsages:
             'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',

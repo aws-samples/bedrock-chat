@@ -245,3 +245,5 @@ export const ASSISTANT_TYPE_MAP: {
     value: 'custom_assistant',
   },
 ];
+
+export const P0_FEATURE_FLAG = false;
