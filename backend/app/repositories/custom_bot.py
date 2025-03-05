@@ -581,7 +581,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
 
 def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
     table = _get_table_client(group_id)
-    logger.info(f"Finding bots for group: {group_id}")
+    logger.debug(f"Finding bots for group: {group_id}")
     query_params = {
         "IndexName": "GroupIdIndex",
         "KeyConditionExpression": Key("GroupId").eq(group_id),
@@ -622,7 +622,7 @@ def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
         )
         for item in response["Items"]
     ]
-    logger.info(f"Found all bots in group: {bots}")
+    logger.debug(f"Found all bots in group: {bots}")
     return bots
 
 
