@@ -920,6 +920,11 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackIn
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
+                    # Add required fields from BotMeta class
+                    version=item.get("Version", None),
+                    group_id=item.get("GroupId", None),
+                    assistant_config=None,  # Will be populated if available in the item
+                    creator_config=None,    # Will be populated if available in the item
                 )
             )
 
@@ -963,6 +968,11 @@ def find_all_published_bots(
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
             ),
+            # Add required fields from BotMeta class
+            version=item.get("Version", None),
+            group_id=item.get("GroupId", None),
+            assistant_config=None,  # Will be populated if available in the item
+            creator_config=None,    # Will be populated if available in the item
         )
         for item in response["Items"]
     ]
