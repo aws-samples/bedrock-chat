@@ -923,8 +923,16 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackIn
                     # Add required fields from BotMeta class
                     version=item.get("Version", None),
                     group_id=item.get("GroupId", None),
-                    assistant_config=None,  # Will be populated if available in the item
-                    creator_config=None,    # Will be populated if available in the item
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    ),
                 )
             )
 
@@ -971,8 +979,16 @@ def find_all_published_bots(
             # Add required fields from BotMeta class
             version=item.get("Version", None),
             group_id=item.get("GroupId", None),
-            assistant_config=None,  # Will be populated if available in the item
-            creator_config=None,    # Will be populated if available in the item
+            assistant_config=(
+                AssistantConfigModel(**item["AssistantConfig"])
+                if "AssistantConfig" in item
+                else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+            ),
+            creator_config=(
+                CreatorConfigModel(**item["CreatorConfig"])
+                if "CreatorConfig" in item
+                else None
+            ),
         )
         for item in response["Items"]
     ]

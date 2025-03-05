@@ -75,6 +75,9 @@ async def get_all_public_bots(
             total_price=bot.total_price,
             num_of_users=bot.num_of_users,
             num_of_convos=bot.num_of_convos,
+            assistant_config=bot.assistant_config.model_dump() if bot.assistant_config else None,
+            creator_config=bot.creator_config.model_dump() if bot.creator_config else None,
+            group_id=bot.group_id,
         )
         for bot in bots
     ]

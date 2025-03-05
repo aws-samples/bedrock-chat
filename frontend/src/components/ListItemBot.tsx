@@ -22,6 +22,10 @@ const ListItemBot: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
   const getImageSrc = () => {
+    if (!props.bot.assistantConfig) {
+      return "/images/custom_assistant.png";
+    }
+    
     switch (props.bot.assistantConfig.assistantType) {
       case "learning_assistant":
         return "/images/learning_assistant.png";
@@ -37,13 +41,19 @@ const ListItemBot: React.FC<Props> = (props) => {
   };
 
   const getCanvasInstanceName = () => {
+    if (!props.bot.groupId) {
+      return "";
+    }
     const lti_deploymentId: ValidLTIDeploymentId = props.bot.groupId.split("-")[0] as ValidLTIDeploymentId;
-    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId];
+    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId] || "";
   }
 
   const getCourseName = () => {
+    if (!props.bot.groupId) {
+      return "";
+    }
     const courseId: ValidCourseId = props.bot.groupId as ValidCourseId;
-    return COURSE_ID_MAP[courseId];
+    return COURSE_ID_MAP[courseId] || "";
   }
 
   const getCreatorName = (): string | undefined => {

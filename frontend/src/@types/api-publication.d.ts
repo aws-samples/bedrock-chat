@@ -44,14 +44,14 @@ export type ListPublicBotsResponse = {
   title: string;
   description: string;
   isPublished: boolean;
-  publishedDatetime: Date;
+  publishedDatetime: Date | null;
   ownerUserId: string;
   totalPrice: number;
   numOfUsers: number;
   numOfConvos: number;
-  assistantConfig: AssistantConfig;
+  assistantConfig: AssistantConfig | null;
   creatorConfig: CreatorConfig | null;
-  groupId: string;
+  groupId: string | null;
 }[];
 
 export type PublishBotRequest = {

@@ -28,6 +28,9 @@ class UsagePerBotOutput(BaseSchema):
     total_price: float
     num_of_users: int
     num_of_convos: int
+    assistant_config: dict | None
+    creator_config: dict | None
+    group_id: str | None
 
 
 class UsagePerUserOutput(BaseSchema):

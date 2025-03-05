@@ -13,6 +13,9 @@ class UsagePerBot(BaseModel):
     total_price: float
     num_of_users: int
     num_of_convos: int
+    assistant_config: dict | None = None
+    creator_config: dict | None = None
+    group_id: str | None = None
 
 
 class UsagePerUser(BaseModel):
