@@ -99,8 +99,8 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ActiveModels": custom_bot.active_models.model_dump(),  # type: ignore[attr-defined]
         "Version": custom_bot.version,
         "GroupId": custom_bot.group_id,
-        "AssistantConfig": custom_bot.assistant_config.model_dump(),
-        "CreatorConfig": custom_bot.creator_config.model_dump(),
+        "AssistantConfig": custom_bot.assistant_config.model_dump() if custom_bot.assistant_config else None,
+        "CreatorConfig": custom_bot.creator_config.model_dump() if custom_bot.creator_config else None,
     }
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()

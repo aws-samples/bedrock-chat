@@ -64,6 +64,7 @@ async def get_all_public_bots(
     current_user: User = request.state.current_user
     check_is_user_authotized("view_analytics", current_user)
     bots = await find_bots_sorted_by_price(limit=limit, from_=start, to_=end)
+    
     return [
         UsagePerBotOutput(
             id=bot.id,
@@ -75,8 +76,8 @@ async def get_all_public_bots(
             total_price=bot.total_price,
             num_of_users=bot.num_of_users,
             num_of_convos=bot.num_of_convos,
-            assistant_config=bot.assistant_config.model_dump() if bot.assistant_config else None,
-            creator_config=bot.creator_config.model_dump() if bot.creator_config else None,
+            assistant_config=bot.assistant_config if bot.assistant_config else None,
+            creator_config=bot.creator_config if bot.creator_config else None,
             group_id=bot.group_id,
         )
         for bot in bots

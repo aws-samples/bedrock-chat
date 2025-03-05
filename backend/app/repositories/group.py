@@ -51,7 +51,7 @@ def find_groups_by_user_id(user_id: str) -> list[GroupModel]:
 
 def find_all_creator_id_by_group_id(group_id: str) -> list[BotCreatorModel]:
     table = _get_table_client(group_id)
-    logger.info(f"Finding creators for group: {group_id}")
+    logger.debug(f"Finding creators for group: {group_id}")
     query_params = {
         "IndexName": "GroupIdIndex",
         "KeyConditionExpression": Key("GroupId").eq(group_id),
@@ -65,5 +65,5 @@ def find_all_creator_id_by_group_id(group_id: str) -> list[BotCreatorModel]:
         )
         for item in response["Items"]
     ]
-    logger.info(f"Found all creators in group: {creators}")
+    logger.debug(f"Found all creators in group: {creators}")
     return creators
