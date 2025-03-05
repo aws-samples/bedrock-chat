@@ -117,17 +117,19 @@ async def lti_redirect(
         pem = jwk.construct(public_key).to_pem()
         options = {'verify_aud': False}
         decoded_token = jwt.decode(id_token, pem, options=options, issuer=CANVAS_ISSUER)
+        logger.info(f'Decoded token: {decoded_token}')
         
         # Extract claims
-        context = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/context', {})
-
+        course_name = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/context', {}).get('label', None)
         roles = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/roles', [])
         # remove prefix http://purl.imsglobal.org/vocab/lis/v2 from roles
         roles = [r.replace('http://purl.imsglobal.org/vocab/lis/v2/', '') for r in roles]
-
         email = decoded_token.get('email', None)
         name = decoded_token.get('name', None)
         platform = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/tool_platform', {})
+        course_id = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/custom', {}).get('canvas_course_id', None)
+        deployment_id = decoded_token.get('https://purl.imsglobal.org/spec/lti/claim/deployment_id', None)
+        group_id = f'{deployment_id}-{course_id}'
 
         # Find the Cognito user corresponding to the email address. Create a new user if user doesn't exist
         user = lookup_or_create_user(email)
@@ -137,8 +139,11 @@ async def lti_redirect(
             "email": email,
             "name": name,
             "roles": roles,
-            "context": context,
             "platform": platform,
+            "deploymentId": deployment_id,
+            "courseName": course_name,
+            "courseId": course_id,
+            "groupId": group_id,
         }
 
         import urllib.parse

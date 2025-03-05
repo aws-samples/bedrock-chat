@@ -64,6 +64,9 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     myBots,
     starredBots: starredBots?.filter((bot) => bot.available),
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
+    getAvailableAssistants: async () => {
+      return (await api.bots({group_id: groupId})).data;
+    },
     getMyBot: async (botId: string) => {
       return (await api.getOnceMyBot(botId)).data;
     },

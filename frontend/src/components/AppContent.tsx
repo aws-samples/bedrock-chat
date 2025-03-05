@@ -15,7 +15,6 @@ import useBot from '../hooks/useBot';
 import useChat from '../hooks/useChat';
 import useGroup from '../hooks/useGroup';
 import { usePageLabel, usePageTitlePathPattern } from '../routes';
-import useUser from '../hooks/useUser';
 import DialogConfirmDeleteChat from './DialogConfirmDeleteChat';
 import DialogConfirmClearConversations from './DialogConfirmClearConversations';
 import DialogSelectLanguage from './DialogSelectLanguage';
@@ -35,8 +34,7 @@ const AppContent: React.FC<Props> = (props) => {
   const { starredBots } = useBot();
   const { newChat, isGeneratedTitle } = useChat();
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
-  const { isAdmin } = useUser();
-  const { myGroups } = useGroup();
+  const { isAssistantCreator, isAdmin } = useGroup();
   const [theme] = useLocalStorage(
     'theme',
     'light'
@@ -87,7 +85,7 @@ const AppContent: React.FC<Props> = (props) => {
     <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
       <ChatListDrawer
         isAdmin={isAdmin}
-        isAssistantCreator={(myGroups && Array.isArray(myGroups) && myGroups.length > 0) ?? false}
+        isAssistantCreator={isAssistantCreator} // does the user have permission to create assistants?
         conversations={conversations}
         starredBots={starredBots}
         updateConversationTitle={async (conversationId, title) => {

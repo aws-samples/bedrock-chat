@@ -96,13 +96,14 @@ DEFAULT_GENERATION_CONFIG = (
 
 def _update_s3_documents_by_diff(
     user_id: str,
+    creator_id: str,
     bot_id: str,
     added_filenames: list[str],
     deleted_filenames: list[str],
 ):
     for filename in added_filenames:
         tmp_path = compose_upload_temp_s3_path(user_id, bot_id, filename)
-        document_path = compose_upload_document_s3_path(user_id, bot_id, filename)
+        document_path = compose_upload_document_s3_path(creator_id, bot_id, filename)
         move_file_in_s3(DOCUMENT_BUCKET, tmp_path, document_path)
 
     for filename in deleted_filenames:
@@ -148,7 +149,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     if filenames:
         try:
             # Move files from temp to final S3 path
-            _update_s3_documents_by_diff(user_id, bot_input.id, filenames, [])
+            _update_s3_documents_by_diff(user_id, user_id, bot_input.id, filenames, [])
             # Clean up any leftover temp uploads
             delete_files_with_prefix_from_s3(
                 DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(user_id, bot_input.id)
@@ -347,6 +348,7 @@ def modify_owned_bot(
 
         # Commit changes to S3
         _update_s3_documents_by_diff(
+            user_id,
             creator_id,
             bot_id,
             modify_input.knowledge.added_filenames,
@@ -375,9 +377,9 @@ def modify_owned_bot(
     )
    
     # Build or update the agent if needed
-    tool_dict = {tool.name: tool for tool in bot.agent.tools}
+    tool_dict = {}
 
-    if modify_input.agent:
+    if modify_input.agent:        
         # Create or update AgentToolModel entries
         for tool_name in modify_input.agent.tools:
             try:

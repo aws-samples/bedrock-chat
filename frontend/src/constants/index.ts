@@ -134,6 +134,10 @@ export const MODEL_REGISTRY = {
       supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
       maxTokens: 200000, // Context window: 200,000 tokens
     },
+    'claude-v3.7-sonnet': {
+      supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      maxTokens: 200000, // Context window: 200,000 tokens
+    },
   },
   AMAZON: {
     'amazon-nova-pro': {
@@ -182,7 +186,8 @@ export const ENABLED_MODEL_CATEGORIES = {
 // List of allowed models
 const ALLOWED_MODELS = [
   'claude-v3.5-sonnet',
-  'claude-v3.5-sonnet-v2', 
+  'claude-v3.5-sonnet-v2',
+  'claude-v3.7-sonnet',
   'claude-v3.5-haiku',
   'claude-v3-haiku',
   'amazon-nova-pro',
@@ -240,3 +245,5 @@ export const ASSISTANT_TYPE_MAP: {
     value: 'custom_assistant',
   },
 ];
+
+export const P0_FEATURE_FLAG = false;

@@ -31,6 +31,7 @@ import {
   VERSION_02_17_25,
   COURSE_ID_MAP,
   ValidCourseId,
+  P0_FEATURE_FLAG,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
@@ -96,7 +97,7 @@ const BotKbEditPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as AssistantState | null;
   const { getMyBot, registerBot, updateBot } = useBot();
-  const { getGroupList } = useGroup();
+  const { getGroupList, isAdmin } = useGroup();
   const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -1505,7 +1506,7 @@ const BotKbEditPage: React.FC = () => {
                 isBasicEditView ? t('bot.create.pageTitle') : t('bot.create.advancedPageTitle') : 
                 isBasicEditView ? t('bot.edit.pageTitle'): t('bot.edit.advancedPageTitle')}
             </div>
-            <div className="mt-4">
+            {isAdmin && <div className="mt-4">
 							<div className="font-semibold">{t('bot.toggleView.title')}</div>
 							<div className="flex">
 								<Toggle
@@ -1516,7 +1517,7 @@ const BotKbEditPage: React.FC = () => {
 									{t('bot.toggleView.description')}
 								</div>
 							</div>
-						</div>
+						</div>}
             <div className="mt-3 flex flex-col gap-3">
               <InputText
                 label={t('bot.item.title')}
@@ -1662,11 +1663,11 @@ const BotKbEditPage: React.FC = () => {
               </div>
 
               <div className="mt-3" />
-              <AvailableTools
+              {!isBasicEditView && <AvailableTools
                 availableTools={availableTools}
                 tools={tools}
                 setTools={setTools}
-              />
+              />}
 
                 <div className="mt-4">
                   <div className="font-semibold">
@@ -1764,7 +1765,7 @@ const BotKbEditPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4">
+                    {P0_FEATURE_FLAG && <div className="mt-4">
                       <div className="font-semibold">{t('bot.label.s3url')}</div>
                       <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.help.knowledge.s3url')}
@@ -1803,7 +1804,7 @@ const BotKbEditPage: React.FC = () => {
                           {t('button.add')}
                         </Button>
                       </div>
-                    </div>
+                    </div>}
 
                     <div className="mt-4">
                       <div className="font-semibold">{t('bot.label.url')}</div>

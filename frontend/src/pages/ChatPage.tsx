@@ -11,6 +11,7 @@ import useChat from '../hooks/useChat';
 import { AttachmentType } from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
 import useScroll from '../hooks/useScroll';
+import useUser from '../hooks/useUser';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   PiArrowsCounterClockwise,
@@ -22,11 +23,13 @@ import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import useSnackbar from '../hooks/useSnackbar';
 import useConversation from '../hooks/useConversation';
+import useGroup from '../hooks/useGroup';
 import { ActiveModels } from '../@types/bot';
 
 import { toCamelCase } from '../utils/StringUtils';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
+import useBot from '../hooks/useBot';
 import useModel from '../hooks/useModel';
 import {
   AgentState,
@@ -56,6 +59,9 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { open: openSnackbar } = useSnackbar();
   const { errorDetail } = usePostMessageStreaming();
+  const { emailId } = useUser();
+  const { myGroups, isAdmin } = useGroup();
+  const { starredBots } = useBot();
 
   const {
     agentThinking,
@@ -71,7 +77,6 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     continueGenerate,
-    getPostedModel,
     loadingConversation,
     getShouldContinue,
     relatedDocuments,
@@ -112,31 +117,40 @@ const ChatPage: React.FC = () => {
 
   const [pageTitle, setPageTitle] = useState('');
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
+  const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
+    setIsLoading(true);
     setIsAvailabilityBot(false);
     if (bot) {
       setIsAvailabilityBot(true);
       setPageTitle(bot.title);
-    } else {
-      setPageTitle(t('bot.label.normalChat'));
-    }
-    if (botError) {
+      setDescription(bot.description || t('bot.label.noDescription'));
+    } else if (botError) {
       if (botError.response?.status === 404) {
         setPageTitle(t('bot.label.notAvailableBot'));
       }
-    }
-  }, [bot, botError, t]);
-
-  const description = useMemo<string>(() => {
-    if (!bot) {
-      return '';
-    } else if (bot.description === '') {
-      return t('bot.label.noDescription');
     } else {
-      return bot.description;
+      if (!myGroups || !starredBots) return;
+      const hasGroups = Array.isArray(myGroups) && myGroups.length > 0;
+      const hasAvailableAssistants = Array.isArray(starredBots) && starredBots.length > 0;
+      if (hasGroups) {
+        // check if the user has a teacher/admin role in any group
+        setPageTitle(t('bot.label.normalChat'));
+      } else if (hasAvailableAssistants) {
+        // check if student has any availabe assistants
+        setIsAvailabilityBot(true);
+        setPageTitle(starredBots[0].title);
+        setDescription(starredBots[0].description || t('bot.label.noDescription'));
+      } else {
+        // an alert message will be displayed and input chat disabled
+        setPageTitle(t('bot.alert.sync.noAvailableAssistants.title'));
+      }
+      setIsLoading(false);
     }
-  }, [bot, t]);
+  }, [bot, botError, t, myGroups, starredBots]);
 
   const disabledInput = useMemo(() => {
     return botId !== null && !isAvailabilityBot && !isLoadingBot;
@@ -387,11 +401,9 @@ const ChatPage: React.FC = () => {
             </div>
 
           </div>
-          {getPostedModel() && (
             <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
-              model: {getPostedModel()}
+              {emailId}
             </div>
-          )}
         </div>
         <section className="relative size-full flex-1 overflow-auto pb-9">
           <div className="h-full">
@@ -401,7 +413,7 @@ const ChatPage: React.FC = () => {
               className=" flex h-full flex-col overflow-auto pb-16">
               {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
-                  {!loadingConversation && (
+                  {!loadingConversation && isAdmin && (
                     <SwitchBedrockModel
                       className="mt-3 w-min"
                       activeModels={activeModels}
@@ -469,6 +481,15 @@ const ChatPage: React.FC = () => {
             </Alert>
           </div>
         )}
+        {(pageTitle == t('bot.alert.sync.noAvailableAssistants.title')) && !isLoading && (
+          <div className="mb-8 w-1/2">
+            <Alert
+              severity="warning"
+              title={t('bot.alert.sync.noAvailableAssistants.title')}>
+              {t('bot.alert.sync.noAvailableAssistants.body')}
+            </Alert>
+          </div>
+        )}
         {messages.length === 0 && (
           <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
             {bot?.conversationQuickStarters?.map((qs, idx) => (
@@ -492,7 +513,7 @@ const ChatPage: React.FC = () => {
           disabledSend={postingMessage || hasError}
           disabledRegenerate={postingMessage || hasError}
           disabledContinue={postingMessage || hasError}
-          disabled={disabledInput}
+          disabled={disabledInput || (pageTitle == t('bot.alert.sync.noAvailableAssistants.title'))}
           placeholder={
             disabledInput
               ? t('bot.label.notAvailableBotInputMessage')

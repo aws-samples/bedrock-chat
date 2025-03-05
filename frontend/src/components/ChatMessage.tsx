@@ -157,7 +157,7 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
         {chatContent?.role === 'assistant' && (
           <div className="min-w-[2.3rem] max-w-[2.3rem]">
-            <img src="/images/qikr_logo_64.png" className="rounded" />
+            <img src="/images/Qikr_logo_chat_icon_mar2025.svg" className="rounded" />
           </div>
         )}
 

@@ -11,7 +11,7 @@ export const BottomHelper = () => {
     <>
       <div className="fixed bottom-3 right-3">
         <img
-          src="/images/qikr_logo_64.png"
+          src="/images/Qikr_logo_black_filled.svg"
           alt="Logo"
           className="w-12 h-12"
           onClick={() => setIsOpen(() => true)}
