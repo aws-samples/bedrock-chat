@@ -31,6 +31,7 @@ import {
   VERSION_02_17_25,
   COURSE_ID_MAP,
   ValidCourseId,
+  P0_FEATURE_FLAG,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
@@ -1662,11 +1663,11 @@ const BotKbEditPage: React.FC = () => {
               </div>
 
               <div className="mt-3" />
-              <AvailableTools
+              {!isBasicEditView && <AvailableTools
                 availableTools={availableTools}
                 tools={tools}
                 setTools={setTools}
-              />
+              />}
 
                 <div className="mt-4">
                   <div className="font-semibold">
@@ -1764,7 +1765,7 @@ const BotKbEditPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4">
+                    {P0_FEATURE_FLAG && <div className="mt-4">
                       <div className="font-semibold">{t('bot.label.s3url')}</div>
                       <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {t('bot.help.knowledge.s3url')}
@@ -1803,7 +1804,7 @@ const BotKbEditPage: React.FC = () => {
                           {t('button.add')}
                         </Button>
                       </div>
-                    </div>
+                    </div>}
 
                     <div className="mt-4">
                       <div className="font-semibold">{t('bot.label.url')}</div>

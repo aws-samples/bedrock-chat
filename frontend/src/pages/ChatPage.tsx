@@ -60,7 +60,7 @@ const ChatPage: React.FC = () => {
   const { open: openSnackbar } = useSnackbar();
   const { errorDetail } = usePostMessageStreaming();
   const { emailId } = useUser();
-  const { myGroups } = useGroup();
+  const { myGroups, isAdmin } = useGroup();
   const { starredBots } = useBot();
 
   const {
@@ -413,7 +413,7 @@ const ChatPage: React.FC = () => {
               className=" flex h-full flex-col overflow-auto pb-16">
               {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
-                  {!loadingConversation && (
+                  {!loadingConversation && isAdmin && (
                     <SwitchBedrockModel
                       className="mt-3 w-min"
                       activeModels={activeModels}

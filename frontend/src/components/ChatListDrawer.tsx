@@ -35,6 +35,7 @@ import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
 import { usePageLabel } from '../routes';
 import Toggle from '../components/Toggle.tsx';
+import { P0_FEATURE_FLAG } from '../constants/index.ts';
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -360,7 +361,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             </ExpandableDrawerGroup>
           </div>
 
-          <div
+          {P0_FEATURE_FLAG && <div
             className={`${
               opened ? 'w-64' : 'w-0'
             } fixed bottom-0 flex h-12 items-center justify-between p-2 border-t bg-aws-squid-ink-light dark:bg-aws-ui-color-dark transition-width lg:w-64`}>
@@ -385,7 +386,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                 onChange={(isDarkTheme) => changeTheme(isDarkTheme)}
               />
             </div>
-          </div>
+          </div>}
         </nav>
       </div>
 

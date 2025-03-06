@@ -220,8 +220,8 @@ const translation = {
             body: 'An error occurred while synchronizing Knowledge. Please check the following message:',
           },
           incomplete: {
-            title: 'NOT Ready',
-            body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
+            title: 'Update in Progress',
+            body: 'This assistant is being updated. You can continue chatting while updates are pending. ',
           },
           noAvailableAssistants: {
             title: 'No Assistants are Avaialble at this Time',
@@ -507,8 +507,9 @@ How would you categorize this email?`,
     admin: {
       sharedBotAnalytics: {
         label: {
-          pageTitle: 'Shared Bot Analytics',
-          noPublicBotUsages: 'During the Calculation Period, no public bots were utilized.',
+          pageTitle: 'Usage Analytics',
+          noPublicBotUsages:
+            'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
           // Add these new keys:
           assistantName: 'Assistant Name',
