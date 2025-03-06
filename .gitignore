@@ -8,3 +8,5 @@ __pycache__/
 .idea/
 .vscode/*
 !.vscode/launch.json
+backend/.env-mohan-dev.sh
+CLAUDE.md

@@ -99,8 +99,8 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ActiveModels": custom_bot.active_models.model_dump(),  # type: ignore[attr-defined]
         "Version": custom_bot.version,
         "GroupId": custom_bot.group_id,
-        "AssistantConfig": custom_bot.assistant_config.model_dump(),
-        "CreatorConfig": custom_bot.creator_config.model_dump(),
+        "AssistantConfig": custom_bot.assistant_config.model_dump() if custom_bot.assistant_config else None,
+        "CreatorConfig": custom_bot.creator_config.model_dump() if custom_bot.creator_config else None,
     }
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
@@ -581,7 +581,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
 
 def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
     table = _get_table_client(group_id)
-    logger.info(f"Finding bots for group: {group_id}")
+    logger.debug(f"Finding bots for group: {group_id}")
     query_params = {
         "IndexName": "GroupIdIndex",
         "KeyConditionExpression": Key("GroupId").eq(group_id),
@@ -622,7 +622,7 @@ def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
         )
         for item in response["Items"]
     ]
-    logger.info(f"Found all bots in group: {bots}")
+    logger.debug(f"Found all bots in group: {bots}")
     return bots
 
 
@@ -920,6 +920,19 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackIn
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
+                    # Add required fields from BotMeta class
+                    version=item.get("Version", None),
+                    group_id=item.get("GroupId", None),
+                    assistant_config=(
+                        AssistantConfigModel(**item["AssistantConfig"])
+                        if "AssistantConfig" in item
+                        else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+                    ),
+                    creator_config=(
+                        CreatorConfigModel(**item["CreatorConfig"])
+                        if "CreatorConfig" in item
+                        else None
+                    ),
                 )
             )
 
@@ -962,6 +975,19 @@ def find_all_published_bots(
             published_api_datetime=item.get("ApiPublishedDatetime", None),
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
+            ),
+            # Add required fields from BotMeta class
+            version=item.get("Version", None),
+            group_id=item.get("GroupId", None),
+            assistant_config=(
+                AssistantConfigModel(**item["AssistantConfig"])
+                if "AssistantConfig" in item
+                else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+            ),
+            creator_config=(
+                CreatorConfigModel(**item["CreatorConfig"])
+                if "CreatorConfig" in item
+                else None
             ),
         )
         for item in response["Items"]

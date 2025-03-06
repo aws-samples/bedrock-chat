@@ -511,6 +511,14 @@ How would you categorize this email?`,
           noPublicBotUsages:
             'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
+          // Add these new keys:
+          assistantName: 'Assistant Name',
+          course: 'Course',
+          school: 'School',
+          owner: 'Owner',
+          conversations: 'Conversations',
+          users: 'Users',
+          cost: 'Cost',
           SearchCondition: {
             title: 'Calculation Period',
             from: 'From',

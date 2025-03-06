@@ -10,9 +10,9 @@ type Props = BaseProps & {
     title: string;
     description: string;
     available: boolean;
-    assistantConfig: AssistantConfig;
+    assistantConfig: AssistantConfig | null;
     creatorConfig: CreatorConfig | null;
-    groupId: string;
+    groupId: string | null;
   };
   onClick: (botId: string) => void;
   children: ReactNode;
@@ -20,9 +20,17 @@ type Props = BaseProps & {
 
 const ListItemBot: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-
+  
   const getImageSrc = () => {
-    switch (props.bot.assistantConfig.assistantType) {
+    if (!props.bot.assistantConfig) {
+      return "/images/custom_assistant.png";
+    }
+    
+    // Use bracket notation to access the property without TypeScript errors
+    // This allows us to access properties not explicitly defined in the interface
+    const assistantType = props.bot.assistantConfig['assistantType'] as string || "custom_assistant";
+    
+    switch (assistantType) {
       case "learning_assistant":
         return "/images/learning_assistant.png";
       case "lesson_plan_assistant":
@@ -35,26 +43,31 @@ const ListItemBot: React.FC<Props> = (props) => {
         return "/images/custom_assistant.png";
     }
   };
-
+  
+  // Rest of the component remains unchanged
   const getCanvasInstanceName = () => {
+    if (!props.bot.groupId) {
+      return "";
+    }
     const lti_deploymentId: ValidLTIDeploymentId = props.bot.groupId.split("-")[0] as ValidLTIDeploymentId;
-    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId];
+    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId] || "";
   }
-
+  
   const getCourseName = () => {
+    if (!props.bot.groupId) {
+      return "";
+    }
     const courseId: ValidCourseId = props.bot.groupId as ValidCourseId;
-    return COURSE_ID_MAP[courseId];
+    return COURSE_ID_MAP[courseId] || "";
   }
-
+  
   const getCreatorName = (): string | undefined => {
     if (!props.bot.creatorConfig || !props.bot.creatorConfig.userName) {
       return "";
     }
     return props.bot.creatorConfig.userName;
-    
   };
   
-
   return (
     <div className="assistant-item-container">
       <div className="assistant-item-row">
@@ -69,7 +82,6 @@ const ListItemBot: React.FC<Props> = (props) => {
                 props.onClick(props.bot.id);
               }
             }}>
-
             <img src={getImageSrc()} className="assistant-item-logo"/>
             <div className="assistant-item-title-and-description">
               <span
@@ -99,9 +111,7 @@ const ListItemBot: React.FC<Props> = (props) => {
           <div className="assistant-item-buttons-container">
             {props.children}
           </div>
-
       </div>
-
     </div>
   );
 };
