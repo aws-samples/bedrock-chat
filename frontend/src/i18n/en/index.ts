@@ -508,9 +508,16 @@ How would you categorize this email?`,
       sharedBotAnalytics: {
         label: {
           pageTitle: 'Shared Bot Analytics',
-          noPublicBotUsages:
-            'During the Calculation Period, no public bots were utilized.',
+          noPublicBotUsages: 'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
+          // Add these new keys:
+          assistantName: 'Assistant Name',
+          course: 'Course',
+          school: 'School',
+          owner: 'Owner',
+          conversations: 'Conversations',
+          users: 'Users',
+          cost: 'Cost',
           SearchCondition: {
             title: 'Calculation Period',
             from: 'From',

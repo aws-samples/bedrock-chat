@@ -1,5 +1,5 @@
 from app.routes.schemas.base import BaseSchema
-from app.routes.schemas.bot import Knowledge, type_sync_status
+from app.routes.schemas.bot import AssistantConfig, CreatorConfig, Knowledge, type_sync_status
 from pydantic import Field
 
 
@@ -28,8 +28,8 @@ class UsagePerBotOutput(BaseSchema):
     total_price: float
     num_of_users: int
     num_of_convos: int
-    assistant_config: dict | None
-    creator_config: dict | None
+    assistant_config: AssistantConfig | None
+    creator_config: CreatorConfig | None
     group_id: str | None
 
 
