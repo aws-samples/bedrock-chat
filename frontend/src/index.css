@@ -9,38 +9,30 @@
   ) !important;
 }
 
+.assistant-list-title-and-btn-container {
+  max-height: 15%;
+  min-height: 150px;
+}
+
+.assistant-list-create-new-assistant-div {
+  padding: 0.5rem 0.5rem 0 0.5rem;
+}
+
 .container-bot-explore {
   display: flex;
   width: 100%;
-  height: 50%;
-}
-
-.first-half-bot-explore {
-  flex: 1;
-  display: flex;
+  padding: 0.5rem;
   align-items: center; /* Center vertically */
   justify-content: left; /* Center horizontally */
-}
-
-.first-half-bot-explore:last-child {
-  border-right: none;
-}
-
-.second-half-bot-explore {
-  flex: 1;
-  display: flex;
-  align-items: center; /* Center vertically */
-  justify-content: left; /* Center horizontally */
-}
-
-.second-half-bot-explore:last-child {
-  border-right: none;
+  min-height: 60px;
 }
 
 .create-assistant-btn {
   min-width: 400px;
-  width: 85%;
-  height: 75%;
+  max-width: 600px;
+  width: 40%;
+  height: 60%;
+  background: white;
 }
 
 .create-assistant-btn-text-box {
@@ -64,7 +56,7 @@
 }
 
 .create-assistant-btn-logo {
-  width: 15%;
+  width: 12%;
   padding-right: 15px;
 }
 
@@ -117,7 +109,6 @@
 }
 
 .assistant-item-title-and-description {
-  width: 35%;
   max-width: 300px;               /* w-full: Full width */
   overflow: hidden;          /* Prevents overflow */
   text-overflow: ellipsis;   /* Truncates text with "..." */
@@ -202,4 +193,57 @@
 
 .assistant-list-column-btn-sync-status {
   padding-left: 10px;
+}
+
+/* *************************************** */
+/* Styling for Table HTML Data */
+/* *************************************** */
+
+.assistant-list-table {
+  width: 100%;
+}
+
+.assistant-list-table-headers {
+  position: sticky;
+  top: 0;
+  z-index: 1; /* Ensures header stays on top of the content */
+  border: 1px solid lightgray;
+  background-color: #f1f1f1; /* Optional: background color for the header */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.assistant-list-th-header {
+  text-align: left;
+}
+
+.assistant-list-th-logo-name {
+  padding-left: 50px;
+  max-width: 400px;
+}
+
+.assistant-list-tr-td-sync-icon {
+  padding-left: 35px;
+}
+
+.assistant-list-tr-td-logo-name {
+  display: flex;
+  flex-direction: row;
+  background-color: #f3f4f6;      /* bg-aws-paper-light: Light mode background color */
+}
+
+.assistant-list-tr-td-logo-name:hover {
+  cursor: pointer;
+  filter: brightness(90%);
+}
+
+.assistant-list-tr-td-public-edit-delete {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.assistant-list-item-container {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: lightgray; /* Change to the actual color if needed */
 }

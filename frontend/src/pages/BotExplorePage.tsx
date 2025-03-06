@@ -1,22 +1,27 @@
 import React, { useCallback, useState } from 'react';
 import Button from '../components/Button';
+import { useTranslation } from 'react-i18next';
+import { COURSE_ID_MAP, LTI_DEPLOYMENT_ID_MAP, ValidCourseId, ValidLTIDeploymentId } from '../constants';
+
+
 import {
   PiTrashBold,
   PiPencilBold,
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import { BotMeta } from '../@types/bot';
+import { BotMeta, CreatorConfig } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import useChat from '../hooks/useChat';
 import useUser from '../hooks/useUser';
 import StatusSyncBot from '../components/StatusSyncBot';
-import ListItemBot from '../components/ListItemBot';
 import Toggle from '../components/Toggle';
+import { BottomHelper } from '../features/helper/components/BottomHelper';
 
 const BotExplorePage: React.FC = () => {
   const navigate = useNavigate();
   const { emailId } = useUser(); 
+  const { t } = useTranslation();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
 
@@ -63,6 +68,40 @@ const BotExplorePage: React.FC = () => {
     },
     [navigate, newChat]
   );
+
+  const getImageSrc = (assistantType: string) => {
+    switch (assistantType) {
+      case "learning_assistant":
+        return "/images/learning_assistant.png";
+      case "lesson_plan_assistant":
+        return "/images/lesson_plan_assistant.png";
+      case "quiz_assistant":
+        return "/images/quiz_assistant.png";
+      case "custom_assistant":
+        return "/images/custom_assistant.png";
+      default:
+        return "/images/custom_assistant.png";
+    }
+  };
+
+  const getCanvasInstanceName = (groupId: string) => {
+    const lti_deploymentId: ValidLTIDeploymentId = groupId.split("-")[0] as ValidLTIDeploymentId;
+    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId];
+  }
+
+  const getCourseName = (groupId: string) => {
+    const courseId: ValidCourseId = groupId as ValidCourseId;
+    return COURSE_ID_MAP[courseId];
+  }
+
+  const getCreatorName = (creatorConfig: CreatorConfig): string | undefined => {
+    if (!creatorConfig || !creatorConfig.userName) {
+      return "";
+    }
+    return creatorConfig.userName;
+    
+  };
+
   return (
     <>
       <DialogConfirmDeleteBot
@@ -73,105 +112,88 @@ const BotExplorePage: React.FC = () => {
           setIsOpenDeleteDialog(false);
         }}
       />
-      <div className="flex h-full justify-center">
-        <div className="w-full max-w-screen-xl px-4 lg:w-4/5">
-          <div className="h-1/4 w-full pt-8">
-            <div className="flex items-end justify-between">
-              <div className="flex items-center gap-2">
-                <div className="text-xl font-bold">{"Create Assistant"}</div>
-              </div>
-            </div>
-            <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
-              {emailId}
-            </div>
-            <div className="mt-2 border-b border-gray"></div>
-            <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
-              <div className="h-full min-w-[480px]">
-                <div className="container-bot-explore">
-                  <div className="first-half-bot-explore">
-                    <Button
-                      className="text-l font-bold create-assistant-btn"
-                      outlined
-                      onClick={() => onClickNewBot("learning_assistant")}>
-                      <img src="/images/learning_assistant.png" className="create-assistant-btn-logo"/>
-                      <div className="create-assistant-btn-text-box">
-                        <div className="create-assistant-btn-title">Learning Assistant</div>
-                        <div className="create-assistant-btn-description">Answer student questions using provided material.</div>  
-                      </div>
-                    </Button>
-                  </div>
-                  <div className="first-half-bot-explore">
-                    <Button
-                      className="text-l font-bold create-assistant-btn"
-                      outlined
-                      onClick={() => onClickNewBot("custom_assistant")}>
-                      <img src="/images/custom_assistant.png" className="create-assistant-btn-logo"/>
-                      <div className="create-assistant-btn-text-box">
-                        <div className="create-assistant-btn-title">Custom Assistant</div>
-                        <div className="create-assistant-btn-description">Fully customize an assistant to your needs.</div>  
-                      </div>
-                    </Button>
-                  </div>
-                </div>
-                <div className="container-bot-explore">
-                  <div className="second-half-bot-explore">
-                    <Button
-                      className="text-l font-bold create-assistant-btn"
-                      outlined
-                      onClick={() => onClickNewBot("quiz_assistant")}>
-                      <img src="/images/quiz_assistant.png" className="create-assistant-btn-logo"/>
-                      <div className="create-assistant-btn-text-box">
-                        <div className="create-assistant-btn-title">Quiz Assistant</div>
-                        <div className="create-assistant-btn-description">Generate quiz questions using provided material.</div>  
-                      </div>
-                    </Button>
-                  </div>
-                  <div className="second-half-bot-explore">
-                    <Button
-                      className="text-l font-bold create-assistant-btn"
-                      outlined
-                      onClick={() => onClickNewBot("lesson_plan_assistant")}>
-                      <img src="/images/lesson_plan_assistant.png" className="create-assistant-btn-logo"/>
-                      <div className="create-assistant-btn-text-box">
-                        <div className="create-assistant-btn-title">Lesson Plan Assistant</div>
-                        <div className="create-assistant-btn-description">Generate lesson plans using provided material.</div>  
-                      </div>
-                    </Button>
-                  </div>
+        <div className="relative flex h-full flex-1 flex-col">
+          <div className="flex-1 overflow-hidden assistant-list-title-and-btn-container">
+            <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light dark:bg-aws-paper-dark">
+              <div className="flex w-full justify-between">
+                <div className="assistant-list-create-new-assistant-div">
+                  <div className="text-xl font-bold">{"Create New Assistant"}</div>
                 </div>
               </div>
+              <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
+                {emailId}
+              </div>
+            </div>
+            <div className="container-bot-explore">
+              <Button
+                className="text-l font-bold create-assistant-btn"
+                outlined
+                onClick={() => onClickNewBot("learning_assistant")}>
+                <img src="/images/learning_assistant.png" className="create-assistant-btn-logo"/>
+                <div className="create-assistant-btn-text-box">
+                  <div className="create-assistant-btn-title">Learning Assistant</div>
+                  <div className="create-assistant-btn-description">Answer student questions using provided material.</div>  
+                </div>
+              </Button>
             </div>
           </div>
-          <div className="h-3/4 w-full">
-            <div className='assistant-list-column-headers-row'>
-              <div className="text-xl font-bold assistant-list-column-headers-row-title">Assistant List</div>
-              <div className='assistant-list-column-headers-row-attributes'>
-                <div className='assistant-list-column-attribute-items assistant-item-course'>Course Name</div>
-                <div className='assistant-list-column-attribute-items assistant-item-canvas'>District</div>
-                <div className='assistant-list-column-attribute-items assistant-item-type-and-name'>Created By</div>
-              </div>
-              <div className='assistant-list-column-headers-row-buttons'>
-                <div className='assistant-list-column-btn-items'>Sync Status</div>
-                <div className='assistant-list-column-btn-items'>Public</div>
-              </div>
+          <div className="h-3/4 w-full p-2">
+            <div className="flex w-full justify-between">
+              <div className="text-xl font-bold">{"Assistant List"}</div>
             </div>
             <div className="mt-2 border-b border-gray"></div>
-            <div className="h-4/5 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
-              <div className="h-full min-w-[480px]">
+            <div className="h-5/6 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+              <table className="assistant-list-table">
+                <thead>
+                  <tr className="assistant-list-table-headers">
+                    <th className="assistant-list-th-header assistant-list-th-logo-name">Name</th>
+                    <th className="assistant-list-th-header">Course</th>
+                    <th className="assistant-list-th-header">District</th>
+                    <th className="assistant-list-th-header">Created By</th>
+                    <th className="assistant-list-th-header">Sync Status</th>
+                    <th className="assistant-list-th-header">Public</th>
+                  </tr>
+                </thead>
+                <tbody id="bot-list">
                 {myBots?.map((bot) => (
-                  <ListItemBot
-                    key={bot.id}
-                    bot={bot}
-                    onClick={onClickBot}
-                    className="last:border-b-0">
-                    <div className="flex items-center">
+                  <tr key={bot.id} className="assistant-list-item-container">
+                    <td className={"assistant-list-tr-td-logo-name"} onClick={() => onClickBot(bot.id)}>
+                      {/* Logo and Assistant Name in one column */}
+                      <img src={getImageSrc(bot.assistantConfig.assistantType)} className="assistant-item-logo"/>
+                      <div className="assistant-item-title-and-description">
+                        <span
+                          className={
+                            bot.available
+                              ? 'dark:text-aws-font-color-dark'
+                              : 'dark:text-aws-font-color-gray'
+                          }
+                        >
+                          {bot.title}
+                        </span>
+                        {bot.description ? (
+                          <div className="mt-1 overflow-hidden text-ellipsis text-xs dark:text-aws-font-color-dark">
+                              {bot.description}
+                          </div>) : (
+                          <div className="mt-1 overflow-hidden text-ellipsis text-xs italic text-gray dark:text-aws-font-color-gray">
+                            {t('bot.label.noDescription')}
+                          </div>
+                          )}
+                      </div>
+                    </td>
+                    <td>{getCourseName(bot.groupId)}</td>
+                    <td>{getCanvasInstanceName(bot.groupId)}</td>
+                    <td>{(bot.creatorConfig) ? getCreatorName(bot.creatorConfig) : ""}</td>
+                    <td>
                       <StatusSyncBot
-                        className="mr-5"
+                        className="mr-5 assistant-list-tr-td-sync-icon"
                         syncStatus={bot.syncStatus}
                         onClickError={() => {
                           navigate(`/bot/edit/${bot.id}`);
                         }}
                       />
+                    </td>
+                    <td className="assistant-list-tr-td-public-edit-delete">
+                      {/* Public, Edit, Delete operations in one column */}
                       <Toggle
                         value={bot.isPublic}
                         onChange={() => onToggleShare(bot.id, bot.isPublic)}/>
@@ -191,14 +213,15 @@ const BotExplorePage: React.FC = () => {
                         }}>
                         <PiTrashBold />
                       </Button>
-                    </div>
-                  </ListItemBot>
+                    </td>
+                  </tr>
                 ))}
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      </div>
+        <BottomHelper />
+      </div>  
     </>
   );
 };
