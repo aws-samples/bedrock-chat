@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 
 class KnowledgeToolInput(BaseModel):
     query: str = Field(
-        description="A search string for querying the Amazon Bedrock Knowledge base."
+        description="Input suitable for vector search, full text search, and hybrid search. When searching continuously, the query must be designed so that it does not overlap with past contexts."
     )
 
 
