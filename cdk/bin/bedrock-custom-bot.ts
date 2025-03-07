@@ -9,13 +9,13 @@ import {
   getCrowlingScope,
   getCrawlingFilters,
 } from "../lib/utils/bedrock-knowledge-base-args";
-import {
-  CrawlingFilters,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import { CrawlingFilters } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import { getBedrockCustomBotParameters } from "../lib/utils/parameter-models";
 
 const app = new cdk.App();
 
-const BEDROCK_REGION = app.node.tryGetContext("bedrockRegion");
+// Get parameters specific to Bedrock Custom Bot
+const params = getBedrockCustomBotParameters(app);
 
 const PK: string = process.env.PK!;
 const SK: string = process.env.SK!;
@@ -59,13 +59,17 @@ console.log("existingS3Urls: ", existingS3Urls);
 console.log("sourceUrls: ", sourceUrls);
 
 const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
-const parsingModel = getParsingModel(knowledgeBase.parsing_model.S)
-const crawlingScope = getCrowlingScope(knowledgeBase.web_crawling_scope.S)
-const crawlingFilters: CrawlingFilters = getCrawlingFilters(knowledgeBase.web_crawling_filters.M)
-const existKnowledgeBaseId: string | undefined = knowledgeBase.exist_knowledge_base_id.S
+const parsingModel = getParsingModel(knowledgeBase.parsing_model.S);
+const crawlingScope = getCrowlingScope(knowledgeBase.web_crawling_scope.S);
+const crawlingFilters: CrawlingFilters = getCrawlingFilters(
+  knowledgeBase.web_crawling_filters.M
+);
+const existKnowledgeBaseId: string | undefined = knowledgeBase
+  .exist_knowledge_base_id.S
   ? knowledgeBase.exist_knowledge_base_id.S
   : undefined;
-const maxTokens: number | undefined = knowledgeBase.chunking_configuration.M.max_tokens
+const maxTokens: number | undefined = knowledgeBase.chunking_configuration.M
+  .max_tokens
   ? Number(knowledgeBase.chunking_configuration.M.max_tokens.N)
   : undefined;
 const instruction: string | undefined = knowledgeBase.instruction
@@ -74,23 +78,31 @@ const instruction: string | undefined = knowledgeBase.instruction
 const analyzer = knowledgeBase.open_search.M.analyzer.M
   ? getAnalyzer(knowledgeBase.open_search.M.analyzer.M)
   : undefined;
-const overlapPercentage: number | undefined = knowledgeBase.chunking_configuration.M.overlap_percentage
+const overlapPercentage: number | undefined = knowledgeBase
+  .chunking_configuration.M.overlap_percentage
   ? Number(knowledgeBase.chunking_configuration.M.overlap_percentage.N)
   : undefined;
-const overlapTokens: number | undefined = knowledgeBase.chunking_configuration.M.overlap_tokens
+const overlapTokens: number | undefined = knowledgeBase.chunking_configuration.M
+  .overlap_tokens
   ? Number(knowledgeBase.chunking_configuration.M.overlap_tokens.N)
   : undefined;
-const maxParentTokenSize: number | undefined = knowledgeBase.chunking_configuration.M.max_parent_token_size
+const maxParentTokenSize: number | undefined = knowledgeBase
+  .chunking_configuration.M.max_parent_token_size
   ? Number(knowledgeBase.chunking_configuration.M.max_parent_token_size.N)
   : undefined;
-const maxChildTokenSize: number | undefined = knowledgeBase.chunking_configuration.M.max_child_token_size
+const maxChildTokenSize: number | undefined = knowledgeBase
+  .chunking_configuration.M.max_child_token_size
   ? Number(knowledgeBase.chunking_configuration.M.max_child_token_size.N)
   : undefined;
-const bufferSize: number | undefined = knowledgeBase.chunking_configuration.M.buffer_size
+const bufferSize: number | undefined = knowledgeBase.chunking_configuration.M
+  .buffer_size
   ? Number(knowledgeBase.chunking_configuration.M.buffer_size.N)
   : undefined;
-const breakpointPercentileThreshold: number | undefined = knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold
-  ? Number(knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold.N)
+const breakpointPercentileThreshold: number | undefined = knowledgeBase
+  .chunking_configuration.M.breakpoint_percentile_threshold
+  ? Number(
+      knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold.N
+    )
   : undefined;
 const is_guardrail_enabled: boolean | undefined =
   guardrails.is_guardrail_enabled
@@ -171,7 +183,7 @@ const bedrockCustomBotStack = new BedrockCustomBotStack(
   {
     env: {
       // account: process.env.CDK_DEFAULT_ACCOUNT,
-      region: BEDROCK_REGION,
+      region: params.bedrockRegion,
     },
     ownerUserId,
     botId,
