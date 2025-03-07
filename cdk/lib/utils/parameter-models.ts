@@ -75,12 +75,17 @@ export const BedrockCustomBotParametersSchema = BaseParametersSchema;
 /**
  * Type definitions for each parameter set
  */
+// Input types (for user input, default values are optional)
+export type BaseParametersInput = z.input<typeof BaseParametersSchema>;
+export type BedrockChatParametersInput = z.input<typeof BedrockChatParametersSchema>;
+export type ApiPublishParametersInput = z.input<typeof ApiPublishParametersSchema>;
+export type BedrockCustomBotParametersInput = z.input<typeof BedrockCustomBotParametersSchema>;
+
+// Output types (for function returns, all properties are required)
 export type BaseParameters = z.infer<typeof BaseParametersSchema>;
 export type BedrockChatParameters = z.infer<typeof BedrockChatParametersSchema>;
 export type ApiPublishParameters = z.infer<typeof ApiPublishParametersSchema>;
-export type BedrockCustomBotParameters = z.infer<
-  typeof BedrockCustomBotParametersSchema
->;
+export type BedrockCustomBotParameters = z.infer<typeof BedrockCustomBotParametersSchema>;
 
 /**
  * Parse and validate CDK context parameters for the main Bedrock Chat application
@@ -88,20 +93,23 @@ export type BedrockCustomBotParameters = z.infer<
  * @param envName Optional environment name to use for parameter lookup
  * @returns Validated parameters object
  */
-export function getBedrockChatParameters(app: any, envName?: string): BedrockChatParameters {
+export function getBedrockChatParameters(
+  app: any,
+  envName?: string
+): BedrockChatParameters {
   // Use 'default' if envName is undefined
-  const environment = envName || 'default';
-  
+  const environment = envName || "default";
+
   // Import bedrockChatParams from parameter.ts
-  const { bedrockChatParams } = require('../../parameter');
-  
+  const { bedrockChatParams } = require("../../parameter");
+
   // If environment parameters exist in bedrockChatParams, use them
   if (bedrockChatParams.has(environment)) {
-    return bedrockChatParams.get(environment)!;
+    return BedrockChatParametersSchema.parse(bedrockChatParams.get(environment)!);
   }
-  
+
   // If environment is 'default' and not found in bedrockChatParams, use context values
-  if (environment === 'default') {
+  if (environment === "default") {
     const contextParams = {
       bedrockRegion: app.node.tryGetContext("bedrockRegion"),
       enableMistral: app.node.tryGetContext("enableMistral"),
@@ -135,9 +143,11 @@ export function getBedrockChatParameters(app: any, envName?: string): BedrockCha
 
     return BedrockChatParametersSchema.parse(contextParams);
   }
-  
+
   // If environment is not 'default' and not found in bedrockChatParams, throw an error
-  throw new Error(`Environment '${environment}' not found in bedrockChatParams`);
+  throw new Error(
+    `Environment '${environment}' not found in bedrockChatParams`
+  );
 }
 
 /**
