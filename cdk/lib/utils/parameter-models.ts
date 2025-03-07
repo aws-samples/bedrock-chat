@@ -85,41 +85,59 @@ export type BedrockCustomBotParameters = z.infer<
 /**
  * Parse and validate CDK context parameters for the main Bedrock Chat application
  * @param app CDK App instance
+ * @param envName Optional environment name to use for parameter lookup
  * @returns Validated parameters object
  */
-export function getBedrockChatParameters(app: any): BedrockChatParameters {
-  const contextParams = {
-    bedrockRegion: app.node.tryGetContext("bedrockRegion"),
-    enableMistral: app.node.tryGetContext("enableMistral"),
-    allowedIpV4AddressRanges: app.node.tryGetContext(
-      "allowedIpV4AddressRanges"
-    ),
-    allowedIpV6AddressRanges: app.node.tryGetContext(
-      "allowedIpV6AddressRanges"
-    ),
-    identityProviders: app.node.tryGetContext("identityProviders"),
-    userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
-    allowedSignUpEmailDomains: app.node.tryGetContext(
-      "allowedSignUpEmailDomains"
-    ),
-    autoJoinUserGroups: app.node.tryGetContext("autoJoinUserGroups"),
-    selfSignUpEnabled: app.node.tryGetContext("selfSignUpEnabled"),
-    publishedApiAllowedIpV4AddressRanges: app.node.tryGetContext(
-      "publishedApiAllowedIpV4AddressRanges"
-    ),
-    publishedApiAllowedIpV6AddressRanges: app.node.tryGetContext(
-      "publishedApiAllowedIpV6AddressRanges"
-    ),
-    enableRagReplicas: app.node.tryGetContext("enableRagReplicas"),
-    enableBedrockCrossRegionInference: app.node.tryGetContext(
-      "enableBedrockCrossRegionInference"
-    ),
-    enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
-    alternateDomainName: app.node.tryGetContext("alternateDomainName"),
-    hostedZoneId: app.node.tryGetContext("hostedZoneId"),
-  };
+export function getBedrockChatParameters(app: any, envName?: string): BedrockChatParameters {
+  // Use 'default' if envName is undefined
+  const environment = envName || 'default';
+  
+  // Import bedrockChatParams from parameter.ts
+  const { bedrockChatParams } = require('../../parameter');
+  
+  // If environment parameters exist in bedrockChatParams, use them
+  if (bedrockChatParams.has(environment)) {
+    return bedrockChatParams.get(environment)!;
+  }
+  
+  // If environment is 'default' and not found in bedrockChatParams, use context values
+  if (environment === 'default') {
+    const contextParams = {
+      bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+      enableMistral: app.node.tryGetContext("enableMistral"),
+      allowedIpV4AddressRanges: app.node.tryGetContext(
+        "allowedIpV4AddressRanges"
+      ),
+      allowedIpV6AddressRanges: app.node.tryGetContext(
+        "allowedIpV6AddressRanges"
+      ),
+      identityProviders: app.node.tryGetContext("identityProviders"),
+      userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
+      allowedSignUpEmailDomains: app.node.tryGetContext(
+        "allowedSignUpEmailDomains"
+      ),
+      autoJoinUserGroups: app.node.tryGetContext("autoJoinUserGroups"),
+      selfSignUpEnabled: app.node.tryGetContext("selfSignUpEnabled"),
+      publishedApiAllowedIpV4AddressRanges: app.node.tryGetContext(
+        "publishedApiAllowedIpV4AddressRanges"
+      ),
+      publishedApiAllowedIpV6AddressRanges: app.node.tryGetContext(
+        "publishedApiAllowedIpV6AddressRanges"
+      ),
+      enableRagReplicas: app.node.tryGetContext("enableRagReplicas"),
+      enableBedrockCrossRegionInference: app.node.tryGetContext(
+        "enableBedrockCrossRegionInference"
+      ),
+      enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
+      alternateDomainName: app.node.tryGetContext("alternateDomainName"),
+      hostedZoneId: app.node.tryGetContext("hostedZoneId"),
+    };
 
-  return BedrockChatParametersSchema.parse(contextParams);
+    return BedrockChatParametersSchema.parse(contextParams);
+  }
+  
+  // If environment is not 'default' and not found in bedrockChatParams, throw an error
+  throw new Error(`Environment '${environment}' not found in bedrockChatParams`);
 }
 
 /**
