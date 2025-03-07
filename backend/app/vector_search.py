@@ -105,6 +105,22 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                 source_name = urlparse(url=uri).path.split("/")[-1]
                 return (source_name, uri)
 
+            elif location_type == "CONFLUENCE":
+                url = location.get("confluenceLocation", {}).get("url", "")
+                return (url, url) if url else None
+
+            elif location_type == "SALESFORCE":
+                url = location.get("salesforceLocation", {}).get("url", "")
+                return (url, url) if url else None
+
+            elif location_type == "SHAREPOINT":
+                url = location.get("sharePointLocation", {}).get("url", "")
+                return (url, url) if url else None
+
+            elif location_type == "KENDRA":
+                url = location.get("kendraDocumentLocation", {}).get("uri", "")
+                return (url, url) if url else None
+
             return None
 
         search_results = []
