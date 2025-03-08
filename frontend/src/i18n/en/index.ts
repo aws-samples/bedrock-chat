@@ -328,7 +328,6 @@ Visual Aids and Practice:
     Include diagrams, graphs, or visual tools where necessary.
     Provide practice problems to reinforce concepts.
 
-Example Response:
 {{examples}}
 ---
 
@@ -363,7 +362,7 @@ How would you categorize this email?`,
       },
       create: {
         pageTitle: 'Create Assistant',
-        advancedPageTitle: 'Plus Create Assistant',
+        advancedPageTitle: 'Create Assistant Plus',
       },
       edit: {
         pageTitle: 'Edit Assistant',

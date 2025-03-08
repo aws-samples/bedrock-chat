@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
-import { COURSE_ID_MAP, LTI_DEPLOYMENT_ID_MAP, ValidCourseId, ValidLTIDeploymentId } from '../constants';
+import { LTI_DEPLOYMENT_ID_MAP, ValidLTIDeploymentId } from '../constants';
 
 
 import {
@@ -14,6 +14,7 @@ import { BotMeta, CreatorConfig } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import useChat from '../hooks/useChat';
 import useUser from '../hooks/useUser';
+import useGroup from '../hooks/useGroup';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Toggle from '../components/Toggle';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
@@ -24,6 +25,8 @@ const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
+  const { myGroups } = useGroup();
+
 
   const { newChat } = useChat();
   const {
@@ -89,10 +92,10 @@ const BotExplorePage: React.FC = () => {
     return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId];
   }
 
-  const getCourseName = (groupId: string) => {
-    const courseId: ValidCourseId = groupId as ValidCourseId;
-    return COURSE_ID_MAP[courseId];
-  }
+  const getCourseName = useCallback((groupId: string) => {
+    if (!myGroups) return;
+    return (myGroups.find((group) => group.groupId == groupId)?.groupName ?? '');
+  }, [myGroups])
 
   const getCreatorName = (creatorConfig: CreatorConfig): string | undefined => {
     if (!creatorConfig || !creatorConfig.userName) {

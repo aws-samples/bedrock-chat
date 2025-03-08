@@ -29,8 +29,6 @@ import {
   DEFAULT_MISTRAL_GENERATION_CONFIG,
   TooltipDirection,
   VERSION_02_17_25,
-  COURSE_ID_MAP,
-  ValidCourseId,
   P0_FEATURE_FLAG,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
@@ -445,24 +443,35 @@ const BotKbEditPage: React.FC = () => {
     [webCrawlingFilters]
   );
 
-  function generatePrompt() {
+  const generatePrompt = () => {
+    // called only when a new assistant is created
 		const COURSE_NAME_PLACEHOLDER = t('bot.samples.placeholder.groupName')
 		const COURSE_TOPICS_PLACEHOLDER = t('bot.samples.placeholder.assistantTopics')
 		const RESPONSE_EXAMPLES_PLACEHOLDER = t('bot.samples.placeholder.examples')
     
-    const courseId: ValidCourseId = groupId as ValidCourseId;
-    const courseName = COURSE_ID_MAP[courseId]
+    let prompt = instruction ?? "";
+    
+    // get course name
+    const courseName = groupOptionsList.find((group) => group.value == groupId)?.label ?? title
+    if (courseName && courseName.trim().length > 0) {
+      prompt = prompt.replaceAll(COURSE_NAME_PLACEHOLDER, courseName);
+    }
+    
+    // get topics
+    let topics = assistantTopics.trim().length > 0 ? assistantTopics : courseName + " topics"; 
+    prompt = prompt.replaceAll(COURSE_TOPICS_PLACEHOLDER, topics);
 
+    // get examples
     let examples = conversationQuickStarters
-    .map((convo: ConversationQuickStarter) => `Question: ${convo.title} Answer: ${convo.example}.`)
-    .join(" ");
+        .filter((convo: ConversationQuickStarter) => convo.title.trim().length > 0 && convo.example.trim().length > 0)
+        .map((convo: ConversationQuickStarter) => `Question: ${convo.title}\nAnswer: ${convo.example}. `)
+        .join(`\n`);
 
-		if (assistantType == 'learning_assistant') {
-			return instruction.replaceAll(COURSE_NAME_PLACEHOLDER, courseName)
-				.replaceAll(COURSE_TOPICS_PLACEHOLDER, assistantTopics)
-				.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, examples);
-		}
-		return instruction;
+    if (examples.trim().length > 0) {
+      examples = `Examples:\n${examples}`;
+      prompt = prompt.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, examples);
+    }
+		return prompt;
 	}
 
   const onClickAddIncludePattern = useCallback(() => {
@@ -1487,7 +1496,7 @@ const BotKbEditPage: React.FC = () => {
   const [isOpenSamples, setIsOpenSamples] = useState(false);
 
   const disabledRegister = useMemo(() => {
-    return title === '' || files.findIndex((f) => f.status !== 'UPLOADED') > -1;
+    return title.trim().length === 0 || files.findIndex((f) => f.status !== 'UPLOADED') > -1;
   }, [files, title]);
 
   return (
@@ -1526,20 +1535,20 @@ const BotKbEditPage: React.FC = () => {
                 onChange={setTitle}
                 hint={t('input.hint.required')}
               />
-              {!isBasicEditView && <InputText
+              <InputText
                 label={t('bot.item.description')}
                 disabled={isLoading}
                 value={description}
                 onChange={setDescription}
-              />}
-              <div className="mt-3">
+              />
+              {P0_FEATURE_FLAG && <div className="mt-3">
                 <Select
                   label={"Assistant Type"}
                   value={assistantType}
                   options={assistantTypeOptions}
                   onChange={setAssistantType}
                 />
-              </div>
+              </div>}
               <div className="mt-3">
                 <Select
                   label={"Course"}
