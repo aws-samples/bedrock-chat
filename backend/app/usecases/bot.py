@@ -502,6 +502,7 @@ def fetch_all_bots_by_user_id(
                     description=bot.description,
                     is_public=True,
                     sync_status=bot.sync_status,
+                    has_knowledge=bot.has_knowledge(),
                     has_bedrock_knowledge_base=bot.has_bedrock_knowledge_base(),
                 )
             except RecordNotFoundError:
@@ -520,6 +521,7 @@ def fetch_all_bots_by_user_id(
                     description="This item is no longer available",
                     is_public=False,
                     sync_status="ORIGINAL_NOT_FOUND",
+                    has_knowledge=False,
                     has_bedrock_knowledge_base=False,
                 )
 
@@ -573,6 +575,7 @@ def fetch_all_bots_by_user_id(
                     description=item["Description"],
                     is_public="PublicBotId" in item,
                     sync_status=item["SyncStatus"],
+                    has_knowledge=bool(item.get("HasKnowledge")),
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
@@ -607,7 +610,7 @@ def fetch_all_bots(
 
     bot_metas = []
     for bot in bots:
-        if not bot.has_bedrock_knowledge_base:
+        if bot.has_knowledge and not bot.has_bedrock_knowledge_base:
             # Created bots under major version 1.4~, 2~ should have bedrock knowledge base.
             # If the bot does not have bedrock knowledge base,
             # it is not shown in the list.
