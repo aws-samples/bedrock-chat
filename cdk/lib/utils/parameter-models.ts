@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { TIdentityProvider } from "./identity-provider";
+import { App } from "aws-cdk-lib";
 
 /**
  * Base parameters schema that is common across all entry points
  */
-export const BaseParametersSchema = z.object({
+const BaseParametersSchema = z.object({
   // Bedrock configuration
   bedrockRegion: z.string().default("us-east-1"),
 });
@@ -12,7 +13,7 @@ export const BaseParametersSchema = z.object({
 /**
  * Parameters schema for the main Bedrock Chat application
  */
-export const BedrockChatParametersSchema = BaseParametersSchema.extend({
+const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Bedrock configuration
   enableMistral: z.boolean().default(false),
   enableBedrockCrossRegionInference: z.boolean().default(true),
@@ -56,7 +57,7 @@ export const BedrockChatParametersSchema = BaseParametersSchema.extend({
 /**
  * Parameters schema for API publishing
  */
-export const ApiPublishParametersSchema = BaseParametersSchema.extend({
+const ApiPublishParametersSchema = BaseParametersSchema.extend({
   // API publishing configuration
   publishedApiThrottleRateLimit: z.number().optional(),
   publishedApiThrottleBurstLimit: z.number().optional(),
@@ -70,128 +71,153 @@ export const ApiPublishParametersSchema = BaseParametersSchema.extend({
 /**
  * Parameters schema for Bedrock Custom Bot
  */
-export const BedrockCustomBotParametersSchema = BaseParametersSchema;
+const BedrockCustomBotParametersSchema = BaseParametersSchema;
 
 /**
  * Type definitions for each parameter set
  */
 // Input types (for user input, default values are optional)
 export type BaseParametersInput = z.input<typeof BaseParametersSchema>;
-export type BedrockChatParametersInput = z.input<typeof BedrockChatParametersSchema>;
-export type ApiPublishParametersInput = z.input<typeof ApiPublishParametersSchema>;
-export type BedrockCustomBotParametersInput = z.input<typeof BedrockCustomBotParametersSchema>;
+export type BedrockChatParametersInput = z.input<
+  typeof BedrockChatParametersSchema
+>;
+export type ApiPublishParametersInput = z.input<
+  typeof ApiPublishParametersSchema
+>;
+export type BedrockCustomBotParametersInput = z.input<
+  typeof BedrockCustomBotParametersSchema
+>;
 
 // Output types (for function returns, all properties are required)
 export type BaseParameters = z.infer<typeof BaseParametersSchema>;
 export type BedrockChatParameters = z.infer<typeof BedrockChatParametersSchema>;
 export type ApiPublishParameters = z.infer<typeof ApiPublishParametersSchema>;
-export type BedrockCustomBotParameters = z.infer<typeof BedrockCustomBotParametersSchema>;
+export type BedrockCustomBotParameters = z.infer<
+  typeof BedrockCustomBotParametersSchema
+>;
 
 /**
- * Parse and validate CDK context parameters for the main Bedrock Chat application
+ * Parse and validate parameters for the main Bedrock Chat application
  * @param app CDK App instance
- * @param envName Optional environment name to use for parameter lookup
+ * @param parametersInput Optional input parameters that override context values
  * @returns Validated parameters object
  */
-export function getBedrockChatParameters(
-  app: any,
-  envName?: string
+export function resolveBedrockChatParameters(
+  app: App,
+  parametersInput?: BedrockChatParametersInput
 ): BedrockChatParameters {
-  // Use 'default' if envName is undefined
-  const environment = envName || "default";
-
-  // Import bedrockChatParams from parameter.ts
-  const { bedrockChatParams } = require("../../parameter");
-
-  // If environment parameters exist in bedrockChatParams, use them
-  if (bedrockChatParams.has(environment)) {
-    return BedrockChatParametersSchema.parse(bedrockChatParams.get(environment)!);
+  // If parametersInput is provided, use it directly
+  if (parametersInput) {
+    return BedrockChatParametersSchema.parse(parametersInput);
   }
 
-  // If environment is 'default' and not found in bedrockChatParams, use context values
-  if (environment === "default") {
-    const contextParams = {
-      bedrockRegion: app.node.tryGetContext("bedrockRegion"),
-      enableMistral: app.node.tryGetContext("enableMistral"),
-      allowedIpV4AddressRanges: app.node.tryGetContext(
-        "allowedIpV4AddressRanges"
-      ),
-      allowedIpV6AddressRanges: app.node.tryGetContext(
-        "allowedIpV6AddressRanges"
-      ),
-      identityProviders: app.node.tryGetContext("identityProviders"),
-      userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
-      allowedSignUpEmailDomains: app.node.tryGetContext(
-        "allowedSignUpEmailDomains"
-      ),
-      autoJoinUserGroups: app.node.tryGetContext("autoJoinUserGroups"),
-      selfSignUpEnabled: app.node.tryGetContext("selfSignUpEnabled"),
-      publishedApiAllowedIpV4AddressRanges: app.node.tryGetContext(
-        "publishedApiAllowedIpV4AddressRanges"
-      ),
-      publishedApiAllowedIpV6AddressRanges: app.node.tryGetContext(
-        "publishedApiAllowedIpV6AddressRanges"
-      ),
-      enableRagReplicas: app.node.tryGetContext("enableRagReplicas"),
-      enableBedrockCrossRegionInference: app.node.tryGetContext(
-        "enableBedrockCrossRegionInference"
-      ),
-      enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
-      alternateDomainName: app.node.tryGetContext("alternateDomainName"),
-      hostedZoneId: app.node.tryGetContext("hostedZoneId"),
-    };
+  // Otherwise, get parameters from context
+  const identityProviders = app.node.tryGetContext("identityProviders");
 
-    return BedrockChatParametersSchema.parse(contextParams);
-  }
+  const contextParams = {
+    bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+    enableMistral: app.node.tryGetContext("enableMistral"),
+    allowedIpV4AddressRanges: app.node.tryGetContext(
+      "allowedIpV4AddressRanges"
+    ),
+    allowedIpV6AddressRanges: app.node.tryGetContext(
+      "allowedIpV6AddressRanges"
+    ),
+    // 配列でない場合は空配列を使用
+    identityProviders: Array.isArray(identityProviders)
+      ? identityProviders
+      : [],
+    userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
+    allowedSignUpEmailDomains: app.node.tryGetContext(
+      "allowedSignUpEmailDomains"
+    ),
+    autoJoinUserGroups: app.node.tryGetContext("autoJoinUserGroups"),
+    selfSignUpEnabled: app.node.tryGetContext("selfSignUpEnabled"),
+    publishedApiAllowedIpV4AddressRanges: app.node.tryGetContext(
+      "publishedApiAllowedIpV4AddressRanges"
+    ),
+    publishedApiAllowedIpV6AddressRanges: app.node.tryGetContext(
+      "publishedApiAllowedIpV6AddressRanges"
+    ),
+    enableRagReplicas: app.node.tryGetContext("enableRagReplicas"),
+    enableBedrockCrossRegionInference: app.node.tryGetContext(
+      "enableBedrockCrossRegionInference"
+    ),
+    enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
+    alternateDomainName: app.node.tryGetContext("alternateDomainName"),
+    hostedZoneId: app.node.tryGetContext("hostedZoneId"),
+  };
 
-  // If environment is not 'default' and not found in bedrockChatParams, throw an error
-  throw new Error(
-    `Environment '${environment}' not found in bedrockChatParams`
-  );
+  return BedrockChatParametersSchema.parse(contextParams);
 }
 
 /**
- * Parse and validate CDK context parameters for API publishing
+ * Parse and validate parameters for API publishing
  * @param app CDK App instance
+ * @param parametersInput Optional input parameters that override context values
  * @returns Validated parameters object
  */
-export function getApiPublishParameters(app: any): ApiPublishParameters {
+export function resolveApiPublishParameters(
+  app: App,
+  parametersInput?: ApiPublishParametersInput
+): ApiPublishParameters {
+  // If parametersInput is provided, use it directly
+  if (parametersInput) {
+    return ApiPublishParametersSchema.parse(parametersInput);
+  }
+
+  // Otherwise, get parameters from context
+  const publishedApiThrottleRateLimit = app.node.tryGetContext(
+    "publishedApiThrottleRateLimit"
+  );
+  const publishedApiThrottleBurstLimit = app.node.tryGetContext(
+    "publishedApiThrottleBurstLimit"
+  );
+  const publishedApiQuotaLimit = app.node.tryGetContext(
+    "publishedApiQuotaLimit"
+  );
+  const publishedApiAllowedOrigins = app.node.tryGetContext(
+    "publishedApiAllowedOrigins"
+  );
+
   const contextParams = {
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
-    publishedApiThrottleRateLimit: app.node.tryGetContext(
-      "publishedApiThrottleRateLimit"
-    )
-      ? Number(app.node.tryGetContext("publishedApiThrottleRateLimit"))
+    publishedApiThrottleRateLimit: publishedApiThrottleRateLimit
+      ? Number(publishedApiThrottleRateLimit)
       : undefined,
-    publishedApiThrottleBurstLimit: app.node.tryGetContext(
-      "publishedApiThrottleBurstLimit"
-    )
-      ? Number(app.node.tryGetContext("publishedApiThrottleBurstLimit"))
+    publishedApiThrottleBurstLimit: publishedApiThrottleBurstLimit
+      ? Number(publishedApiThrottleBurstLimit)
       : undefined,
-    publishedApiQuotaLimit: app.node.tryGetContext("publishedApiQuotaLimit")
-      ? Number(app.node.tryGetContext("publishedApiQuotaLimit"))
+    publishedApiQuotaLimit: publishedApiQuotaLimit
+      ? Number(publishedApiQuotaLimit)
       : undefined,
     publishedApiQuotaPeriod: app.node.tryGetContext("publishedApiQuotaPeriod"),
     publishedApiDeploymentStage: app.node.tryGetContext(
       "publishedApiDeploymentStage"
     ),
     publishedApiId: app.node.tryGetContext("publishedApiId"),
-    publishedApiAllowedOrigins: app.node.tryGetContext(
-      "publishedApiAllowedOrigins"
-    ),
+    publishedApiAllowedOrigins: publishedApiAllowedOrigins || '["*"]',
   };
 
   return ApiPublishParametersSchema.parse(contextParams);
 }
 
 /**
- * Parse and validate CDK context parameters for Bedrock Custom Bot
+ * Parse and validate parameters for Bedrock Custom Bot
  * @param app CDK App instance
+ * @param parametersInput Optional input parameters that override context values
  * @returns Validated parameters object
  */
-export function getBedrockCustomBotParameters(
-  app: any
+export function resolveBedrockCustomBotParameters(
+  app: App,
+  parametersInput?: BedrockCustomBotParametersInput
 ): BedrockCustomBotParameters {
+  // If parametersInput is provided, use it directly
+  if (parametersInput) {
+    return BedrockCustomBotParametersSchema.parse(parametersInput);
+  }
+
+  // Otherwise, get parameters from context
   const contextParams = {
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
   };
