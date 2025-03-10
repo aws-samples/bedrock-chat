@@ -1,74 +1,77 @@
 import { App } from "aws-cdk-lib";
-import { 
+import {
   resolveBedrockChatParameters,
   resolveApiPublishParameters,
-  resolveBedrockCustomBotParameters
+  resolveBedrockCustomBotParameters,
+  BedrockChatParametersInput,
+  getBedrockChatParameters,
 } from "../../lib/utils/parameter-models";
 import { ZodError } from "zod";
 
+/**
+ * テストヘルパー関数: App インスタンスを作成
+ */
+function createTestApp(context = {}) {
+  return new App({
+    autoSynth: false,
+    context,
+  });
+}
+
 describe("resolveBedrockChatParameters", () => {
-  describe("パラメータソースの選択", () => {
-    test("parametersInputが指定されている場合、それが使用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Parameter Source Selection", () => {
+    test("should use parametersInput when provided", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         bedrockRegion: "eu-west-1",
         enableMistral: true,
       };
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("eu-west-1");
       expect(result.enableMistral).toBe(true);
     });
 
-    test("parametersInputが未指定の場合、コンテキストからパラメータが取得される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-        context: {
-          bedrockRegion: "ap-northeast-1",
-          enableMistral: true,
-        },
+    test("should get parameters from context when parametersInput is not provided", () => {
+      // Given
+      const app = createTestApp({
+        bedrockRegion: "ap-northeast-1",
+        enableMistral: true,
       });
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("ap-northeast-1");
       expect(result.enableMistral).toBe(true);
     });
   });
 
-  describe("パラメータのバリデーション", () => {
-    test("必須パラメータが欠けている場合でも、デフォルト値が適用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Parameter Validation", () => {
+    test("should apply default values when required parameters are missing", () => {
+      // Given
+      const app = createTestApp();
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app);
 
-      // Assert
-      expect(result.bedrockRegion).toBe("us-east-1"); // デフォルト値
-      expect(result.enableMistral).toBe(false); // デフォルト値
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-1"); // default value
+      expect(result.enableMistral).toBe(false); // default value
       expect(result.allowedIpV4AddressRanges).toEqual([
         "0.0.0.0/1",
         "128.0.0.0/1",
-      ]); // デフォルト値
+      ]); // default value
     });
 
-    test("すべてのパラメータが指定されている場合、正しく解析される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should correctly parse all parameters when specified", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         bedrockRegion: "us-west-2",
         enableMistral: true,
@@ -88,10 +91,10 @@ describe("resolveBedrockChatParameters", () => {
         hostedZoneId: "Z1234567890",
       };
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("us-west-2");
       expect(result.enableMistral).toBe(true);
       expect(result.allowedIpV4AddressRanges).toEqual(["192.168.0.0/16"]);
@@ -116,37 +119,33 @@ describe("resolveBedrockChatParameters", () => {
       expect(result.hostedZoneId).toBe("Z1234567890");
     });
 
-    test("無効なパラメータが指定された場合、ZodErrorがスローされる", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should throw ZodError when invalid parameter is specified", () => {
+      // Given
+      const app = createTestApp();
       const invalidParams = {
-        bedrockRegion: 123, // 文字列ではなく数値
+        bedrockRegion: 123, // number instead of string
       };
 
-      // Act & Assert
+      // When/Then
       expect(() => {
         resolveBedrockChatParameters(app, invalidParams as any);
       }).toThrow(ZodError);
     });
   });
 
-  describe("特殊なパラメータ処理", () => {
-    test("配列パラメータが正しく処理される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Special Parameter Handling", () => {
+    test("should correctly process array parameters", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         allowedIpV4AddressRanges: ["192.168.1.0/24", "10.0.0.0/8"],
         allowedSignUpEmailDomains: ["example.com", "test.com"],
       };
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.allowedIpV4AddressRanges).toEqual([
         "192.168.1.0/24",
         "10.0.0.0/8",
@@ -157,11 +156,9 @@ describe("resolveBedrockChatParameters", () => {
       ]);
     });
 
-    test("ブール値パラメータが正しく処理される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should correctly process boolean parameters", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         enableMistral: true,
         selfSignUpEnabled: false,
@@ -170,10 +167,10 @@ describe("resolveBedrockChatParameters", () => {
         enableLambdaSnapStart: true,
       };
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.enableMistral).toBe(true);
       expect(result.selfSignUpEnabled).toBe(false);
       expect(result.enableRagReplicas).toBe(true);
@@ -181,76 +178,68 @@ describe("resolveBedrockChatParameters", () => {
       expect(result.enableLambdaSnapStart).toBe(true);
     });
 
-    test("identityProvidersが配列でない場合、デフォルト値（空配列）が適用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-        context: {
-          identityProviders: "invalid", // 配列ではなく文字列
-        },
+    test("should apply default value (empty array) when identityProviders is not an array", () => {
+      // Given
+      const app = createTestApp({
+        identityProviders: "invalid", // string instead of array
       });
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app);
 
-      // Assert
+      // Then
       expect(result.identityProviders).toEqual([]);
     });
 
-    test("identityProvidersが無効なサービスを含む場合でも、バリデーションはパスする", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should pass validation even when identityProviders contains invalid service", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         identityProviders: [{ service: "invalid", secretName: "Secret" }],
       };
 
-      // Act
+      // When
       const result = resolveBedrockChatParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.identityProviders).toEqual([
         { service: "invalid", secretName: "Secret" },
       ]);
-      // 注: 実際のバリデーションはidentityProvider関数内で行われる
+      // Note: Actual validation is performed in identityProvider function
     });
   });
 
-  test("cdk.jsonのcontextプロパティの値を模倣したテスト", () => {
-    // Arrange
-    const app = new App({
-      autoSynth: false,
-      context: {
-        enableMistral: false,
-        bedrockRegion: "us-east-1",
-        allowedIpV4AddressRanges: ["0.0.0.0/1", "128.0.0.0/1"],
-        allowedIpV6AddressRanges: [
-          "0000:0000:0000:0000:0000:0000:0000:0000/1",
-          "8000:0000:0000:0000:0000:0000:0000:0000/1",
-        ],
-        identityProviders: [],
-        userPoolDomainPrefix: "",
-        allowedSignUpEmailDomains: [],
-        autoJoinUserGroups: ["CreatingBotAllowed"],
-        selfSignUpEnabled: true,
-        publishedApiAllowedIpV4AddressRanges: ["0.0.0.0/1", "128.0.0.0/1"],
-        publishedApiAllowedIpV6AddressRanges: [
-          "0000:0000:0000:0000:0000:0000:0000:0000/1",
-          "8000:0000:0000:0000:0000:0000:0000:0000/1",
-        ],
-        enableRagReplicas: true,
-        enableBedrockCrossRegionInference: true,
-        enableLambdaSnapStart: true,
-        alternateDomainName: "",
-        hostedZoneId: "",
-      },
+  test("should correctly parse parameters mimicking cdk.json context properties", () => {
+    // Given
+    const app = createTestApp({
+      enableMistral: false,
+      bedrockRegion: "us-east-1",
+      allowedIpV4AddressRanges: ["0.0.0.0/1", "128.0.0.0/1"],
+      allowedIpV6AddressRanges: [
+        "0000:0000:0000:0000:0000:0000:0000:0000/1",
+        "8000:0000:0000:0000:0000:0000:0000:0000/1",
+      ],
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: ["CreatingBotAllowed"],
+      selfSignUpEnabled: true,
+      publishedApiAllowedIpV4AddressRanges: ["0.0.0.0/1", "128.0.0.0/1"],
+      publishedApiAllowedIpV6AddressRanges: [
+        "0000:0000:0000:0000:0000:0000:0000:0000/1",
+        "8000:0000:0000:0000:0000:0000:0000:0000/1",
+      ],
+      enableRagReplicas: true,
+      enableBedrockCrossRegionInference: true,
+      enableLambdaSnapStart: true,
+      alternateDomainName: "",
+      hostedZoneId: "",
     });
 
-    // Act
+    // When
     const result = resolveBedrockChatParameters(app);
 
-    // Assert
+    // Then
     expect(result.bedrockRegion).toBe("us-east-1");
     expect(result.enableMistral).toBe(false);
     expect(result.allowedIpV4AddressRanges).toEqual([
@@ -282,90 +271,234 @@ describe("resolveBedrockChatParameters", () => {
   });
 });
 
-describe("resolveApiPublishParameters", () => {
-  describe("パラメータソースの選択", () => {
-    test("parametersInputが指定されている場合、それが使用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
+describe("getBedrockChatParameters", () => {
+  let app: App;
+  let paramsMap: Map<string, BedrockChatParametersInput>;
+
+  beforeEach(() => {
+    app = createTestApp();
+    paramsMap = new Map<string, BedrockChatParametersInput>();
+  });
+
+  describe("Environment Name Handling", () => {
+    test("should use params from paramsMap when default exists and envName is undefined", () => {
+      // Given
+      const defaultParams: BedrockChatParametersInput = {
+        bedrockRegion: "us-west-2",
+        enableMistral: true,
+      };
+      paramsMap.set("default", defaultParams);
+
+      // When
+      const result = getBedrockChatParameters(app, undefined, paramsMap);
+
+      // Then
+      expect(result.envName).toBe("default");
+      expect(result.envPrefix).toBe("");
+      expect(result.bedrockRegion).toBe("us-west-2");
+      expect(result.enableMistral).toBe(true);
+    });
+
+    test("should use CDK context when default doesn't exist in paramsMap and envName is undefined", () => {
+      // Given
+      app = createTestApp({
+        bedrockRegion: "eu-west-1",
+        enableMistral: true,
       });
+
+      // When
+      const result = getBedrockChatParameters(app, undefined, paramsMap);
+
+      // Then
+      expect(result.envName).toBe("default");
+      expect(result.envPrefix).toBe("");
+      expect(result.bedrockRegion).toBe("eu-west-1");
+      expect(result.enableMistral).toBe(true);
+    });
+
+    test("should throw error when envName doesn't exist in paramsMap", () => {
+      // Given
+      const nonExistentEnvName = "nonexistent";
+
+      // When/Then
+      expect(() => {
+        getBedrockChatParameters(app, nonExistentEnvName, paramsMap);
+      }).toThrow(`Environment ${nonExistentEnvName} not found in parameter.ts`);
+    });
+
+    test("should use params with empty envPrefix when envName is default", () => {
+      // Given
+      const defaultParams: BedrockChatParametersInput = {
+        bedrockRegion: "ap-northeast-1",
+      };
+      paramsMap.set("default", defaultParams);
+
+      // When
+      const result = getBedrockChatParameters(app, "default", paramsMap);
+
+      // Then
+      expect(result.envName).toBe("default");
+      expect(result.envPrefix).toBe("");
+      expect(result.bedrockRegion).toBe("ap-northeast-1");
+    });
+
+    test("should use params with envName as envPrefix for non-default env", () => {
+      // Given
+      const devParams: BedrockChatParametersInput = {
+        bedrockRegion: "ap-southeast-1",
+      };
+      paramsMap.set("dev", devParams);
+
+      // When
+      const result = getBedrockChatParameters(app, "dev", paramsMap);
+
+      // Then
+      expect(result.envName).toBe("dev");
+      expect(result.envPrefix).toBe("dev");
+      expect(result.bedrockRegion).toBe("ap-southeast-1");
+    });
+  });
+
+  describe("Parameter Validation", () => {
+    test("should apply default values for optional parameters", () => {
+      // Given
+      const minimalParams: BedrockChatParametersInput = {
+        bedrockRegion: "us-east-1",
+      };
+      paramsMap.set("minimal", minimalParams);
+
+      // When
+      const result = getBedrockChatParameters(app, "minimal", paramsMap);
+
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-1");
+      expect(result.enableMistral).toBe(false);
+      expect(result.enableBedrockCrossRegionInference).toBe(true);
+      expect(result.enableRagReplicas).toBe(true);
+      expect(result.enableLambdaSnapStart).toBe(true);
+      expect(result.selfSignUpEnabled).toBe(true);
+      expect(result.autoJoinUserGroups).toEqual(["CreatingBotAllowed"]);
+      expect(result.allowedSignUpEmailDomains).toEqual([]);
+      expect(result.identityProviders).toEqual([]);
+    });
+
+    test("should override default values with provided values", () => {
+      // Given
+      const customParams: BedrockChatParametersInput = {
+        bedrockRegion: "us-east-2",
+        enableMistral: true,
+        enableBedrockCrossRegionInference: false,
+        enableRagReplicas: false,
+        enableLambdaSnapStart: false,
+        selfSignUpEnabled: false,
+        autoJoinUserGroups: ["CustomGroup"],
+        allowedSignUpEmailDomains: ["example.com"],
+      };
+      paramsMap.set("custom", customParams);
+
+      // When
+      const result = getBedrockChatParameters(app, "custom", paramsMap);
+
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-2");
+      expect(result.enableMistral).toBe(true);
+      expect(result.enableBedrockCrossRegionInference).toBe(false);
+      expect(result.enableRagReplicas).toBe(false);
+      expect(result.enableLambdaSnapStart).toBe(false);
+      expect(result.selfSignUpEnabled).toBe(false);
+      expect(result.autoJoinUserGroups).toEqual(["CustomGroup"]);
+      expect(result.allowedSignUpEmailDomains).toEqual(["example.com"]);
+    });
+
+    test("should use default values when CDK context is empty", () => {
+      // Given
+      const emptyParamsMap = new Map();
+      
+      // When
+      const result = getBedrockChatParameters(app, undefined, emptyParamsMap);
+      
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-1");
+      expect(result.enableMistral).toBe(false);
+      expect(result.enableBedrockCrossRegionInference).toBe(true);
+      expect(result.enableRagReplicas).toBe(true);
+      expect(result.enableLambdaSnapStart).toBe(true);
+    });
+  });
+});
+
+describe("resolveApiPublishParameters", () => {
+  describe("Parameter Source Selection", () => {
+    test("should use parametersInput when provided", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         bedrockRegion: "eu-west-1",
         publishedApiThrottleRateLimit: 100,
         publishedApiAllowedOrigins: '["https://example.com"]',
       };
 
-      // Act
+      // When
       const result = resolveApiPublishParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("eu-west-1");
       expect(result.publishedApiThrottleRateLimit).toBe(100);
       expect(result.publishedApiAllowedOrigins).toBe('["https://example.com"]');
     });
 
-    test("parametersInputが未指定の場合、コンテキストからパラメータが取得される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-        context: {
-          bedrockRegion: "ap-northeast-1",
-          publishedApiThrottleRateLimit: 200,
-          publishedApiAllowedOrigins: '["https://test.com"]',
-        },
+    test("should get parameters from context when parametersInput is not provided", () => {
+      // Given
+      const app = createTestApp({
+        bedrockRegion: "ap-northeast-1",
+        publishedApiThrottleRateLimit: 200,
+        publishedApiAllowedOrigins: '["https://test.com"]',
       });
 
-      // Act
+      // When
       const result = resolveApiPublishParameters(app);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("ap-northeast-1");
       expect(result.publishedApiThrottleRateLimit).toBe(200);
       expect(result.publishedApiAllowedOrigins).toBe('["https://test.com"]');
     });
   });
 
-  describe("パラメータのバリデーション", () => {
-    test("必須パラメータが欠けている場合でも、デフォルト値が適用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Parameter Validation", () => {
+    test("should apply default values when required parameters are missing", () => {
+      // Given
+      const app = createTestApp();
 
-      // Act
+      // When
       const result = resolveApiPublishParameters(app);
 
-      // Assert
-      expect(result.bedrockRegion).toBe("us-east-1"); // デフォルト値
-      expect(result.publishedApiAllowedOrigins).toBe('["*"]'); // デフォルト値
-      expect(result.publishedApiThrottleRateLimit).toBeUndefined(); // オプショナル
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-1"); // default value
+      expect(result.publishedApiAllowedOrigins).toBe('["*"]'); // default value
+      expect(result.publishedApiThrottleRateLimit).toBeUndefined(); // optional
     });
 
-    test("数値パラメータが文字列として提供された場合、数値に変換される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-        context: {
-          publishedApiThrottleRateLimit: "100",
-          publishedApiThrottleBurstLimit: "200",
-          publishedApiQuotaLimit: "1000",
-        },
+    test("should convert string numeric parameters to numbers", () => {
+      // Given
+      const app = createTestApp({
+        publishedApiThrottleRateLimit: "100",
+        publishedApiThrottleBurstLimit: "200",
+        publishedApiQuotaLimit: "1000",
       });
 
-      // Act
+      // When
       const result = resolveApiPublishParameters(app);
 
-      // Assert
+      // Then
       expect(result.publishedApiThrottleRateLimit).toBe(100);
       expect(result.publishedApiThrottleBurstLimit).toBe(200);
       expect(result.publishedApiQuotaLimit).toBe(1000);
     });
 
-    test("すべてのパラメータが指定されている場合、正しく解析される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should correctly parse all parameters when specified", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         bedrockRegion: "us-west-2",
         publishedApiThrottleRateLimit: 100,
@@ -374,13 +507,14 @@ describe("resolveApiPublishParameters", () => {
         publishedApiQuotaPeriod: "DAY" as "DAY" | "WEEK" | "MONTH",
         publishedApiDeploymentStage: "prod",
         publishedApiId: "api123",
-        publishedApiAllowedOrigins: '["https://example.com", "https://test.com"]',
+        publishedApiAllowedOrigins:
+          '["https://example.com", "https://test.com"]',
       };
 
-      // Act
+      // When
       const result = resolveApiPublishParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("us-west-2");
       expect(result.publishedApiThrottleRateLimit).toBe(100);
       expect(result.publishedApiThrottleBurstLimit).toBe(200);
@@ -388,85 +522,91 @@ describe("resolveApiPublishParameters", () => {
       expect(result.publishedApiQuotaPeriod).toBe("DAY");
       expect(result.publishedApiDeploymentStage).toBe("prod");
       expect(result.publishedApiId).toBe("api123");
-      expect(result.publishedApiAllowedOrigins).toBe('["https://example.com", "https://test.com"]');
+      expect(result.publishedApiAllowedOrigins).toBe(
+        '["https://example.com", "https://test.com"]'
+      );
     });
 
-    test("無効なQuotaPeriodが指定された場合、ZodErrorがスローされる", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should throw ZodError when invalid QuotaPeriod is specified", () => {
+      // Given
+      const app = createTestApp();
       const invalidParams = {
-        publishedApiQuotaPeriod: "YEAR" as any, // 無効な値
+        publishedApiQuotaPeriod: "YEAR" as any, // invalid value
       };
 
-      // Act & Assert
+      // When/Then
       expect(() => {
         resolveApiPublishParameters(app, invalidParams as any);
       }).toThrow(ZodError);
+    });
+
+    test("should handle invalid publishedApiAllowedOrigins format", () => {
+      // Given
+      const app = createTestApp();
+      const invalidParams = {
+        publishedApiAllowedOrigins: 'invalid json format',
+      };
+      
+      // When
+      const result = resolveApiPublishParameters(app, invalidParams);
+      
+      // Then
+      // Note: The function doesn't validate JSON format, it just passes the string through
+      expect(result.publishedApiAllowedOrigins).toBe('invalid json format');
     });
   });
 });
 
 describe("resolveBedrockCustomBotParameters", () => {
-  describe("パラメータソースの選択", () => {
-    test("parametersInputが指定されている場合、それが使用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Parameter Source Selection", () => {
+    test("should use parametersInput when provided", () => {
+      // Given
+      const app = createTestApp();
       const inputParams = {
         bedrockRegion: "eu-west-1",
       };
 
-      // Act
+      // When
       const result = resolveBedrockCustomBotParameters(app, inputParams);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("eu-west-1");
     });
 
-    test("parametersInputが未指定の場合、コンテキストからパラメータが取得される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-        context: {
-          bedrockRegion: "ap-northeast-1",
-        },
+    test("should get parameters from context when parametersInput is not provided", () => {
+      // Given
+      const app = createTestApp({
+        bedrockRegion: "ap-northeast-1",
       });
 
-      // Act
+      // When
       const result = resolveBedrockCustomBotParameters(app);
 
-      // Assert
+      // Then
       expect(result.bedrockRegion).toBe("ap-northeast-1");
     });
   });
 
-  describe("パラメータのバリデーション", () => {
-    test("必須パラメータが欠けている場合でも、デフォルト値が適用される", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+  describe("Parameter Validation", () => {
+    test("should apply default values when required parameters are missing", () => {
+      // Given
+      const app = createTestApp();
 
-      // Act
+      // When
       const result = resolveBedrockCustomBotParameters(app);
 
-      // Assert
-      expect(result.bedrockRegion).toBe("us-east-1"); // デフォルト値
+      // Then
+      expect(result.bedrockRegion).toBe("us-east-1"); // default value
     });
 
-    test("無効なパラメータが指定された場合、ZodErrorがスローされる", () => {
-      // Arrange
-      const app = new App({
-        autoSynth: false,
-      });
+    test("should throw ZodError when invalid parameter is specified", () => {
+      // Given
+      const app = createTestApp();
       const invalidParams = {
-        bedrockRegion: 123, // 文字列ではなく数値
+        bedrockRegion: 123, // number instead of string
       };
 
-      // Act & Assert
+      // When/Then
       expect(() => {
         resolveBedrockCustomBotParameters(app, invalidParams as any);
       }).toThrow(ZodError);

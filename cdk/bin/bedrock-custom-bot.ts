@@ -10,12 +10,12 @@ import {
   getCrawlingFilters,
 } from "../lib/utils/bedrock-knowledge-base-args";
 import { CrawlingFilters } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
-import { getBedrockCustomBotParameters } from "../lib/utils/parameter-models";
+import { resolveBedrockCustomBotParameters } from "../lib/utils/parameter-models";
 
 const app = new cdk.App();
 
 // Get parameters specific to Bedrock Custom Bot
-const params = getBedrockCustomBotParameters(app);
+const params = resolveBedrockCustomBotParameters(app);
 
 const PK: string = process.env.PK!;
 const SK: string = process.env.SK!;

@@ -3,12 +3,12 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ApiPublishmentStack } from "../lib/api-publishment-stack";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import { getApiPublishParameters } from "../lib/utils/parameter-models";
+import { resolveApiPublishParameters } from "../lib/utils/parameter-models";
 
 const app = new cdk.App();
 
 // Get parameters specific to API publishing
-const params = getApiPublishParameters(app);
+const params = resolveApiPublishParameters(app);
 
 // Parse allowed origins
 const publishedApiAllowedOrigins = JSON.parse(

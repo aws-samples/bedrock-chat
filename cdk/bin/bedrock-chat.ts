@@ -6,11 +6,24 @@ import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { LogRetentionChecker } from "../rules/log-retention-checker";
 import { getBedrockChatParameters } from "../lib/utils/parameter-models";
+import { bedrockChatParams } from "../parameter";
 
 const app = new cdk.App();
 
-// Get parameters specific to the Bedrock Chat application
-const params = getBedrockChatParameters(app);
+// Specify env name by "envName" context variable
+// ex) cdk synth -c envName=foo
+// If you don't specify the envName context variable, "default" is used.
+const params = getBedrockChatParameters(
+  app,
+  app.node.tryGetContext("envName"),
+  bedrockChatParams
+);
+
+// // Another way, you can iterate over params map to declare multiple environments in single App.
+// for (const [k] of bedrockChatParams) {
+//   const params = getBedrockChatParameters(app, k, bedrockChatParams);
+//   // Include stack declaration this scope...
+// }
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated

@@ -14,6 +14,10 @@ const BaseParametersSchema = z.object({
  * Parameters schema for the main Bedrock Chat application
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
+  // CDK Environments
+  envName: z.string().default("default"),
+  envPrefix: z.string().default(""),
+
   // Bedrock configuration
   enableMistral: z.boolean().default(false),
   enableBedrockCrossRegionInference: z.boolean().default(true),
@@ -97,9 +101,10 @@ export type BedrockCustomBotParameters = z.infer<
 >;
 
 /**
- * Parse and validate parameters for the main Bedrock Chat application
+ * Parse and validate parameters for the main Bedrock Chat application.
+ * If you omit parametersInput, context parameters are used.
  * @param app CDK App instance
- * @param parametersInput Optional input parameters that override context values
+ * @param parametersInput (optional) Input parameters that should be used instead of context parameters
  * @returns Validated parameters object
  */
 export function resolveBedrockChatParameters(
@@ -115,6 +120,8 @@ export function resolveBedrockChatParameters(
   const identityProviders = app.node.tryGetContext("identityProviders");
 
   const contextParams = {
+    envName: "default",
+    envPrefix: "",
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
     enableMistral: app.node.tryGetContext("enableMistral"),
     allowedIpV4AddressRanges: app.node.tryGetContext(
@@ -149,6 +156,50 @@ export function resolveBedrockChatParameters(
   };
 
   return BedrockChatParametersSchema.parse(contextParams);
+}
+
+/**
+ * Get Bedrock Chat parameters based on environment name.
+ * If you omit envName, "default" is used.
+ * If you omit parametersInput, context parameters are used.
+ * @param app CDK App instance
+ * @param envName (optional) Environment name. Used as map key if provided
+ * @param paramsMap (optional) Map of parameters. If not provided, use context parameters
+ * @returns Validated parameters object
+ */
+export function getBedrockChatParameters(
+  app: App,
+  envName: string | undefined,
+  paramsMap: Map<string, BedrockChatParametersInput>
+): BedrockChatParameters {
+  if (envName == undefined) {
+    if (paramsMap.has("default")) {
+      // Use parameter.ts instead of context parameters
+      const params = paramsMap.get("default") || {};
+      return resolveBedrockChatParameters(app, {
+        envName: "default",
+        envPrefix: "",
+        ...params,
+      });
+    } else {
+      // Use CDK context parameters (cdk.json or -c options)
+      return resolveBedrockChatParameters(app);
+    }
+  } else {
+    // Lookup envName in parameter.ts
+    if (!paramsMap.has(envName)) {
+      throw new Error(`Environment ${envName} not found in parameter.ts`);
+    }
+
+    const params = paramsMap.get(envName) || {};
+    const envPrefix = envName === "default" ? "" : envName;
+
+    return resolveBedrockChatParameters(app, {
+      envName,
+      envPrefix,
+      ...params,
+    });
+  }
 }
 
 /**
