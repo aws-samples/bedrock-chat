@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import { LTI_DEPLOYMENT_ID_MAP, ValidLTIDeploymentId } from '../constants';
@@ -10,7 +10,7 @@ import {
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import { BotMeta, CreatorConfig } from '../@types/bot';
+import { BotListItem, BotMeta, CreatorConfig } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import useChat from '../hooks/useChat';
 import useUser from '../hooks/useUser';
@@ -26,6 +26,7 @@ const BotExplorePage: React.FC = () => {
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
   const { myGroups } = useGroup();
+  const [assistantList, setAssistantList] = useState<BotListItem[]>([]);
 
 
   const { newChat } = useChat();
@@ -34,6 +35,13 @@ const BotExplorePage: React.FC = () => {
     deleteMyBot,
     updateBotSharing,
   } = useBot(true);
+
+  useEffect(() => {
+    if (!myBots) return;
+    
+    const sortedData = [...myBots].sort((a, b) => Number(b.createTime) - Number(a.createTime));
+    setAssistantList(sortedData);
+  }, [myBots])
 
   const onClickNewBot = useCallback((assistantType: string) => {
     navigate('/bot/new', { state: { assistantType: assistantType } });
@@ -102,8 +110,17 @@ const BotExplorePage: React.FC = () => {
       return "";
     }
     return creatorConfig.userName;
-    
   };
+
+  const getCreatedTimeFormatted = (createdTime: Date) => {
+    const dateStr =  new Date(createdTime).toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+    return dateStr.replace(/\//g, "-");
+  }
 
   return (
     <>
@@ -153,12 +170,13 @@ const BotExplorePage: React.FC = () => {
                     <th className="assistant-list-th-header">Course</th>
                     <th className="assistant-list-th-header">District</th>
                     <th className="assistant-list-th-header">Created By</th>
+                    <th className="assistant-list-th-header">Created Date</th>
                     <th className="assistant-list-th-header">Sync Status</th>
                     <th className="assistant-list-th-header">Public</th>
                   </tr>
                 </thead>
                 <tbody id="bot-list">
-                {myBots?.map((bot) => (
+                {assistantList?.map((bot) => (
                   <tr key={bot.id} className="assistant-list-item-container">
                     <td className={"assistant-list-tr-td-logo-name"} onClick={() => onClickBot(bot.id)}>
                       {/* Logo and Assistant Name in one column */}
@@ -186,6 +204,7 @@ const BotExplorePage: React.FC = () => {
                     <td>{getCourseName(bot.groupId)}</td>
                     <td>{getCanvasInstanceName(bot.groupId)}</td>
                     <td>{(bot.creatorConfig) ? getCreatorName(bot.creatorConfig) : ""}</td>
+                    <td>{getCreatedTimeFormatted(bot.createTime)}</td>
                     <td>
                       <StatusSyncBot
                         className="mr-5 assistant-list-tr-td-sync-icon"
