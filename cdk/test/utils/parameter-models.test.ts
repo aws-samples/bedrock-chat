@@ -564,6 +564,13 @@ describe("resolveBedrockCustomBotParameters", () => {
       const app = createTestApp();
       const inputParams = {
         bedrockRegion: "eu-west-1",
+        pk: "test-pk",
+        sk: "test-sk",
+        documentBucketName: "test-bucket",
+        knowledge: '{"test": "knowledge"}',
+        knowledgeBase: '{"test": "kb"}',
+        guardrails: '{"test": "guardrails"}',
+        useStandByReplicas: true
       };
 
       // When
@@ -571,32 +578,67 @@ describe("resolveBedrockCustomBotParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("eu-west-1");
+      expect(result.pk).toBe("test-pk");
+      expect(result.sk).toBe("test-sk");
+      expect(result.documentBucketName).toBe("test-bucket");
+      expect(result.knowledge).toBe('{"test": "knowledge"}');
+      expect(result.knowledgeBase).toBe('{"test": "kb"}');
+      expect(result.guardrails).toBe('{"test": "guardrails"}');
+      expect(result.useStandByReplicas).toBe(true);
     });
 
-    test("should get parameters from context when parametersInput is not provided", () => {
+    test("should get parameters from context and environment variables when parametersInput is not provided", () => {
       // Given
       const app = createTestApp({
         bedrockRegion: "ap-northeast-1",
       });
+      
+      // Mock environment variables
+      const originalEnv = process.env;
+      process.env = {
+        ...originalEnv,
+        ENV_NAME: "test-env",
+        ENV_PREFIX: "test-prefix",
+        PK: "env-pk",
+        SK: "env-sk",
+        BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: "env-bucket",
+        KNOWLEDGE: '{"env": "knowledge"}',
+        BEDROCK_KNOWLEDGE_BASE: '{"env": "kb"}',
+        BEDROCK_GUARDRAILS: '{"env": "guardrails"}',
+        USE_STAND_BY_REPLICAS: "true"
+      };
 
-      // When
-      const result = resolveBedrockCustomBotParameters(app);
+      try {
+        // When
+        const result = resolveBedrockCustomBotParameters(app);
 
-      // Then
-      expect(result.bedrockRegion).toBe("ap-northeast-1");
+        // Then
+        expect(result.bedrockRegion).toBe("ap-northeast-1");
+        expect(result.envName).toBe("test-env");
+        expect(result.envPrefix).toBe("test-prefix");
+        expect(result.pk).toBe("env-pk");
+        expect(result.sk).toBe("env-sk");
+        expect(result.documentBucketName).toBe("env-bucket");
+        expect(result.knowledge).toBe('{"env": "knowledge"}');
+        expect(result.knowledgeBase).toBe('{"env": "kb"}');
+        expect(result.guardrails).toBe('{"env": "guardrails"}');
+        expect(result.useStandByReplicas).toBe(true);
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
     });
   });
 
   describe("Parameter Validation", () => {
-    test("should apply default values when required parameters are missing", () => {
+    test("should throw ZodError when required parameters are missing", () => {
       // Given
       const app = createTestApp();
-
-      // When
-      const result = resolveBedrockCustomBotParameters(app);
-
-      // Then
-      expect(result.bedrockRegion).toBe("us-east-1"); // default value
+      
+      // When/Then
+      expect(() => {
+        resolveBedrockCustomBotParameters(app);
+      }).toThrow();
     });
 
     test("should throw ZodError when invalid parameter is specified", () => {
@@ -604,6 +646,12 @@ describe("resolveBedrockCustomBotParameters", () => {
       const app = createTestApp();
       const invalidParams = {
         bedrockRegion: 123, // number instead of string
+        pk: "test-pk",
+        sk: "test-sk",
+        documentBucketName: "test-bucket",
+        knowledge: '{"test": "knowledge"}',
+        knowledgeBase: '{"test": "kb"}',
+        guardrails: '{"test": "guardrails"}'
       };
 
       // When/Then

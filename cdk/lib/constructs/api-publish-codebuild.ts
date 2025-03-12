@@ -7,6 +7,8 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NagSuppressions } from "cdk-nag";
 
 export interface ApiPublishCodebuildProps {
+  readonly envName?: string;
+  readonly envPrefix?: string;
   readonly sourceBucket: s3.Bucket;
 }
 
@@ -29,6 +31,8 @@ export class ApiPublishCodebuild extends Construct {
         privileged: true,
       },
       environmentVariables: {
+        ENV_NAME: { value: props.envName },
+        ENV_PREFIX: { value: props.envPrefix },
         // Need to be overridden when invoke the project
         // PUBLISHED_API_THROTTLE_RATE_LIMIT: { value: undefined },
         // PUBLISHED_API_THROTTLE_BURST_LIMIT: { value: undefined },

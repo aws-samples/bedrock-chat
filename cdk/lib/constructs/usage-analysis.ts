@@ -14,6 +14,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 
 export interface UsageAnalysisProps {
+  envPrefix?: string;
   sourceDatabase: Database;
   accessLogBucket?: s3.Bucket;
 }
@@ -31,7 +32,9 @@ export class UsageAnalysis extends Construct {
     const GLUE_DATABASE_NAME = `${Stack.of(
       this
     ).stackName.toLowerCase()}_usage_analysis`;
-    const DDB_EXPORT_TABLE_NAME = "ddb_export";
+
+    const sepUnderscore = props.envPrefix ? "_" : "";
+    const DDB_EXPORT_TABLE_NAME = `${props.envPrefix}${sepUnderscore}ddb_export`;
 
     // Bucket to export DynamoDB data
     const ddbBucket = new s3.Bucket(this, "DdbBucket", {

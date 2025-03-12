@@ -25,6 +25,8 @@ import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
 
 export interface BedrockChatStackProps extends StackProps {
+  readonly envName: string;
+  readonly envPrefix?: string;
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly identityProviders: TIdentityProvider[];
@@ -51,6 +53,7 @@ export class BedrockChatStack extends cdk.Stack {
       ...props,
     });
 
+    const sepHyphen = props.envPrefix ? "-" : "";
     const idp = identityProvider(props.identityProviders);
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
@@ -242,19 +245,19 @@ export class BedrockChatStack extends cdk.Stack {
     // Outputs for API publication
     new CfnOutput(this, "PublishedApiWebAclArn", {
       value: webAclForPublishedApi.webAclArn,
-      exportName: "PublishedApiWebAclArn",
+      exportName: `${props.envPrefix}${sepHyphen}PublishedApiWebAclArn`,
     });
     new CfnOutput(this, "ConversationTableName", {
       value: database.table.tableName,
-      exportName: "BedrockClaudeChatConversationTableName",
+      exportName: `${props.envPrefix}${sepHyphen}BedrockClaudeChatConversationTableName`,
     });
     new CfnOutput(this, "TableAccessRoleArn", {
       value: database.tableAccessRole.roleArn,
-      exportName: "BedrockClaudeChatTableAccessRoleArn",
+      exportName: `${props.envPrefix}${sepHyphen}BedrockClaudeChatTableAccessRoleArn`,
     });
     new CfnOutput(this, "LargeMessageBucketName", {
       value: largeMessageBucket.bucketName,
-      exportName: "BedrockClaudeChatLargeMessageBucketName",
+      exportName: `${props.envPrefix}${sepHyphen}BedrockClaudeChatLargeMessageBucketName`,
     });
   }
 }

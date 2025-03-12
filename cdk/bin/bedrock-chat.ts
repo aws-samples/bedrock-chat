@@ -25,17 +25,23 @@ const params = getBedrockChatParameters(
 //   // Include stack declaration this scope...
 // }
 
+const sepHyphen = params.envPrefix ? "-" : "";
+
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
-const waf = new FrontendWafStack(app, `FrontendWafStack`, {
-  env: {
-    // account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: "us-east-1",
-  },
-  allowedIpV4AddressRanges: params.allowedIpV4AddressRanges,
-  allowedIpV6AddressRanges: params.allowedIpV6AddressRanges,
-});
+const waf = new FrontendWafStack(
+  app,
+  `${params.envPrefix}${sepHyphen}FrontendWafStack`,
+  {
+    env: {
+      // account: process.env.CDK_DEFAULT_ACCOUNT,
+      region: "us-east-1",
+    },
+    allowedIpV4AddressRanges: params.allowedIpV4AddressRanges,
+    allowedIpV6AddressRanges: params.allowedIpV6AddressRanges,
+  }
+);
 
 // The region of the LLM model called by the converse API and the region of Guardrail must be in the same region.
 // CustomBotStack contains Knowledge Bases is deployed in the same region as the LLM model, and source bucket must be in the same region as Knowledge Bases.
@@ -43,7 +49,7 @@ const waf = new FrontendWafStack(app, `FrontendWafStack`, {
 // Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/s3-data-source-connector.html
 const bedrockRegionResources = new BedrockRegionResourcesStack(
   app,
-  `BedrockRegionResourcesStack`,
+  `${params.envPrefix}${sepHyphen}BedrockRegionResourcesStack`,
   {
     env: {
       // account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -53,33 +59,38 @@ const bedrockRegionResources = new BedrockRegionResourcesStack(
   }
 );
 
-const chat = new BedrockChatStack(app, `BedrockChatStack`, {
-  env: {
-    // account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION,
-  },
-  crossRegionReferences: true,
-  bedrockRegion: params.bedrockRegion,
-  webAclId: waf.webAclArn.value,
-  enableIpV6: waf.ipV6Enabled,
-  identityProviders: params.identityProviders,
-  userPoolDomainPrefix: params.userPoolDomainPrefix,
-  publishedApiAllowedIpV4AddressRanges:
-    params.publishedApiAllowedIpV4AddressRanges,
-  publishedApiAllowedIpV6AddressRanges:
-    params.publishedApiAllowedIpV6AddressRanges,
-  allowedSignUpEmailDomains: params.allowedSignUpEmailDomains,
-  autoJoinUserGroups: params.autoJoinUserGroups,
-  enableMistral: params.enableMistral,
-  selfSignUpEnabled: params.selfSignUpEnabled,
-  documentBucket: bedrockRegionResources.documentBucket,
-  useStandbyReplicas: params.enableRagReplicas,
-  enableBedrockCrossRegionInference: params.enableBedrockCrossRegionInference,
-  enableLambdaSnapStart: params.enableLambdaSnapStart,
-  alternateDomainName: params.alternateDomainName,
-  hostedZoneId: params.hostedZoneId,
-});
+const chat = new BedrockChatStack(
+  app,
+  `${params.envPrefix}${sepHyphen}BedrockChatStack`,
+  {
+    env: {
+      // account: process.env.CDK_DEFAULT_ACCOUNT,
+      region: process.env.CDK_DEFAULT_REGION,
+    },
+    crossRegionReferences: true,
+    bedrockRegion: params.bedrockRegion,
+    webAclId: waf.webAclArn.value,
+    enableIpV6: waf.ipV6Enabled,
+    identityProviders: params.identityProviders,
+    userPoolDomainPrefix: params.userPoolDomainPrefix,
+    publishedApiAllowedIpV4AddressRanges:
+      params.publishedApiAllowedIpV4AddressRanges,
+    publishedApiAllowedIpV6AddressRanges:
+      params.publishedApiAllowedIpV6AddressRanges,
+    allowedSignUpEmailDomains: params.allowedSignUpEmailDomains,
+    autoJoinUserGroups: params.autoJoinUserGroups,
+    enableMistral: params.enableMistral,
+    selfSignUpEnabled: params.selfSignUpEnabled,
+    documentBucket: bedrockRegionResources.documentBucket,
+    useStandbyReplicas: params.enableRagReplicas,
+    enableBedrockCrossRegionInference: params.enableBedrockCrossRegionInference,
+    enableLambdaSnapStart: params.enableLambdaSnapStart,
+    alternateDomainName: params.alternateDomainName,
+    hostedZoneId: params.hostedZoneId,
+  }
+);
 chat.addDependency(waf);
 chat.addDependency(bedrockRegionResources);
 
 cdk.Aspects.of(chat).add(new LogRetentionChecker());
+cdk.Tags.of(app).add("CDKEnvironment", params.envName);

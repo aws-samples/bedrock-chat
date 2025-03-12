@@ -9,42 +9,34 @@ const app = new cdk.App();
 
 // Get parameters specific to API publishing
 const params = resolveApiPublishParameters(app);
+const sepHyphen = params.envPrefix ? "-" : "";
 
 // Parse allowed origins
 const publishedApiAllowedOrigins = JSON.parse(
   params.publishedApiAllowedOrigins || '["*"]'
 );
 
-console.log(
-  `PUBLISHED_API_THROTTLE_RATE_LIMIT: ${params.publishedApiThrottleRateLimit}`
-);
-console.log(
-  `PUBLISHED_API_THROTTLE_BURST_LIMIT: ${params.publishedApiThrottleBurstLimit}`
-);
-console.log(`PUBLISHED_API_QUOTA_LIMIT: ${params.publishedApiQuotaLimit}`);
-console.log(`PUBLISHED_API_QUOTA_PERIOD: ${params.publishedApiQuotaPeriod}`);
-console.log(
-  `PUBLISHED_API_DEPLOYMENT_STAGE: ${params.publishedApiDeploymentStage}`
-);
-console.log(`PUBLISHED_API_ID: ${params.publishedApiId}`);
-console.log(`PUBLISHED_API_ALLOWED_ORIGINS: ${publishedApiAllowedOrigins}`);
+// Log all parameters at once for debugging
+console.log("API Publish Parameters:", JSON.stringify(params));
 
-const webAclArn = cdk.Fn.importValue("PublishedApiWebAclArn");
+const webAclArn = cdk.Fn.importValue(
+  `${params.envPrefix}${sepHyphen}PublishedApiWebAclArn`
+);
 
 const conversationTableName = cdk.Fn.importValue(
-  "BedrockClaudeChatConversationTableName"
+  `${params.envPrefix}${sepHyphen}BedrockClaudeChatConversationTableName`
 );
 const tableAccessRoleArn = cdk.Fn.importValue(
-  "BedrockClaudeChatTableAccessRoleArn"
+  `${params.envPrefix}${sepHyphen}BedrockClaudeChatTableAccessRoleArn`
 );
 const largeMessageBucketName = cdk.Fn.importValue(
-  "BedrockClaudeChatLargeMessageBucketName"
+  `${params.envPrefix}${sepHyphen}BedrockClaudeChatLargeMessageBucketName`
 );
 
 // NOTE: DO NOT change the stack id naming rule.
 const publishedApi = new ApiPublishmentStack(
   app,
-  `ApiPublishmentStack${params.publishedApiId}`,
+  `${params.envPrefix}${sepHyphen}ApiPublishmentStack${params.publishedApiId}`,
   {
     env: {
       region: process.env.CDK_DEFAULT_REGION,
@@ -81,3 +73,5 @@ const publishedApi = new ApiPublishmentStack(
     },
   }
 );
+
+cdk.Tags.of(app).add("CDKEnvironment", params.envName);

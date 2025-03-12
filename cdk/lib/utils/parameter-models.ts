@@ -6,18 +6,29 @@ import { App } from "aws-cdk-lib";
  * Base parameters schema that is common across all entry points
  */
 const BaseParametersSchema = z.object({
+  // CDK Environments
+  envName: z.string().default("default"),
+  envPrefix: z.string().default(""),
+
   // Bedrock configuration
   bedrockRegion: z.string().default("us-east-1"),
 });
 
 /**
+ * Helper function to get environment variables with fallback
+ * @param name Environment variable name
+ * @param defaultValue Default value if environment variable is not set
+ * @returns The environment variable value or default value
+ */
+function getEnvVar(name: string, defaultValue?: string): string | undefined {
+  const value = process.env[name];
+  return value !== undefined ? value : defaultValue;
+}
+
+/**
  * Parameters schema for the main Bedrock Chat application
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
-  // CDK Environments
-  envName: z.string().default("default"),
-  envPrefix: z.string().default(""),
-
   // Bedrock configuration
   enableMistral: z.boolean().default(false),
   enableBedrockCrossRegionInference: z.boolean().default(true),
@@ -75,7 +86,16 @@ const ApiPublishParametersSchema = BaseParametersSchema.extend({
 /**
  * Parameters schema for Bedrock Custom Bot
  */
-const BedrockCustomBotParametersSchema = BaseParametersSchema;
+const BedrockCustomBotParametersSchema = BaseParametersSchema.extend({
+  // Bot configuration
+  pk: z.string(),
+  sk: z.string(),
+  documentBucketName: z.string(),
+  knowledge: z.string(),
+  knowledgeBase: z.string(),
+  guardrails: z.string(),
+  useStandByReplicas: z.boolean().default(false),
+});
 
 /**
  * Type definitions for each parameter set
@@ -102,7 +122,7 @@ export type BedrockCustomBotParameters = z.infer<
 
 /**
  * Parse and validate parameters for the main Bedrock Chat application.
- * If you omit parametersInput, context parameters are used.
+ * If you omit parametersInput, context parameters and environment variables are used.
  * @param app CDK App instance
  * @param parametersInput (optional) Input parameters that should be used instead of context parameters
  * @returns Validated parameters object
@@ -116,12 +136,16 @@ export function resolveBedrockChatParameters(
     return BedrockChatParametersSchema.parse(parametersInput);
   }
 
+  // Get environment variables
+  const envName = getEnvVar("ENV_NAME", "default");
+  const envPrefix = getEnvVar("ENV_PREFIX", "");
+
   // Otherwise, get parameters from context
   const identityProviders = app.node.tryGetContext("identityProviders");
 
   const contextParams = {
-    envName: "default",
-    envPrefix: "",
+    envName,
+    envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
     enableMistral: app.node.tryGetContext("enableMistral"),
     allowedIpV4AddressRanges: app.node.tryGetContext(
@@ -161,7 +185,7 @@ export function resolveBedrockChatParameters(
 /**
  * Get Bedrock Chat parameters based on environment name.
  * If you omit envName, "default" is used.
- * If you omit parametersInput, context parameters are used.
+ * If you omit parametersInput, context parameters and environment variables are used.
  * @param app CDK App instance
  * @param envName (optional) Environment name. Used as map key if provided
  * @param paramsMap (optional) Map of parameters. If not provided, use context parameters
@@ -203,7 +227,8 @@ export function getBedrockChatParameters(
 }
 
 /**
- * Parse and validate parameters for API publishing
+ * Parse and validate parameters for API publishing.
+ * If you omit parametersInput, context parameters and environment variables are used.
  * @param app CDK App instance
  * @param parametersInput Optional input parameters that override context values
  * @returns Validated parameters object
@@ -217,7 +242,11 @@ export function resolveApiPublishParameters(
     return ApiPublishParametersSchema.parse(parametersInput);
   }
 
-  // Otherwise, get parameters from context
+  // Get environment variables
+  const envName = getEnvVar("ENV_NAME", "default");
+  const envPrefix = getEnvVar("ENV_PREFIX", "");
+
+  // Get parameters from context
   const publishedApiThrottleRateLimit = app.node.tryGetContext(
     "publishedApiThrottleRateLimit"
   );
@@ -232,6 +261,8 @@ export function resolveApiPublishParameters(
   );
 
   const contextParams = {
+    envName,
+    envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
     publishedApiThrottleRateLimit: publishedApiThrottleRateLimit
       ? Number(publishedApiThrottleRateLimit)
@@ -254,7 +285,8 @@ export function resolveApiPublishParameters(
 }
 
 /**
- * Parse and validate parameters for Bedrock Custom Bot
+ * Parse and validate parameters for Bedrock Custom Bot.
+ * If you omit parametersInput, context parameters and environment variables are used.
  * @param app CDK App instance
  * @param parametersInput Optional input parameters that override context values
  * @returns Validated parameters object
@@ -268,9 +300,22 @@ export function resolveBedrockCustomBotParameters(
     return BedrockCustomBotParametersSchema.parse(parametersInput);
   }
 
-  // Otherwise, get parameters from context
+  // Get environment variables
+  const envName = getEnvVar("ENV_NAME", "default");
+  const envPrefix = getEnvVar("ENV_PREFIX", "");
+
+  // Get parameters from context and environment variables
   const contextParams = {
+    envName,
+    envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+    pk: getEnvVar("PK"),
+    sk: getEnvVar("SK"),
+    documentBucketName: getEnvVar("BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME"),
+    knowledge: getEnvVar("KNOWLEDGE"),
+    knowledgeBase: getEnvVar("BEDROCK_KNOWLEDGE_BASE"),
+    guardrails: getEnvVar("BEDROCK_GUARDRAILS"),
+    useStandByReplicas: getEnvVar("USE_STAND_BY_REPLICAS") === "true",
   };
 
   return BedrockCustomBotParametersSchema.parse(contextParams);
