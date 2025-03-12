@@ -5,7 +5,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { NagSuppressions } from "cdk-nag";
 
 export interface BedrockCustomBotCodebuildProps {
-  readonly envName?: string;
+  readonly envName: string;
   readonly envPrefix?: string;
   readonly sourceBucket: s3.Bucket;
 }

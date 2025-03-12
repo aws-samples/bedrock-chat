@@ -7,7 +7,7 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NagSuppressions } from "cdk-nag";
 
 export interface ApiPublishCodebuildProps {
-  readonly envName?: string;
+  readonly envName: string;
   readonly envPrefix?: string;
   readonly sourceBucket: s3.Bucket;
 }

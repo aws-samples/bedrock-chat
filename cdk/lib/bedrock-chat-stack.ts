@@ -113,6 +113,8 @@ export class BedrockChatStack extends cdk.Stack {
       "ApiPublishCodebuild",
       {
         sourceBucket,
+        envName: props.envName,
+        envPrefix: props.envPrefix,
       }
     );
     // CodeBuild used for KnowledgeBase
@@ -121,6 +123,8 @@ export class BedrockChatStack extends cdk.Stack {
       "BedrockKnowledgeBaseCodebuild",
       {
         sourceBucket,
+        envName: props.envName,
+        envPrefix: props.envPrefix,
       }
     );
 

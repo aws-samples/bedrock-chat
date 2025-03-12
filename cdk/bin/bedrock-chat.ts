@@ -67,6 +67,8 @@ const chat = new BedrockChatStack(
       // account: process.env.CDK_DEFAULT_ACCOUNT,
       region: process.env.CDK_DEFAULT_REGION,
     },
+    envName: params.envName,
+    envPrefix: params.envPrefix,
     crossRegionReferences: true,
     bedrockRegion: params.bedrockRegion,
     webAclId: waf.webAclArn.value,
