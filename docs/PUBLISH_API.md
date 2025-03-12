@@ -43,3 +43,23 @@ Client needs to set `x-api-key` on the request header.
 ## API specification
 
 See [here](https://aws-samples.github.io/bedrock-claude-chat).
+
+
+## Test Published API
+To test that the API is published and working correctly first add `http://localhost:8000` to your **Allowed Origins** for interacting with the API.
+
+```python
+import requests
+# Run this from within a container exposed on localhost:8000 or through another means
+def test_health():
+ headers =  {
+        "Content-Type": "application/json",
+        "x-api-key":"<your-copied-api-key-from-published-api>"
+    }
+    response = requests.get('https://<your-published-api-gw-id>.execute-api.us-east-1.amazonaws.com/api/health', headers=headers)
+    print(f'RESPONSE: {response.status_code}')
+```
+
+Doing so will return a `200` status code of OK.
+
+
