@@ -3,7 +3,7 @@ import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import { CfnOutput } from "aws-cdk-lib";
 
 export interface WebAclForPublishedApiProps {
-  envPrefix?: string;
+  envPrefix: string;
   readonly allowedIpV4AddressRanges: string[];
   readonly allowedIpV6AddressRanges: string[];
 }

@@ -26,7 +26,7 @@ import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codeb
 
 export interface BedrockChatStackProps extends StackProps {
   readonly envName: string;
-  readonly envPrefix?: string;
+  readonly envPrefix: string;
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly identityProviders: TIdentityProvider[];
@@ -162,6 +162,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+      envPrefix: props.envPrefix,
       accessLogBucket,
       sourceDatabase: database,
     });
@@ -234,6 +235,7 @@ export class BedrockChatStack extends cdk.Stack {
       this,
       "WebAclForPublishedApi",
       {
+        envPrefix: props.envPrefix,
         allowedIpV4AddressRanges: props.publishedApiAllowedIpV4AddressRanges,
         allowedIpV6AddressRanges: props.publishedApiAllowedIpV6AddressRanges,
       }

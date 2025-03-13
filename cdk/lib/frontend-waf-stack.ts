@@ -4,7 +4,7 @@ import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import { Construct } from "constructs";
 
 interface FrontendWafStackProps extends StackProps {
-  readonly envPrefix?: string;
+  readonly envPrefix: string;
   readonly allowedIpV4AddressRanges: string[];
   readonly allowedIpV6AddressRanges: string[];
 }

@@ -14,7 +14,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 
 export interface UsageAnalysisProps {
-  envPrefix?: string;
+  envPrefix: string;
   sourceDatabase: Database;
   accessLogBucket?: s3.Bucket;
 }
