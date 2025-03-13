@@ -137,8 +137,8 @@ export function resolveBedrockChatParameters(
   }
 
   // Get environment variables
-  const envName = getEnvVar("ENV_NAME", "default");
-  const envPrefix = getEnvVar("ENV_PREFIX", "");
+  const envName = app.node.tryGetContext("envName") || "default";
+  const envPrefix = envName === "default" ? "" : envName;
 
   // Otherwise, get parameters from context
   const identityProviders = app.node.tryGetContext("identityProviders");
