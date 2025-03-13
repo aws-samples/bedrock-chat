@@ -8,7 +8,7 @@ import { resolveApiPublishParameters } from "../lib/utils/parameter-models";
 const app = new cdk.App();
 
 // Get parameters specific to API publishing
-const params = resolveApiPublishParameters(app);
+const params = resolveApiPublishParameters();
 const sepHyphen = params.envPrefix ? "-" : "";
 
 // Parse allowed origins

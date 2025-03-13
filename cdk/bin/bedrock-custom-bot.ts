@@ -15,7 +15,7 @@ import { resolveBedrockCustomBotParameters } from "../lib/utils/parameter-models
 const app = new cdk.App();
 
 // Get parameters specific to Bedrock Custom Bot
-const params = resolveBedrockCustomBotParameters(app);
+const params = resolveBedrockCustomBotParameters();
 const sepHyphen = params.envPrefix ? "-" : "";
 
 // Log basic parameters for debugging

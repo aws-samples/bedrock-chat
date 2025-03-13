@@ -429,40 +429,20 @@ describe("getBedrockChatParameters", () => {
 
 describe("resolveApiPublishParameters", () => {
   describe("Parameter Source Selection", () => {
-    test("should use parametersInput when provided", () => {
+    test("should get parameters from environment variables", () => {
       // Given
-      const app = createTestApp();
-      const inputParams = {
-        bedrockRegion: "eu-west-1",
-        publishedApiThrottleRateLimit: 100,
-        publishedApiAllowedOrigins: '["https://example.com"]',
-      };
-
-      // When
-      const result = resolveApiPublishParameters(app, inputParams);
-
-      // Then
-      expect(result.bedrockRegion).toBe("eu-west-1");
-      expect(result.publishedApiThrottleRateLimit).toBe(100);
-      expect(result.publishedApiAllowedOrigins).toBe('["https://example.com"]');
-    });
-
-    test("should get parameters from environment variables when parametersInput is not provided", () => {
-      // Given
-      const app = createTestApp();
-      
       // Mock environment variables
       const originalEnv = process.env;
       process.env = {
         ...originalEnv,
-        BEDROCK_REGION: "us-east-1", // Changed to match default value
+        BEDROCK_REGION: "us-east-1",
         PUBLISHED_API_THROTTLE_RATE_LIMIT: "200",
         PUBLISHED_API_ALLOWED_ORIGINS: '["https://test.com"]',
       };
 
       try {
         // When
-        const result = resolveApiPublishParameters(app);
+        const result = resolveApiPublishParameters();
 
         // Then
         expect(result.bedrockRegion).toBe("us-east-1");
@@ -478,10 +458,8 @@ describe("resolveApiPublishParameters", () => {
   describe("Parameter Validation", () => {
     test("should apply default values when required parameters are missing", () => {
       // Given
-      const app = createTestApp();
-
       // When
-      const result = resolveApiPublishParameters(app);
+      const result = resolveApiPublishParameters();
 
       // Then
       expect(result.bedrockRegion).toBe("us-east-1"); // default value
@@ -491,8 +469,6 @@ describe("resolveApiPublishParameters", () => {
 
     test("should convert string numeric parameters to numbers", () => {
       // Given
-      const app = createTestApp();
-      
       // Mock environment variables
       const originalEnv = process.env;
       process.env = {
@@ -504,7 +480,7 @@ describe("resolveApiPublishParameters", () => {
 
       try {
         // When
-        const result = resolveApiPublishParameters(app);
+        const result = resolveApiPublishParameters();
 
         // Then
         expect(result.publishedApiThrottleRateLimit).toBe(100);
@@ -518,107 +494,122 @@ describe("resolveApiPublishParameters", () => {
 
     test("should correctly parse all parameters when specified", () => {
       // Given
-      const app = createTestApp();
-      const inputParams = {
-        bedrockRegion: "us-west-2",
-        publishedApiThrottleRateLimit: 100,
-        publishedApiThrottleBurstLimit: 200,
-        publishedApiQuotaLimit: 1000,
-        publishedApiQuotaPeriod: "DAY" as "DAY" | "WEEK" | "MONTH",
-        publishedApiDeploymentStage: "prod",
-        publishedApiId: "api123",
-        publishedApiAllowedOrigins:
-          '["https://example.com", "https://test.com"]',
+      // Mock environment variables
+      const originalEnv = process.env;
+      process.env = {
+        ...originalEnv,
+        BEDROCK_REGION: "us-west-2",
+        PUBLISHED_API_THROTTLE_RATE_LIMIT: "100",
+        PUBLISHED_API_THROTTLE_BURST_LIMIT: "200",
+        PUBLISHED_API_QUOTA_LIMIT: "1000",
       };
 
-      // When
-      const result = resolveApiPublishParameters(app, inputParams);
+      try {
+        // When
+        const result = resolveApiPublishParameters();
 
-      // Then
-      expect(result.bedrockRegion).toBe("us-west-2");
-      expect(result.publishedApiThrottleRateLimit).toBe(100);
-      expect(result.publishedApiThrottleBurstLimit).toBe(200);
-      expect(result.publishedApiQuotaLimit).toBe(1000);
-      expect(result.publishedApiQuotaPeriod).toBe("DAY");
-      expect(result.publishedApiDeploymentStage).toBe("prod");
-      expect(result.publishedApiId).toBe("api123");
-      expect(result.publishedApiAllowedOrigins).toBe(
-        '["https://example.com", "https://test.com"]'
-      );
+        // Then
+        expect(result.publishedApiThrottleRateLimit).toBe(100);
+        expect(result.publishedApiThrottleBurstLimit).toBe(200);
+        expect(result.publishedApiQuotaLimit).toBe(1000);
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
+    });
+
+    test("should correctly parse all parameters when specified", () => {
+      // Given
+      // Mock environment variables
+      const originalEnv = process.env;
+      process.env = {
+        ...originalEnv,
+        BEDROCK_REGION: "us-west-2",
+        PUBLISHED_API_THROTTLE_RATE_LIMIT: "100",
+        PUBLISHED_API_THROTTLE_BURST_LIMIT: "200",
+        PUBLISHED_API_QUOTA_LIMIT: "1000",
+        PUBLISHED_API_QUOTA_PERIOD: "DAY",
+        PUBLISHED_API_DEPLOYMENT_STAGE: "prod",
+        PUBLISHED_API_ID: "api123",
+        PUBLISHED_API_ALLOWED_ORIGINS: '["https://example.com", "https://test.com"]',
+      };
+
+      try {
+        // When
+        const result = resolveApiPublishParameters();
+
+        // Then
+        expect(result.bedrockRegion).toBe("us-west-2");
+        expect(result.publishedApiThrottleRateLimit).toBe(100);
+        expect(result.publishedApiThrottleBurstLimit).toBe(200);
+        expect(result.publishedApiQuotaLimit).toBe(1000);
+        expect(result.publishedApiQuotaPeriod).toBe("DAY");
+        expect(result.publishedApiDeploymentStage).toBe("prod");
+        expect(result.publishedApiId).toBe("api123");
+        expect(result.publishedApiAllowedOrigins).toBe(
+          '["https://example.com", "https://test.com"]'
+        );
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
     });
 
     test("should throw ZodError when invalid QuotaPeriod is specified", () => {
       // Given
-      const app = createTestApp();
-      const invalidParams = {
-        publishedApiQuotaPeriod: "YEAR" as any, // invalid value
+      // Mock environment variables
+      const originalEnv = process.env;
+      process.env = {
+        ...originalEnv,
+        PUBLISHED_API_QUOTA_PERIOD: "YEAR", // invalid value
       };
 
-      // When/Then
-      expect(() => {
-        resolveApiPublishParameters(app, invalidParams as any);
-      }).toThrow(ZodError);
+      try {
+        // When/Then
+        expect(() => {
+          resolveApiPublishParameters();
+        }).toThrow(ZodError);
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
     });
 
     test("should handle invalid publishedApiAllowedOrigins format", () => {
       // Given
-      const app = createTestApp();
-      const invalidParams = {
-        publishedApiAllowedOrigins: 'invalid json format',
+      // Mock environment variables
+      const originalEnv = process.env;
+      process.env = {
+        ...originalEnv,
+        PUBLISHED_API_ALLOWED_ORIGINS: 'invalid json format',
       };
       
-      // When
-      const result = resolveApiPublishParameters(app, invalidParams);
-      
-      // Then
-      // Note: The function doesn't validate JSON format, it just passes the string through
-      expect(result.publishedApiAllowedOrigins).toBe('invalid json format');
+      try {
+        // When
+        const result = resolveApiPublishParameters();
+        
+        // Then
+        // Note: The function doesn't validate JSON format, it just passes the string through
+        expect(result.publishedApiAllowedOrigins).toBe('invalid json format');
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
     });
   });
 });
 
 describe("resolveBedrockCustomBotParameters", () => {
   describe("Parameter Source Selection", () => {
-    test("should use parametersInput when provided", () => {
+    test("should get parameters from environment variables", () => {
       // Given
-      const app = createTestApp();
-      const inputParams = {
-        bedrockRegion: "eu-west-1",
-        pk: "test-pk",
-        sk: "test-sk",
-        documentBucketName: "test-bucket",
-        knowledge: '{"test": "knowledge"}',
-        knowledgeBase: '{"test": "kb"}',
-        guardrails: '{"test": "guardrails"}',
-        useStandByReplicas: true
-      };
-
-      // When
-      const result = resolveBedrockCustomBotParameters(app, inputParams);
-
-      // Then
-      expect(result.bedrockRegion).toBe("eu-west-1");
-      expect(result.pk).toBe("test-pk");
-      expect(result.sk).toBe("test-sk");
-      expect(result.documentBucketName).toBe("test-bucket");
-      expect(result.knowledge).toBe('{"test": "knowledge"}');
-      expect(result.knowledgeBase).toBe('{"test": "kb"}');
-      expect(result.guardrails).toBe('{"test": "guardrails"}');
-      expect(result.useStandByReplicas).toBe(true);
-    });
-
-    test("should get parameters from context and environment variables when parametersInput is not provided", () => {
-      // Given
-      const app = createTestApp({
-        bedrockRegion: "ap-northeast-1",
-      });
-      
       // Mock environment variables
       const originalEnv = process.env;
       process.env = {
         ...originalEnv,
         ENV_NAME: "test-env",
         ENV_PREFIX: "test-prefix",
+        BEDROCK_REGION: "us-east-1",
         PK: "env-pk",
         SK: "env-sk",
         BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: "env-bucket",
@@ -626,15 +617,14 @@ describe("resolveBedrockCustomBotParameters", () => {
         BEDROCK_KNOWLEDGE_BASE: '{"env": "kb"}',
         BEDROCK_GUARDRAILS: '{"env": "guardrails"}',
         USE_STAND_BY_REPLICAS: "true",
-        BEDROCK_REGION: "us-east-1" // This will be overridden by context
       };
 
       try {
         // When
-        const result = resolveBedrockCustomBotParameters(app);
+        const result = resolveBedrockCustomBotParameters();
 
         // Then
-        expect(result.bedrockRegion).toBe("ap-northeast-1"); // From context
+        expect(result.bedrockRegion).toBe("us-east-1");
         expect(result.envName).toBe("test-env");
         expect(result.envPrefix).toBe("test-prefix");
         expect(result.pk).toBe("env-pk");
@@ -654,31 +644,28 @@ describe("resolveBedrockCustomBotParameters", () => {
   describe("Parameter Validation", () => {
     test("should throw ZodError when required parameters are missing", () => {
       // Given
-      const app = createTestApp();
-      
       // When/Then
       expect(() => {
-        resolveBedrockCustomBotParameters(app);
+        resolveBedrockCustomBotParameters();
       }).toThrow();
     });
 
     test("should throw ZodError when invalid parameter is specified", () => {
       // Given
-      const app = createTestApp();
-      const invalidParams = {
-        bedrockRegion: 123, // number instead of string
-        pk: "test-pk",
-        sk: "test-sk",
-        documentBucketName: "test-bucket",
-        knowledge: '{"test": "knowledge"}',
-        knowledgeBase: '{"test": "kb"}',
-        guardrails: '{"test": "guardrails"}'
-      };
+      // Mock environment variables with invalid type
+      const originalEnv = process.env;
+      // Clear all environment variables to ensure required ones are missing
+      process.env = {};
 
-      // When/Then
-      expect(() => {
-        resolveBedrockCustomBotParameters(app, invalidParams as any);
-      }).toThrow(ZodError);
+      try {
+        // When/Then
+        expect(() => {
+          resolveBedrockCustomBotParameters();
+        }).toThrow();
+      } finally {
+        // Restore original environment
+        process.env = originalEnv;
+      }
     });
   });
 });

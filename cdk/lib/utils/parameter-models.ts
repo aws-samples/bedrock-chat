@@ -74,9 +74,27 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
  */
 const ApiPublishParametersSchema = BaseParametersSchema.extend({
   // API publishing configuration
-  publishedApiThrottleRateLimit: z.number().optional(),
-  publishedApiThrottleBurstLimit: z.number().optional(),
-  publishedApiQuotaLimit: z.number().optional(),
+  publishedApiThrottleRateLimit: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Number(val)), {
+      message: "Must be a valid number",
+    })
+    .transform((val) => (val ? Number(val) : val)),
+  publishedApiThrottleBurstLimit: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Number(val)), {
+      message: "Must be a valid number",
+    })
+    .transform((val) => (val ? Number(val) : val)),
+  publishedApiQuotaLimit: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Number(val)), {
+      message: "Must be a valid number",
+    })
+    .transform((val) => (val ? Number(val) : val)),
   publishedApiQuotaPeriod: z.enum(["DAY", "WEEK", "MONTH"]).optional(),
   publishedApiDeploymentStage: z.string().default("api"),
   publishedApiId: z.string().optional(),
@@ -94,7 +112,11 @@ const BedrockCustomBotParametersSchema = BaseParametersSchema.extend({
   knowledge: z.string(),
   knowledgeBase: z.string(),
   guardrails: z.string(),
-  useStandByReplicas: z.boolean().default(false),
+  useStandByReplicas: z
+    .string()
+    .optional()
+    .transform((val) => val === "true")
+    .default("false"),
 });
 
 /**
@@ -228,95 +250,52 @@ export function getBedrockChatParameters(
 
 /**
  * Parse and validate parameters for API publishing.
- * If you omit parametersInput, environment variables are used.
- * @param app CDK App instance
- * @param parametersInput Optional input parameters that override environment values
- * @returns Validated parameters object
+ * This function is executed by CDK in CodeBuild launched via the API.
+ * Therefore, this is not intend to be set values using cdk.json or parameter.ts.
+ * @returns Validated parameters object from environment variables
  */
-export function resolveApiPublishParameters(
-  app: App,
-  parametersInput?: ApiPublishParametersInput
-): ApiPublishParameters {
-  // If parametersInput is provided, use it directly
-  if (parametersInput) {
-    return ApiPublishParametersSchema.parse(parametersInput);
-  }
-
-  // Get environment variables
-  const envName = getEnvVar("ENV_NAME", "default");
-  const envPrefix = getEnvVar("ENV_PREFIX", "");
-
-  // Get parameters from context
-  const publishedApiThrottleRateLimit = app.node.tryGetContext(
-    "publishedApiThrottleRateLimit"
-  );
-  const publishedApiThrottleBurstLimit = app.node.tryGetContext(
-    "publishedApiThrottleBurstLimit"
-  );
-  const publishedApiQuotaLimit = app.node.tryGetContext(
-    "publishedApiQuotaLimit"
-  );
-  const publishedApiAllowedOrigins = app.node.tryGetContext(
-    "publishedApiAllowedOrigins"
-  );
-
-  const contextParams = {
-    envName,
-    envPrefix,
-    bedrockRegion: app.node.tryGetContext("bedrockRegion"),
-    publishedApiThrottleRateLimit: publishedApiThrottleRateLimit
-      ? Number(publishedApiThrottleRateLimit)
-      : undefined,
-    publishedApiThrottleBurstLimit: publishedApiThrottleBurstLimit
-      ? Number(publishedApiThrottleBurstLimit)
-      : undefined,
-    publishedApiQuotaLimit: publishedApiQuotaLimit
-      ? Number(publishedApiQuotaLimit)
-      : undefined,
-    publishedApiQuotaPeriod: app.node.tryGetContext("publishedApiQuotaPeriod"),
-    publishedApiDeploymentStage: app.node.tryGetContext(
-      "publishedApiDeploymentStage"
+export function resolveApiPublishParameters(): ApiPublishParameters {
+  // Get parameters from environment variables
+  const envVars = {
+    envName: getEnvVar("ENV_NAME", "default"),
+    envPrefix: getEnvVar("ENV_PREFIX", ""),
+    bedrockRegion: getEnvVar("BEDROCK_REGION"),
+    publishedApiThrottleRateLimit: getEnvVar(
+      "PUBLISHED_API_THROTTLE_RATE_LIMIT"
     ),
-    publishedApiId: app.node.tryGetContext("publishedApiId"),
-    publishedApiAllowedOrigins: publishedApiAllowedOrigins || '["*"]',
+    publishedApiThrottleBurstLimit: getEnvVar(
+      "PUBLISHED_API_THROTTLE_BURST_LIMIT"
+    ),
+    publishedApiQuotaLimit: getEnvVar("PUBLISHED_API_QUOTA_LIMIT"),
+    publishedApiQuotaPeriod: getEnvVar("PUBLISHED_API_QUOTA_PERIOD"),
+    publishedApiDeploymentStage: getEnvVar("PUBLISHED_API_DEPLOYMENT_STAGE"),
+    publishedApiId: getEnvVar("PUBLISHED_API_ID"),
+    publishedApiAllowedOrigins: getEnvVar("PUBLISHED_API_ALLOWED_ORIGINS"),
   };
 
-  return ApiPublishParametersSchema.parse(contextParams);
+  return ApiPublishParametersSchema.parse(envVars);
 }
 
 /**
  * Parse and validate parameters for Bedrock Custom Bot.
- * If you omit parametersInput, context parameters and environment variables are used.
- * @param app CDK App instance
- * @param parametersInput Optional input parameters that override context values
- * @returns Validated parameters object
+ * This function is executed by CDK in CodeBuild launched via the API.
+ * Therefore, this is not intend to be set values using cdk.json or parameter.ts.
+ * @returns Validated parameters object from environment variables
  */
-export function resolveBedrockCustomBotParameters(
-  app: App,
-  parametersInput?: BedrockCustomBotParametersInput
-): BedrockCustomBotParameters {
-  // If parametersInput is provided, use it directly
-  if (parametersInput) {
-    return BedrockCustomBotParametersSchema.parse(parametersInput);
-  }
-
-  // Get environment variables
-  const envName = getEnvVar("ENV_NAME", "default");
-  const envPrefix = getEnvVar("ENV_PREFIX", "");
-
-  // Get parameters from context and environment variables
-  const contextParams = {
-    envName,
-    envPrefix,
-    bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+export function resolveBedrockCustomBotParameters(): BedrockCustomBotParameters {
+  // Get parameters from environment variables
+  const envVars = {
+    envName: getEnvVar("ENV_NAME", "default"),
+    envPrefix: getEnvVar("ENV_PREFIX", ""),
+    bedrockRegion: getEnvVar("BEDROCK_REGION"),
     pk: getEnvVar("PK"),
     sk: getEnvVar("SK"),
     documentBucketName: getEnvVar("BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME"),
     knowledge: getEnvVar("KNOWLEDGE"),
     knowledgeBase: getEnvVar("BEDROCK_KNOWLEDGE_BASE"),
     guardrails: getEnvVar("BEDROCK_GUARDRAILS"),
-    useStandByReplicas: getEnvVar("USE_STAND_BY_REPLICAS") === "true",
+    useStandByReplicas: getEnvVar("USE_STAND_BY_REPLICAS"),
   };
 
-  return BedrockCustomBotParametersSchema.parse(contextParams);
+  return BedrockCustomBotParametersSchema.parse(envVars);
 }
