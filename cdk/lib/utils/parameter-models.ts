@@ -54,7 +54,11 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
     ]),
 
   // Authentication and user management
-  identityProviders: z.array(z.custom<TIdentityProvider>()).default([]),
+  identityProviders: z
+    .unknown()
+    .transform(val => Array.isArray(val) ? val as TIdentityProvider[] : [])
+    .pipe(z.array(z.custom<TIdentityProvider>()))
+    .default([]),
   userPoolDomainPrefix: z.string().default(""),
   allowedSignUpEmailDomains: z.array(z.string()).default([]),
   autoJoinUserGroups: z.array(z.string()).default(["CreatingBotAllowed"]),
@@ -77,24 +81,15 @@ const ApiPublishParametersSchema = BaseParametersSchema.extend({
   publishedApiThrottleRateLimit: z
     .string()
     .optional()
-    .refine((val) => !val || !isNaN(Number(val)), {
-      message: "Must be a valid number",
-    })
-    .transform((val) => (val ? Number(val) : val)),
+    .transform((val) => (val ? Number(val) : undefined)),
   publishedApiThrottleBurstLimit: z
     .string()
     .optional()
-    .refine((val) => !val || !isNaN(Number(val)), {
-      message: "Must be a valid number",
-    })
-    .transform((val) => (val ? Number(val) : val)),
+    .transform((val) => (val ? Number(val) : undefined)),
   publishedApiQuotaLimit: z
     .string()
     .optional()
-    .refine((val) => !val || !isNaN(Number(val)), {
-      message: "Must be a valid number",
-    })
-    .transform((val) => (val ? Number(val) : val)),
+    .transform((val) => (val ? Number(val) : undefined)),
   publishedApiQuotaPeriod: z.enum(["DAY", "WEEK", "MONTH"]).optional(),
   publishedApiDeploymentStage: z.string().default("api"),
   publishedApiId: z.string().optional(),
@@ -177,9 +172,7 @@ export function resolveBedrockChatParameters(
       "allowedIpV6AddressRanges"
     ),
     // 配列でない場合は空配列を使用
-    identityProviders: Array.isArray(identityProviders)
-      ? identityProviders
-      : [],
+    identityProviders: app.node.tryGetContext("identityProviders"),
     userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
     allowedSignUpEmailDomains: app.node.tryGetContext(
       "allowedSignUpEmailDomains"
@@ -255,10 +248,9 @@ export function getBedrockChatParameters(
  * @returns Validated parameters object from environment variables
  */
 export function resolveApiPublishParameters(): ApiPublishParameters {
-  // Get parameters from environment variables
   const envVars = {
-    envName: getEnvVar("ENV_NAME", "default"),
-    envPrefix: getEnvVar("ENV_PREFIX", ""),
+    envName: getEnvVar("ENV_NAME"),
+    envPrefix: getEnvVar("ENV_PREFIX"),
     bedrockRegion: getEnvVar("BEDROCK_REGION"),
     publishedApiThrottleRateLimit: getEnvVar(
       "PUBLISHED_API_THROTTLE_RATE_LIMIT"
@@ -283,10 +275,9 @@ export function resolveApiPublishParameters(): ApiPublishParameters {
  * @returns Validated parameters object from environment variables
  */
 export function resolveBedrockCustomBotParameters(): BedrockCustomBotParameters {
-  // Get parameters from environment variables
   const envVars = {
-    envName: getEnvVar("ENV_NAME", "default"),
-    envPrefix: getEnvVar("ENV_PREFIX", ""),
+    envName: getEnvVar("ENV_NAME"),
+    envPrefix: getEnvVar("ENV_PREFIX"),
     bedrockRegion: getEnvVar("BEDROCK_REGION"),
     pk: getEnvVar("PK"),
     sk: getEnvVar("SK"),
