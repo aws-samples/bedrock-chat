@@ -78,7 +78,7 @@ const ApiPublishParametersSchema = BaseParametersSchema.extend({
   publishedApiThrottleBurstLimit: z.number().optional(),
   publishedApiQuotaLimit: z.number().optional(),
   publishedApiQuotaPeriod: z.enum(["DAY", "WEEK", "MONTH"]).optional(),
-  publishedApiDeploymentStage: z.string().optional(),
+  publishedApiDeploymentStage: z.string().default("api"),
   publishedApiId: z.string().optional(),
   publishedApiAllowedOrigins: z.string().default('["*"]'),
 });
@@ -228,9 +228,9 @@ export function getBedrockChatParameters(
 
 /**
  * Parse and validate parameters for API publishing.
- * If you omit parametersInput, context parameters and environment variables are used.
+ * If you omit parametersInput, environment variables are used.
  * @param app CDK App instance
- * @param parametersInput Optional input parameters that override context values
+ * @param parametersInput Optional input parameters that override environment values
  * @returns Validated parameters object
  */
 export function resolveApiPublishParameters(

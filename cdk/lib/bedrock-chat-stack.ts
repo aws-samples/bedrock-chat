@@ -115,6 +115,7 @@ export class BedrockChatStack extends cdk.Stack {
         sourceBucket,
         envName: props.envName,
         envPrefix: props.envPrefix,
+        bedrockRegion: props.bedrockRegion,
       }
     );
     // CodeBuild used for KnowledgeBase
@@ -125,6 +126,7 @@ export class BedrockChatStack extends cdk.Stack {
         sourceBucket,
         envName: props.envName,
         envPrefix: props.envPrefix,
+        bedrockRegion: props.bedrockRegion,
       }
     );
 
