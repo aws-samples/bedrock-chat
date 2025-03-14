@@ -170,6 +170,8 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const backendApi = new Api(this, "BackendApi", {
+      envName: props.envName,
+      envPrefix: props.envPrefix,
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,

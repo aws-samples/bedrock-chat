@@ -194,6 +194,7 @@ def store_api_key_to_secret_manager(
     """
     secret_name = f"{prefix}/{user_id}/{bot_id}"
     secret_value = json.dumps({"api_key": api_key})
+    env_name = os.environ.get("ENV_NAME", "default")
 
     try:
         secrets_client = boto3.client("secretsmanager")
@@ -216,7 +217,9 @@ def store_api_key_to_secret_manager(
                 # Create new secret if it doesn't exist
                 logger.info(f"Creating new secret: {secret_name}")
                 response = secrets_client.create_secret(
-                    Name=secret_name, SecretString=secret_value
+                    Name=secret_name,
+                    SecretString=secret_value,
+                    Tags=[{"Key": "CDKEnvironment", "Value": env_name}],
                 )
                 logger.info(f"Created new secret: {secret_name}")
                 return response["ARN"]

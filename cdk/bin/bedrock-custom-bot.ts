@@ -16,7 +16,6 @@ const app = new cdk.App();
 
 // Get parameters specific to Bedrock Custom Bot
 const params = resolveBedrockCustomBotParameters();
-const sepHyphen = params.envPrefix ? "-" : "";
 
 // Log basic parameters for debugging
 console.log(
@@ -158,42 +157,38 @@ console.log(
 );
 
 // Create the stack
-const bedrockCustomBotStack = new BedrockCustomBotStack(
-  app,
-  `${params.envPrefix}${sepHyphen}BrChatKbStack${botId}`,
-  {
-    env: {
-      region: params.bedrockRegion,
-    },
-    ownerUserId,
-    botId,
-    embeddingsModel,
-    parsingModel,
-    crawlingScope,
-    crawlingFilters,
-    existKnowledgeBaseId,
-    bedrockClaudeChatDocumentBucketName: params.documentBucketName,
-    chunkingStrategy,
-    existingS3Urls,
-    sourceUrls,
-    maxTokens,
-    instruction,
-    analyzer,
-    overlapPercentage,
-    guardrail: {
-      is_guardrail_enabled,
-      hateThreshold,
-      insultsThreshold,
-      sexualThreshold,
-      violenceThreshold,
-      misconductThreshold,
-      groundingThreshold,
-      relevanceThreshold,
-      guardrailArn,
-      guardrailVersion,
-    },
-    useStandbyReplicas,
-  }
-);
+new BedrockCustomBotStack(app, `BrChatKbStack${botId}`, {
+  env: {
+    region: params.bedrockRegion,
+  },
+  ownerUserId,
+  botId,
+  embeddingsModel,
+  parsingModel,
+  crawlingScope,
+  crawlingFilters,
+  existKnowledgeBaseId,
+  bedrockClaudeChatDocumentBucketName: params.documentBucketName,
+  chunkingStrategy,
+  existingS3Urls,
+  sourceUrls,
+  maxTokens,
+  instruction,
+  analyzer,
+  overlapPercentage,
+  guardrail: {
+    is_guardrail_enabled,
+    hateThreshold,
+    insultsThreshold,
+    sexualThreshold,
+    violenceThreshold,
+    misconductThreshold,
+    groundingThreshold,
+    relevanceThreshold,
+    guardrailArn,
+    guardrailVersion,
+  },
+  useStandbyReplicas,
+});
 
 cdk.Tags.of(app).add("CDKEnvironment", params.envName);

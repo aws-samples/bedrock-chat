@@ -34,44 +34,40 @@ const largeMessageBucketName = cdk.Fn.importValue(
 );
 
 // NOTE: DO NOT change the stack id naming rule.
-const publishedApi = new ApiPublishmentStack(
-  app,
-  `${params.envPrefix}${sepHyphen}ApiPublishmentStack${params.publishedApiId}`,
-  {
-    env: {
-      region: process.env.CDK_DEFAULT_REGION,
-    },
-    bedrockRegion: params.bedrockRegion,
-    conversationTableName: conversationTableName,
-    tableAccessRoleArn: tableAccessRoleArn,
-    webAclArn: webAclArn,
-    largeMessageBucketName: largeMessageBucketName,
-    usagePlan: {
-      throttle:
-        params.publishedApiThrottleRateLimit !== undefined &&
-        params.publishedApiThrottleBurstLimit !== undefined
-          ? {
-              rateLimit: params.publishedApiThrottleRateLimit,
-              burstLimit: params.publishedApiThrottleBurstLimit,
-            }
-          : undefined,
-      quota:
-        params.publishedApiQuotaLimit !== undefined &&
-        params.publishedApiQuotaPeriod !== undefined
-          ? {
-              limit: params.publishedApiQuotaLimit,
-              period: apigateway.Period[params.publishedApiQuotaPeriod],
-            }
-          : undefined,
-    },
-    deploymentStage: params.publishedApiDeploymentStage,
-    corsOptions: {
-      allowOrigins: publishedApiAllowedOrigins,
-      allowMethods: apigateway.Cors.ALL_METHODS,
-      allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
-      allowCredentials: true,
-    },
-  }
-);
+new ApiPublishmentStack(app, `ApiPublishmentStack${params.publishedApiId}`, {
+  env: {
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+  bedrockRegion: params.bedrockRegion,
+  conversationTableName: conversationTableName,
+  tableAccessRoleArn: tableAccessRoleArn,
+  webAclArn: webAclArn,
+  largeMessageBucketName: largeMessageBucketName,
+  usagePlan: {
+    throttle:
+      params.publishedApiThrottleRateLimit !== undefined &&
+      params.publishedApiThrottleBurstLimit !== undefined
+        ? {
+            rateLimit: params.publishedApiThrottleRateLimit,
+            burstLimit: params.publishedApiThrottleBurstLimit,
+          }
+        : undefined,
+    quota:
+      params.publishedApiQuotaLimit !== undefined &&
+      params.publishedApiQuotaPeriod !== undefined
+        ? {
+            limit: params.publishedApiQuotaLimit,
+            period: apigateway.Period[params.publishedApiQuotaPeriod],
+          }
+        : undefined,
+  },
+  deploymentStage: params.publishedApiDeploymentStage,
+  corsOptions: {
+    allowOrigins: publishedApiAllowedOrigins,
+    allowMethods: apigateway.Cors.ALL_METHODS,
+    allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
+    allowCredentials: true,
+  },
+});
 
 cdk.Tags.of(app).add("CDKEnvironment", params.envName);
