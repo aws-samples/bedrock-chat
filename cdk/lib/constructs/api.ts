@@ -187,6 +187,7 @@ export class Api extends Construct {
           "secretsmanager:RotateSecret",
           "secretsmanager:CancelRotateSecret",
           "secretsmanager:UpdateSecret",
+          "secretsmanager:TagResource",
         ],
         resources: [
           `arn:aws:secretsmanager:${Stack.of(this).region}:${
