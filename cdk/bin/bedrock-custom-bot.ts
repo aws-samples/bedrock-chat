@@ -17,178 +17,223 @@ const app = new cdk.App();
 // Get parameters specific to Bedrock Custom Bot
 const params = resolveBedrockCustomBotParameters();
 
-// Log basic parameters for debugging
-console.log(
-  "Bedrock Custom Bot Parameters:",
-  JSON.stringify({
-    envName: params.envName,
-    envPrefix: params.envPrefix,
-    pk: params.pk,
-    sk: params.sk,
-    documentBucketName: params.documentBucketName,
-    useStandByReplicas: params.useStandByReplicas,
-    bedrockRegion: params.bedrockRegion,
-  })
-);
-
 // Parse JSON strings into objects
-const knowledgeBase = JSON.parse(params.knowledgeBase);
-const knowledge = JSON.parse(params.knowledge);
-const guardrails = JSON.parse(params.guardrails);
+const knowledgeBaseJson = JSON.parse(params.knowledgeBase);
+const knowledgeJson = JSON.parse(params.knowledge);
+const guardrailsJson = JSON.parse(params.guardrails);
 
-// Extract data from parsed objects
-const ownerUserId = params.pk;
-const botId = params.sk.split("#")[2];
-const existingS3Urls = knowledge.s3_urls.L.map((s3Url: any) => s3Url.S);
-const sourceUrls = knowledge.source_urls.L.map((sourceUrl: any) => sourceUrl.S);
-const useStandbyReplicas = params.useStandByReplicas === true;
+// Define interfaces for typed configuration objects
+interface BaseConfig {
+  envName: string;
+  envPrefix: string;
+  bedrockRegion: string;
+  ownerUserId: string;
+  botId: string;
+  documentBucketName: string;
+  useStandbyReplicas: boolean;
+}
 
+interface KnowledgeConfig {
+  embeddingsModel: ReturnType<typeof getEmbeddingModel>;
+  parsingModel: ReturnType<typeof getParsingModel> | undefined;
+  existKnowledgeBaseId?: string;
+  existingS3Urls: string[];
+  sourceUrls: string[];
+  instruction?: string;
+  analyzer?: ReturnType<typeof getAnalyzer>;
+}
+
+interface ChunkingConfig {
+  chunkingStrategy: ReturnType<typeof getChunkingStrategy>;
+  maxTokens?: number;
+  overlapPercentage?: number;
+  overlapTokens?: number; // not used
+  maxParentTokenSize?: number; // not used
+  maxChildTokenSize?: number; // not used
+  bufferSize?: number; // not used
+  breakpointPercentileThreshold?: number; // not used
+}
+
+interface GuardrailConfig {
+  is_guardrail_enabled?: boolean;
+  hateThreshold?: number;
+  insultsThreshold?: number;
+  sexualThreshold?: number;
+  violenceThreshold?: number;
+  misconductThreshold?: number;
+  groundingThreshold?: number;
+  relevanceThreshold?: number;
+  guardrailArn?: number;
+  guardrailVersion?: number;
+}
+
+interface CrawlingConfig {
+  crawlingScope?: ReturnType<typeof getCrowlingScope>;
+  crawlingFilters: CrawlingFilters;
+}
+
+// Extract and organize configuration by category
+const baseConfig: BaseConfig = {
+  envName: params.envName,
+  envPrefix: params.envPrefix,
+  bedrockRegion: params.bedrockRegion,
+  ownerUserId: params.pk,
+  botId: params.sk.split("#")[2],
+  documentBucketName: params.documentBucketName,
+  useStandbyReplicas: params.useStandByReplicas === true,
+};
+
+const knowledgeConfig: KnowledgeConfig = {
+  embeddingsModel: getEmbeddingModel(knowledgeBaseJson.embeddings_model.S),
+  parsingModel: getParsingModel(knowledgeBaseJson.parsing_model.S),
+  existKnowledgeBaseId: knowledgeBaseJson.exist_knowledge_base_id?.S,
+  existingS3Urls: knowledgeJson.s3_urls.L.map((s3Url: any) => s3Url.S),
+  sourceUrls: knowledgeJson.source_urls.L.map((sourceUrl: any) => sourceUrl.S),
+  instruction: knowledgeBaseJson.instruction?.S,
+  analyzer: knowledgeBaseJson.open_search.M.analyzer.M
+    ? getAnalyzer(knowledgeBaseJson.open_search.M.analyzer.M)
+    : undefined,
+};
+
+// Extract chunking configuration
+const chunkingParams = {
+  maxTokens: knowledgeBaseJson.chunking_configuration.M.max_tokens
+    ? Number(knowledgeBaseJson.chunking_configuration.M.max_tokens.N)
+    : undefined,
+  overlapPercentage: knowledgeBaseJson.chunking_configuration.M
+    .overlap_percentage
+    ? Number(knowledgeBaseJson.chunking_configuration.M.overlap_percentage.N)
+    : undefined,
+  overlapTokens: knowledgeBaseJson.chunking_configuration.M.overlap_tokens
+    ? Number(knowledgeBaseJson.chunking_configuration.M.overlap_tokens.N)
+    : undefined,
+  maxParentTokenSize: knowledgeBaseJson.chunking_configuration.M
+    .max_parent_token_size
+    ? Number(knowledgeBaseJson.chunking_configuration.M.max_parent_token_size.N)
+    : undefined,
+  maxChildTokenSize: knowledgeBaseJson.chunking_configuration.M
+    .max_child_token_size
+    ? Number(knowledgeBaseJson.chunking_configuration.M.max_child_token_size.N)
+    : undefined,
+  bufferSize: knowledgeBaseJson.chunking_configuration.M.buffer_size
+    ? Number(knowledgeBaseJson.chunking_configuration.M.buffer_size.N)
+    : undefined,
+  breakpointPercentileThreshold: knowledgeBaseJson.chunking_configuration.M
+    .breakpoint_percentile_threshold
+    ? Number(
+        knowledgeBaseJson.chunking_configuration.M
+          .breakpoint_percentile_threshold.N
+      )
+    : undefined,
+};
+
+const chunkingConfig: ChunkingConfig = {
+  ...chunkingParams,
+  chunkingStrategy: getChunkingStrategy(
+    knowledgeBaseJson.chunking_configuration.M.chunking_strategy.S,
+    knowledgeBaseJson.embeddings_model.S,
+    chunkingParams
+  ),
+};
+
+const crawlingConfig: CrawlingConfig = {
+  crawlingScope: getCrowlingScope(knowledgeBaseJson.web_crawling_scope.S),
+  crawlingFilters: getCrawlingFilters(knowledgeBaseJson.web_crawling_filters.M),
+};
+
+const guardrailConfig: GuardrailConfig = {
+  is_guardrail_enabled: guardrailsJson.is_guardrail_enabled
+    ? Boolean(guardrailsJson.is_guardrail_enabled.BOOL)
+    : undefined,
+  hateThreshold: guardrailsJson.hate_threshold
+    ? Number(guardrailsJson.hate_threshold.N)
+    : undefined,
+  insultsThreshold: guardrailsJson.insults_threshold
+    ? Number(guardrailsJson.insults_threshold.N)
+    : undefined,
+  sexualThreshold: guardrailsJson.sexual_threshold
+    ? Number(guardrailsJson.sexual_threshold.N)
+    : undefined,
+  violenceThreshold: guardrailsJson.violence_threshold
+    ? Number(guardrailsJson.violence_threshold.N)
+    : undefined,
+  misconductThreshold: guardrailsJson.misconduct_threshold
+    ? Number(guardrailsJson.misconduct_threshold.N)
+    : undefined,
+  groundingThreshold: guardrailsJson.grounding_threshold
+    ? Number(guardrailsJson.grounding_threshold.N)
+    : undefined,
+  relevanceThreshold: guardrailsJson.relevance_threshold
+    ? Number(guardrailsJson.relevance_threshold.N)
+    : undefined,
+  guardrailArn: guardrailsJson.guardrail_arn
+    ? Number(guardrailsJson.guardrail_arn.N)
+    : undefined,
+  guardrailVersion: guardrailsJson.guardrail_version
+    ? Number(guardrailsJson.guardrail_version.N)
+    : undefined,
+};
+
+// Log organized configurations for debugging
+console.log("Base Configuration:", JSON.stringify(baseConfig));
 console.log(
-  "Parsed Configuration:",
+  "Knowledge Configuration:",
   JSON.stringify({
-    ownerUserId,
-    botId,
-    existingS3Urls,
-    sourceUrls,
-    useStandbyReplicas,
+    ...knowledgeConfig,
+    embeddingsModel: knowledgeConfig.embeddingsModel.toString(),
+    parsingModel: knowledgeConfig.parsingModel?.toString(),
+    analyzer: knowledgeConfig.analyzer ? "configured" : "undefined",
   })
 );
-
-// Process knowledge base configuration
-const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
-const parsingModel = getParsingModel(knowledgeBase.parsing_model.S);
-const crawlingScope = getCrowlingScope(knowledgeBase.web_crawling_scope.S);
-const crawlingFilters: CrawlingFilters = getCrawlingFilters(
-  knowledgeBase.web_crawling_filters.M
-);
-const existKnowledgeBaseId = knowledgeBase.exist_knowledge_base_id?.S;
-const maxTokens = knowledgeBase.chunking_configuration.M.max_tokens
-  ? Number(knowledgeBase.chunking_configuration.M.max_tokens.N)
-  : undefined;
-const instruction = knowledgeBase.instruction?.S;
-const analyzer = knowledgeBase.open_search.M.analyzer.M
-  ? getAnalyzer(knowledgeBase.open_search.M.analyzer.M)
-  : undefined;
-const overlapPercentage = knowledgeBase.chunking_configuration.M
-  .overlap_percentage
-  ? Number(knowledgeBase.chunking_configuration.M.overlap_percentage.N)
-  : undefined;
-const overlapTokens = knowledgeBase.chunking_configuration.M.overlap_tokens
-  ? Number(knowledgeBase.chunking_configuration.M.overlap_tokens.N)
-  : undefined;
-const maxParentTokenSize = knowledgeBase.chunking_configuration.M
-  .max_parent_token_size
-  ? Number(knowledgeBase.chunking_configuration.M.max_parent_token_size.N)
-  : undefined;
-const maxChildTokenSize = knowledgeBase.chunking_configuration.M
-  .max_child_token_size
-  ? Number(knowledgeBase.chunking_configuration.M.max_child_token_size.N)
-  : undefined;
-const bufferSize = knowledgeBase.chunking_configuration.M.buffer_size
-  ? Number(knowledgeBase.chunking_configuration.M.buffer_size.N)
-  : undefined;
-const breakpointPercentileThreshold = knowledgeBase.chunking_configuration.M
-  .breakpoint_percentile_threshold
-  ? Number(
-      knowledgeBase.chunking_configuration.M.breakpoint_percentile_threshold.N
-    )
-  : undefined;
-
-// Process guardrails configuration
-const is_guardrail_enabled = guardrails.is_guardrail_enabled
-  ? Boolean(guardrails.is_guardrail_enabled.BOOL)
-  : undefined;
-const hateThreshold = guardrails.hate_threshold
-  ? Number(guardrails.hate_threshold.N)
-  : undefined;
-const insultsThreshold = guardrails.insults_threshold
-  ? Number(guardrails.insults_threshold.N)
-  : undefined;
-const sexualThreshold = guardrails.sexual_threshold
-  ? Number(guardrails.sexual_threshold.N)
-  : undefined;
-const violenceThreshold = guardrails.violence_threshold
-  ? Number(guardrails.violence_threshold.N)
-  : undefined;
-const misconductThreshold = guardrails.misconduct_threshold
-  ? Number(guardrails.misconduct_threshold.N)
-  : undefined;
-const groundingThreshold = guardrails.grounding_threshold
-  ? Number(guardrails.grounding_threshold.N)
-  : undefined;
-const relevanceThreshold = guardrails.relevance_threshold
-  ? Number(guardrails.relevance_threshold.N)
-  : undefined;
-const guardrailArn = guardrails.guardrail_arn
-  ? Number(guardrails.guardrail_arn.N)
-  : undefined;
-const guardrailVersion = guardrails.guardrail_version
-  ? Number(guardrails.guardrail_version.N)
-  : undefined;
-
-// Get chunking strategy
-const chunkingStrategy = getChunkingStrategy(
-  knowledgeBase.chunking_configuration.M.chunking_strategy.S,
-  knowledgeBase.embeddings_model.S,
-  {
-    maxTokens,
-    overlapPercentage,
-    overlapTokens,
-    maxParentTokenSize,
-    maxChildTokenSize,
-    bufferSize,
-    breakpointPercentileThreshold,
-  }
-);
-
 console.log(
-  "Knowledge Base Configuration:",
+  "Chunking Configuration:",
   JSON.stringify({
-    embeddingsModel: embeddingsModel.toString(),
-    chunkingStrategy: chunkingStrategy.toString(),
-    existKnowledgeBaseId,
-    maxTokens,
-    instruction,
-    is_guardrail_enabled,
-    parsingModel: parsingModel?.toString(),
-    crawlingScope: crawlingScope?.toString(),
-    analyzer: analyzer ? "configured" : "undefined",
+    ...chunkingConfig,
+    chunkingStrategy: chunkingConfig.chunkingStrategy.toString(),
+  })
+);
+console.log("Guardrail Configuration:", JSON.stringify(guardrailConfig));
+console.log(
+  "Crawling Configuration:",
+  JSON.stringify({
+    crawlingScope: crawlingConfig.crawlingScope?.toString(),
+    crawlingFilters: crawlingConfig.crawlingFilters,
   })
 );
 
 // Create the stack
-new BedrockCustomBotStack(app, `BrChatKbStack${botId}`, {
+new BedrockCustomBotStack(app, `BrChatKbStack${baseConfig.botId}`, {
+  // Environment configuration
   env: {
-    region: params.bedrockRegion,
+    region: baseConfig.bedrockRegion,
   },
-  ownerUserId,
-  botId,
-  embeddingsModel,
-  parsingModel,
-  crawlingScope,
-  crawlingFilters,
-  existKnowledgeBaseId,
-  bedrockClaudeChatDocumentBucketName: params.documentBucketName,
-  chunkingStrategy,
-  existingS3Urls,
-  sourceUrls,
-  maxTokens,
-  instruction,
-  analyzer,
-  overlapPercentage,
-  guardrail: {
-    is_guardrail_enabled,
-    hateThreshold,
-    insultsThreshold,
-    sexualThreshold,
-    violenceThreshold,
-    misconductThreshold,
-    groundingThreshold,
-    relevanceThreshold,
-    guardrailArn,
-    guardrailVersion,
-  },
-  useStandbyReplicas,
+
+  // Base configuration
+  ownerUserId: baseConfig.ownerUserId,
+  botId: baseConfig.botId,
+  bedrockClaudeChatDocumentBucketName: baseConfig.documentBucketName,
+  useStandbyReplicas: baseConfig.useStandbyReplicas,
+
+  // Knowledge base configuration
+  embeddingsModel: knowledgeConfig.embeddingsModel,
+  parsingModel: knowledgeConfig.parsingModel,
+  existKnowledgeBaseId: knowledgeConfig.existKnowledgeBaseId,
+  existingS3Urls: knowledgeConfig.existingS3Urls,
+  sourceUrls: knowledgeConfig.sourceUrls,
+  instruction: knowledgeConfig.instruction,
+  analyzer: knowledgeConfig.analyzer,
+
+  // Chunking configuration
+  chunkingStrategy: chunkingConfig.chunkingStrategy,
+  maxTokens: chunkingConfig.maxTokens,
+  overlapPercentage: chunkingConfig.overlapPercentage,
+
+  // Crawling configuration
+  crawlingScope: crawlingConfig.crawlingScope,
+  crawlingFilters: crawlingConfig.crawlingFilters,
+
+  // Guardrail configuration
+  guardrail: guardrailConfig,
 });
 
-cdk.Tags.of(app).add("CDKEnvironment", params.envName);
+cdk.Tags.of(app).add("CDKEnvironment", baseConfig.envName);
