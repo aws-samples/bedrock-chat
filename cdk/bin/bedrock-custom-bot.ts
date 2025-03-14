@@ -175,30 +175,45 @@ const guardrailConfig: GuardrailConfig = {
 };
 
 // Log organized configurations for debugging
-console.log("Base Configuration:", JSON.stringify(baseConfig));
+console.log("Base Configuration:", JSON.stringify(baseConfig, null, 2));
 console.log(
   "Knowledge Configuration:",
-  JSON.stringify({
-    ...knowledgeConfig,
-    embeddingsModel: knowledgeConfig.embeddingsModel.toString(),
-    parsingModel: knowledgeConfig.parsingModel?.toString(),
-    analyzer: knowledgeConfig.analyzer ? "configured" : "undefined",
-  })
+  JSON.stringify(
+    {
+      ...knowledgeConfig,
+      embeddingsModel: knowledgeConfig.embeddingsModel.toString(),
+      parsingModel: knowledgeConfig.parsingModel?.toString(),
+      analyzer: knowledgeConfig.analyzer ? "configured" : "undefined",
+    },
+    null,
+    2
+  )
 );
 console.log(
   "Chunking Configuration:",
-  JSON.stringify({
-    ...chunkingConfig,
-    chunkingStrategy: chunkingConfig.chunkingStrategy.toString(),
-  })
+  JSON.stringify(
+    {
+      ...chunkingConfig,
+      chunkingStrategy: chunkingConfig.chunkingStrategy.toString(),
+    },
+    null,
+    2
+  )
 );
-console.log("Guardrail Configuration:", JSON.stringify(guardrailConfig));
+console.log(
+  "Guardrail Configuration:",
+  JSON.stringify(guardrailConfig, null, 2)
+);
 console.log(
   "Crawling Configuration:",
-  JSON.stringify({
-    crawlingScope: crawlingConfig.crawlingScope?.toString(),
-    crawlingFilters: crawlingConfig.crawlingFilters,
-  })
+  JSON.stringify(
+    {
+      crawlingScope: crawlingConfig.crawlingScope?.toString(),
+      crawlingFilters: crawlingConfig.crawlingFilters,
+    },
+    null,
+    2
+  )
 );
 
 // Create the stack
