@@ -35,6 +35,20 @@ The admin user must be a member of group called `Admin`, which can be set up via
 
 - In user usages, users who have not used the system at all during the specified period will not be listed.
 
+> [!Important] > **Multi-Environment Database Names**
+>
+> If you're using multiple environments (dev, prod, etc.), the Athena database name will include the environment prefix. Instead of `bedrockchatstack_usage_analysis`, the database name will be:
+>
+> - For default environment: `bedrockchatstack_usage_analysis`
+> - For named environments: `<env-prefix>_bedrockchatstack_usage_analysis` (e.g., `dev_bedrockchatstack_usage_analysis`)
+>
+> Additionally, the table name will include the environment prefix:
+>
+> - For default environment: `ddb_export`
+> - For named environments: `<env-prefix>_ddb_export` (e.g., `dev_ddb_export`)
+>
+> Make sure to adjust your queries accordingly when working with multiple environments.
+
 ## Download conversation data
 
 You can query the conversation logs by Athena, using SQL. To download logs, open Athena Query Editor from management console and run SQL. Followings are some example queries which are useful to analyze use-cases. Feedback can be referred in `MessageMap` attribute.
@@ -63,6 +77,9 @@ ORDER BY
     d.datehour DESC;
 ```
 
+> [!Note]
+> If using a named environment (e.g., "dev"), replace `bedrockchatstack_usage_analysis.ddb_export` with `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in the query above.
+
 ### Query per User ID
 
 Edit `user-id` and `datehour`. `user-id` can be referred on Bot Management screen.
@@ -89,3 +106,6 @@ WHERE
 ORDER BY
     d.datehour DESC;
 ```
+
+> [!Note]
+> If using a named environment (e.g., "dev"), replace `bedrockchatstack_usage_analysis.ddb_export` with `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in the query above.
