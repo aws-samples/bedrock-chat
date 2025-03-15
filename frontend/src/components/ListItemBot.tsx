@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import { BaseProps } from '../@types/common';
 import { useTranslation } from 'react-i18next';
 import { AssistantConfig, CreatorConfig } from '../@types/bot';
-import { COURSE_ID_MAP, LTI_DEPLOYMENT_ID_MAP, ValidCourseId, ValidLTIDeploymentId } from '../constants';
 
 type Props = BaseProps & {
   bot: {
@@ -44,22 +43,6 @@ const ListItemBot: React.FC<Props> = (props) => {
     }
   };
   
-  // Rest of the component remains unchanged
-  const getCanvasInstanceName = () => {
-    if (!props.bot.groupId) {
-      return "";
-    }
-    const lti_deploymentId: ValidLTIDeploymentId = props.bot.groupId.split("-")[0] as ValidLTIDeploymentId;
-    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId] || "";
-  }
-  
-  const getCourseName = () => {
-    if (!props.bot.groupId) {
-      return "";
-    }
-    const courseId: ValidCourseId = props.bot.groupId as ValidCourseId;
-    return COURSE_ID_MAP[courseId] || "";
-  }
   
   const getCreatorName = (): string | undefined => {
     if (!props.bot.creatorConfig || !props.bot.creatorConfig.userName) {
@@ -103,8 +86,6 @@ const ListItemBot: React.FC<Props> = (props) => {
                 )}
             </div>
             <div className="assistant-item-attribute-no-buttons"> 
-              <div className="assistant-item-course">{getCourseName()}</div>
-              <div className="assistant-item-canvas">{getCanvasInstanceName()}</div>
               <div className="assistant-item-type-and-name">{getCreatorName()}</div>
             </div>
           </div>

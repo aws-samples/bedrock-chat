@@ -7,6 +7,10 @@ from app.repositories.group import (
     find_groups_by_user_id
 )
 
+from app.repositories.lti_data import (
+    get_lti_data_list
+)
+
 from app.routes.schemas.group import (
     GroupOutput,
     ACTION_CONFIG_MAP,
@@ -21,14 +25,24 @@ from app.repositories.models.custom_bot import (
 
 logger = logging.getLogger(__name__)
 
-
 def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
     
     try:
+        lti_items = get_lti_data_list()
+
+        lti_map = {}
+
+        for item in lti_items:  
+            lti_map[item.get('lti_id')] = item
+
         groups = find_groups_by_user_id(user_id)
 
         group_metas = []
         for group in groups:
+            # extract the lti_id from the group_id
+            group_lti_id = group.group_id.split("-")[0]
+            lti_name = lti_map.get(group_lti_id, {}).get("lti_name", "")
+
             group_metas.append(
                 GroupOutput(
                     group_id=group.group_id,
@@ -38,6 +52,7 @@ def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
                     create_by=group.create_by,
                     role=group.role,
                     user_name=group.user_name,
+                    lti_name=lti_name
                 )
             )
 

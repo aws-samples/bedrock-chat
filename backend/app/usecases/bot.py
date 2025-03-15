@@ -561,7 +561,6 @@ def fetch_all_bots_by_user_id(
     query_params = {
         "IndexName": "LastBotUsedIndex",
         "KeyConditionExpression": Key("PK").eq(user_id),
-        "ScanIndexForward": False,
     }
     if limit:
         query_params["Limit"] = limit

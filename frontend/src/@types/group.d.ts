@@ -5,6 +5,7 @@ export type Group = {
     updateTime: Date;
     createBy: string;
     role: string;
+    ltiName: string;
 }
 
 export type GetGroupListResponse = Group[];

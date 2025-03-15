@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
-import { LTI_DEPLOYMENT_ID_MAP, ValidLTIDeploymentId } from '../constants';
-
 
 import {
   PiTrashBold,
@@ -18,6 +16,7 @@ import useGroup from '../hooks/useGroup';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Toggle from '../components/Toggle';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
+import { Group } from '../@types/group';
 
 const BotExplorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +26,7 @@ const BotExplorePage: React.FC = () => {
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
   const { myGroups } = useGroup();
   const [assistantList, setAssistantList] = useState<BotListItem[]>([]);
+  const [groupMap, setGroupMap] = useState< Record<string, Group>>();
 
 
   const { newChat } = useChat();
@@ -37,11 +37,15 @@ const BotExplorePage: React.FC = () => {
   } = useBot(true);
 
   useEffect(() => {
-    if (!myBots) return;
-    
+    if (!myGroups || !myBots) return;
+    // set the assistant list
     const sortedData = [...myBots].sort((a, b) => Number(b.createTime) - Number(a.createTime));
     setAssistantList(sortedData);
-  }, [myBots])
+    
+    // set the group list
+    
+    setGroupMap(groupMap);
+  }, [myBots, myGroups])
 
   const onClickNewBot = useCallback((assistantType: string) => {
     navigate('/bot/new', { state: { assistantType: assistantType } });
@@ -95,14 +99,14 @@ const BotExplorePage: React.FC = () => {
     }
   };
 
-  const getCanvasInstanceName = (groupId: string) => {
-    const lti_deploymentId: ValidLTIDeploymentId = groupId.split("-")[0] as ValidLTIDeploymentId;
-    return LTI_DEPLOYMENT_ID_MAP[lti_deploymentId];
-  }
+  const getCanvasInstanceName = useCallback((groupId: string) => {
+    if (!myGroups) return;
+    return myGroups[groupId].ltiName;
+  }, [myGroups])
 
   const getCourseName = useCallback((groupId: string) => {
     if (!myGroups) return;
-    return (myGroups.find((group) => group.groupId == groupId)?.groupName ?? '');
+    return myGroups[groupId].groupName;
   }, [myGroups])
 
   const getCreatorName = (creatorConfig: CreatorConfig): string | undefined => {
@@ -168,7 +172,7 @@ const BotExplorePage: React.FC = () => {
                   <tr className="assistant-list-table-headers">
                     <th className="assistant-list-th-header assistant-list-th-logo-name">Name</th>
                     <th className="assistant-list-th-header">Course</th>
-                    <th className="assistant-list-th-header">District</th>
+                    <th className="assistant-list-th-header">Entity</th>
                     <th className="assistant-list-th-header">Created By</th>
                     <th className="assistant-list-th-header">Created Date</th>
                     <th className="assistant-list-th-header">Sync Status</th>

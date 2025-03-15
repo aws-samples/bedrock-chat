@@ -33,6 +33,15 @@ def get_lti_data(lti_id: str):
         print(e.response['Error']['Message'])
         return None
 
+def get_lti_data_list():
+    # return list of records from the lti table
+    try:
+        response = table.scan()
+        return response.get('Items', [])
+    except ClientError as e:
+        print(f"Error message: {e.response['Error']['Message']}")
+        return None
+
 def delete_lti_data(lti_id: str):
     try:
         response = table.delete_item(

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import useGroupApi from './useGroupApi';
-import { GetGroupListResponse } from '../@types/group';
+import { Group } from '../@types/group';
 
 const useGroup = () => {
 
     const api = useGroupApi();
-    const [myGroups, setMyGroups] = useState<GetGroupListResponse>();
+    const [myGroups, setMyGroups] = useState<Record<string, Group>>();
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAssistantCreator, setIsAssistantCreator] = useState(false);
 
@@ -13,7 +13,12 @@ const useGroup = () => {
         const fetchGroups = async () => {
             try {
                 const response = await api.getGroupListApi();
-                setMyGroups(response.data);
+
+                const groupMap: Record<string, Group> = {};
+                for (const group of response.data) {
+                    groupMap[group.groupId] = group;
+                }
+                setMyGroups(groupMap);
                 if (response.data && Array.isArray(response.data) && response.data.length > 0) {
                     setIsAssistantCreator(true);
                 }

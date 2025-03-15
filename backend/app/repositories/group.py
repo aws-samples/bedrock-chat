@@ -26,7 +26,6 @@ def find_groups_by_user_id(user_id: str) -> list[GroupModel]:
         "KeyConditionExpression": Key("PK").eq(user_id)
         # NOTE: Need SK to fetch only groups
         & Key("SK").begins_with(f"{user_id}#GROUP#"),
-        "ScanIndexForward": False,
     }
 
     def extractGroupId(group_id: str): 
@@ -55,7 +54,6 @@ def find_all_creator_id_by_group_id(group_id: str) -> list[BotCreatorModel]:
     query_params = {
         "IndexName": "GroupIdIndex",
         "KeyConditionExpression": Key("GroupId").eq(group_id),
-        "ScanIndexForward": False,
     }
     response = table.query(**query_params)
     creators = [

@@ -585,7 +585,6 @@ def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
     query_params = {
         "IndexName": "GroupIdIndex",
         "KeyConditionExpression": Key("GroupId").eq(group_id),
-        "ScanIndexForward": False,
     }
     response = table.query(**query_params)
     bots = [

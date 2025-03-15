@@ -134,7 +134,7 @@ const ChatPage: React.FC = () => {
       }
     } else {
       if (!myGroups || !starredBots) return;
-      const hasGroups = Array.isArray(myGroups) && myGroups.length > 0;
+      const hasGroups = myGroups && Object.keys(myGroups).length > 0;
       const hasAvailableAssistants = Array.isArray(starredBots) && starredBots.length > 0;
       if (hasGroups) {
         // check if the user has a teacher/admin role in any group

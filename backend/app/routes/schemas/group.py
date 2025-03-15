@@ -10,6 +10,7 @@ class GroupOutput(BaseSchema):
     create_by: str
     role: str
     user_name: str
+    lti_name: str
 
 # Role hierarchy from lowest to highest
 ROLE_HIERARCHY = ["STUDENT", "TEACHER", "SCHOOLADMIN", "DISTRICTADMIN", "SUPERADMIN"]

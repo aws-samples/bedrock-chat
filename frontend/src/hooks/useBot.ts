@@ -51,19 +51,14 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     '353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-15'
   );
 
-  const { data: starredBots, mutate: mutateStarredBots } = api.bots({
+  const { data: starredBots } = api.bots({
     // getting the groupId from localstorage
     group_id: groupId,
   });
 
-  const { data: recentlyUsedBots, mutate: mutateRecentlyUsedBots } = api.bots({
-    kind: 'mixed',
-    limit: 30,
-  });
   return {
     myBots,
     starredBots: starredBots?.filter((bot) => bot.available),
-    recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getAvailableAssistants: async () => {
       return (await api.bots({group_id: groupId})).data;
     },
@@ -137,90 +132,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
           mutateMyBots();
         });
     },
-    updateMyBotStarred: (botId: string, isStarred: boolean) => {
-      const idxMybots = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
-      mutateMyBots(
-        produce(myBots, (draft) => {
-          if (draft) {
-            draft[idxMybots].isPinned = isStarred;
-          }
-        }),
-        {
-          revalidate: false,
-        }
-      );
-
-      mutateRecentlyUsedBots(
-        produce(recentlyUsedBots, (draft) => {
-          const idx = draft?.findIndex((bot) => bot.id === botId) ?? -1;
-          if (draft) {
-            draft[idx].isPinned = isStarred;
-          }
-        }),
-        {
-          revalidate: false,
-        }
-      );
-
-      mutateStarredBots(
-        produce(starredBots, (draft) => {
-          if (myBots && isStarred) {
-            draft?.unshift({
-              ...myBots[idxMybots],
-            });
-          } else if (!isStarred) {
-            const idxStarred =
-              draft?.findIndex((bot) => bot.id === botId) ?? -1;
-            draft?.splice(idxStarred, 1);
-          }
-        })
-      );
-
-      return api
-        .updateBotPinned(botId, {
-          pinned: isStarred,
-        })
-        .finally(() => {
-          mutateMyBots();
-          mutateStarredBots();
-          mutateRecentlyUsedBots();
-        });
-    },
-    updateSharedBotStarred: (botId: string, isStarred: boolean) => {
-      const idx = recentlyUsedBots?.findIndex((bot) => bot.id === botId) ?? -1;
-      mutateRecentlyUsedBots(
-        produce(recentlyUsedBots, (draft) => {
-          if (draft) {
-            draft[idx].isPinned = isStarred;
-          }
-        }),
-        {
-          revalidate: false,
-        }
-      );
-
-      mutateStarredBots(
-        produce(starredBots, (draft) => {
-          if (recentlyUsedBots && isStarred) {
-            draft?.unshift({
-              ...recentlyUsedBots[idx],
-            });
-          } else if (!isStarred) {
-            const idxStarred =
-              draft?.findIndex((bot) => bot.id === botId) ?? -1;
-            draft?.splice(idxStarred, 1);
-          }
-        })
-      );
-      return api
-        .updateBotPinned(botId, {
-          pinned: isStarred,
-        })
-        .finally(() => {
-          mutateRecentlyUsedBots();
-          mutateStarredBots();
-        });
-    },
     deleteMyBot: (botId: string) => {
       const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
       mutateMyBots(
@@ -233,20 +144,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
       );
       return api.deleteBot(botId).finally(() => {
         mutateMyBots();
-      });
-    },
-    deleteRecentlyUsedBot: (botId: string) => {
-      const idx = recentlyUsedBots?.findIndex((bot) => bot.id === botId) ?? -1;
-      mutateRecentlyUsedBots(
-        produce(recentlyUsedBots, (draft) => {
-          draft?.splice(idx, 1);
-        }),
-        {
-          revalidate: false,
-        }
-      );
-      return api.deleteBot(botId).finally(() => {
-        mutateRecentlyUsedBots();
       });
     },
     uploadFile: (
