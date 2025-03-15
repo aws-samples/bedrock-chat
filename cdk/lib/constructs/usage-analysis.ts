@@ -64,7 +64,7 @@ export class UsageAnalysis extends Construct {
 
     // Workgroup for Athena
     const wg = new athena.CfnWorkGroup(this, "Wg", {
-      name: `${Stack.of(this).stackName.toLowerCase().replace("-", "_")}_wg`,
+      name: `${safeStackName}_wg`,
       description: "Workgroup for Athena",
       recursiveDeleteOption: true,
       workGroupConfiguration: {

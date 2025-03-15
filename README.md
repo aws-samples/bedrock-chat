@@ -7,7 +7,9 @@
 
 [English](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/README.md) | [日本語](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ja-JP.md) | [한국어](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ko-KR.md) | [中文](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_zh-CN.md) | [Français](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_fr-FR.md) | [Deutsch](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_de-DE.md) | [Español](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_es-ES.md) | [Italian](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_it-IT.md) | [Norsk](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_nb-NO.md) | [ไทย](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_th-TH.md) | [Bahasa Indonesia](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_id-ID.md) | [Bahasa Melayu](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ms-MY.md) | [Tiếng Việt](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_vi-VN.md) | [Polski](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_pl-PL.md)
 
-> [!Warning] > **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
+> [!Warning]
+>
+> **V2 released. To update, please carefully review the [migration guide](./docs/migration/V1_TO_V2.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
 
 A multilingual chatbot using LLM models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -295,15 +297,18 @@ npx cdk deploy --all
 
 #### Important Notes
 
-1. **Stack Naming**: 
+1. **Stack Naming**:
+
    - The main stacks for each environment will be prefixed with the environment name (e.g., `dev-BedrockChatStack`, `prod-BedrockChatStack`)
    - However, custom bot stacks (`BrChatKbStack*`) and API publishing stacks (`ApiPublishmentStack*`) do not receive environment prefixes as they are created dynamically at runtime
 
 2. **Resource Naming**:
+
    - Only some resources receive environment prefixes in their names (e.g., `dev_ddb_export` table, `dev-FrontendWebAcl`)
    - Most resources maintain their original names but are isolated by being in different stacks
 
 3. **Environment Identification**:
+
    - All resources are tagged with a `CDKEnvironment` tag containing the environment name
    - You can use this tag to identify which environment a resource belongs to
    - Example: `CDKEnvironment: dev` or `CDKEnvironment: prod`
