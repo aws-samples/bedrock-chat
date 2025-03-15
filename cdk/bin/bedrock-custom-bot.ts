@@ -9,7 +9,10 @@ import {
   getCrowlingScope,
   getCrawlingFilters,
 } from "../lib/utils/bedrock-knowledge-base-args";
-import { CrawlingFilters } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import { BedrockFoundationModel } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
+import { ChunkingStrategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
+import { CrawlingFilters, CrawlingScope } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
 import { resolveBedrockCustomBotParameters } from "../lib/utils/parameter-models";
 
 const app = new cdk.App();
@@ -34,17 +37,17 @@ interface BaseConfig {
 }
 
 interface KnowledgeConfig {
-  embeddingsModel: ReturnType<typeof getEmbeddingModel>;
-  parsingModel: ReturnType<typeof getParsingModel> | undefined;
+  embeddingsModel: BedrockFoundationModel;
+  parsingModel: BedrockFoundationModel | undefined;
   existKnowledgeBaseId?: string;
   existingS3Urls: string[];
   sourceUrls: string[];
   instruction?: string;
-  analyzer?: ReturnType<typeof getAnalyzer>;
+  analyzer?: Analyzer | undefined;
 }
 
 interface ChunkingConfig {
-  chunkingStrategy: ReturnType<typeof getChunkingStrategy>;
+  chunkingStrategy: ChunkingStrategy;
   maxTokens?: number;
   overlapPercentage?: number;
   overlapTokens?: number; // not used
@@ -68,7 +71,7 @@ interface GuardrailConfig {
 }
 
 interface CrawlingConfig {
-  crawlingScope?: ReturnType<typeof getCrowlingScope>;
+  crawlingScope?: CrawlingScope | undefined;
   crawlingFilters: CrawlingFilters;
 }
 
