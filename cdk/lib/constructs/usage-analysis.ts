@@ -29,9 +29,11 @@ export class UsageAnalysis extends Construct {
   constructor(scope: Construct, id: string, props: UsageAnalysisProps) {
     super(scope, id);
 
-    const GLUE_DATABASE_NAME = `${Stack.of(
-      this
-    ).stackName.toLowerCase()}_usage_analysis`;
+    const safeStackName = Stack.of(this)
+      .stackName.toLowerCase()
+      .replace("-", "_");
+
+    const GLUE_DATABASE_NAME = `${safeStackName}_usage_analysis`;
 
     const sepUnderscore = props.envPrefix ? "_" : "";
     const DDB_EXPORT_TABLE_NAME = `${props.envPrefix}${sepUnderscore}ddb_export`;
@@ -62,7 +64,7 @@ export class UsageAnalysis extends Construct {
 
     // Workgroup for Athena
     const wg = new athena.CfnWorkGroup(this, "Wg", {
-      name: `${Stack.of(this).stackName.toLowerCase()}_wg`,
+      name: `${Stack.of(this).stackName.toLowerCase().replace("-", "_")}_wg`,
       description: "Workgroup for Athena",
       recursiveDeleteOption: true,
       workGroupConfiguration: {
