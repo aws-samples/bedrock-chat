@@ -11,7 +11,10 @@ import {
 } from "../lib/utils/bedrock-knowledge-base-args";
 import { BedrockFoundationModel } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { ChunkingStrategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
-import { CrawlingFilters, CrawlingScope } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
+import {
+  CrawlingFilters,
+  CrawlingScope,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
 import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
 import { resolveBedrockCustomBotParameters } from "../lib/utils/parameter-models";
 
@@ -50,11 +53,11 @@ interface ChunkingConfig {
   chunkingStrategy: ChunkingStrategy;
   maxTokens?: number;
   overlapPercentage?: number;
-  overlapTokens?: number; // not used
-  maxParentTokenSize?: number; // not used
-  maxChildTokenSize?: number; // not used
-  bufferSize?: number; // not used
-  breakpointPercentileThreshold?: number; // not used
+  overlapTokens?: number;
+  maxParentTokenSize?: number;
+  maxChildTokenSize?: number;
+  bufferSize?: number;
+  breakpointPercentileThreshold?: number;
 }
 
 interface GuardrailConfig {
