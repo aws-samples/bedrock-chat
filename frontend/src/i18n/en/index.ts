@@ -480,7 +480,7 @@ How would you categorize this email?`,
       },
       deleteDialog: {
         title: 'Delete?',
-        content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
+        content: 'Are you sure you want to delete <Bold>{{title}}</Bold>?',
       },
       shareDialog: {
         title: 'Share',
@@ -576,6 +576,12 @@ How would you categorize this email?`,
     deleteDialog: {
       title: 'Delete?',
       content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
+    },
+    shareConfirmDialog: {
+      titleShare: 'Publish?',
+      titleUnshare: 'Unpublish?',
+      contentShare: 'Are you sure you want to publish <Bold>{{title}}</Bold>?',
+      contentUnshare: 'Are you sure you want to unpublish <Bold>{{title}}</Bold>?',
     },
     clearDialog: {
       title: 'Delete ALL?',

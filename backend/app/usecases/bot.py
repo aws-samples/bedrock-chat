@@ -726,7 +726,9 @@ def fetch_all_bots_from_groups(user_id: str) -> list[BotMeta]:
     assistantList =[]
     for group in groupList:
         groupId = group.group_id
+        logger.info(f"find_all_bots_by_group_id: {groupId}")
         bots = find_all_bots_by_group_id(groupId)
+        logger.info(f"find_all_bots_by_group_id: {groupId}, bots length: {len(bots)}")
         assistantList.extend(bots)
     return assistantList
 

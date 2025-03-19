@@ -56,7 +56,8 @@
 }
 
 .create-assistant-btn-logo {
-  width: 12%;
+  width: 20%;
+  max-width: 80px;
   padding-right: 15px;
 }
 
@@ -214,6 +215,9 @@
 
 .assistant-list-th-header {
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .assistant-list-th-logo-name {
@@ -246,4 +250,11 @@
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: lightgray; /* Change to the actual color if needed */
+}
+
+
+.assistant-list-column-td-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

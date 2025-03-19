@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
 import { BotListItem, BotMeta, CreatorConfig } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
+import DialogConfirmShareBot from '../components/DialogConfirmShareBot';
 import useChat from '../hooks/useChat';
 import useUser from '../hooks/useUser';
 import useGroup from '../hooks/useGroup';
@@ -24,6 +25,8 @@ const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
+  const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
+  const [targetShare, setTargetShare] = useState<BotMeta>();
   const { myGroups } = useGroup();
   const [assistantList, setAssistantList] = useState<BotListItem[]>([]);
   const [groupMap, setGroupMap] = useState< Record<string, Group>>();
@@ -72,9 +75,19 @@ const BotExplorePage: React.FC = () => {
     }
   }, [deleteMyBot, targetDelete]);
 
-  const onToggleShare = useCallback((botId: string, isPublic: boolean) => {
-      updateBotSharing(botId, !isPublic);
+  const onClickShare = useCallback((target: BotMeta) => {
+    setIsOpenShareDialog(true);
+    setTargetShare(target);
   }, []);
+
+  const onShareMyBot = useCallback(() => {
+    if (targetShare) {
+      setIsOpenShareDialog(false);
+      updateBotSharing(targetShare.id, !targetShare.isPublic).catch(() => {
+        setIsOpenShareDialog(true);
+      });
+    }
+  }, [updateBotSharing, targetShare]);
 
   const onClickBot = useCallback(
     (botId: string) => {
@@ -136,6 +149,14 @@ const BotExplorePage: React.FC = () => {
           setIsOpenDeleteDialog(false);
         }}
       />
+      <DialogConfirmShareBot
+        isOpen={isOpenShareDialog}
+        target={targetShare}
+        onShare={onShareMyBot}
+        onClose={() => {
+          setIsOpenShareDialog(false);
+        }}
+      />
         <div className="relative flex h-full flex-1 flex-col">
           <div className="flex-1 overflow-hidden assistant-list-title-and-btn-container">
             <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light dark:bg-aws-paper-dark">
@@ -153,7 +174,7 @@ const BotExplorePage: React.FC = () => {
                 className="text-l font-bold create-assistant-btn"
                 outlined
                 onClick={() => onClickNewBot("learning_assistant")}>
-                <img src="/images/learning_assistant.png" className="create-assistant-btn-logo"/>
+                <img src="/images/learning_assistant.svg" className="create-assistant-btn-logo"/>
                 <div className="create-assistant-btn-text-box">
                   <div className="create-assistant-btn-title">Learning Assistant</div>
                   <div className="create-assistant-btn-description">Answer student questions using provided material.</div>  
@@ -176,7 +197,7 @@ const BotExplorePage: React.FC = () => {
                     <th className="assistant-list-th-header">Created By</th>
                     <th className="assistant-list-th-header">Created Date</th>
                     <th className="assistant-list-th-header">Sync Status</th>
-                    <th className="assistant-list-th-header">Public</th>
+                    <th className="assistant-list-th-header">Published</th>
                   </tr>
                 </thead>
                 <tbody id="bot-list">
@@ -205,10 +226,10 @@ const BotExplorePage: React.FC = () => {
                           )}
                       </div>
                     </td>
-                    <td>{getCourseName(bot.groupId)}</td>
-                    <td>{getCanvasInstanceName(bot.groupId)}</td>
-                    <td>{(bot.creatorConfig) ? getCreatorName(bot.creatorConfig) : ""}</td>
-                    <td>{getCreatedTimeFormatted(bot.createTime)}</td>
+                    <td className="assistant-list-column-td-text">{getCourseName(bot.groupId)}</td>
+                    <td className="assistant-list-column-td-text">{getCanvasInstanceName(bot.groupId)}</td>
+                    <td className="assistant-list-column-td-text">{(bot.creatorConfig) ? getCreatorName(bot.creatorConfig) : ""}</td>
+                    <td className="assistant-list-column-td-text">{getCreatedTimeFormatted(bot.createTime)}</td>
                     <td>
                       <StatusSyncBot
                         className="mr-5 assistant-list-tr-td-sync-icon"
@@ -222,7 +243,7 @@ const BotExplorePage: React.FC = () => {
                       {/* Public, Edit, Delete operations in one column */}
                       <Toggle
                         value={bot.isPublic}
-                        onChange={() => onToggleShare(bot.id, bot.isPublic)}/>
+                        onChange={() => onClickShare(bot)}/>
                       <Button
                         className="mr-2 h-8 text-sm font-semibold"
                         outlined
