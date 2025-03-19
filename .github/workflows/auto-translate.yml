@@ -8,7 +8,7 @@ env:
   TIMEOUT_SECONDS: 21600
 
 on:
-  pull_request:
+  push:
     branches:
       - main
       - v1
