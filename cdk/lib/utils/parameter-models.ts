@@ -56,7 +56,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Authentication and user management
   identityProviders: z
     .unknown()
-    .transform(val => Array.isArray(val) ? val as TIdentityProvider[] : [])
+    .transform((val) =>
+      Array.isArray(val) ? (val as TIdentityProvider[]) : []
+    )
     .pipe(z.array(z.custom<TIdentityProvider>()))
     .default([]),
   userPoolDomainPrefix: z.string().default(""),
@@ -171,7 +173,6 @@ export function resolveBedrockChatParameters(
     allowedIpV6AddressRanges: app.node.tryGetContext(
       "allowedIpV6AddressRanges"
     ),
-    // 配列でない場合は空配列を使用
     identityProviders: app.node.tryGetContext("identityProviders"),
     userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
     allowedSignUpEmailDomains: app.node.tryGetContext(

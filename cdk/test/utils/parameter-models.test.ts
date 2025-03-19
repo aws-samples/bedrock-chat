@@ -9,7 +9,7 @@ import {
 import { ZodError } from "zod";
 
 /**
- * テストヘルパー関数: App インスタンスを作成
+ * Test helper function: create CDK App instance
  */
 function createTestApp(context = {}) {
   return new App({
@@ -413,10 +413,10 @@ describe("getBedrockChatParameters", () => {
     test("should use default values when CDK context is empty", () => {
       // Given
       const emptyParamsMap = new Map();
-      
+
       // When
       const result = getBedrockChatParameters(app, undefined, emptyParamsMap);
-      
+
       // Then
       expect(result.bedrockRegion).toBe("us-east-1");
       expect(result.enableMistral).toBe(false);
@@ -531,7 +531,8 @@ describe("resolveApiPublishParameters", () => {
         PUBLISHED_API_QUOTA_PERIOD: "DAY",
         PUBLISHED_API_DEPLOYMENT_STAGE: "prod",
         PUBLISHED_API_ID: "api123",
-        PUBLISHED_API_ALLOWED_ORIGINS: '["https://example.com", "https://test.com"]',
+        PUBLISHED_API_ALLOWED_ORIGINS:
+          '["https://example.com", "https://test.com"]',
       };
 
       try {
@@ -581,16 +582,16 @@ describe("resolveApiPublishParameters", () => {
       const originalEnv = process.env;
       process.env = {
         ...originalEnv,
-        PUBLISHED_API_ALLOWED_ORIGINS: 'invalid json format',
+        PUBLISHED_API_ALLOWED_ORIGINS: "invalid json format",
       };
-      
+
       try {
         // When
         const result = resolveApiPublishParameters();
-        
+
         // Then
         // Note: The function doesn't validate JSON format, it just passes the string through
-        expect(result.publishedApiAllowedOrigins).toBe('invalid json format');
+        expect(result.publishedApiAllowedOrigins).toBe("invalid json format");
       } finally {
         // Restore original environment
         process.env = originalEnv;
