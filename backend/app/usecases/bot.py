@@ -29,6 +29,7 @@ from app.repositories.custom_bot import (
     update_bot_pin_status,
     find_all_bots_by_group_id,
     fetch_bots_by_group_id_and_type,
+    scan_bots_by_group_id_index
 )
 from app.repositories.models.custom_bot import (
     ActiveModelsModel,
@@ -723,13 +724,19 @@ def fetch_all_bots_from_groups(user_id: str) -> list[BotMeta]:
     if not groupList:
         return []
 
-    assistantList =[]
-    for group in groupList:
-        groupId = group.group_id
-        logger.info(f"find_all_bots_by_group_id: {groupId}")
-        bots = find_all_bots_by_group_id(groupId)
-        logger.info(f"find_all_bots_by_group_id: {groupId}, bots length: {len(bots)}")
-        assistantList.extend(bots)
+    assistantList = []
+    if len(groupList) < 5:
+        logger.info(f"Start: query bots by groupId, groupList: {groupList}")
+        for group in groupList:
+            groupId = group.group_id
+            bots = find_all_bots_by_group_id(groupId)
+            assistantList.extend(bots)
+    else: 
+        logger.info(f"Start: scan botList and filter, groupList: {groupList}")
+        groupIdList = [item.group_id for item in groupList]
+        botScanList = scan_bots_by_group_id_index(user_id)
+        assistantList = [obj for obj in botScanList if obj.group_id in groupIdList]
+    logger.info(f"End: assistantList size: {len(assistantList)}")
     return assistantList
 
 

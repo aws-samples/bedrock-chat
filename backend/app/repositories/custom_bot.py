@@ -579,6 +579,49 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     logger.info(f"Found bot: {bot}")
     return bot
 
+def scan_bots_by_group_id_index(user_id: str) -> list[BotMeta]:
+    table = _get_table_client(user_id)
+    query_params = {
+        "IndexName": "GroupIdIndex",
+    }
+    response = table.scan(**query_params)
+    bots = [
+        BotMeta(
+            id=decompose_bot_id(item["SK"]),
+            title=item["Title"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item["LastBotUsed"]),
+            owned=True,
+            available=True,
+            is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
+            has_bedrock_knowledge_base=(
+                True if item.get("BedrockKnowledgeBase", None) else False
+            ),
+            version=(
+                None if "Version" not in item else item["Version"]
+            ),
+            group_id=(
+                None if "GroupId" not in item else item["GroupId"]
+            ),
+            assistant_config=(
+                AssistantConfigModel(**item["AssistantConfig"])
+                if "AssistantConfig" in item
+                else None
+            ),
+            creator_config=(
+                CreatorConfigModel(**item["CreatorConfig"])
+                if "CreatorConfig" in item
+                else None
+            )
+        )
+        for item in response["Items"]
+    ]
+    logger.debug(f"scan_bots_by_group_id_index: {bots}")
+    return bots
+
 def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
     table = _get_table_client(group_id)
     logger.debug(f"Finding bots for group: {group_id}")
