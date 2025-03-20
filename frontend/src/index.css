@@ -258,3 +258,40 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* *************************************** */
+/* Styling for the metrics above the table  */
+/* *************************************** */
+
+/* Container for the info items - One row, three columns */
+.assistant-list-metrics-container {
+  display: flex;
+  width: 100%;
+  max-width: 650px; /* Constrain the width of the whole container */
+  padding-left: 10px;
+  gap: 50px;
+}
+
+/* Each info item (e.g., Courses, Assistants, Published) */
+.assistant-list-metrics-item {
+  max-width: 200px; /* Limit the width of each metric */
+  display: flex;
+  flex-direction: row;
+}
+
+/* Styling for the number (value) */
+.assistant-list-metrics-value {
+  font-size: 60px; /* Increase font size for the number */
+  font-weight: bold;
+  color: #333;
+}
+
+/* Styling for the label (Courses, Assistants, Published) */
+.assistant-list-metrics-label {
+  font-size: 30px; /* Increase font size for the label */
+  color: #888;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

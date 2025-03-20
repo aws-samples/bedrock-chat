@@ -44,9 +44,7 @@ const BotExplorePage: React.FC = () => {
     // set the assistant list
     const sortedData = [...myBots].sort((a, b) => Number(b.createTime) - Number(a.createTime));
     setAssistantList(sortedData);
-    
     // set the group list
-    
     setGroupMap(groupMap);
   }, [myBots, myGroups])
 
@@ -122,6 +120,21 @@ const BotExplorePage: React.FC = () => {
     return myGroups[groupId].groupName;
   }, [myGroups])
 
+  const getNumOfCourses = useCallback(() => {
+    if (!myGroups) return 0;
+    return Object.keys(myGroups).length;
+  }, [myGroups])
+
+  const getNumOfAssistants = useCallback(() => {
+    if (!assistantList) return 0;
+    return assistantList.length;
+  }, [assistantList])
+
+  const getNumOfPubAssistants = useCallback(() => {
+    if (!assistantList) return 0;
+    return assistantList.filter((bot) => bot.isPublic).length;
+  }, [assistantList])
+
   const getCreatorName = (creatorConfig: CreatorConfig): string | undefined => {
     if (!creatorConfig || !creatorConfig.userName) {
       return "";
@@ -182,6 +195,20 @@ const BotExplorePage: React.FC = () => {
               </Button>
             </div>
           </div>
+          <div className="assistant-list-metrics-container">
+            <div className="assistant-list-metrics-item">
+                <div className="assistant-list-metrics-value">{getNumOfCourses()}</div>
+                <div className="assistant-list-metrics-label">Courses</div>
+            </div>
+            <div className="assistant-list-metrics-item">
+                <div className="assistant-list-metrics-value">{getNumOfAssistants()}</div>
+                <div className="assistant-list-metrics-label">Assistants</div>
+            </div>
+            <div className="assistant-list-metrics-item">
+                <div className="assistant-list-metrics-value">{getNumOfPubAssistants()}</div>
+                <div className="assistant-list-metrics-label">Published</div>
+            </div>
+        </div>
           <div className="h-3/4 w-full p-2">
             <div className="flex w-full justify-between">
               <div className="text-xl font-bold">{"Assistant List"}</div>
