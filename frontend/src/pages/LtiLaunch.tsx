@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate} from 'react-router-dom';
 import { getCurrentUser} from 'aws-amplify/auth';
 import {signOut, signIn, confirmSignIn} from 'aws-amplify/auth';
+import { PiSpinner} from 'react-icons/pi';
 
 
 const LtiLaunch: React.FC = () => {
@@ -160,15 +161,27 @@ const LtiLaunch: React.FC = () => {
   const nextStep = NextStep[pageState];
   console.log('pageState', pageState); 
 
-
-  return (<div> 
-    <div> {nextStep.message} </div> 
-    {nextStep.action  && (
-      <button onClick={nextStep.action} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        Continue
-      </button>
-    )}
-  </div>);
+  return (
+    <div> 
+      {!nextStep.action && (
+        <PiSpinner 
+          className="animate-spin text-aws-squid-ink-light dark:text-white" 
+          style={{ fontSize: '5em' }} 
+        /> 
+      )}
+      {nextStep.action && (
+        <div>
+          <div>{nextStep.message}</div> 
+          <button 
+            onClick={nextStep.action} 
+            style={{ padding: '10px 20px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Continue
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
 };
 
