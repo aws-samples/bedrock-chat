@@ -9,13 +9,13 @@
 
 > [!Warning]
 >
-> **V2がリリースされました。更新する際は、[移行ガイド](./migration/V1_TO_V2_ja-JP.md)を注意深く確認してください。** 注意を払わないと、**V1のBOTが使用不能になります。**
+> **V2がリリースされました。更新する際は、[移行ガイド](./migration/V1_TO_V2_ja-JP.md)を慎重に確認してください。** 注意せずに行うと、**V1のBOTは使用できなくなります。**
 
 [Amazon Bedrock](https://aws.amazon.com/bedrock/)が提供するLLMモデルを使用した多言語チャットボット。
 
-### YouTubeで概要とインストールを確認
+### YouTubeで概要とインストール方法を視聴
 
-[![Overview](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
+[![概要](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
 
 ### 基本的な会話
 
@@ -23,14 +23,14 @@
 
 ### ボットのパーソナライズ
 
-独自の指示を追加し、URLやファイルとして外部知識を提供（[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)）。ボットはアプリケーションユーザー間で共有できます。カスタマイズされたボットはスタンドアロンAPIとして公開することもできます（[詳細](./PUBLISH_API_ja-JP.md)を参照）。
+独自の指示を追加し、URLやファイルとして外部知識を提供できます（[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)）。ボットはアプリケーションユーザー間で共有できます。カスタマイズされたボットはスタンドアロンAPIとして公開することもできます（[詳細](./PUBLISH_API_ja-JP.md)参照）。
 
 ![](./imgs/bot_creation.png)
 ![](./imgs/bot_chat.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
 > [!Important]
-> ガバナンス上の理由により、許可されたユーザーのみがカスタマイズされたボットを作成できます。カスタマイズされたボットの作成を許可するには、ユーザーは`CreatingBotAllowed`グループのメンバーである必要があります。これは管理コンソール > Amazon Cognito ユーザープールまたはAWS CLIで設定できます。ユーザープールIDはCloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`からアクセスできます。
+> ガバナンス上の理由から、許可されたユーザーのみがカスタマイズされたボットを作成できます。カスタマイズされたボットの作成を許可するには、ユーザーは`CreatingBotAllowed`グループのメンバーである必要があります。これは管理コンソール > Amazon Cognito ユーザープール、またはAWS CLIで設定できます。ユーザープールIDは、CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`からアクセスできます。
 
 ### 管理者ダッシュボード
 
@@ -57,7 +57,7 @@
 
 ## 🚀 超簡単デプロイ
 
-- us-east-1リージョンで、[Bedrockモデルアクセス](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)を開き > `モデルアクセスの管理` > `Anthropic / Claude 3`のすべて、`Amazon / Nova`、`Amazon / Titan Text Embeddings V2`、`Cohere / Embed Multilingual`をすべてチェックし、`変更を保存`します。
+- us-east-1リージョンで、[Bedrockモデルアクセス](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)を開き、`モデルアクセスを管理`をクリック > `Anthropic / Claude 3`のすべて、`Amazon / Nova`、`Amazon / Titan Text Embeddings V2`、`Cohere / Embed Multilingual`をすべてチェックし、`変更を保存`をクリックします。
 
 <details>
 <summary>スクリーンショット</summary>
@@ -66,8 +66,8 @@
 
 </details>
 
-- デプロイしたいリージョンで[CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
-- 以下のコマンドでデプロイを実行します。特定のバージョンをデプロイしたい場合やセキュリティポリシーを適用する必要がある場合は、[オプションパラメータ](#optional-parameters)から適切なパラメータを指定してください。
+- デプロイしたいリージョンの[CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
+- 以下のコマンドでデプロイを実行します。デプロイするバージョンを指定したい場合やセキュリティポリシーを適用する必要がある場合は、[オプションパラメータ](#オプションパラメータ)から適切なパラメータを指定してください。
 
 ```sh
 git clone https://github.com/aws-samples/bedrock-claude-chat.git
@@ -82,16 +82,16 @@ chmod +x bin.sh
 
 デプロイ時に以下のパラメータを指定して、セキュリティとカスタマイズを強化できます：
 
-- **--disable-self-register**: 自己登録を無効化（デフォルト：有効）。このフラグが設定されている場合、Cognitoですべてのユーザーを作成する必要があり、ユーザーは自分でアカウントを登録できません。
-- **--enable-lambda-snapstart**: [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)を有効化（デフォルト：無効）。このフラグが設定されている場合、Lambdaファンクションのコールドスタート時間を改善し、ユーザーエクスペリエンスを向上させます。
-- **--ipv4-ranges**: 許可されたIPv4範囲をカンマ区切りで指定（デフォルト：すべてのIPv4アドレスを許可）。
-- **--ipv6-ranges**: 許可されたIPv6範囲をカンマ区切りで指定（デフォルト：すべてのIPv6アドレスを許可）。
-- **--disable-ipv6**: IPv6接続を無効化（デフォルト：有効）。
-- **--allowed-signup-email-domains**: サインアップを許可するメールドメインをカンマ区切りで指定（デフォルト：ドメイン制限なし）。
-- **--bedrock-region**: Bedrockが利用可能なリージョンを定義（デフォルト：us-east-1）。
-- **--repo-url**: フォークまたはカスタムソース管理の場合、Bedrock Claude Chatのカスタムリポジトリをデプロイ（デフォルト：https://github.com/aws-samples/bedrock-claude-chat.git）。
-- **--version**: デプロイするBedrock Claude Chatのバージョン（デフォルト：開発中の最新バージョン）。
-- **--cdk-json-override**: デプロイ時にCDKコンテキスト値を上書きできます。これにより、cdk.jsonファイルを直接編集せずに設定を変更できます。
+- **--disable-self-register**: 自己登録を無効にします（デフォルト：有効）。このフラグが設定されている場合、Cognitoですべてのユーザーを作成する必要があり、ユーザーは自分でアカウントを登録できません。
+- **--enable-lambda-snapstart**: [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)を有効にします（デフォルト：無効）。このフラグが設定されている場合、Lambdaファンクションのコールドスタート時間を改善し、より高速な応答時間でユーザーエクスペリエンスを向上させます。
+- **--ipv4-ranges**: 許可されたIPv4範囲のカンマ区切りリスト。（デフォルト：すべてのIPv4アドレスを許可）
+- **--ipv6-ranges**: 許可されたIPv6範囲のカンマ区切りリスト。（デフォルト：すべてのIPv6アドレスを許可）
+- **--disable-ipv6**: IPv6経由の接続を無効にします。（デフォルト：有効）
+- **--allowed-signup-email-domains**: サインアップに許可されるメールドメインのカンマ区切りリスト。（デフォルト：ドメイン制限なし）
+- **--bedrock-region**: Bedrockが利用可能なリージョンを定義します。（デフォルト：us-east-1）
+- **--repo-url**: フォークまたはカスタムソース管理の場合、デプロイするBedrock Claude Chatのカスタムリポジトリ。（デフォルト：https://github.com/aws-samples/bedrock-claude-chat.git）
+- **--version**: デプロイするBedrock Claude Chatのバージョン。（デフォルト：開発中の最新バージョン）
+- **--cdk-json-override**: デプロイ中にCDKコンテキスト値を上書きできます。これにより、cdk.jsonファイルを直接編集せずに設定を変更できます。
 
 使用例：
 
@@ -106,7 +106,7 @@ chmod +x bin.sh
 }'
 ```
 
-上書きJSONは、cdk.jsonと同じ構造に従う必要があります。以下のようなコンテキスト値を上書きできます：
+上書きJSONは、cdk.jsonと同じ構造に従う必要があります。以下を含む任意のコンテキスト値を上書きできます：
 
 - `selfSignUpEnabled`
 - `enableLambdaSnapStart`
@@ -116,12 +116,12 @@ chmod +x bin.sh
 - `bedrockRegion`
 - `enableRagReplicas`
 - `enableBedrockCrossRegionInference`
-- cdk.jsonで定義されたその他のコンテキスト値
+- cdk.jsonで定義された他のコンテキスト値
 
 > [!Note]
 > 上書き値は、AWS CodeBuildでのデプロイ時に既存のcdk.json設定とマージされます。指定された上書き値は、cdk.jsonの値よりも優先されます。
 
-#### パラメータを含むコマンド例：
+#### パラメータを使用したコマンド例：
 
 ```sh
 ./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --bedrock-region "us-west-2" --version "v1.2.6"
@@ -138,37 +138,37 @@ chmod +x bin.sh
 上記のようにサインアップ画面が表示され、メールを登録してログインできます。
 
 > [!Important]
-> オプションパラメータを設定しない場合、URLを知っている人は誰でもサインアップできます。本番環境では、セキュリティリスクを軽減するために、IPアドレス制限と自己サインアップの無効化を強くお勧めします（allowed-signup-email-domainsを定義して、会社のドメインのメールアドレスのみがサインアップできるように制限できます）。./binを実行する際に、ipv4-rangesとipv6-rangesでIPアドレス制限を設定し、disable-self-registerを使用して自己サインアップを無効にしてください。
+> オプションパラメータを設定しない場合、URLを知っている人は誰でもサインアップできます。本番環境では、セキュリティリスクを軽減するためにIPアドレス制限を追加し、自己サインアップを無効にすることを強くお勧めします（allowed-signup-email-domainsを定義して、会社のドメインのメールアドレスのみがサインアップできるように制限できます）。./binを実行する際に、ipv4-rangesとipv6-rangesを使用してIPアドレス制限を設定し、disable-self-registerを使用して自己サインアップを無効にしてください。
 
 > [!TIP]
 > `フロントエンドURL`が表示されないか、Bedrock Claude Chatが正常に動作しない場合、最新バージョンに問題がある可能性があります。その場合は、パラメータに`--version "v1.2.6"`を追加してデプロイを再試行してください。
 
 ## アーキテクチャ
 
-AWS管理サービスを基盤としたアーキテクチャで、インフラ管理の必要性を排除しています。Amazon Bedrockを利用することで、AWS外のAPIと通信する必要がなくなります。これにより、スケーラブルで信頼性が高く、セキュアなアプリケーションをデプロイできます。
+AWS管理サービスを基盤とするアーキテクチャで、インフラ管理の必要性を排除しています。Amazon Bedrockを利用することで、AWS外のAPIと通信する必要がありません。これにより、スケーラブルで信頼性が高く、セキュアなアプリケーションをデプロイできます。
 
-- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)：会話履歴を保存するためのNoSQLデータベース
+- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)：会話履歴を保存するNoSQLデータベース
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/)：バックエンドAPIエンドポイント（[AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter)、[FastAPI](https://fastapi.tiangolo.com/)）
-- [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/)：フロントエンドアプリケーションの配信（[React](https://react.dev/)、[Tailwind CSS](https://tailwindcss.com/)）
+- [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/)：フロントエンドアプリケーション配信（[React](https://react.dev/)、[Tailwind CSS](https://tailwindcss.com/)）
 - [AWS WAF](https://aws.amazon.com/waf/)：IPアドレス制限
 - [Amazon Cognito](https://aws.amazon.com/cognito/)：ユーザー認証
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/)：APIを介して基盤モデルを利用する管理サービス
-- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/)：検索拡張生成（[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)）のための管理インターフェースを提供し、ドキュメントの埋め込みと解析サービスを提供
+- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/)：検索拡張生成（[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)）のための管理インターフェースを提供し、文書の埋め込みと解析サービスを提供
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/)：DynamoDBストリームからイベントを受信し、外部知識を埋め込むStep Functionsを起動
-- [AWS Step Functions](https://aws.amazon.com/step-functions/)：外部知識をBedrock Knowledge Basesに埋め込むための取り込みパイプラインのオーケストレーション
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/)：Bedrock Knowledge Basesのバックエンドデータベースとして機能し、全文検索とベクター検索機能を提供し、関連情報の正確な検索を可能に
-- [Amazon Athena](https://aws.amazon.com/athena/)：S3バケットを分析するためのクエリサービス
+- [AWS Step Functions](https://aws.amazon.com/step-functions/)：Bedrock Knowledge Basesに外部知識を埋め込むための取り込みパイプラインのオーケストレーション
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/)：Bedrock Knowledge Basesのバックエンドデータベースとして機能し、全文検索とベクター検索機能を提供し、関連情報の正確な取得を可能にする
+- [Amazon Athena](https://aws.amazon.com/athena/)：S3バケットを分析するクエリサービス
 
 ![](./imgs/arch.png)
 
 ## CDKを使用したデプロイ
 
-超簡単なデプロイでは、[AWS CodeBuild](https://aws.amazon.com/codebuild/)を内部的に使用してCDKによるデプロイを実行します。このセクションでは、CDKを直接使用したデプロイ手順を説明します。
+超簡単なデプロイは、[AWS CodeBuild](https://aws.amazon.com/codebuild/)を使用して、内部的にCDKによるデプロイを実行します。このセクションでは、CDKを直接使用してデプロイする手順を説明します。
 
-- UNIX、Docker、Node.jsランタイム環境が必要です。ない場合は、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)を使用することもできます。
+- UNIX、Docker、Node.jsランタイム環境が必要です。ない場合は、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)を使用できます
 
-> [!重要]
-> デプロイ中にローカル環境のストレージ容量が不足している場合、CDKブートストラップでエラーが発生する可能性があります。Cloud9などで実行している場合は、デプロイ前にインスタンスのボリュームサイズを拡張することをお勧めします。
+> [!Important]
+> デプロイ中にローカル環境のストレージ容量が不足している場合、CDKのブートストラップでエラーが発生する可能性があります。Cloud9などで実行している場合は、デプロイ前にインスタンスのボリュームサイズを拡張することをお勧めします。
 
 - リポジトリをクローン
 
@@ -186,11 +186,11 @@ npm ci
 
 - 必要に応じて、[cdk.json](./cdk/cdk.json)の以下のエントリを編集します。
 
-  - `bedrockRegion`: Bedrockが利用可能なリージョン。**注意：現時点でBedrockはすべてのリージョンをサポートしていません。**
-  - `allowedIpV4AddressRanges`、`allowedIpV6AddressRanges`：許可されたIPアドレス範囲。
-  - `enableLambdaSnapStart`：デフォルトはtrueです。[Lambda SnapStartをPython関数でサポートしていないリージョン](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)にデプロイする場合はfalseに設定します。
+  - `bedrockRegion`：Bedrockが利用可能なリージョン。**注意：現時点でBedrockはすべてのリージョンをサポートしているわけではありません。**
+  - `allowedIpV4AddressRanges`、`allowedIpV6AddressRanges`：許可されるIPアドレス範囲。
+  - `enableLambdaSnapStart`：デフォルトはtrueです。[Lambda SnapStartがPython関数をサポートしていないリージョン](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)にデプロイする場合はfalseに設定します。
 
-- CDKをデプロイする前に、デプロイするリージョンでブートストラップを一度実行する必要があります。
+- CDKをデプロイする前に、デプロイするリージョンでブートストラップを1回実行する必要があります。
 
 ```
 npx cdk bootstrap
@@ -220,7 +220,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 デプロイのパラメータは、`cdk.json`を使用するか、型安全な`parameter.ts`ファイルを使用して定義できます。
 
-#### cdk.json を使用する（従来の方法）
+#### cdk.json（従来の方法）の使用
 
 パラメータを構成する従来の方法は、`cdk.json`ファイルを編集することです。このアプローチは簡単ですが、型チェックがありません：
 
@@ -236,7 +236,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 }
 ```
 
-#### parameter.ts を使用する（推奨される型安全な方法）
+#### parameter.ts（推奨される型安全な方法）の使用
 
 より優れた型安全性と開発者エクスペリエンスのために、`parameter.ts`ファイルを使用してパラメータを定義できます：
 
@@ -264,12 +264,12 @@ bedrockChatParams.set("prod", {
 });
 ```
 
-> [!メモ]
+> [!Note]
 > 既存のユーザーは、変更なしで`cdk.json`を引き続き使用できます。`parameter.ts`アプローチは、新規デプロイまたは複数の環境を管理する必要がある場合に推奨されます。
 
-### 複数の環境へのデプロイ
+### 複数の環境のデプロイ
 
-`parameter.ts`ファイルと`-c envName`オプションを使用して、同じコードベースから複数の環境にデプロイできます。
+`parameter.ts`ファイルと`-c envName`オプションを使用して、同じコードベースから複数の環境をデプロイできます。
 
 #### 前提条件
 
@@ -278,38 +278,38 @@ bedrockChatParams.set("prod", {
 
 #### デプロイコマンド
 
-特定の環境にデプロイするには：
+特定の環境をデプロイするには：
 
 ```bash
-# dev環境にデプロイ
+# dev環境をデプロイ
 npx cdk deploy --all -c envName=dev
 
-# prod環境にデプロイ
+# prod環境をデプロイ
 npx cdk deploy --all -c envName=prod
 ```
 
-環境が指定されていない場合、「default」環境が使用されます：
+環境が指定されない場合、「default」環境が使用されます：
 
 ```bash
-# デフォルト環境にデプロイ
+# デフォルト環境をデプロイ
 npx cdk deploy --all
 ```
 
 #### 重要な注意点
 
-1. **スタックの命名**：
+1. **スタックの命名**:
 
-   - 各環境のメインスタックは環境名の接頭辞が付きます（例：`dev-BedrockChatStack`、`prod-BedrockChatStack`）
+   - 各環境のメインスタックは環境名が接頭辞として付けられます（例：`dev-BedrockChatStack`、`prod-BedrockChatStack`）
    - ただし、カスタムボットスタック（`BrChatKbStack*`）とAPI公開スタック（`ApiPublishmentStack*`）は、実行時に動的に作成されるため、環境接頭辞は付きません
 
-2. **リソースの命名**：
+2. **リソースの命名**:
 
    - 一部のリソースのみが環境接頭辞を名前に持ちます（例：`dev_ddb_export`テーブル、`dev-FrontendWebAcl`）
    - ほとんどのリソースは元の名前を維持しますが、異なるスタックに分離されます
 
-3. **環境の識別**：
+3. **環境の識別**:
 
-   - すべてのリソースは、環境名を含む`CDKEnvironment`タグ付けされます
+   - すべてのリソースには、環境名を含む`CDKEnvironment`タグが付けられます
    - このタグを使用して、リソースがどの環境に属するかを識別できます
    - 例：`CDKEnvironment: dev`または`CDKEnvironment: prod`
 
@@ -317,7 +317,7 @@ npx cdk deploy --all
 
 5. **環境の要件**：「default」以外の環境を作成するには、`parameter.ts`を使用する必要があります。`-c envName`オプションだけでは不十分です。
 
-6. **リソースの分離**：各環境は独自のリソースセットを作成するため、同じAWSアカウント内で開発、テスト、本番環境を競合なく持つことができます。
+6. **リソースの分離**：各環境は独自のリソースセットを作成するため、同じAWSアカウント内に開発、テスト、本番環境を競合なく配置できます。
 
 ## その他
 
@@ -331,11 +331,11 @@ npx cdk deploy --all
 ```
 
 > [!重要]
-> このプロジェクトはAnthropicのClaudeモデルに焦点を当てており、Mistralモデルは限定的にサポートされています。例えば、プロンプト例はClaudeモデルに基づいています。これはMistralモデル専用のオプションであり、一度Mistralモデルを有効にすると、すべてのチャット機能でMistralモデルのみを使用でき、ClaudeとMistralモデルの両方は使用できません。
+> このプロジェクトはAnthropicのClaudeモデルに焦点を当てており、Mistralモデルは限定的にサポートされています。例えば、プロンプトの例はClaudeモデルに基づいています。これはMistral専用のオプションであり、一度Mistralモデルを有効にすると、チャット機能のためにMistralモデルのみを使用でき、ClaudeとMistralの両方のモデルは使用できません。
 
 ### デフォルトのテキスト生成を設定
 
-ユーザーは、カスタムボット作成画面から[テキスト生成パラメータ](https://docs.anthropic.com/claude/reference/complete_post)を調整できます。ボットが使用されない場合、[config.py](./backend/app/config.py)で設定されたデフォルトパラメータが使用されます。
+ユーザーはカスタムボット作成画面から[テキスト生成パラメータ](https://docs.anthropic.com/claude/reference/complete_post)を調整できます。ボットが使用されない場合、[config.py](./backend/app/config.py)で設定されたデフォルトパラメータが使用されます。
 
 ```py
 DEFAULT_GENERATION_CONFIG = {
@@ -353,25 +353,25 @@ CLIとCDKを使用している場合は、`npx cdk destroy`を実行してくだ
 
 ### 言語設定
 
-このアセットは、[i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector)を使用して自動的に言語を検出します。アプリケーションメニューから言語を切り替えることができます。または、以下に示すようにクエリ文字列を使用して言語を設定することもできます。
+このアセットは[i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector)を使用して自動的に言語を検出します。アプリケーションメニューから言語を切り替えることができます。また、以下のようにクエリ文字列を使用して言語を設定することもできます。
 
 > `https://example.com?lng=ja`
 
-### セルフサインアップを無効にする
+### セルフサインアップの無効化
 
-このサンプルはデフォルトでセルフサインアップが有効になっています。セルフサインアップを無効にするには、[cdk.json](./cdk/cdk.json)を開き、`selfSignUpEnabled`を`false`に切り替えます。[外部アイデンティティプロバイダ](#外部アイデンティティプロバイダ)を設定した場合、この値は無視され、自動的に無効になります。
+このサンプルはデフォルトでセルフサインアップが有効になっています。セルフサインアップを無効にするには、[cdk.json](./cdk/cdk.json)を開き、`selfSignUpEnabled`を`false`に切り替えます。[外部IDプロバイダ](#外部idプロバイダ)を設定する場合、この値は無視され自動的に無効になります。
 
 ### サインアップ可能なメールアドレスのドメインを制限
 
-デフォルトでは、このサンプルはサインアップ可能なメールアドレスのドメインを制限しません。特定のドメインからのみサインアップを許可するには、`cdk.json`を開き、`allowedSignUpEmailDomains`にドメインをリストとして指定します。
+デフォルトでは、このサンプルはサインアップ可能なメールアドレスのドメインを制限していません。特定のドメインからのみサインアップを許可するには、`cdk.json`を開き、`allowedSignUpEmailDomains`にドメインをリストとして指定します。
 
 ```ts
 "allowedSignUpEmailDomains": ["example.com"],
 ```
 
-### 外部アイデンティティプロバイダ
+### 外部IDプロバイダ
 
-このサンプルは外部アイデンティティプロバイダをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja-JP.md)と[カスタムOIDCプロバイダ](./idp/SET_UP_CUSTOM_OIDC_ja-JP.md)をサポートしています。
+このサンプルは外部IDプロバイダをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja-JP.md)と[カスタムOIDCプロバイダ](./idp/SET_UP_CUSTOM_OIDC_ja-JP.md)をサポートしています。
 
 ### 新規ユーザーを自動的にグループに追加
 
@@ -389,20 +389,7 @@ CLIとCDKを使用している場合は、`npx cdk destroy`を実行してくだ
 
 デフォルトでは、新規作成されたユーザーは`CreatingBotAllowed`グループに参加します。
 
-### RAGレプリカの設定
-
-[cdk.json](./cdk/cdk.json)の`enableRagReplicas`は、Amazon OpenSearch Serverlessを使用するナレッジベースのレプリカ設定を制御するオプションです。
-
-- **デフォルト**: true
-- **true**: 追加のレプリカを有効にすることで可用性を向上させ、本番環境に適していますが、コストが増加します。
-- **false**: レプリカを減らすことでコストを削減し、開発およびテストに適しています。
-
-これはアカウント/リージョンレベルの設定で、個々のボットではなくアプリケーション全体に影響します。
-
-> [!メモ]
-> 2024年6月現在、Amazon OpenSearch Serverlessは0.5 OCUをサポートし、小規模ワークロードのエントリコストを下げています。本番環境では2 OCUから開始でき、開発/テストワークロードでは1 OCUを使用できます。OpenSearch Serverlessは自動的にワークロードの需要に応じてスケーリングします。詳細については、[アナウンス](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/)をご覧ください。
-
-（以下、同様に翻訳が続きます）
+（以下、同様に翻訳を続けます）
 
 ## 連絡先
 
@@ -421,4 +408,4 @@ CLIとCDKを使用している場合は、`npx cdk destroy`を実行してくだ
 
 ## ライセンス
 
-このライブラリは MIT-0 ライセンスの下でライセンス供与されています。[LICENSEファイル](./LICENSE)を参照してください。
+このライブラリは MIT-0 ライセンスの下でライセンス提供されています。[ライセンスファイル](./LICENSE) をご確認ください。

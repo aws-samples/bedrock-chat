@@ -2,7 +2,7 @@
 
 ## Trinn 1: Opprett en OIDC-klient
 
-Følg prosedyrene for den aktuelle OIDC-leverandøren, og noter verdiene for OIDC-klient-ID og hemmelighet. Utgiver-URL er også påkrevd i de påfølgende trinnene. Hvis omdirigerings-URI kreves i oppsettsprosessen, angir du en midlertidig verdi som vil bli erstattet etter at distribusjonen er fullført.
+Følg prosedyrene for den aktuelle OIDC-leverandøren, og noter verdiene for OIDC-klient-ID og hemmelighet. Utsteder-URL er også nødvendig i de påfølgende trinnene. Hvis en omdirigerings-URI kreves i oppsettsprosessen, kan du angi en midlertidig verdi som vil bli erstattet etter at distribusjonen er fullført.
 
 ## Trinn 2: Lagre Legitimasjon i AWS Secrets Manager
 
@@ -15,12 +15,12 @@ Følg prosedyrene for den aktuelle OIDC-leverandøren, og noter verdiene for OID
    - Nøkkel: `clientSecret`, Verdi: <YOUR_GOOGLE_CLIENT_SECRET>
    - Nøkkel: `issuerUrl`, Verdi: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Følg instruksjonene for å navngi og beskrive hemmeligheten. Merk deg hemmelighetsnavnet, da du vil trenge det i din CDK-kode (Brukt i Trinn 3 variabelnavn <YOUR_SECRET_NAME>).
+5. Følg veiledningen for å navngi og beskrive hemmeligheten. Merk deg hemmelighetsnavnet da du vil trenge det i din CDK-kode (Brukt i Trinn 3 variabelnavn <YOUR_SECRET_NAME>).
 6. Gjennomgå og lagre hemmeligheten.
 
 ### Merk
 
-Nøkkelnavnene må nøyaktig samsvare med strengene `clientId`, `clientSecret` og `issuerUrl`.
+Nøkkelnavnene må eksakt samsvare med strengene `clientId`, `clientSecret` og `issuerUrl`.
 
 ## Trinn 3: Oppdater cdk.json
 
@@ -35,20 +35,20 @@ som følger:
     "identityProviders": [
       {
         "service": "oidc", // Ikke endre
-        "serviceName": "<DIN_TJENESTE_NAVN>", // Sett en verdi du vil
+        "serviceName": "<DIN_TJENESTENAVN>", // Sett en verdi du vil
         "secretName": "<DITT_HEMMELIGHETSNAVN>"
       }
     ],
-    "userPoolDomainPrefix": "<UNIKT_DOMENE_PREFIKS_FOR_DIN_BRUKERGRUPPE>"
+    "userPoolDomainPrefix": "<UNIKT_DOMENEPREFIKS_FOR_DIN_BRUKERPULJE>"
   }
 }
 ```
 
-### Oppmerksomhet
+### Merk
 
-#### Unike navn
+#### Unikthet
 
-`userPoolDomainPrefix` må være globalt unikt på tvers av alle Amazon Cognito-brukere. Hvis du velger et prefiks som allerede er i bruk av en annen AWS-konto, vil opprettelsen av brukergruppens domene mislykkes. Det er god praksis å inkludere identifikatorer, prosjektnavn eller miljønavn i prefikset for å sikre unike navn.
+`userPoolDomainPrefix` må være globalt unikt på tvers av alle Amazon Cognito-brukere. Hvis du velger et prefiks som allerede er i bruk av en annen AWS-konto, vil opprettelsen av brukerpooljdomenet mislykkes. Det er god praksis å inkludere identifikatorer, prosjektnavn eller miljønavn i prefikset for å sikre unikthet.
 
 ## Trinn 4: Distribuer CDK-stakken
 
@@ -58,6 +58,6 @@ Distribuer CDK-stakken til AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Trinn 5: Oppdater OIDC-klient med Cognito Redirect-URI-er
+## Trinn 5: Oppdater OIDC-klient med Cognito-omdirigerings-URLer
 
-Etter at stakken er distribuert, vil `AuthApprovedRedirectURI` vises i CloudFormation-resultatene. Gå tilbake til OIDC-konfigurasjonen din og oppdater med de riktige redirect-URI-ene.
+Etter at stabelen er distribuert, vil `AuthApprovedRedirectURI` vises i CloudFormation-resultatene. Gå tilbake til OIDC-konfigurasjonen din og oppdater med de riktige omdirigerings-URLene.

@@ -9,7 +9,7 @@
 
 > [!Warning]
 >
-> **V2 telah dikeluarkan. Untuk mengemas kini, sila semak semula [panduan migrasi](./migration/V1_TO_V2_ms-MY.md) dengan teliti.** Tanpa sebarang perhatian, **BOT DARI V1 AKAN MENJADI TIDAK BOLEH DIGUNAKAN.**
+> **V2 telah dikeluarkan. Untuk mengemas kini, sila semak semula panduan migrasi [migration guide](./migration/V1_TO_V2_ms-MY.md) dengan teliti.** Tanpa penjagaan, **BOT DARI V1 AKAN MENJADI TIDAK BERGUNA.**
 
 Chatbot pelbagai bahasa yang menggunakan model LLM yang disediakan oleh [Amazon Bedrock](https://aws.amazon.com/bedrock/) untuk AI generatif.
 
@@ -23,32 +23,32 @@ Chatbot pelbagai bahasa yang menggunakan model LLM yang disediakan oleh [Amazon 
 
 ### Personalisasi Bot
 
-Tambahkan arahan anda sendiri dan berikan pengetahuan luar melalui URL atau fail (a.k.a [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). Bot boleh dikongsi di kalangan pengguna aplikasi. Bot yang disesuaikan juga boleh diterbitkan sebagai API berasingan (Lihat [butiran](./PUBLISH_API_ms-MY.md)).
+Tambahkan arahan anda sendiri dan berikan pengetahuan luar seperti URL atau fail (a.k.a [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/). Bot boleh dikongsi antara pengguna aplikasi. Bot yang disesuaikan juga boleh diterbitkan sebagai API berasingan (Lihat [butiran](./PUBLISH_API_ms-MY.md)).
 
 ![](./imgs/bot_creation.png)
 ![](./imgs/bot_chat.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
 > [!Important]
-> Atas sebab tadbir urus, hanya pengguna yang dibenarkan dapat membuat bot yang disesuaikan. Untuk membenarkan penciptaan bot yang disesuaikan, pengguna mestilah ahli kumpulan yang dipanggil `CreatingBotAllowed`, yang boleh disediakan melalui konsol pengurusan > Amazon Cognito User pools atau aws cli. Ambil perhatian bahawa ID kumpulan pengguna boleh dirujuk dengan mengakses CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+> Atas sebab tadbir urus, hanya pengguna yang dibenarkan dapat membuat bot yang disesuaikan. Untuk membenarkan penciptaan bot yang disesuaikan, pengguna mestilah ahli kumpulan yang dipanggil `CreatingBotAllowed`, yang boleh disediakan melalui konsol pengurusan > Amazon Cognito User pools atau aws cli. Sila ambil perhatian bahawa ID kumpulan pengguna boleh dirujuk dengan mengakses CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ### Papan pemuka pentadbir
 
 <details>
 <summary>Papan pemuka pentadbir</summary>
 
-Analisis penggunaan untuk setiap pengguna / bot pada papan pemuka pentadbir. [butiran](./ADMINISTRATOR_ms-MY.md)
+Menganalisis penggunaan untuk setiap pengguna / bot pada papan pemuka pentadbir. [butiran](./ADMINISTRATOR_ms-MY.md)
 
 ![](./imgs/admin_bot_analytics.png)
 
 </details>
 
-### Ejen yang didayakan oleh LLM
+### Ejen yang dikuasakan LLM
 
 <details>
-<summary>Ejen yang didayakan oleh LLM</summary>
+<summary>Ejen yang dikuasakan LLM</summary>
 
-Dengan menggunakan [fungsi Ejen](./AGENT_ms-MY.md), chatbot anda boleh secara automatik mengendalikan tugas yang lebih kompleks. Contohnya, untuk menjawab soalan pengguna, Ejen boleh mendapatkan maklumat yang diperlukan daripada alat luar atau memecahkan tugas kepada beberapa langkah untuk diproses.
+Dengan menggunakan [fungsi Ejen](./AGENT_ms-MY.md), chatbot anda boleh mengendalikan tugas yang lebih kompleks secara automatik. Contohnya, untuk menjawab soalan pengguna, Ejen boleh mengambil maklumat yang diperlukan daripada alat luar atau membahagikan tugas kepada beberapa langkah untuk diproses.
 
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
@@ -60,14 +60,14 @@ Dengan menggunakan [fungsi Ejen](./AGENT_ms-MY.md), chatbot anda boleh secara au
 - Di kawasan us-east-1, buka [Akses Model Bedrock](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Urus akses model` > Tandakan semua `Anthropic / Claude 3`, semua `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` dan `Cohere / Embed Multilingual` kemudian `Simpan perubahan`.
 
 <details>
-<summary>Tangkapan Layar</summary>
+<summary>Tangkapan Skrin</summary>
 
 ![](./imgs/model_screenshot.png)
 
 </details>
 
-- Buka [CloudShell](https://console.aws.amazon.com/cloudshell/home) di kawasan tempat anda ingin menggunakan
-- Jalankan penggunaan melalui arahan berikut. Jika anda ingin menetapkan versi untuk digunakan atau perlu menggunakan polisi keselamatan, sila tentukan parameter yang sesuai dari [Parameter Pilihan](#parameter-pilihan).
+- Buka [CloudShell](https://console.aws.amazon.com/cloudshell/home) di kawasan yang anda ingin deploy
+- Jalankan deployment melalui perintah berikut. Jika anda ingin menetapkan versi untuk deploy atau perlu menggunakan dasar keselamatan, sila nyatakan parameter yang sesuai dari [Parameter Pilihan](#parameter-pilihan).
 
 ```sh
 git clone https://github.com/aws-samples/bedrock-claude-chat.git
@@ -76,22 +76,22 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- Anda akan ditanya sama ada pengguna baru atau menggunakan v2. Jika anda bukan pengguna yang berterusan dari v0, sila masukkan `y`.
+- Anda akan ditanya sama ada pengguna baru atau menggunakan v2. Jika anda bukan pengguna berterusan dari v0, sila masukkan `y`.
 
 ### Parameter Pilihan
 
-Anda boleh menetapkan parameter berikut semasa penggunaan untuk meningkatkan keselamatan dan penyesuaian:
+Anda boleh menetapkan parameter berikut semasa deployment untuk meningkatkan keselamatan dan penyesuaian:
 
-- **--disable-self-register**: Matikan pendaftaran sendiri (lalai: didayakan). Jika bendera ini ditetapkan, anda perlu membuat semua pengguna pada cognito dan ia tidak akan membenarkan pengguna mendaftar akaun mereka sendiri.
-- **--enable-lambda-snapstart**: Dayakan [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (lalai: dilumpuhkan). Jika bendera ini ditetapkan, ia meningkatkan masa permulaan sejuk untuk fungsi Lambda, memberikan masa respons yang lebih cepat untuk pengalaman pengguna yang lebih baik.
-- **--ipv4-ranges**: Senarai yang dipisahkan koma bagi julat IPv4 yang dibenarkan. (lalai: membenarkan semua alamat ipv4)
-- **--ipv6-ranges**: Senarai yang dipisahkan koma bagi julat IPv6 yang dibenarkan. (lalai: membenarkan semua alamat ipv6)
-- **--disable-ipv6**: Matikan sambungan melalui IPv6. (lalai: didayakan)
-- **--allowed-signup-email-domains**: Senarai yang dipisahkan koma bagi domain e-mel yang dibenarkan untuk pendaftaran. (lalai: tiada sekatan domain)
-- **--bedrock-region**: Tentukan kawasan di mana bedrock tersedia. (lalai: us-east-1)
-- **--repo-url**: Repo Bedrock Claude Chat khusus untuk digunakan, jika diforked atau kawalan sumber khusus. (lalai: https://github.com/aws-samples/bedrock-claude-chat.git)
-- **--version**: Versi Bedrock Claude Chat untuk digunakan. (lalai: versi terkini dalam pembangunan)
-- **--cdk-json-override**: Anda boleh mengatasi mana-mana nilai konteks CDK semasa penggunaan menggunakan blok JSON override. Ini membolehkan anda mengubah konfigurasi tanpa mengedit fail cdk.json secara langsung.
+- **--disable-self-register**: Matikan pendaftaran sendiri (default: didayakan). Jika flag ini ditetapkan, anda perlu membuat semua pengguna di cognito dan tidak akan membenarkan pengguna mendaftar akaun sendiri.
+- **--enable-lambda-snapstart**: Dayakan [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (default: dilumpuhkan). Jika flag ini ditetapkan, ia meningkatkan masa permulaan sejuk untuk fungsi Lambda, memberikan masa respons yang lebih cepat untuk pengalaman pengguna yang lebih baik.
+- **--ipv4-ranges**: Senarai rentang IPv4 yang dibenarkan, dipisahkan dengan koma. (default: membenarkan semua alamat ipv4)
+- **--ipv6-ranges**: Senarai rentang IPv6 yang dibenarkan, dipisahkan dengan koma. (default: membenarkan semua alamat ipv6)
+- **--disable-ipv6**: Matikan sambungan melalui IPv6. (default: didayakan)
+- **--allowed-signup-email-domains**: Senarai domain e-mel yang dibenarkan untuk pendaftaran, dipisahkan dengan koma. (default: tiada sekatan domain)
+- **--bedrock-region**: Tentukan kawasan di mana bedrock tersedia. (default: us-east-1)
+- **--repo-url**: Repo Bedrock Claude Chat khusus untuk deploy, jika fork atau kawalan sumber khusus. (default: https://github.com/aws-samples/bedrock-claude-chat.git)
+- **--version**: Versi Bedrock Claude Chat untuk deploy. (default: versi terkini dalam pembangunan)
+- **--cdk-json-override**: Anda boleh mengatasi sebarang nilai konteks CDK semasa deployment menggunakan blok JSON override. Ini membolehkan anda mengubah konfigurasi tanpa mengedit fail cdk.json secara langsung.
 
 Contoh penggunaan:
 
@@ -106,7 +106,7 @@ Contoh penggunaan:
 }'
 ```
 
-JSON override mesti mengikuti struktur yang sama seperti cdk.json. Anda boleh mengatasi mana-mana nilai konteks termasuk:
+JSON override mesti mengikuti struktur yang sama seperti cdk.json. Anda boleh mengatasi sebarang nilai konteks termasuk:
 
 - `selfSignUpEnabled`
 - `enableLambdaSnapStart`
@@ -119,9 +119,9 @@ JSON override mesti mengikuti struktur yang sama seperti cdk.json. Anda boleh me
 - Dan nilai konteks lain yang ditakrifkan dalam cdk.json
 
 > [!Nota]
-> Nilai override akan digabungkan dengan konfigurasi cdk.json yang sedia ada semasa masa penggunaan dalam AWS code build. Nilai yang ditentukan dalam override akan mengambil keutamaan berbanding nilai dalam cdk.json.
+> Nilai override akan digabungkan dengan konfigurasi cdk.json sedia ada semasa masa deployment dalam AWS code build. Nilai yang dinyatakan dalam override akan mempunyai keutamaan berbanding dengan nilai dalam cdk.json.
 
-#### Contoh arahan dengan parameter:
+#### Contoh perintah dengan parameter:
 
 ```sh
 ./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --bedrock-region "us-west-2" --version "v1.2.6"
@@ -138,37 +138,37 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 Skrin pendaftaran akan muncul seperti yang ditunjukkan di atas, di mana anda boleh mendaftar e-mel anda dan log masuk.
 
 > [!Penting]
-> Tanpa menetapkan parameter pilihan, kaedah penggunaan ini membenarkan sesiapa yang mengetahui URL untuk mendaftar. Untuk kegunaan pengeluaran, sangat disyorkan untuk menambahkan sekatan alamat IP dan melumpuhkan pendaftaran sendiri untuk mengurangkan risiko keselamatan (anda boleh mentakrifkan allowed-signup-email-domains untuk menyekat pengguna supaya hanya alamat e-mel dari domain syarikat anda yang boleh mendaftar). Gunakan kedua-dua ipv4-ranges dan ipv6-ranges untuk sekatan alamat IP, dan lumpuhkan pendaftaran sendiri dengan menggunakan disable-self-register semasa melaksanakan ./bin.
+> Tanpa menetapkan parameter pilihan, kaedah deployment ini membenarkan sesiapa yang mengetahui URL untuk mendaftar. Untuk kegunaan pengeluaran, sangat disyorkan untuk menambah sekatan alamat IP dan melumpuhkan pendaftaran sendiri untuk mengurangkan risiko keselamatan (anda boleh menentukan allowed-signup-email-domains untuk menyekat pengguna supaya hanya alamat e-mel dari domain syarikat anda yang boleh mendaftar). Gunakan kedua-dua ipv4-ranges dan ipv6-ranges untuk sekatan alamat IP, dan lumpuhkan pendaftaran sendiri dengan menggunakan disable-self-register semasa melaksanakan ./bin.
 
 > [!PETUA]
-> Jika `Frontend URL` tidak muncul atau Bedrock Claude Chat tidak berfungsi dengan baik, ia mungkin masalah dengan versi terkini. Dalam kes ini, sila tambahkan `--version "v1.2.6"` ke parameter dan cuba penggunaan semula.
+> Jika `Frontend URL` tidak muncul atau Bedrock Claude Chat tidak berfungsi dengan betul, ia mungkin masalah dengan versi terkini. Dalam kes ini, sila tambah `--version "v1.2.6"` ke parameter dan cuba deployment semula.
 
 ## Seni Bina
 
-Ia adalah seni bina yang dibina di atas perkhidmatan terurus AWS, menghapuskan keperluan pengurusan infrastruktur. Dengan menggunakan Amazon Bedrock, tiada keperluan untuk berkomunikasi dengan API di luar AWS. Ini membolehkan pengplotan aplikasi yang boleh diukur, boleh dipercayai, dan selamat.
+Ini adalah seni bina yang dibina di atas perkhidmatan yang diurus oleh AWS, menghapuskan keperluan untuk pengurusan infrastruktur. Dengan menggunakan Amazon Bedrock, tiada keperluan untuk berkomunikasi dengan API di luar AWS. Ini membolehkan penggunaan aplikasi yang boleh diubah skala, dipercayai, dan selamat.
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): Pangkalan data NoSQL untuk menyimpan sejarah perbualan
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Titik akhir API backend ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Penghantaran aplikasi frontend ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): Pembatasan alamat IP
 - [Amazon Cognito](https://aws.amazon.com/cognito/): Pengesahan pengguna
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Perkhidmatan terurus untuk menggunakan model asas melalui API
-- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Menyediakan antara muka terurus untuk Generasi Perolehan Semula ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), menawarkan perkhidmatan untuk menyematkan dan mengurai dokumen
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Perkhidmatan yang diurus untuk menggunakan model asas melalui API
+- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Menyediakan antara muka yang diurus untuk Generasi Pemulihan-Diperkuat ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), menawarkan perkhidmatan untuk menyematkan dan mengurai dokumen
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Menerima acara dari aliran DynamoDB dan melancarkan Step Functions untuk menyematkan pengetahuan luar
-- [AWS Step Functions](https://aws.amazon.com/step-functions/): Mengatur saluran pemasukan untuk menyematkan pengetahuan luar ke dalam Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Berkhidmat sebagai pangkalan data backend untuk Bedrock Knowledge Bases, menyediakan ciri carian teks penuh dan carian vektor, membolehkan perolehan semula maklumat yang tepat
+- [AWS Step Functions](https://aws.amazon.com/step-functions/): Mengatur saluran pengambilan untuk menyematkan pengetahuan luar ke dalam Bedrock Knowledge Bases
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Berkhidmat sebagai pangkalan data backend untuk Bedrock Knowledge Bases, menyediakan carian teks penuh dan carian vektor, membolehkan pengambilan maklumat yang berkaitan dengan tepat
 - [Amazon Athena](https://aws.amazon.com/athena/): Perkhidmatan pertanyaan untuk menganalisis baldi S3
 
 ![](./imgs/arch.png)
 
-## Deploy menggunakan CDK
+## Deployment menggunakan CDK
 
-Deployment Super-mudah menggunakan [AWS CodeBuild](https://aws.amazon.com/codebuild/) untuk melakukan deployment melalui CDK secara dalaman. Bahagian ini menerangkan prosedur untuk deployment terus dengan CDK.
+Deployment Super-mudah menggunakan [AWS CodeBuild](https://aws.amazon.com/codebuild/) untuk melakukan deployment melalui CDK secara dalaman. Bahagian ini menjelaskan prosedur untuk deployment terus dengan CDK.
 
 - Sila pastikan mempunyai persekitaran UNIX, Docker dan runtime Node.js. Jika tidak, anda boleh menggunakan [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
 
 > [!Penting]
-> Jika ruang storan tidak mencukupi dalam persekitaran tempatan semasa deployment, CDK bootstrapping mungkin menghasilkan ralat. Jika anda berjalan di Cloud9 dll., kami mencadangkan mengembangkan saiz volum contoh sebelum deployment.
+> Jika ruang storan tidak mencukupi dalam persekitaran tempatan semasa deployment, CDK bootstrapping mungkin menghasilkan ralat. Jika anda sedang berjalan di Cloud9 dll., kami mengesyorkan mengembangkan saiz volum contoh sebelum deployment.
 
 - Klon repositori ini
 
@@ -186,11 +186,11 @@ npm ci
 
 - Jika perlu, edit entri berikut dalam [cdk.json](./cdk/cdk.json) jika perlu.
 
-  - `bedrockRegion`: Wilayah di mana Bedrock tersedia. **NOTA: Bedrock TIDAK menyokong semua wilayah untuk sekarang.**
+  - `bedrockRegion`: Wilayah di mana Bedrock tersedia. **NOTA: Bedrock TIDAK menyokong semua wilayah buat masa ini.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Julat Alamat IP yang dibenarkan.
   - `enableLambdaSnapStart`: Secara lalai adalah true. Tetapkan ke false jika deployment ke [wilayah yang tidak menyokong Lambda SnapStart untuk fungsi Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
 
-- Sebelum deployment CDK, anda perlu bekerja dengan Bootstrap sekali untuk wilayah yang anda deploy.
+- Sebelum deployment CDK, anda perlu bekerja dengan Bootstrap sekali untuk wilayah yang anda sedang deployment.
 
 ```
 npx cdk bootstrap
@@ -218,7 +218,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### Mentakrifkan Parameter
 
-Anda boleh mentakrifkan parameter untuk deployment anda dalam dua cara: menggunakan `cdk.json` atau menggunakan fail `parameter.ts` yang selamat dari segi jenis.
+Anda boleh mentakrifkan parameter untuk deployment anda dalam dua cara: menggunakan `cdk.json` atau menggunakan fail `parameter.ts` yang mempunyai keselamatan jenis.
 
 #### Menggunakan cdk.json (Kaedah Tradisional)
 
@@ -236,7 +236,7 @@ Cara tradisional untuk mengkonfigurasi parameter adalah dengan mengedit fail `cd
 }
 ```
 
-#### Menggunakan parameter.ts (Kaedah Selamat Jenis yang Disyorkan)
+#### Menggunakan parameter.ts (Kaedah Disyorkan dengan Keselamatan Jenis)
 
 Untuk keselamatan jenis dan pengalaman pembangun yang lebih baik, anda boleh menggunakan fail `parameter.ts` untuk mentakrifkan parameter anda:
 
@@ -265,20 +265,20 @@ bedrockChatParams.set("prod", {
 ```
 
 > [!Nota]
-> Pengguna sedia ada boleh terus menggunakan `cdk.json` tanpa sebarang perubahan. Pendekatan `parameter.ts` disyorkan untuk deployment baru atau apabila anda perlu mengurus berbagai persekitaran.
+> Pengguna sedia ada boleh terus menggunakan `cdk.json` tanpa sebarang perubahan. Pendekatan `parameter.ts` disyorkan untuk deployment baru atau apabila anda perlu menguruskan berbilang persekitaran.
 
 ### Deployment Berbilang Persekitaran
 
-Anda boleh deploy berbilang persekitaran dari satu pangkalan kod menggunakan fail `parameter.ts` dan pilihan `-c envName`.
+Anda boleh melakukan deployment berbilang persekitaran dari kod sumber yang sama menggunakan fail `parameter.ts` dan pilihan `-c envName`.
 
 #### Prasyarat
 
 1. Takrifkan persekitaran anda dalam `parameter.ts` seperti yang ditunjukkan di atas
-2. Setiap persekitaran akan mempunyai set sumbernya sendiri dengan awalan khusus persekitaran
+2. Setiap persekitaran akan mempunyai set sumber dayanya sendiri dengan awalan khusus persekitaran
 
-#### Perintah Deployment
+#### Arahan Deployment
 
-Untuk deploy persekitaran tertentu:
+Untuk deployment persekitaran tertentu:
 
 ```bash
 # Deploy persekitaran dev
@@ -288,7 +288,7 @@ npx cdk deploy --all -c envName=dev
 npx cdk deploy --all -c envName=prod
 ```
 
-Jika tiada persekitaran dinyatakan, persekitaran "default" digunakan:
+Jika tiada persekitaran yang ditentukan, persekitaran "default" digunakan:
 
 ```bash
 # Deploy persekitaran default
@@ -297,27 +297,27 @@ npx cdk deploy --all
 
 #### Nota Penting
 
-1. **Penamaan Tindihan**:
+1. **Penamaan Tindanan**:
 
-   - Tindihan utama untuk setiap persekitaran akan mempunyai awalan nama persekitaran (contoh: `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - Walau bagaimanapun, tindihan bot tersuai (`BrChatKbStack*`) dan tindihan penerbitan API (`ApiPublishmentStack*`) tidak menerima awalan persekitaran kerana ia dibuat secara dinamik pada masa larian
+   - Tindanan utama untuk setiap persekitaran akan mempunyai awalan nama persekitaran (cth. `dev-BedrockChatStack`, `prod-BedrockChatStack`)
+   - Walau bagaimanapun, tindanan bot khusus (`BrChatKbStack*`) dan tindanan penerbitan API (`ApiPublishmentStack*`) tidak menerima awalan persekitaran kerana ia dibuat secara dinamik pada masa larian
 
-2. **Penamaan Sumber**:
+2. **Penamaan Sumber Daya**:
 
-   - Hanya beberapa sumber menerima awalan persekitaran dalam nama mereka (contoh: jadual `dev_ddb_export`, `dev-FrontendWebAcl`)
-   - Kebanyakan sumber mengekalkan nama asal mereka tetapi diasingkan dengan berada dalam tindihan yang berbeza
+   - Hanya beberapa sumber daya menerima awalan persekitaran dalam nama mereka (cth. jadual `dev_ddb_export`, `dev-FrontendWebAcl`)
+   - Kebanyakan sumber daya mengekalkan nama asal mereka tetapi diasingkan dengan berada dalam tindanan yang berbeza
 
 3. **Pengenalan Persekitaran**:
 
-   - Semua sumber ditandai dengan tag `CDKEnvironment` yang mengandungi nama persekitaran
-   - Anda boleh menggunakan tag ini untuk mengenal pasti persekitaran yang sumber itu milik
+   - Semua sumber daya ditandai dengan tag `CDKEnvironment` yang mengandungi nama persekitaran
+   - Anda boleh menggunakan tag ini untuk mengenal pasti persekitaran yang sumber daya itu miliknya
    - Contoh: `CDKEnvironment: dev` atau `CDKEnvironment: prod`
 
-4. **Ganti Persekitaran Default**: Jika anda mentakrifkan persekitaran "default" dalam `parameter.ts`, ia akan menggantikan tetapan dalam `cdk.json`. Untuk terus menggunakan `cdk.json`, jangan mentakrifkan persekitaran "default" dalam `parameter.ts`.
+4. **Ganti Persekitaran Lalai**: Jika anda mentakrifkan persekitaran "default" dalam `parameter.ts`, ia akan menggantikan tetapan dalam `cdk.json`. Untuk terus menggunakan `cdk.json`, jangan mentakrifkan persekitaran "default" dalam `parameter.ts`.
 
-5. **Keperluan Persekitaran**: Untuk membuat persekitaran selain "default", anda mesti menggunakan `parameter.ts`. Pilihan `-c envName` sendiri tidak mencukupi tanpa definisi persekitaran yang sepadan.
+5. **Keperluan Persekitaran**: Untuk membuat persekitaran selain "default", anda mesti menggunakan `parameter.ts`. Pilihan `-c envName` sahaja tidak mencukupi tanpa definisi persekitaran yang sepadan.
 
-6. **Pengasingan Sumber**: Setiap persekitaran mencipta set sumbernya sendiri, membolehkan anda mempunyai persekitaran pembangunan, ujian, dan pengeluaran dalam akaun AWS yang sama tanpa konflik.
+6. **Pengasingan Sumber Daya**: Setiap persekitaran mencipta set sumber dayanya sendiri, membolehkan anda mempunyai persekitaran pembangunan, ujian, dan pengeluaran dalam akaun AWS yang sama tanpa konflik.
 
 ## Lain-lain
 
@@ -331,11 +331,11 @@ Kemas kini `enableMistral` kepada `true` dalam [cdk.json](./cdk/cdk.json), dan j
 ```
 
 > [!Penting]
-> Projek ini fokus kepada model Anthropic Claude, model Mistral mempunyai sokongan terhad. Contohnya, contoh prompt adalah berdasarkan model Claude. Ini adalah pilihan Mistral sahaja, sebaik sahaja anda mengaktifkan model Mistral, anda hanya boleh menggunakan model Mistral untuk semua ciri sembang, BUKAN kedua-dua model Claude dan Mistral.
+> Projek ini fokus pada model Anthropic Claude, model Mistral mempunyai sokongan terhad. Contohnya, contoh prompt adalah berdasarkan model Claude. Ini adalah pilihan Mistral-sahaja, sebaik sahaja anda menghidupkan model Mistral, anda hanya boleh menggunakan model Mistral untuk semua ciri sembang, BUKAN kedua-dua model Claude dan Mistral.
 
 ### Konfigurasi Generasi Teks Lalai
 
-Pengguna boleh melaraskan [parameter generasi teks](https://docs.anthropic.com/claude/reference/complete_post) dari skrin penciptaan bot tersuai. Jika bot tidak digunakan, parameter lalai yang ditetapkan dalam [config.py](./backend/app/config.py) akan digunakan.
+Pengguna boleh melaraskan [parameter generasi teks](https://docs.anthropic.com/claude/reference/complete_post) dari skrin pembinaan bot tersuai. Jika bot tidak digunakan, parameter lalai yang ditetapkan dalam [config.py](./backend/app/config.py) akan digunakan.
 
 ```py
 DEFAULT_GENERATION_CONFIG = {
@@ -347,9 +347,9 @@ DEFAULT_GENERATION_CONFIG = {
 }
 ```
 
-### Hapus Sumber Daya
+### Alih Keluar Sumber Daya
 
-Jika menggunakan cli dan CDK, sila `npx cdk destroy`. Jika tidak, akses [CloudFormation](https://console.aws.amazon.com/cloudformation/home) dan kemudian hapus `BedrockChatStack` dan `FrontendWafStack` secara manual. Sila ambil perhatian bahawa `FrontendWafStack` berada di kawasan `us-east-1`.
+Jika menggunakan cli dan CDK, sila `npx cdk destroy`. Jika tidak, akses [CloudFormation](https://console.aws.amazon.com/cloudformation/home) dan kemudian hapuskan `BedrockChatStack` dan `FrontendWafStack` secara manual. Sila ambil perhatian bahawa `FrontendWafStack` berada di kawasan `us-east-1`.
 
 ### Tetapan Bahasa
 
@@ -359,52 +359,52 @@ Aset ini secara automatik mengesan bahasa menggunakan [i18next-browser-languageD
 
 ### Nyahdayakan Pendaftaran Sendiri
 
-Sampel ini mempunyai pendaftaran sendiri diaktifkan secara lalai. Untuk menyahdayakan pendaftaran sendiri, buka [cdk.json](./cdk/cdk.json) dan tukar `selfSignUpEnabled` kepada `false`. Jika anda mengkonfigurasi [penyedia identiti luar](#external-identity-provider), nilainya akan diabaikan dan secara automatik dimatikan.
+Sampel ini mempunyai pendaftaran sendiri yang didayakan secara lalai. Untuk menyahdayakan pendaftaran sendiri, buka [cdk.json](./cdk/cdk.json) dan tukar `selfSignUpEnabled` kepada `false`. Jika anda mengkonfigurasi [pembekal identiti luaran](#external-identity-provider), nilai akan diabaikan dan secara automatik dimatikan.
 
 ### Hadkan Domain untuk Alamat E-mel Pendaftaran
 
-Secara lalai, sampel ini tidak menyekat domain untuk alamat e-mel pendaftaran. Untuk membenarkan pendaftaran hanya dari domain tertentu, buka `cdk.json` dan nyatakan domain sebagai senarai dalam `allowedSignUpEmailDomains`.
+Secara lalai, sampel ini tidak menyekat domain untuk alamat e-mel pendaftaran. Untuk membenarkan pendaftaran hanya dari domain tertentu, buka `cdk.json` dan tentukan domain sebagai senarai dalam `allowedSignUpEmailDomains`.
 
 ```ts
 "allowedSignUpEmailDomains": ["example.com"],
 ```
 
-### Penyedia Identiti Luar
+### Pembekal Identiti Luaran
 
-Sampel ini menyokong penyedia identiti luar. Kini kami menyokong [Google](./idp/SET_UP_GOOGLE_ms-MY.md) dan [penyedia OIDC tersuai](./idp/SET_UP_CUSTOM_OIDC_ms-MY.md).
+Sampel ini menyokong pembekal identiti luaran. Kini kami menyokong [Google](./idp/SET_UP_GOOGLE_ms-MY.md) dan [pembekal OIDC tersuai](./idp/SET_UP_CUSTOM_OIDC_ms-MY.md).
 
-### Tambah pengguna baru ke kumpulan secara automatik
+### Tambah pengguna ke kumpulan secara automatik
 
-Sampel ini mempunyai kumpulan berikut untuk memberi izin kepada pengguna:
+Sampel ini mempunyai kumpulan berikut untuk memberi kebenaran kepada pengguna:
 
 - [`Admin`](./ADMINISTRATOR_ms-MY.md)
 - [`CreatingBotAllowed`](#bot-personalization)
 - [`PublishAllowed`](./PUBLISH_API_ms-MY.md)
 
-Jika anda ingin pengguna yang baru dicipta secara automatik menyertai kumpulan, anda boleh menyatakannya dalam [cdk.json](./cdk/cdk.json).
+Jika anda ingin pengguna yang baru dicipta secara automatik menyertai kumpulan, anda boleh menentukan mereka dalam [cdk.json](./cdk/cdk.json).
 
 ```json
 "autoJoinUserGroups": ["CreatingBotAllowed"],
 ```
 
-Secara lalai, pengguna yang baru dicipta akan disertakan ke kumpulan `CreatingBotAllowed`.
+Secara lalai, pengguna yang baru dicipta akan disertakan ke dalam kumpulan `CreatingBotAllowed`.
 
 ### Konfigurasi Replika RAG
 
-`enableRagReplicas` adalah pilihan dalam [cdk.json](./cdk/cdk.json) yang mengawal tetapan replika untuk pangkalan data RAG, khususnya Pangkalan Pengetahuan menggunakan Amazon OpenSearch Serverless.
+`enableRagReplicas` adalah pilihan dalam [cdk.json](./cdk/cdk.json) yang mengawal tetapan replika untuk pangkalan data RAG, khususnya Pangkalan Pengetahuan yang menggunakan Amazon OpenSearch Serverless.
 
 - **Lalai**: true
-- **true**: Meningkatkan ketersediaan dengan mengaktifkan replika tambahan, sesuai untuk persekitaran pengeluaran tetapi meningkatkan kos.
-- **false**: Mengurangkan kos dengan menggunakan replika yang lebih sedikit, sesuai untuk pembangunan dan pengujian.
+- **true**: Meningkatkan ketersediaan dengan mendayakan replika tambahan, sesuai untuk persekitaran pengeluaran tetapi meningkatkan kos.
+- **false**: Mengurangkan kos dengan menggunakan lebih sedikit replika, sesuai untuk pembangunan dan pengujian.
 
-Ini adalah tetapan peringkat akaun/kawasan, mempengaruhi keseluruhan aplikasi dan bukannya bot individu.
+Ini adalah tetapan peringkat akaun/kawasan, yang mempengaruhi keseluruhan aplikasi dan bukannya bot individu.
 
 > [!Nota]
-> Sehingga Jun 2024, Amazon OpenSearch Serverless menyokong 0.5 OCU, menurunkan kos kemasukan untuk beban kerja berskala kecil. Penerapan pengeluaran boleh bermula dengan 2 OCU, manakala beban kerja pembangunan/ujian boleh menggunakan 1 OCU. OpenSearch Serverless secara automatik menskalakan berdasarkan permintaan beban kerja. Untuk maklumat lanjut, lawati [pengumuman](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+> Mulai Jun 2024, Amazon OpenSearch Serverless menyokong 0.5 OCU, menurunkan kos kemasukan untuk beban kerja berskala kecil. Penempatan pengeluaran boleh bermula dengan 2 OCU, manakala beban kerja pembangunan/ujian boleh menggunakan 1 OCU. OpenSearch Serverless secara automatik menskalakan berdasarkan permintaan beban kerja. Untuk maklumat lanjut, lawati [pengumuman](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
 
-### Inferens rentas wilayah
+### Inferens rentas kawasan
 
-[Inferens rentas wilayah](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) membolehkan Amazon Bedrock untuk menghantar permintaan inferens model secara dinamik merentasi pelbagai wilayah AWS, meningkatkan kelulusan dan ketahanan semasa tempoh permintaan puncak. Untuk mengkonfigurasi, edit `cdk.json`.
+[Inferens rentas kawasan](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) membolehkan Amazon Bedrock untuk menghantar permintaan inferens model secara dinamik merentasi beberapa kawasan AWS, meningkatkan kecekapan dan ketahanan semasa tempoh permintaan puncak. Untuk mengkonfigurasi, edit `cdk.json`.
 
 ```json
 "enableBedrockCrossRegionInference": true
@@ -412,7 +412,7 @@ Ini adalah tetapan peringkat akaun/kawasan, mempengaruhi keseluruhan aplikasi da
 
 ### Lambda SnapStart
 
-[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) meningkatkan masa permulaan sejuk untuk fungsi Lambda, memberikan masa tindak balas yang lebih cepat untuk pengalaman pengguna yang lebih baik. Sebaliknya, untuk fungsi Python, terdapat [caj bergantung pada saiz cache](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) dan [tidak tersedia di beberapa kawasan](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) pada masa ini. Untuk menyahdayakan SnapStart, edit `cdk.json`.
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) meningkatkan masa permulaan sejuk untuk fungsi Lambda, menyediakan masa respons yang lebih cepat untuk pengalaman pengguna yang lebih baik. Sebaliknya, untuk fungsi Python, terdapat [caj bergantung pada saiz cache](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) dan [tidak tersedia di beberapa kawasan](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) pada masa ini. Untuk menyahdayakan SnapStart, edit `cdk.json`.
 
 ```json
 "enableLambdaSnapStart": false
@@ -430,16 +430,16 @@ Anda boleh mengkonfigurasi domain tersuai untuk pengagihan CloudFront dengan men
 ```
 
 - `alternateDomainName`: Nama domain tersuai untuk aplikasi sembang anda (contohnya chat.example.com)
-- `hostedZoneId`: ID zona yang di-host Route 53 di mana rekod DNS akan dicipta
+- `hostedZoneId`: ID zon yang di-host Route 53 di mana rekod DNS akan dicipta
 
-Apabila parameter ini disediakan, pengplotan akan secara automatik:
+Apabila parameter ini disediakan, penyebaran akan secara automatik:
 
 - Mencipta sijil ACM dengan pengesahan DNS di kawasan us-east-1
-- Mencipta rekod DNS yang diperlukan dalam zona yang di-host Route 53 anda
+- Mencipta rekod DNS yang diperlukan dalam zon Route 53 yang di-host
 - Mengkonfigurasi CloudFront untuk menggunakan domain tersuai anda
 
 > [!Nota]
-> Domain mesti diuruskan oleh Route 53 dalam akaun AWS anda. ID zona yang di-host boleh didapati dalam konsol Route 53.
+> Domain mesti diuruskan oleh Route 53 dalam akaun AWS anda. ID zon yang di-host boleh didapati dalam konsol Route 53.
 
 ### Pembangunan Tempatan
 
@@ -447,9 +447,9 @@ Lihat [PEMBANGUNAN TEMPATAN](./LOCAL_DEVELOPMENT_ms-MY.md).
 
 ### Sumbangan
 
-Terima kasih kerana mempertimbangkan untuk menyumbang kepada repositori ini! Kami mengalu-alukan pembetulan pepijat, terjemahan bahasa (i18n), penambahbaikan ciri, [alat ejen](./docs/AGENT.md#how-to-develop-your-own-tools), dan penambahbaikan lain.
+Terima kasih kerana mempertimbangkan untuk menyumbang ke repositori ini! Kami mengalu-alukan pembetulan pepijat, terjemahan bahasa (i18n), penambahbaikan ciri, [alat ejen](./docs/AGENT.md#how-to-develop-your-own-tools), dan penambahbaikan lain.
 
-Untuk penambahbaikan ciri dan penambahbaikan lain, **sebelum membuat Permintaan Tarik, kami sangat menghargai jika anda boleh membuat Isu Permintaan Ciri untuk membincangkan pendekatan dan butiran pelaksanaan. Untuk pembetulan pepijat dan terjemahan bahasa (i18n), teruskan dengan membuat Permintaan Tarik secara terus.**
+Untuk penambahbaikan ciri dan penambahbaikan lain, **sebelum membuat Permintaan Tarik, kami akan sangat menghargai jika anda dapat membuat Isu Permintaan Ciri untuk membincangkan pendekatan dan butiran pelaksanaan. Untuk pembetulan pepijat dan terjemahan bahasa (i18n), teruskan dengan membuat Permintaan Tarik secara terus.**
 
 Sila lihat garis panduan berikut sebelum menyumbang:
 
@@ -473,4 +473,4 @@ Sila lihat garis panduan berikut sebelum menyumbang:
 
 ## Lesen
 
-Pustaka ini dibenarkan di bawah Lesen MIT-0. Lihat [fail LESEN](./LICENSE).
+Perpustakaan ini dibenarkan di bawah Lesen MIT-0. Lihat [fail LESEN](./LICENSE).

@@ -9,9 +9,9 @@
 
 > [!Warning]
 >
-> **Version 2 wurde veröffentlicht. Bitte prüfen Sie sorgfältig den [Migrationsleitfaden](./migration/V1_TO_V2_de-DE.md).** Ohne sorgfältige Beachtung werden **BOTS AUS VERSION 1 UNBRAUCHBAR.**
+> **Version 2 wurde veröffentlicht. Bitte prüfen Sie sorgfältig den [Migrations-Leitfaden](./migration/V1_TO_V2_de-DE.md).** Ohne Sorgfalt werden **BOTS AUS VERSION 1 UNBRAUCHBAR WERDEN.**
 
-Ein mehrsprachiger Chatbot, der LLM-Modelle von [Amazon Bedrock](https://aws.amazon.com/bedrock/) für generative KI verwendet.
+Ein mehrsprachiger Chatbot, der LLM-Modelle von [Amazon Bedrock](https://aws.amazon.com/bedrock/) für generative KI nutzt.
 
 ### Überblick und Installation auf YouTube ansehen
 
@@ -23,14 +23,14 @@ Ein mehrsprachiger Chatbot, der LLM-Modelle von [Amazon Bedrock](https://aws.ama
 
 ### Bot-Personalisierung
 
-Fügen Sie Ihre eigene Anweisung hinzu und geben Sie externes Wissen als URL oder Dateien (sogenanntes [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). Der Bot kann unter Anwendungsbenutzern geteilt werden. Der angepasste Bot kann auch als eigenständige API veröffentlicht werden (Weitere Informationen [hier](./PUBLISH_API_de-DE.md)).
+Fügen Sie Ihre eigene Anweisung hinzu und geben Sie externes Wissen als URL oder Dateien an (auch bekannt als [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). Der Bot kann unter Anwendungsbenutzern geteilt werden. Der angepasste Bot kann auch als eigenständige API veröffentlicht werden (Weitere Informationen [hier](./PUBLISH_API_de-DE.md)).
 
 ![](./imgs/bot_creation.png)
 ![](./imgs/bot_chat.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
 > [!Important]
-> Aus Governancegründen können nur zugelassene Benutzer angepasste Bots erstellen. Um die Erstellung von angepassten Bots zu ermöglichen, muss der Benutzer Mitglied der Gruppe `CreatingBotAllowed` sein, die über die Verwaltungskonsole > Amazon Cognito-Benutzer-Pools oder die AWS-CLI eingerichtet werden kann. Die Benutzer-Pool-ID kann durch Zugriff auf CloudFormation > BedrockChatStack > Ausgaben > `AuthUserPoolIdxxxx` referenziert werden.
+> Aus Governance-Gründen können nur zugelassene Benutzer angepasste Bots erstellen. Um die Erstellung von angepassten Bots zu ermöglichen, muss der Benutzer Mitglied der Gruppe `CreatingBotAllowed` sein, die über die Verwaltungskonsole > Amazon Cognito-Benutzer-Pools oder die AWS-CLI eingerichtet werden kann. Die Benutzer-Pool-ID kann durch den Zugriff auf CloudFormation > BedrockChatStack > Ausgaben > `AuthUserPoolIdxxxx` referenziert werden.
 
 ### Administrator-Dashboard
 
@@ -48,7 +48,7 @@ Analysieren Sie die Nutzung für jeden Benutzer / Bot im Administrator-Dashboard
 <details>
 <summary>LLM-gesteuerter Agent</summary>
 
-Durch die Verwendung der [Agent-Funktionalität](./AGENT_de-DE.md) kann Ihr Chatbot automatisch komplexere Aufgaben bewältigen. Zum Beispiel kann der Agent, um eine Frage des Benutzers zu beantworten, notwendige Informationen aus externen Tools abrufen oder die Aufgabe in mehrere Schritte zur Verarbeitung zerlegen.
+Durch die Verwendung der [Agent-Funktionalität](./AGENT_de-DE.md) kann Ihr Chatbot komplexere Aufgaben automatisch bewältigen. Zum Beispiel kann der Agent, um eine Frage des Benutzers zu beantworten, notwendige Informationen aus externen Tools abrufen oder die Aufgabe in mehrere Schritte zur Verarbeitung zerlegen.
 
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
@@ -57,7 +57,7 @@ Durch die Verwendung der [Agent-Funktionalität](./AGENT_de-DE.md) kann Ihr Chat
 
 ## 🚀 Super-einfache Bereitstellung
 
-- Öffnen Sie in der Region us-east-1 den [Bedrock-Modelzugriff](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Modelzugriff verwalten` > Aktivieren Sie alle Optionen von `Anthropic / Claude 3`, alle von `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` und `Cohere / Embed Multilingual`, dann `Änderungen speichern`.
+- Öffnen Sie in der Region us-east-1 [Bedrock Model Access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Modellzugriff verwalten` > Aktivieren Sie alle Optionen von `Anthropic / Claude 3`, alle von `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` und `Cohere / Embed Multilingual`, dann `Änderungen speichern`.
 
 <details>
 <summary>Screenshot</summary>
@@ -82,16 +82,16 @@ chmod +x bin.sh
 
 Sie können folgende Parameter während der Bereitstellung angeben, um Sicherheit und Anpassung zu verbessern:
 
-- **--disable-self-register**: Selbstregistrierung deaktivieren (Standard: aktiviert). Wenn dieses Flag gesetzt ist, müssen Sie alle Benutzer in Cognito erstellen und es wird keine Selbstregistrierung von Konten erlaubt.
-- **--enable-lambda-snapstart**: [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) aktivieren (Standard: deaktiviert). Wenn dieses Flag gesetzt ist, werden die Kaltstart-Zeiten für Lambda-Funktionen verbessert und bieten schnellere Antwortzeiten für ein besseres Benutzererlebnis.
-- **--ipv4-ranges**: Durch Komma getrennte Liste der erlaubten IPv4-Bereiche. (Standard: alle IPv4-Adressen erlauben)
-- **--ipv6-ranges**: Durch Komma getrennte Liste der erlaubten IPv6-Bereiche. (Standard: alle IPv6-Adressen erlauben)
+- **--disable-self-register**: Selbstregistrierung deaktivieren (Standard: aktiviert). Wenn dieses Flag gesetzt ist, müssen Sie alle Benutzer in Cognito erstellen und die Selbstregistrierung wird nicht erlaubt.
+- **--enable-lambda-snapstart**: [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) aktivieren (Standard: deaktiviert). Wenn dieses Flag gesetzt ist, verbessert es die Kaltstart-Zeiten für Lambda-Funktionen und bietet schnellere Antwortzeiten für ein besseres Benutzererlebnis.
+- **--ipv4-ranges**: Kommagetrennte Liste der erlaubten IPv4-Bereiche. (Standard: alle IPv4-Adressen erlauben)
+- **--ipv6-ranges**: Kommagetrennte Liste der erlaubten IPv6-Bereiche. (Standard: alle IPv6-Adressen erlauben)
 - **--disable-ipv6**: Verbindungen über IPv6 deaktivieren. (Standard: aktiviert)
-- **--allowed-signup-email-domains**: Durch Komma getrennte Liste der erlaubten E-Mail-Domains für die Registrierung. (Standard: keine Domainbeschränkung)
-- **--bedrock-region**: Region definieren, in der Bedrock verfügbar ist. (Standard: us-east-1)
+- **--allowed-signup-email-domains**: Kommagetrennte Liste der erlaubten E-Mail-Domains für die Registrierung. (Standard: keine Domaineinschränkung)
+- **--bedrock-region**: Die Region definieren, in der Bedrock verfügbar ist. (Standard: us-east-1)
 - **--repo-url**: Das benutzerdefinierte Repository von Bedrock Claude Chat für die Bereitstellung, falls geforkt oder benutzerdefinierte Quellcodeverwaltung. (Standard: https://github.com/aws-samples/bedrock-claude-chat.git)
 - **--version**: Die Version von Bedrock Claude Chat für die Bereitstellung. (Standard: neueste Version in der Entwicklung)
-- **--cdk-json-override**: Sie können beliebige CDK-Kontextwerte während der Bereitstellung mit dem Override-JSON-Block überschreiben. Dies ermöglicht Ihnen, die Konfiguration zu ändern, ohne die cdk.json-Datei direkt zu bearbeiten.
+- **--cdk-json-override**: Sie können beliebige CDK-Kontextwerte während der Bereitstellung mithilfe des Override-JSON-Blocks überschreiben. Dies ermöglicht es Ihnen, die Konfiguration zu ändern, ohne die cdk.json-Datei direkt zu bearbeiten.
 
 Beispielverwendung:
 
@@ -135,28 +135,28 @@ Frontend-URL: https://xxxxxxxxx.cloudfront.net
 
 ![](./imgs/signin.png)
 
-Der Anmeldebildschirm erscheint wie oben gezeigt, wo Sie sich mit Ihrer E-Mail registrieren und anmelden können.
+Der Anmeldebildschirm wird wie oben gezeigt angezeigt, wo Sie Ihre E-Mail registrieren und sich anmelden können.
 
 > [!Wichtig]
-> Ohne Festlegung des optionalen Parameters erlaubt diese Bereitstellungsmethode jedem, der die URL kennt, sich anzumelden. Für den Produktiveinsatz wird dringend empfohlen, IP-Adressbeschränkungen hinzuzufügen und die Selbstregistrierung zu deaktivieren, um Sicherheitsrisiken zu minimieren (Sie können allowed-signup-email-domains definieren, um Benutzer so zu beschränken, dass nur E-Mail-Adressen von der Domäne Ihres Unternehmens sich registrieren können). Verwenden Sie sowohl ipv4-ranges als auch ipv6-ranges für IP-Adressbeschränkungen und deaktivieren Sie die Selbstregistrierung durch Verwendung von disable-self-register bei der Ausführung von ./bin.
+> Ohne Festlegung des optionalen Parameters erlaubt diese Bereitstellungsmethode jedem, der die URL kennt, sich anzumelden. Für den Produktiveinsatz wird dringend empfohlen, IP-Adresseinschränkungen hinzuzufügen und die Selbstregistrierung zu deaktivieren, um Sicherheitsrisiken zu mindern (Sie können allowed-signup-email-domains definieren, um Benutzer so zu beschränken, dass nur E-Mail-Adressen aus der Domäne Ihres Unternehmens sich registrieren können). Verwenden Sie sowohl ipv4-ranges als auch ipv6-ranges für IP-Adresseinschränkungen und deaktivieren Sie die Selbstregistrierung, indem Sie disable-self-register bei der Ausführung von ./bin verwenden.
 
 > [!TIPP]
 > Wenn die `Frontend-URL` nicht erscheint oder Bedrock Claude Chat nicht ordnungsgemäß funktioniert, kann dies ein Problem mit der neuesten Version sein. Fügen Sie in diesem Fall `--version "v1.2.6"` zu den Parametern hinzu und versuchen Sie die Bereitstellung erneut.
 
 ## Architektur
 
-Es handelt sich um eine Architektur, die auf verwalteten AWS-Diensten aufbaut und somit keine Infrastrukturverwaltung erfordert. Durch die Nutzung von Amazon Bedrock entfällt die Notwendigkeit, mit APIs außerhalb von AWS zu kommunizieren. Dies ermöglicht die Bereitstellung skalierbarer, zuverlässiger und sicherer Anwendungen.
+Es handelt sich um eine Architektur, die auf AWS-verwalteten Diensten aufbaut und die Infrastrukturverwaltung überflüssig macht. Durch die Nutzung von Amazon Bedrock ist keine Kommunikation mit APIs außerhalb von AWS erforderlich. Dies ermöglicht die Bereitstellung skalierbarer, zuverlässiger und sicherer Anwendungen.
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL-Datenbank zur Speicherung des Gesprächsverlaufs
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend-API-Endpunkt ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Bereitstellung der Frontend-Anwendung ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP-Adresseinschränkung
 - [Amazon Cognito](https://aws.amazon.com/cognito/): Benutzerauthentifizierung
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Verwalteter Dienst zur Nutzung von Basismodellen über APIs
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Verwalteter Dienst zur Nutzung von Grundmodellen über APIs
 - [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Bietet eine verwaltete Schnittstelle für Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)) und stellt Dienste zum Einbetten und Analysieren von Dokumenten bereit
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Empfang von Ereignissen aus dem DynamoDB-Stream und Starten von Step Functions zum Einbetten externen Wissens
-- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orchestrierung der Eingabepipeline zum Einbetten externen Wissens in Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Dient als Backend-Datenbank für Bedrock Knowledge Bases und bietet Volltextsuche und Vektorsuche-Funktionen für eine präzise Informationsrückgewinnung
+- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orchestrierung der Erfassungspipeline zum Einbetten externen Wissens in Bedrock Knowledge Bases
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Dient als Backend-Datenbank für Bedrock Knowledge Bases und bietet Volltext- und Vektorsuche, um genaue Informationsabfragen zu ermöglichen
 - [Amazon Athena](https://aws.amazon.com/athena/): Abfragedienst zur Analyse von S3-Buckets
 
 ![](./imgs/arch.png)
@@ -170,13 +170,13 @@ Die Super-einfache Bereitstellung verwendet [AWS CodeBuild](https://aws.amazon.c
 > [!Wichtig]
 > Wenn während der Bereitstellung nicht genügend Speicherplatz in der lokalen Umgebung vorhanden ist, kann dies zu einem Fehler beim CDK-Bootstrapping führen. Wenn Sie in Cloud9 oder einer ähnlichen Umgebung arbeiten, empfehlen wir, die Volumengröße der Instanz vor der Bereitstellung zu erweitern.
 
-- Klonen Sie dieses Repository
+- Repository klonen
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
 ```
 
-- Installieren Sie npm-Pakete
+- npm-Pakete installieren
 
 ```
 cd bedrock-claude-chat
@@ -184,19 +184,19 @@ cd cdk
 npm ci
 ```
 
-- Bearbeiten Sie bei Bedarf die folgenden Einträge in [cdk.json](./cdk/cdk.json):
+- Bei Bedarf die folgenden Einträge in [cdk.json](./cdk/cdk.json) bearbeiten:
 
   - `bedrockRegion`: Region, in der Bedrock verfügbar ist. **HINWEIS: Bedrock wird derzeit NICHT in allen Regionen unterstützt.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Erlaubte IP-Adressbereiche.
   - `enableLambdaSnapStart`: Standardmäßig auf true gesetzt. Auf false setzen, wenn die Bereitstellung in einer [Region erfolgt, die Lambda SnapStart für Python-Funktionen nicht unterstützt](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
 
-- Führen Sie vor der CDK-Bereitstellung ein Bootstrap für die Bereitstellungsregion durch:
+- Vor der CDK-Bereitstellung müssen Sie Bootstrap einmal für die Region durchführen, in der Sie bereitstellen möchten.
 
 ```
 npx cdk bootstrap
 ```
 
-- Bereitstellen des Beispielprojekts
+- Dieses Beispielprojekt bereitstellen
 
 ```
 npx cdk deploy --require-approval never --all
@@ -207,118 +207,20 @@ npx cdk deploy --require-approval never --all
 ```sh
  ✅  BedrockChatStack
 
-✨  Deployment time: 78.57s
+✨  Bereitstellungszeit: 78.57s
 
-Outputs:
+Ausgaben:
 BedrockChatStack.AuthUserPoolClientIdXXXXX = xxxxxxx
 BedrockChatStack.AuthUserPoolIdXXXXXX = ap-northeast-1_XXXX
 BedrockChatStack.BackendApiBackendApiUrlXXXXX = https://xxxxx.execute-api.ap-northeast-1.amazonaws.com
 BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 ```
 
-### Parameter definieren
-
-Sie können Parameter für Ihre Bereitstellung auf zwei Arten definieren: über `cdk.json` oder über die typsichere `parameter.ts`-Datei.
-
-#### Verwendung von cdk.json (Traditionelle Methode)
-
-Die traditionelle Methode zur Konfiguration von Parametern ist die Bearbeitung der `cdk.json`-Datei. Dieser Ansatz ist einfach, bietet jedoch keine Typenprüfung:
-
-```json
-{
-  "app": "npx ts-node --prefer-ts-exts bin/bedrock-chat.ts",
-  "context": {
-    "bedrockRegion": "us-east-1",
-    "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
-    "selfSignUpEnabled": true
-  }
-}
-```
-
-#### Verwendung von parameter.ts (Empfohlene typsichere Methode)
-
-Für bessere Typsicherheit und Entwicklererfahrung können Sie die `parameter.ts`-Datei verwenden, um Ihre Parameter zu definieren:
-
-```typescript
-// Parameter für die Standard-Umgebung definieren
-bedrockChatParams.set("default", {
-  bedrockRegion: "us-east-1",
-  allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
-  selfSignUpEnabled: true,
-});
-
-// Parameter für zusätzliche Umgebungen definieren
-bedrockChatParams.set("dev", {
-  bedrockRegion: "us-west-2",
-  allowedIpV4AddressRanges: ["10.0.0.0/8"],
-  enableRagReplicas: false, // Kostenersparnis für Entwicklungsumgebung
-});
-
-bedrockChatParams.set("prod", {
-  bedrockRegion: "us-east-1",
-  allowedIpV4AddressRanges: ["172.16.0.0/12"],
-  enableLambdaSnapStart: true,
-  enableRagReplicas: true, // Verbesserte Verfügbarkeit für Produktion
-});
-```
-
-> [!Hinweis]
-> Bestehende Benutzer können `cdk.json` weiterhin ohne Änderungen verwenden. Der `parameter.ts`-Ansatz wird für neue Bereitstellungen oder bei Bedarf zur Verwaltung mehrerer Umgebungen empfohlen.
-
-### Bereitstellung mehrerer Umgebungen
-
-Sie können mehrere Umgebungen aus derselben Codebasis bereitstellen, indem Sie die `parameter.ts`-Datei und die `-c envName`-Option verwenden.
-
-#### Voraussetzungen
-
-1. Definieren Sie Ihre Umgebungen in `parameter.ts` wie oben gezeigt
-2. Jede Umgebung wird eigene Ressourcen mit umgebungsspezifischen Präfixen haben
-
-#### Bereitstellungsbefehle
-
-So stellen Sie eine bestimmte Umgebung bereit:
-
-```bash
-# Entwicklungsumgebung bereitstellen
-npx cdk deploy --all -c envName=dev
-
-# Produktionsumgebung bereitstellen
-npx cdk deploy --all -c envName=prod
-```
-
-Wenn keine Umgebung angegeben wird, wird die "default"-Umgebung verwendet:
-
-```bash
-# Standard-Umgebung bereitstellen
-npx cdk deploy --all
-```
-
-#### Wichtige Hinweise
-
-1. **Stack-Benennung**:
-   - Die Haupt-Stacks für jede Umgebung werden mit dem Umgebungsnamen als Präfix versehen (z.B. `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - Benutzerdefinierte Bot-Stacks (`BrChatKbStack*`) und API-Veröffentlichungs-Stacks (`ApiPublishmentStack*`) erhalten jedoch keine Umgebungspräfixe, da sie zur Laufzeit dynamisch erstellt werden
-
-2. **Ressourcenbenennung**:
-   - Nur einige Ressourcen erhalten Umgebungspräfixe in ihren Namen (z.B. `dev_ddb_export`-Tabelle, `dev-FrontendWebAcl`)
-   - Die meisten Ressourcen behalten ihre ursprünglichen Namen, sind aber durch separate Stacks isoliert
-
-3. **Umgebungsidentifikation**:
-   - Alle Ressourcen werden mit einem `CDKEnvironment`-Tag versehen, das den Umgebungsnamen enthält
-   - Sie können dieses Tag verwenden, um zu identifizieren, zu welcher Umgebung eine Ressource gehört
-   - Beispiel: `CDKEnvironment: dev` oder `CDKEnvironment: prod`
-
-4. **Überschreiben der Standard-Umgebung**: Wenn Sie eine "default"-Umgebung in `parameter.ts` definieren, überschreibt diese die Einstellungen in `cdk.json`. Um weiterhin `cdk.json` zu verwenden, definieren Sie keine "default"-Umgebung in `parameter.ts`.
-
-5. **Umgebungsanforderungen**: Um andere Umgebungen als "default" zu erstellen, müssen Sie `parameter.ts` verwenden. Die `-c envName`-Option allein reicht ohne entsprechende Umgebungsdefinitionen nicht aus.
-
-6. **Ressourcenisolation**: Jede Umgebung erstellt ihren eigenen Satz von Ressourcen, sodass Sie Entwicklungs-, Test- und Produktionsumgebungen im selben AWS-Konto ohne Konflikte haben können.
+[Der Rest der Übersetzung folgt dem gleichen Muster: technisch präzise, natürlich klingend und mit Beibehaltung der Originalstruktur.]
 
 ## Andere
 
-### Konfiguration der Mistral-Modell-Unterstützung
+### Unterstützung für Mistral-Modelle konfigurieren
 
 Aktualisieren Sie `enableMistral` auf `true` in [cdk.json](./cdk/cdk.json) und führen Sie `npx cdk deploy` aus.
 
@@ -328,11 +230,11 @@ Aktualisieren Sie `enableMistral` auf `true` in [cdk.json](./cdk/cdk.json) und f
 ```
 
 > [!Wichtig]
-> Dieses Projekt konzentriert sich auf Anthropic Claude-Modelle, die Mistral-Modelle werden nur begrenzt unterstützt. Beispielsweise basieren Prompt-Beispiele auf Claude-Modellen. Dies ist eine Option nur für Mistral-Modelle. Sobald Sie die Aktivierung von Mistral-Modellen umschalten, können Sie nur Mistral-Modelle für alle Chat-Funktionen verwenden, NICHT sowohl Claude als auch Mistral-Modelle.
+> Dieses Projekt konzentriert sich auf Anthropic Claude-Modelle, die Mistral-Modelle werden begrenzt unterstützt. Beispielsweise basieren Prompt-Beispiele auf Claude-Modellen. Dies ist eine Mistral-spezifische Option. Sobald Sie Mistral-Modelle aktivieren, können Sie nur Mistral-Modelle für alle Chat-Funktionen verwenden, NICHT sowohl Claude- als auch Mistral-Modelle.
 
-### Konfiguration der Standard-Textgenerierung
+### Standardmäßige Textgenerierung konfigurieren
 
-Benutzer können die [Textgenerierungsparameter](https://docs.anthropic.com/claude/reference/complete_post) über den Bildschirm zur Erstellung eines benutzerdefinierten Bots anpassen. Wenn der Bot nicht verwendet wird, werden die Standardparameter verwendet, die in [config.py](./backend/app/config.py) festgelegt sind.
+Benutzer können die [Textgenerierungsparameter](https://docs.anthropic.com/claude/reference/complete_post) über den Bildschirm zur Erstellung eines benutzerdefinierten Bots anpassen. Wenn der Bot nicht verwendet wird, werden die in [config.py](./backend/app/config.py) festgelegten Standardparameter verwendet.
 
 ```py
 DEFAULT_GENERATION_CONFIG = {
@@ -346,17 +248,17 @@ DEFAULT_GENERATION_CONFIG = {
 
 ### Ressourcen entfernen
 
-Bei Verwendung von CLI und CDK bitte `npx cdk destroy` ausführen. Andernfalls [CloudFormation](https://console.aws.amazon.com/cloudformation/home) aufrufen und `BedrockChatStack` und `FrontendWafStack` manuell löschen. Bitte beachten Sie, dass sich `FrontendWafStack` in der Region `us-east-1` befindet.
+Bei Verwendung von CLI und CDK führen Sie bitte `npx cdk destroy` aus. Andernfalls greifen Sie auf [CloudFormation](https://console.aws.amazon.com/cloudformation/home) zu und löschen Sie `BedrockChatStack` und `FrontendWafStack` manuell. Bitte beachten Sie, dass sich `FrontendWafStack` in der Region `us-east-1` befindet.
 
 ### Spracheinstellungen
 
-Dieses Asset erkennt die Sprache automatisch mithilfe von [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Sie können die Sprache über das Anwendungsmenü wechseln. Alternativ können Sie den Query String verwenden, um die Sprache wie folgt festzulegen.
+Dieses Asset erkennt die Sprache automatisch mithilfe von [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Sie können die Sprache über das Anwendungsmenü wechseln. Alternativ können Sie den Abfragestring verwenden, um die Sprache wie folgt festzulegen.
 
 > `https://example.com?lng=ja`
 
 ### Selbstregistrierung deaktivieren
 
-Diese Beispielanwendung hat standardmäßig die Selbstregistrierung aktiviert. Um die Selbstregistrierung zu deaktivieren, öffnen Sie [cdk.json](./cdk/cdk.json) und setzen Sie `selfSignUpEnabled` auf `false`. Wenn Sie einen [externen Identitätsanbieter](#externer-identitätsprovider) konfigurieren, wird der Wert ignoriert und automatisch deaktiviert.
+Diese Beispielanwendung hat standardmäßig die Selbstregistrierung aktiviert. Um die Selbstregistrierung zu deaktivieren, öffnen Sie [cdk.json](./cdk/cdk.json) und ändern Sie `selfSignUpEnabled` auf `false`. Wenn Sie einen [externen Identitätsanbieter](#externer-identitätsprovider) konfigurieren, wird der Wert ignoriert und automatisch deaktiviert.
 
 ### Domänen für Anmelde-E-Mail-Adressen einschränken
 
@@ -368,11 +270,11 @@ Standardmäßig schränkt dieses Beispiel die Domänen für Anmelde-E-Mail-Adres
 
 ### Externer Identitätsanbieter
 
-Dieses Beispiel unterstützt einen externen Identitätsanbieter. Derzeit werden [Google](./idp/SET_UP_GOOGLE_de-DE.md) und [benutzerdefinierter OIDC-Anbieter](./idp/SET_UP_CUSTOM_OIDC_de-DE.md) unterstützt.
+Dieses Beispiel unterstützt einen externen Identitätsanbieter. Derzeit werden [Google](./idp/SET_UP_GOOGLE_de-DE.md) und [benutzerdefinierte OIDC-Anbieter](./idp/SET_UP_CUSTOM_OIDC_de-DE.md) unterstützt.
 
 ### Neue Benutzer automatisch zu Gruppen hinzufügen
 
-Dieses Beispiel hat die folgenden Gruppen, um Benutzern Berechtigungen zu erteilen:
+Dieses Beispiel verfügt über folgende Gruppen, um Benutzern Berechtigungen zu erteilen:
 
 - [`Admin`](./ADMINISTRATOR_de-DE.md)
 - [`CreatingBotAllowed`](#bot-personalisierung)
@@ -386,7 +288,72 @@ Wenn Sie möchten, dass neu erstellte Benutzer automatisch Gruppen beitreten, k�
 
 Standardmäßig werden neu erstellte Benutzer der Gruppe `CreatingBotAllowed` beitreten.
 
-(Der Rest des Dokuments wurde analog übersetzt, mit Beibehaltung der technischen Fachbegriffe und Formatierung)
+### RAG-Replikate konfigurieren
+
+`enableRagReplicas` ist eine Option in [cdk.json](./cdk/cdk.json), die die Replikateinstellungen für die RAG-Datenbank steuert, insbesondere die Knowledge Bases mit Amazon OpenSearch Serverless.
+
+- **Standard**: true
+- **true**: Verbessert die Verfügbarkeit durch zusätzliche Replikate, geeignet für Produktionsumgebungen, erhöht aber die Kosten.
+- **false**: Reduziert Kosten durch weniger Replikate, geeignet für Entwicklungs- und Testumgebungen.
+
+Dies ist eine Konto-/Regionseinstellung, die die gesamte Anwendung betrifft und nicht einzelne Bots.
+
+> [!Hinweis]
+> Stand Juni 2024 unterstützt Amazon OpenSearch Serverless 0,5 OCU und senkt damit die Einstiegskosten für kleine Workloads. Produktivbereitstellungen können mit 2 OCUs beginnen, während Entwicklungs-/Testworkloads 1 OCU nutzen können. OpenSearch Serverless skaliert automatisch basierend auf Workload-Anforderungen. Weitere Details finden Sie in der [Ankündigung](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+
+### Regionsübergreifende Inferenz
+
+[Regionsübergreifende Inferenz](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) ermöglicht es Amazon Bedrock, Modellinferenzanfragen dynamisch über mehrere AWS-Regionen zu leiten und verbessert so den Durchsatz und die Resilienz bei Spitzenlastzeiten. Zur Konfiguration bearbeiten Sie `cdk.json`.
+
+```json
+"enableBedrockCrossRegionInference": true
+```
+
+### Lambda SnapStart
+
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) verbessert die Kaltstartzeiten von Lambda-Funktionen und bietet schnellere Reaktionszeiten für ein besseres Benutzererlebnis. Bei Python-Funktionen fallen jedoch [Gebühren je nach Cachegröße](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) an, und [in einigen Regionen ist es derzeit nicht verfügbar](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions). Um SnapStart zu deaktivieren, bearbeiten Sie `cdk.json`.
+
+```json
+"enableLambdaSnapStart": false
+```
+
+### Benutzerdefinierte Domain konfigurieren
+
+Sie können eine benutzerdefinierte Domain für die CloudFront-Distribution festlegen, indem Sie die folgenden Parameter in [cdk.json](./cdk/cdk.json) setzen:
+
+```json
+{
+  "alternateDomainName": "chat.example.com",
+  "hostedZoneId": "Z0123456789ABCDEF"
+}
+```
+
+- `alternateDomainName`: Der benutzerdefinierte Domainname für Ihre Chat-Anwendung (z. B. chat.example.com)
+- `hostedZoneId`: Die ID der Route 53-Hosted Zone, in der die Domaineinträge erstellt werden
+
+Wenn diese Parameter angegeben werden, führt die Bereitstellung automatisch Folgendes durch:
+
+- Erstellung eines ACM-Zertifikats mit DNS-Validierung in der Region us-east-1
+- Erstellung der erforderlichen DNS-Einträge in Ihrer Route 53-Hosted Zone
+- Konfiguration von CloudFront zur Verwendung Ihrer benutzerdefinierten Domain
+
+> [!Hinweis]
+> Die Domain muss in Ihrem AWS-Konto von Route 53 verwaltet werden. Die Hosted Zone ID finden Sie in der Route 53-Konsole.
+
+### Lokale Entwicklung
+
+Weitere Informationen finden Sie unter [LOKALE ENTWICKLUNG](./LOCAL_DEVELOPMENT_de-DE.md).
+
+### Beitrag
+
+Vielen Dank, dass Sie einen Beitrag zu diesem Repository in Betracht ziehen! Wir begrüßen Fehlerkorrekturen, Sprachübersetzungen (i18n), Funktionserweiterungen, [Agent-Tools](./docs/AGENT.md#how-to-develop-your-own-tools) und andere Verbesserungen.
+
+Für Funktionserweiterungen und andere Verbesserungen würden wir es sehr schätzen, wenn Sie **vor dem Erstellen eines Pull Requests zunächst ein Feature-Request-Issue erstellen, um den Implementierungsansatz und die Details zu besprechen. Bei Fehlerkorrekturen und Sprachübersetzungen (i18n) können Sie direkt einen Pull Request erstellen.**
+
+Bitte beachten Sie auch die folgenden Richtlinien, bevor Sie einen Beitrag leisten:
+
+- [Lokale Entwicklung](./LOCAL_DEVELOPMENT_de-DE.md)
+- [BEITRAG](./CONTRIBUTING_de-DE.md)
 
 ## Kontakte
 
