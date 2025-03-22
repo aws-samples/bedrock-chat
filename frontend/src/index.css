@@ -8,3 +8,9 @@
     --amplify-components-button-primary-background-color
   ) !important;
 }
+
+/* コードブロックの改行を強制する */
+.prose pre {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
