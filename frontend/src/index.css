@@ -9,7 +9,7 @@
   ) !important;
 }
 
-/* コードブロックの改行を強制する - 最終手段として再追加 */
+/* Forcing line breaks in code blocks */
 .prose pre {
   white-space: pre-wrap !important;
   word-break: break-word !important;
