@@ -164,11 +164,12 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                 PreTag="div"
                 wrapLongLines={true}
                 customStyle={{
-                  whiteSpace: 'pre-wrap !important',
-                  wordBreak: 'break-word !important',
-                  overflowWrap: 'break-word !important',
-                  maxWidth: '100% !important'
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%'
                 }}
+                className="code-block-wrap"
               />
             </CopyToClipboard>
           ) : (
