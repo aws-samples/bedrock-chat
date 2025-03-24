@@ -1,7 +1,5 @@
 # Migrationsleitfaden (v1 zu v2)
 
-Would you like me to continue translating the rest of the document? I'm ready to proceed with the translation following the critical requirements you specified.
-
 ## Kurzfassung
 
 - **Für Benutzer von v1.2 oder früher**: Aktualisieren Sie auf v1.4 und erstellen Sie Ihre Bots neu mit Knowledge Base (KB). Nach einer Übergangsphase, wenn Sie bestätigen, dass alles mit KB wie erwartet funktioniert, fahren Sie mit dem Upgrade auf v2 fort.
