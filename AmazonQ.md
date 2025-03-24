@@ -19,13 +19,13 @@ The following changes were made to fix the issue at the component level:
    }
    ```
 
-2. **Enhanced the `SyntaxHighlighter` component** in `ChatMessageMarkdown.tsx` with more comprehensive text wrapping settings:
+2. **Enhanced the `SyntaxHighlighter` component** in `ChatMessageMarkdown.tsx` with more comprehensive text wrapping settings and added `!important` flags for stronger specificity:
    ```javascript
    customStyle={{
-     whiteSpace: 'pre-wrap',
-     wordBreak: 'break-word',
-     overflowWrap: 'break-word',
-     maxWidth: '100%'
+     whiteSpace: 'pre-wrap !important',
+     wordBreak: 'break-word !important',
+     overflowWrap: 'break-word !important',
+     maxWidth: '100% !important'
    }}
    ```
 
@@ -49,16 +49,16 @@ The following changes were made to fix the issue at the component level:
 
 This component-level approach provides several advantages:
 
-1. **Scoped styling**: Changes only affect the specific components that need them, avoiding unintended side effects on other parts of the application
+1. **Scoped styling**: Changes primarily affect the specific components that need them, avoiding unintended side effects on other parts of the application
 
-2. **No reliance on global CSS**: Removes the need for `!important` flags and global style overrides
+2. **Reduced reliance on global CSS**: Minimizes the need for global style overrides
 
 3. **Better maintainability**: Makes the code more self-contained and easier to understand
 
-4. **Improved rendering**: The additional style properties ensure code blocks properly wrap while maintaining formatting and readability
+4. **Improved rendering**: The additional style properties with `!important` flags ensure code blocks properly wrap while maintaining formatting and readability, even when competing with other styles
 
 5. **Consistent behavior**: Ensures long lines break at word boundaries rather than in the middle of words
 
 ## Testing
 
-To test these changes, try using the chat with code examples that include long lines. The code should now properly wrap to the next line while maintaining its formatting, without relying on global CSS rules.
+To test these changes, try using the chat with code examples that include long lines. The code should now properly wrap to the next line while maintaining its formatting, with minimal reliance on global CSS rules.
