@@ -28,21 +28,10 @@ logger = logging.getLogger(__name__)
 def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
     
     try:
-        lti_items = get_lti_data_list()
-
-        lti_map = {}
-
-        for item in lti_items:  
-            lti_map[item.get('lti_id')] = item
-
         groups = find_groups_by_user_id(user_id)
 
         group_metas = []
         for group in groups:
-            # extract the lti_id from the group_id
-            group_lti_id = group.group_id.split("-")[0]
-            lti_name = lti_map.get(group_lti_id, {}).get("lti_name", "")
-
             group_metas.append(
                 GroupOutput(
                     group_id=group.group_id,
@@ -52,7 +41,6 @@ def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
                     create_by=group.create_by,
                     role=group.role,
                     user_name=group.user_name,
-                    lti_name=lti_name
                 )
             )
 
@@ -62,6 +50,32 @@ def fetch_all_groups_by_user_id(user_id: str) -> list[GroupOutput]:
         raise RecordNotFoundError(
             f"User not found."
         )
+
+def fetch_all_groups_with_lti_data(user_id: str) -> list[GroupOutput]:
+    # For a specific user, get the group list with the lti name
+    # lti_name retrieved from lti table
+    try:
+        lti_items = get_lti_data_list()
+
+        lti_map = {}
+
+        for item in lti_items:  
+            lti_map[item.get('lti_id')] = item
+
+        groupList = fetch_all_groups_by_user_id(user_id)
+
+        for group in groupList:
+            # extract the lti_id from the group_id
+            group_lti_id = group.group_id.split("-")[0]
+            lti_name = lti_map.get(group_lti_id, {}).get("lti_name", "")
+            group.lti_name = lti_name
+
+        return groupList
+    except RecordNotFoundError:
+        raise RecordNotFoundError(
+            f"User not found."
+        )
+    
 
 
 def get_role_by_user_id(user_id: str) -> str:

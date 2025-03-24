@@ -60,7 +60,7 @@ const ChatPage: React.FC = () => {
   const { open: openSnackbar } = useSnackbar();
   const { errorDetail } = usePostMessageStreaming();
   const { emailId } = useUser();
-  const { myGroups, isAdmin } = useGroup();
+  const { myGroups, isAdmin, isAssistantCreator } = useGroup();
   const { starredBots } = useBot();
 
   const {
@@ -119,26 +119,33 @@ const ChatPage: React.FC = () => {
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [ hasNoAssistants, setHasNoAssistants] = useState(false);
 
 
   useEffect(() => {
     setIsLoading(true);
     setIsAvailabilityBot(false);
+    setHasNoAssistants(false);
     if (bot) {
+      // retrieved bot summary
       setIsAvailabilityBot(true);
       setPageTitle(bot.title);
       setDescription(bot.description || t('bot.label.noDescription'));
     } else if (botError) {
+      // failure case
       if (botError.response?.status === 404) {
         setPageTitle(t('bot.label.notAvailableBot'));
+        setDescription('');
       }
     } else {
       if (!myGroups || !starredBots) return;
       const hasGroups = myGroups && Object.keys(myGroups).length > 0;
       const hasAvailableAssistants = Array.isArray(starredBots) && starredBots.length > 0;
       if (hasGroups) {
-        // check if the user has a teacher/admin role in any group
+        // user has a teacher/admin role
+        // pointing directly to LLM 
         setPageTitle(t('bot.label.normalChat'));
+        setDescription('');
       } else if (hasAvailableAssistants) {
         // check if student has any availabe assistants
         setIsAvailabilityBot(true);
@@ -147,6 +154,8 @@ const ChatPage: React.FC = () => {
       } else {
         // an alert message will be displayed and input chat disabled
         setPageTitle(t('bot.alert.sync.noAvailableAssistants.title'));
+        setDescription('');
+        setHasNoAssistants(true);
       }
       setIsLoading(false);
     }
@@ -364,7 +373,7 @@ const ChatPage: React.FC = () => {
 
     return (
       <ChatMessage
-        tools={tools}
+        tools={(isAssistantCreator) ? tools : []}
         chatContent={message}
         isStreaming={props.isStreaming}
         relatedDocuments={relatedDocumentsForCitation}
@@ -481,7 +490,7 @@ const ChatPage: React.FC = () => {
             </Alert>
           </div>
         )}
-        {(pageTitle == t('bot.alert.sync.noAvailableAssistants.title')) && !isLoading && (
+        {hasNoAssistants && !isLoading && (
           <div className="mb-8 w-1/2">
             <Alert
               severity="warning"

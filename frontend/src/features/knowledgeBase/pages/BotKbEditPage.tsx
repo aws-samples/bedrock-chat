@@ -458,7 +458,7 @@ const BotKbEditPage: React.FC = () => {
     }
     
     // get topics
-    let topics = assistantTopics.trim().length > 0 ? assistantTopics : courseName + " topics"; 
+    let topics = assistantTopics.trim().length > 0 ? assistantTopics : courseName; 
     prompt = prompt.replaceAll(COURSE_TOPICS_PLACEHOLDER, topics);
 
     // get examples
@@ -1704,7 +1704,7 @@ const BotKbEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                <div className="flex gap-4 mt-2">
+                {P0_FEATURE_FLAG && <div className="flex gap-4 mt-2">
                   <RadioButton
                     name="knowledgeBaseType"
                     value="new"
@@ -1719,7 +1719,7 @@ const BotKbEditPage: React.FC = () => {
                     label={t('knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.existing.label')}
                     onChange={() => setKnowledgeBaseType('existing')}
                   />
-                </div>
+                </div>}
 
                 {(() => {
                   if (knowledgeBaseType === 'existing') {

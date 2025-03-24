@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from app.routes.schemas.base import BaseSchema
 
@@ -10,7 +11,7 @@ class GroupOutput(BaseSchema):
     create_by: str
     role: str
     user_name: str
-    lti_name: str
+    lti_name: Optional[str] = None
 
 # Role hierarchy from lowest to highest
 ROLE_HIERARCHY = ["STUDENT", "TEACHER", "SCHOOLADMIN", "DISTRICTADMIN", "SUPERADMIN"]

@@ -2,7 +2,7 @@ from app.routes.schemas.group import (
     GroupOutput,
 )
 from app.usecases.group import (
-    fetch_all_groups_by_user_id,
+    fetch_all_groups_with_lti_data,
 )
 
 from app.user import User
@@ -20,5 +20,5 @@ def fetch_all_groups_for_user(
     """Get all groups for a user."""
     current_user: User = request.state.current_user
     
-    groups = fetch_all_groups_by_user_id(current_user.id)
+    groups = fetch_all_groups_with_lti_data(current_user.id)
     return groups
