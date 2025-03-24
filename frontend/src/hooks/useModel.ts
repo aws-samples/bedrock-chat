@@ -149,6 +149,35 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
             supportMediaType: [],
             supportReasoning: false,
           },
+          //Llama models
+          {
+            modelId: 'llama-3-8b-instruct',
+            label: ('Llama model 3'),
+            description: ('Basic Llama Model'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama-3-1-8b-instruct',
+            label: ('Llama model 3.1'),
+            description: ('Llama Model 3.1'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama-3-2-1b-instruct',
+            label: ('Llama model 3.2'),
+            description: ('Llama Model 3.2'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama-3-3-70b-instruct',
+            label: ('Llama model 3.3'),
+            description: ('Llama Model 3.3'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
         ]
       : [
           {
