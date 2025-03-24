@@ -165,7 +165,9 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                 wrapLongLines={true}
                 customStyle={{
                   whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word'
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%'
                 }}
               />
             </CopyToClipboard>
@@ -246,7 +248,7 @@ const CopyToClipboard = ({
   codeText: string;
 }) => {
   return (
-    <div className="relative">
+    <div className="relative max-w-full overflow-hidden">
       {children}
       <div className="absolute right-2 top-2 flex gap-0">
         <ButtonDownload text={codeText} />
