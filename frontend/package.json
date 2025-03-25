@@ -21,6 +21,7 @@
     "axios": "^1.7.4",
     "copy-to-clipboard": "^3.3.3",
     "dayjs": "^1.11.10",
+    "frontend": "file:",
     "i18next": "^23.6.0",
     "i18next-browser-languagedetector": "^7.1.0",
     "immer": "^10.0.2",

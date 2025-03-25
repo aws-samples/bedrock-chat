@@ -18,6 +18,9 @@ supported_base_models = {
     "amazon.nova-pro-v1:0": "amazon-nova-pro",
     "amazon.nova-lite-v1:0": "amazon-nova-lite",
     "amazon.nova-micro-v1:0": "amazon-nova-micro",
+    "llama-3-2-1b-instruct": "meta.llama3-2-1b-instruct-v1:0",
+    "llama-3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
+    "llama-3-3-70b-instruct": "meta.llama3-3-70b-instruct-v1:0",
 }
 
 # Region definitions
