@@ -79,6 +79,21 @@ const translation = {
         description:
           'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
       },
+      'llama-3-2-1b-instruct': {
+        label: 'llama-3-2-1b-instruct',
+        description:
+          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
+      },
+      'llama-3-2-11b-instruct': {
+        label: 'llama-3-2-1b-instruct',
+        description:
+          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
+      },
+      'llama-3-3-70b-instruct': {
+        label: 'llama-3-2-1b-instruct',
+        description:
+          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
+      }, 
     },
     agent: {
       label: 'Agent',
