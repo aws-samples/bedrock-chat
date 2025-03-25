@@ -383,7 +383,7 @@ def get_model_id(
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
                 "llama-3-2-1b-instruct",
-                "llama-3-2-11b-instruct"
+                "llama-3-2-11b-instruct",
                 "llama-3-3-70b-instruct",
             ],
         },

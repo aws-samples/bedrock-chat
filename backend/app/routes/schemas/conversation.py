@@ -22,6 +22,10 @@ type_model_name = Literal[
     "amazon-nova-pro",
     "amazon-nova-lite",
     "amazon-nova-micro",
+    # Llama Models
+    "llama-3-2-1b-instruct",
+    "llama-3-2-11b-instruct",
+    "llama-3-3-70b-instruct",
 ]
 
 
