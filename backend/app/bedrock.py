@@ -344,9 +344,8 @@ def get_model_id(
         "amazon-nova-lite": "amazon.nova-lite-v1:0",
         "amazon-nova-micro": "amazon.nova-micro-v1:0",
         # Llama Model
-        "llama-3-8b-instruct": "meta.llama3-8b-instruct-v1:0",
-        "llama-3-1-8b-instruct": "meta.llama3-1-8b-instruct-v1:0",
         "llama-3-2-1b-instruct": "meta.llama3-2-1b-instruct-v1:0",
+        "llama-3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
         "llama-3-3-70b-instruct": "meta.llama3-3-70b-instruct-v1:0",
 
     }
@@ -367,9 +366,8 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
-                "llama-3-8b-instruct",
-                "llama-3-1-8b-instruct",
                 "llama-3-2-1b-instruct",
+                "llama-3-2-11b-instruct",
                 "llama-3-3-70b-instruct",
             ],
         },
@@ -384,8 +382,8 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
-                "llama-3-1-8b-instruct",
                 "llama-3-2-1b-instruct",
+                "llama-3-2-11b-instruct"
                 "llama-3-3-70b-instruct",
             ],
         },
@@ -402,9 +400,8 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
-                "llama-3-8b-instruct",
-                "llama-3-1-8b-instruct",
                 "llama-3-2-1b-instruct",
+                "llama-3-2-11b-instruct",
                 "llama-3-3-70b-instruct",
             ],
         },
@@ -432,7 +429,7 @@ def get_model_id(
                 "llama-3-2-1b-instruct",
             ],
         },
-        "eu-west-2": {"area": "eu", "models": ["llama-3-8b-instruct",]},
+        "eu-west-2": {"area": "eu", "models": []},
         "eu-west-3": {
             "area": "eu",
             "models": [
@@ -459,7 +456,6 @@ def get_model_id(
                 "claude-v3-sonnet",
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
-                "llama-3-8b-instruct",
             ],
         },
         "ap-northeast-1": {
@@ -497,7 +493,6 @@ def get_model_id(
                 "claude-v3-sonnet",
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
-                "llama-3-8b-instruct",
             ],
         },
         "ap-southeast-2": {
