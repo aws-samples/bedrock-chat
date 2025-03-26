@@ -17,6 +17,8 @@ const CLAUDE_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
+const DEEPSEEK_SUPPORTED_MEDIA_TYPES: string[] = [];
+
 const NOVA_SUPPORTED_MEDIA_TYPES = [
   'image/jpeg',
   'image/png',
@@ -126,6 +128,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
             description: t('model.claude-v3-opus.description'),
             supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
             supportReasoning: false,
+          },
+          {
+            modelId: 'deepseek-r1',
+            label: t('model.deepseek-r1.label'),
+            description: t('model.deepseek-r1.description'),
+            supportMediaType: DEEPSEEK_SUPPORTED_MEDIA_TYPES,
+            supportReasoning: true, 
           },
           // New Amazon Nova models
           {

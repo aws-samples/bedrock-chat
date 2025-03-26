@@ -15,6 +15,7 @@ type_model_name = Literal[
     "claude-v3.5-haiku",
     "claude-v3-haiku",
     "claude-v3-opus",
+    "deepseek-r1",
     "mistral-7b-instruct",
     "mixtral-8x7b-instruct",
     "mistral-large",

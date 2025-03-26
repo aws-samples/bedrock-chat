@@ -50,6 +50,10 @@ const translation = {
         label: 'Claude 3 (Opus)',
         description: '非常に複雑なタスクに対応するパワフルなモデル',
       },
+      'deepseek-r1': {
+        label: 'DeepSeek R1',
+        description: '自然言語処理、コーディングタスク、コンテンツ生成のための強力なテキスト生成モデル',
+      },      
       'mistral-7b-instruct': {
         label: 'Mistral 7B',
         description:

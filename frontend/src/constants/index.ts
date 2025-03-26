@@ -128,6 +128,7 @@ export const AVAILABLE_MODEL_KEYS = [
   'claude-v3.7-sonnet',
   'claude-v3-haiku',
   'claude-v3.5-haiku',
+  "deepseek-r1",
   'mistral-7b-instruct',
   'mixtral-8x7b-instruct',
   'mistral-large',

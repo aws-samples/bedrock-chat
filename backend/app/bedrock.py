@@ -339,6 +339,7 @@ def get_model_id(
         "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
         "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
         "mistral-large": "mistral.mistral-large-2402-v1:0",
+        "deepseek-r1": "deepseek.r1-v1:0",
         # New Amazon Nova models
         "amazon-nova-pro": "amazon.nova-pro-v1:0",
         "amazon-nova-lite": "amazon.nova-lite-v1:0",
@@ -361,6 +362,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "us-east-2": {
@@ -374,6 +376,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "us-west-2": {
@@ -389,6 +392,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "eu-central-1": {
