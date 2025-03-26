@@ -14,15 +14,17 @@ import ButtonIcon from './ButtonIcon';
 import {
   PiChat,
   PiCheck,
-  PiCompass,
-  PiNotePencil,
   PiPencilLine,
   PiRobot,
-  PiShareNetwork,
   PiTrash,
   PiX,
 } from 'react-icons/pi';
-import { PiCircleNotch } from 'react-icons/pi';
+import { SiSimpleanalytics } from "react-icons/si";
+import { FaRegCompass } from "react-icons/fa";
+import { 
+  PiCircleNotch,
+  PiNotePencilBold
+ } from 'react-icons/pi';
 import LazyOutputText from './LazyOutputText';
 import { ConversationMeta } from '../@types/conversation';
 import { BotListItem } from '../@types/bot';
@@ -297,31 +299,25 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
             <DrawerItem
               isActive={false}
-              icon={<PiNotePencil />}
+              icon={<PiNotePencilBold />}
               to="/"
               onClick={onClickNewChat}
               labelComponent={t('button.newChat')}
             />
             {props.isAssistantCreator && <DrawerItem
               isActive={false}
-              icon={<PiCompass />}
+              icon={<FaRegCompass />}
               to="/bot/explore"
               labelComponent={getPageLabel('/bot/explore')}
               onClick={closeSamllDrawer}
             />}
-            {props.isAdmin && (
-              <ExpandableDrawerGroup
-                label={"Admin"}
-                className="border-t pt-1">
-                <DrawerItem
+            {props.isAssistantCreator && <DrawerItem
                   isActive={false}
-                  icon={<PiShareNetwork />}
+                  icon={<SiSimpleanalytics />}
                   to="/admin/shared-bot-analytics"
                   labelComponent={getPageLabel('/admin/shared-bot-analytics')}
                   onClick={closeSamllDrawer}
-                />
-              </ExpandableDrawerGroup>
-            )}
+            />}
 
             <ExpandableDrawerGroup
               label={(starredBots && starredBots.length > 0) ? "Available Assistants" : "No Available Assistants"}
