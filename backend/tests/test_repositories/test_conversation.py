@@ -176,7 +176,8 @@ class TestConversationRepository(unittest.TestCase):
                             media_type="image/png",
                         ),
                     ],
-                    model="claude-instant-v1",
+                    # test model by adding model name from bedrock file here 
+                    model="llama-3-3-70b-instruct",
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
@@ -303,7 +304,8 @@ class TestConversationRepository(unittest.TestCase):
             base64.b64encode(content[1].body).decode(),
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
         )
-        self.assertEqual(message_map["a"].model, "claude-instant-v1")
+        # test model by adding model name from bedrock file here
+        self.assertEqual(message_map["a"].model, "llama-3-3-70b-instruct")
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
@@ -387,7 +389,8 @@ class TestConversationRepository(unittest.TestCase):
                         * 1000,  # Repeating to make it large
                     )
                 ],
-                model="claude-instant-v1",
+                # test model by adding model name from bedrock file here
+                model="llama-3-3-70b-instruct",
                 children=[],
                 parent=None,
                 create_time=1627984879.9,
@@ -444,7 +447,8 @@ class TestConversationRepository(unittest.TestCase):
                                                 "media_type": None,
                                             }
                                         ],
-                                        "model": "claude-instant-v1",
+                                        # test model by adding model name from bedrock file here
+                                        "model": "llama-3-3-70b-instruct",
                                         "children": [],
                                         "parent": None,
                                         "create_time": 1627984879.9,
@@ -506,7 +510,8 @@ class TestConversationRepository(unittest.TestCase):
             self.assertEqual(len(message.content), 1)
             self.assertEqual(message.content[0].content_type, "text")
             self.assertEqual(message.content[0].body, "This is a large message." * 1000)
-            self.assertEqual(message.model, "claude-instant-v1")
+            # test model by adding model name from bedrock file here
+            self.assertEqual(message.model, "llama-3-3-70b-instruct")
             self.assertEqual(message.children, [])
             self.assertEqual(message.parent, None)
             self.assertEqual(message.create_time, 1627984879.9)
@@ -522,7 +527,7 @@ class TestConversationRepository(unittest.TestCase):
         conversations = find_conversation_by_user_id(user_id="user")
         self.assertEqual(len(conversations), 0)
 
-'''
+
 class TestConversationBotRepository(unittest.TestCase):
     def setUp(self):
         self.patcher = patch("boto3.resource")
@@ -711,7 +716,7 @@ class TestConversationBotRepository(unittest.TestCase):
         self.patcher.stop()
         os.environ.pop("CONVERSATION_TABLE_NAME", None)
         os.environ.pop("CONVERSATION_BUCKET_NAME", None)
-
+'''
     def test_only_conversation_is_fetched(self):
         self.mock_table.query.return_value = {
             "Items": [

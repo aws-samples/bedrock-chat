@@ -5,6 +5,7 @@ from app.routes.schemas.base import BaseSchema
 from mypy_boto3_bedrock_runtime.literals import DocumentFormatType, ImageFormatType
 from pydantic import Discriminator, Field, JsonValue, root_validator
 
+# Add model names from the bedrock file to type_model_name
 type_model_name = Literal[
     "claude-instant-v1",
     "claude-v2",
