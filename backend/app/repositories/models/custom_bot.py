@@ -196,9 +196,11 @@ class InternetToolModel(BaseModel):
             firecrawl_config=firecrawl_config,
         )
 
+
 class BedrockAgentConfigModel(BaseModel):
     agent_id: str
     alias_id: str
+
 
 class BedrockAgentModel(BaseModel):
     tool_type: Literal["bedrockAgent"] = Field(
@@ -210,7 +212,9 @@ class BedrockAgentModel(BaseModel):
     bedrockAgentConfig: Optional[BedrockAgentConfigModel] | None = None
 
 
-ToolModel = Annotated[PlainToolModel | InternetToolModel | BedrockAgentModel, Discriminator("tool_type")]
+ToolModel = Annotated[
+    PlainToolModel | InternetToolModel | BedrockAgentModel, Discriminator("tool_type")
+]
 
 
 class AgentModel(BaseModel):
@@ -252,10 +256,14 @@ class AgentModel(BaseModel):
                         tool_type="bedrockAgent",
                         name=tool_input.name,
                         description=tool_input.description,
-                        bedrockAgentConfig=BedrockAgentConfigModel(
-                            agent_id=tool_input.bedrock_agent_config.agent_id,
-                            alias_id=tool_input.bedrock_agent_config.alias_id,
-                        ) if tool_input.bedrock_agent_config else None
+                        bedrockAgentConfig=(
+                            BedrockAgentConfigModel(
+                                agent_id=tool_input.bedrock_agent_config.agent_id,
+                                alias_id=tool_input.bedrock_agent_config.alias_id,
+                            )
+                            if tool_input.bedrock_agent_config
+                            else None
+                        ),
                     )
                 )
 
@@ -291,7 +299,11 @@ class AgentModel(BaseModel):
                         tool_type="bedrockAgent",
                         name=tool.name,
                         description=tool.description,
-                        bedrockAgentConfig=BedrockAgentConfig(**tool.bedrockAgentConfig.model_dump()) if tool.bedrockAgentConfig else None
+                        bedrockAgentConfig=(
+                            BedrockAgentConfig(**tool.bedrockAgentConfig.model_dump())
+                            if tool.bedrockAgentConfig
+                            else None
+                        ),
                     )
                 )
             else:

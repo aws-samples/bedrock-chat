@@ -242,9 +242,9 @@ def chat(
         if bot and bot.is_agent_enabled()
         else {}
     )
-    
+
     # Update description of bedrock_agent
-    if "bedrock_agent" in tools:
+    if "bedrock_agent" in tools and bot is not None:
         update_tool_description_from_agent(bot, tools)
 
     display_citation = bot is not None and bot.display_retrieved_chunks

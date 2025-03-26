@@ -87,6 +87,7 @@ class BedrockAgentConfig(BaseSchema):
     agent_id: str
     alias_id: str
 
+
 class PlainTool(BaseSchema):
     tool_type: Literal["plain"] = "plain"
     name: str
@@ -114,13 +115,17 @@ class InternetTool(BaseSchema):
             )
         return v
 
+
 class BedrockAgentTool(BaseSchema):
     tool_type: Literal["bedrockAgent"]
     name: str
     description: str
     bedrockAgentConfig: Optional[BedrockAgentConfig] | None = None
 
-Tool = Annotated[PlainTool | InternetTool | BedrockAgentTool, Discriminator("tool_type")]
+
+Tool = Annotated[
+    PlainTool | InternetTool | BedrockAgentTool, Discriminator("tool_type")
+]
 
 
 class Agent(BaseSchema):

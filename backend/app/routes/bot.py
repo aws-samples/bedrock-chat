@@ -194,14 +194,14 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
-    result = []
+    result: list[Tool] = []
     for tool in tools:
         if tool.name == "bedrock_agent":
             result.append(
                 BedrockAgentTool(
                     tool_type="bedrockAgent",
                     name=tool.name,
-                    description=tool.description
+                    description=tool.description,
                 )
             )
         elif tool.name == "internet_search":
@@ -210,15 +210,13 @@ def get_bot_available_tools(request: Request, bot_id: str):
                     tool_type="internet",
                     name=tool.name,
                     description=tool.description,
-                    search_engine="duckduckgo"
+                    search_engine="duckduckgo",
                 )
             )
         else:
             result.append(
                 PlainTool(
-                    tool_type="plain",
-                    name=tool.name,
-                    description=tool.description
+                    tool_type="plain", name=tool.name, description=tool.description
                 )
             )
     return result
