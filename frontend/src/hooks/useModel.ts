@@ -152,22 +152,22 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
           //Llama models
           {
             modelId: 'llama-3-2-1b-instruct',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
+            label: t('model.llama-3-2-1b-instruct.label'),
+            description: t('model.llama-3-2-1b-instruct.description'),
             supportMediaType: [],
             supportReasoning: false,
           },
           {
             modelId: 'llama-3-2-11b-instruct',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
+            label: t('model.llama-3-2-11b-instruct.label'),
+            description: t('model.llama-3-2-11b-instruct.description'),
             supportMediaType: [],
             supportReasoning: false,
           },
           {
             modelId: 'llama-3-3-70b-instruct',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
+            label: t('model.llama-3-3-70b-instruct.label'),
+            description: t('model.llama-3-3-70b-instruct.description'),
             supportMediaType: [],
             supportReasoning: false,
           },
