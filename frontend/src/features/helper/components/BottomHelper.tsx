@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ModalDialog from '../../../components/ModalDialog';
 import { useTranslation } from 'react-i18next';
 import { useIsWindows } from '../../../hooks/useIsWindows';
+import { P0_FEATURE_FLAG } from '../../../constants';
 export const BottomHelper = () => {
   const { t } = useTranslation();
   const { isWindows } = useIsWindows();
@@ -17,7 +18,7 @@ export const BottomHelper = () => {
           onClick={() => setIsOpen(() => true)}
         />
       </div>
-      <ModalDialog
+      {P0_FEATURE_FLAG && <ModalDialog
         title={t('helper.shortcuts.title')}
         isOpen={isOpen}
         onClose={() => setIsOpen(() => false)}>
@@ -54,7 +55,7 @@ export const BottomHelper = () => {
             </div>
           </div>
         </div>
-      </ModalDialog>
+      </ModalDialog>}
     </>
   );
 };

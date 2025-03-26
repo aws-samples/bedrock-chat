@@ -103,7 +103,7 @@ const BotKbEditPage: React.FC = () => {
   const [groupId, setGroupId] = useState('');
   const [assistantTopics, setAssistantTopics] = useState('');
   const [assistantType, setAssistantType] = useState('');
-  const [isBasicEditView, setIsBasicEditView] = useState(true);
+  const [isAdvancedEditView, setIsAdvancedEditView] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
@@ -1512,21 +1512,9 @@ const BotKbEditPage: React.FC = () => {
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
               {isNewBot ? 
-                isBasicEditView ? t('bot.create.pageTitle') : t('bot.create.advancedPageTitle') : 
-                isBasicEditView ? t('bot.edit.pageTitle'): t('bot.edit.advancedPageTitle')}
+                isAdvancedEditView ? t('bot.create.advancedPageTitle') : t('bot.create.pageTitle') : 
+                isAdvancedEditView ? t('bot.edit.advancedPageTitle'): t('bot.edit.pageTitle')}
             </div>
-            {isAdmin && <div className="mt-4">
-							<div className="font-semibold">{t('bot.toggleView.title')}</div>
-							<div className="flex">
-								<Toggle
-									value={isBasicEditView}
-									onChange={setIsBasicEditView}
-								/>
-								<div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
-									{t('bot.toggleView.description')}
-								</div>
-							</div>
-						</div>}
             <div className="mt-3 flex flex-col gap-3">
               <InputText
                 label={t('bot.item.title')}
@@ -1563,26 +1551,34 @@ const BotKbEditPage: React.FC = () => {
                     disabled={isLoading}
                     value={assistantTopics}
                     onChange={setAssistantTopics}
+                    placeholder={"Slope, Fractions, Inequalities"}
                   />
               </div>
-              <div className="relative mt-3">
-                <Button
-                  className="absolute -top-3 right-0 text-xs"
-                  outlined
-                  onClick={() => {
-                    setIsOpenSamples(true);
-                  }}>
-                  <PiNote className="mr-1" />
-                  {t('bot.button.instructionsSamples')}
-                </Button>
-                <Textarea
-                  label={t('bot.item.instruction')}
-                  disabled={isLoading}
-                  rows={5}
-                  hint={t('bot.help.instructions')}
-                  value={instruction}
-                  onChange={setInstruction}
-                />
+
+              <div className="mt-3">
+                <div className="flex items-center gap-1">
+                  <div className="text-lg font-bold">
+                    {"Instructions"}
+                  </div>
+                </div>
+                <div className="relative mt-3">
+                  <Button
+                    className="absolute -top-3 right-0 text-xs"
+                    outlined
+                    onClick={() => {
+                      setIsOpenSamples(true);
+                    }}>
+                    <PiNote className="mr-1" />
+                    {t('bot.button.instructionsSamples')}
+                  </Button>
+                  <Textarea
+                    label={t('bot.help.instructions')}
+                    disabled={isLoading}
+                    rows={5}
+                    value={instruction}
+                    onChange={setInstruction}
+                  />
+                </div>
               </div>
 
               <div className="mt-3">
@@ -1672,26 +1668,13 @@ const BotKbEditPage: React.FC = () => {
               </div>
 
               <div className="mt-3" />
-              {!isBasicEditView && <AvailableTools
+              {isAdvancedEditView && <AvailableTools
                 availableTools={availableTools}
                 tools={tools}
                 setTools={setTools}
               />}
 
-                <div className="mt-4">
-                  <div className="font-semibold">
-                    {t('bot.label.citeRetrievedContexts')}
-                  </div>
-                  <div className="flex">
-                    <Toggle
-                      value={displayRetrievedChunks}
-                      onChange={setDisplayRetrievedChunks}
-                    />
-                    <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                      {t('bot.help.knowledge.citeRetrievedContexts')}
-                    </div>
-                  </div>
-                </div>
+                
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">
@@ -1828,7 +1811,7 @@ const BotKbEditPage: React.FC = () => {
                               type="text"
                               disabled={isLoading || disabledKnowledgeEdit}
                               value={url}
-                              placeholder="https://example.com"
+                              placeholder="https://aws.amazon.com/what-is/retrieval-augmented-generation/"
                               onChange={(s) => {
                                 onChangeUrls(s, idx);
                               }}
@@ -1855,7 +1838,22 @@ const BotKbEditPage: React.FC = () => {
                         </Button>
                       </div>
 
-                      {!isBasicEditView && <ExpandableDrawerGroup
+                      <div className="mt-4">
+                        <div className="font-semibold">
+                          {t('bot.label.citeRetrievedContexts')}
+                        </div>
+                        <div className="flex">
+                          <Toggle
+                            value={displayRetrievedChunks}
+                            onChange={setDisplayRetrievedChunks}
+                          />
+                          <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                            {t('bot.help.knowledge.citeRetrievedContexts')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {isAdvancedEditView && <ExpandableDrawerGroup
                         isDefaultShow={false}
                         label={t('knowledgeBaseSettings.webCrawlerConfig.title')}
                         className="py-2">
@@ -1982,7 +1980,17 @@ const BotKbEditPage: React.FC = () => {
                 })()}
               </div>
 
-              {!isBasicEditView && <><ExpandableDrawerGroup
+              {isAdmin && <div className="mt-4">
+                <div className="font-semibold">{t('bot.toggleView.title')}</div>
+                <div className="flex">
+                  <Toggle
+                    value={isAdvancedEditView}
+                    onChange={setIsAdvancedEditView}
+                  />
+                </div>
+              </div>}
+
+              {isAdvancedEditView && <><ExpandableDrawerGroup
                 isDefaultShow={false}
                 label={t('generationConfig.title')}
                 className="py-2">

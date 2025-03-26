@@ -324,7 +324,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             )}
 
             <ExpandableDrawerGroup
-              label={"Available Assistants"}
+              label={(starredBots && starredBots.length > 0) ? "Available Assistants" : "No Available Assistants"}
               className="border-t pt-1">
               {starredBots?.map((bot) => (
                 <DrawerItem

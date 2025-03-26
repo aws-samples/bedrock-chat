@@ -142,13 +142,12 @@ const translation = {
     },
     bot: {
       toggleView: {
-        title: 'Customize View',
-        description: 'Number of customizable options.'
+        title: 'Advanced View',
       },
       label: {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
-        knowledge: 'Knowledge',
+        knowledge: 'Knowledge Base',
         url: 'URL',
         s3url: 'S3 Data Source',
         sitemap: 'Sitemap URL',
@@ -183,7 +182,7 @@ const translation = {
           exampleTitle: 'Title',
           example: 'Conversation Example',
         },
-        citeRetrievedContexts: 'Retrieved Context Citation',
+        citeRetrievedContexts: 'Citations',
         unsupported: 'Unsupported, Read-only',
       },
       titleSubmenu: {
@@ -195,22 +194,22 @@ const translation = {
         overview:
           'Bots operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with bots, there is no need to define the context.',
         instructions:
-          'Define how the bot should behave. Giving ambiguous instructions may lead to unpredictable movements, so provide clear and specific instructions.',
+          "Define the exact behavior you would like the Assistant to follow. Clear, specific instructions help ensure the assistant responds accurately and predictably.",
         knowledge: {
           overview:
-            'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
-          url: 'The information from the specified URL will be used as Knowledge.',
+            'Provide files and URLs that you want the Assistant to reference when generating responses.',
+          url: 'Specified URLs will be parsed and added to the Knowledge Base.',
           s3url:
             'By entering the S3 URI, you can add S3 as a data source. You can add up to 4 sources. It only supports buckets that exist in the same account and the same region as bedrock region.',
           sitemap:
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
-          file: 'The uploaded files will be used as Knowledge.',
+          file: 'Uploaded files will be added to the Knowledge Base.',
           citeRetrievedContexts:
-            'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
+            'Display citations in the response from the files and URLs in the Knowledge Base. \nUsers can access the files or URLs from the citations.',
         },
         quickStarter: {
           overview:
-            'When starting a conversation, provide examples. Examples illustrate how to use the bot.',
+            'Provide Q&A examples for formatting the generated responses. \n The example questions are added as shortcuts to start new conversations.',
         },
       },
       alert: {
@@ -231,7 +230,7 @@ const translation = {
       },
       samples: {
         placeholder: {
-          groupName: '{{groupName}}',
+          groupName: '{{courseName}}',
           assistantTopics: '{{assistantTopics}}',
           examples: '{{examples}}',
         },
@@ -269,15 +268,15 @@ We want the quiz generation process to be friendly and if the user did not provi
         },
         learningAssistant: {
           title: 'Math Learning Assistant',
-          prompt: `You are an {{groupName}} Teaching Assistant tasked with supporting students and teachers in {{groupName}} education. 
-Your role is strictly limited to addressing {{groupName}} topics appropriate. Your responses must adhere to the following guidelines:
+          prompt: `You are an {{courseName}} Teaching Assistant tasked with supporting students and teachers in {{courseName}} education. 
+Your role is strictly limited to addressing {{courseName}} topics appropriate. Your responses must adhere to the following guidelines:
 
 Core Responsibilities:
 1. Response Scope:
-     Only provide assistance for {{groupName}} topics appropriate
-     Immediately redirect any non-{{groupName}} questions back to math topics
-     Do not engage with creative writing, stories, or non-{{groupName}} content
-     If a question is not related to math, respond: "I'm your {{groupName}} teaching assistant. I can help you with {{assistantTopics}}. Would you like help with any of those?"
+     Only provide assistance for {{courseName}} topics appropriate
+     Immediately redirect any non-{{courseName}} questions back to math topics
+     Do not engage with creative writing, stories, or non-{{courseName}} content
+     If a question is not related to math, respond: "I'm your {{courseName}} teaching assistant. I can help you with {{assistantTopics}}. Would you like help with any of those?"
 
 2. Knowledge Base Adherence:
     Primary Source: Prioritize using class material from the provided Knowledge Base.
@@ -285,7 +284,7 @@ Core Responsibilities:
     Accuracy: Validate explanations with the uploaded material.
 
 3. Grade-Level Appropriateness:
-    Focus on standard {{groupName}} topics, including:
+    Focus on standard {{courseName}} topics, including:
         {{assistantTopics}}
     Decline advanced questions politely, explaining they are beyond the scope.
 
@@ -301,7 +300,7 @@ For each question, follow this framework:
 Operational Guidelines:
 Knowledge Base Integration:
     Match Content: When using class materials, reference specific sections and methods.
-    Align with Standards: For non-knowledge base {{groupName}} topics, provide explanations aligned with {{groupName}} standards.
+    Align with Standards: For non-knowledge base {{courseName}} topics, provide explanations aligned with {{courseName}} standards.
 
 Safety and Ethics:
     Safeguard student privacy.
