@@ -17,7 +17,7 @@ const ExpandableDrawerGroup: React.FC<Props> = ({
     <div className={`${props.className ?? ''}`}>
       <div
         className="flex w-full items-center px-4">
-        <div className="bold underline decoration-0.125rem">{props.label}</div>
+        <div className="bold">{props.label}</div>
       </div>
       <div className="">
         <div

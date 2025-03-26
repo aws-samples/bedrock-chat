@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { PiChat, PiRobot } from 'react-icons/pi';
+import { PiChat, PiRobot, PiShareNetwork } from 'react-icons/pi';
 import { Link } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,6 +15,7 @@ type Props = {
 };
 
 const DrawerItem: React.FC<Props> = (props) => {
+  const isSubItem = (React.isValidElement(props.icon) && (props.icon.type === PiChat || props.icon.type === PiRobot || props.icon.type === PiShareNetwork));
   return (
     <Link
       className={twMerge(
@@ -27,9 +28,8 @@ const DrawerItem: React.FC<Props> = (props) => {
       to={props.to}
       onClick={props.onClick}>
       <div className={`flex h-8 max-h-5 w-full justify-start overflow-hidden`}>
-        {React.isValidElement(props.icon) && props.icon.type !== PiChat && 
-          props.icon.type !== PiRobot && <div className="mr-2 pt-0.5">{props.icon}</div>}
-        <div className="relative flex-1 text-ellipsis break-all">
+        {!isSubItem && <div className="mr-2 pt-0.5">{props.icon}</div>}
+        <div className={`relative flex-1 text-ellipsis break-all ${isSubItem ? 'pl-3' : ''}`}>
           {props.labelComponent}
           {(props.isBlur ?? true) && (
             <div
