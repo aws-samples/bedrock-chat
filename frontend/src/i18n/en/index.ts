@@ -80,20 +80,20 @@ const translation = {
           'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
       },
       'llama-3-2-1b-instruct': {
-        label: 'llama-3-2-1b-instruct',
+        label: 'Llama 3.2 1B',
         description:
-          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
+          'Part of a collection of models and is perfect for retrieval and summarization for edge devices and mobile applications',
       },
       'llama-3-2-11b-instruct': {
-        label: 'llama-3-2-11b-instruct',
+        label: 'Llama 3.2 11B',
         description:
-          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
+          'Well-suited for content creation, conversational AI, language understanding, and enterprise applications requiring visual reasoning.',
       },
       'llama-3-3-70b-instruct': {
-        label: 'llama-3-2-70b-instruct',
+        label: 'Llama 3.3 70Bs',
         description:
-          'A text-only model that delivers the lowest latency responses in the llama family of models at a very low cost.',
-      }, 
+          'This model supports high-performance conversational AI designed for content creation, enterprise applications, and research, offering advanced language understanding capabilities, including text summarization, classification, sentiment analysis, and code generation.',
+      },
     },
     agent: {
       label: 'Agent',
