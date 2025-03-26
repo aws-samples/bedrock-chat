@@ -8,3 +8,19 @@
     --amplify-components-button-primary-background-color
   ) !important;
 }
+
+/* Forcing line breaks in code blocks */
+.prose pre {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important;
+}
+
+/* Additional styling for code blocks */
+.code-block-wrap {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important;
+}

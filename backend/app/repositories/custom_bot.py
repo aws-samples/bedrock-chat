@@ -371,6 +371,7 @@ def find_private_bots_by_user_id(
             description=item["Description"],
             is_public="PublicBotId" in item,
             sync_status=item["SyncStatus"],
+            has_knowledge=bool(item.get("HasKnowledge")),
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
             ),
@@ -396,6 +397,7 @@ def find_private_bots_by_user_id(
                     description=item["Description"],
                     is_public="PublicBotId" in item,
                     sync_status=item["SyncStatus"],
+                    has_knowledge=bool(item.get("HasKnowledge")),
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
@@ -789,6 +791,7 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackIn
                     sync_status=item["SyncStatus"],
                     published_api_stack_name=item.get("ApiPublishmentStackName", None),
                     published_api_datetime=item.get("ApiPublishedDatetime", None),
+                    has_knowledge=bool(item.get("HasKnowledge")),
                     has_bedrock_knowledge_base=(
                         True if item.get("BedrockKnowledgeBase", None) else False
                     ),
@@ -832,6 +835,7 @@ def find_all_published_bots(
             sync_status=item["SyncStatus"],
             published_api_stack_name=item["ApiPublishmentStackName"],
             published_api_datetime=item.get("ApiPublishedDatetime", None),
+            has_knowledge=bool(item.get("HasKnowledge")),
             has_bedrock_knowledge_base=(
                 True if item.get("BedrockKnowledgeBase", None) else False
             ),

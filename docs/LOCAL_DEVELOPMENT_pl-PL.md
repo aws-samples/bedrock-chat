@@ -1,6 +1,6 @@
 # Rozwój lokalny
 
-## Programowanie Backend
+## Programowanie backendowe
 
 Sprawdź [backend/README](../backend/README_pl-PL.md).
 
@@ -19,11 +19,11 @@ cd frontend && npm ci && npm run dev
 
 ## (Opcjonalnie, zalecane) Konfiguracja haka pre-commit
 
-Wprowadziliśmy GitHub workflows do sprawdzania typów i lintowania. Są one wykonywane podczas tworzenia Pull Request, ale oczekiwanie na zakończenie lintowania przed kontynuacją nie jest dobrym doświadczeniem programistycznym. Dlatego zadania lintowania powinny być wykonywane automatycznie na etapie commitowania. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm osiągnięcia tego. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie dla wydajnego doświadczenia programistycznego. Dodatkowo, mimo że nie wymuszamy formatowania TypeScript za pomocą [Prettier](https://prettier.io/), bylibyśmy wdzięczni, gdybyś go używał podczas współtworzenia, ponieważ pomaga to unikać niepotrzebnych różnic podczas przeglądania kodu.
+Wprowadziliśmy GitHub workflows do sprawdzania typów i lintowania. Są one wykonywane podczas tworzenia Pull Request, ale czekanie na zakończenie lintowania przed kontynuowaniem nie jest dobrym doświadczeniem deweloperskim. Dlatego te zadania lintowania powinny być wykonywane automatycznie na etapie commitowania. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm osiągnięcia tego. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie dla wydajnego doświadczenia deweloperskiego. Dodatkowo, chociaż nie wymuszamy formatowania TypeScript za pomocą [Prettier](https://prettier.io/), bylibyśmy wdzięczni, gdybyś go używał podczas współtworzenia, ponieważ pomaga to zapobiegać niepotrzebnym różnicom podczas przeglądów kodu.
 
 ### Zainstaluj lefthook
 
-Zapoznaj się [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli używasz komputera Mac z homebrew, po prostu uruchom `brew install lefthook`.
+Zapoznaj się [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli używasz Maca i Homebrew, po prostu uruchom `brew install lefthook`.
 
 ### Zainstaluj poetry
 
@@ -37,8 +37,8 @@ pip install poetry
 poetry install
 ```
 
-Więcej szczegółów znajdziesz w [README backend](../backend/README_pl-PL.md).
+Aby uzyskać więcej szczegółów, sprawdź [backend README](../backend/README_pl-PL.md).
 
 ### Utwórz haka pre-commit
 
-Po prostu uruchom `lefthook install` w głównym katalogu tego projektu.
+Po prostu uruchom `lefthook install` w katalogu głównym tego projektu.

@@ -1,6 +1,6 @@
 # Guida alla Migrazione del Database
 
-Questa guida illustra i passaggi per migrare i dati durante un aggiornamento di Bedrock Claude Chat che comporta la sostituzione di un cluster Aurora. La seguente procedura garantisce una transizione fluida, minimizzando i tempi di inattività e la perdita di dati.
+Questa guida descrive i passaggi per migrare i dati durante un aggiornamento di Bedrock Claude Chat che prevede la sostituzione di un cluster Aurora. La seguente procedura garantisce una transizione fluida riducendo al minimo i tempi di inattività e la perdita di dati.
 
 ## Panoramica
 
@@ -25,21 +25,21 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Eseguire lo script `migrate.py` per avviare il processo di migrazione. Questo script eseguirà la scansione di tutti i bot, avvierà attività di embedding ECS e creerà i dati nel nuovo cluster Aurora. Nota che:
+- Eseguire lo script `migrate.py` per avviare il processo di migrazione. Questo script eseguirà la scansione di tutti i bot, avvierà attività ECS di embedding e creerà i dati nel nuovo cluster Aurora. Nota che:
   - Lo script richiede `boto3`.
-  - L'ambiente richiede autorizzazioni IAM per accedere alla tabella DynamoDB e invocare le attività ECS.
+  - L'ambiente richiede autorizzazioni IAM per accedere alla tabella DynamoDB e invocare attività ECS.
 
 ## Opzioni Alternative di Migrazione
 
-Se preferisci non utilizzare il metodo precedente a causa delle implicazioni di tempo e costi, considera i seguenti approcci alternativi:
+Se non si desidera utilizzare il metodo precedente a causa delle implicazioni di tempo e costi, considerare i seguenti approcci alternativi:
 
 ### Ripristino da Snapshot e Migrazione DMS
 
-Per prima cosa, prendi nota della password per accedere al cluster Aurora corrente. Quindi esegui `npx cdk deploy`, che attiva la sostituzione del cluster. Successivamente, crea un database temporaneo ripristinando da uno snapshot del database originale.
-Usa [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/) per migrare i dati dal database temporaneo al nuovo cluster Aurora.
+Innanzitutto, annotare la password per accedere al cluster Aurora corrente. Quindi eseguire `npx cdk deploy`, che attiva la sostituzione del cluster. Successivamente, creare un database temporaneo ripristinando da uno snapshot del database originale.
+Utilizzare [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/) per migrare i dati dal database temporaneo al nuovo cluster Aurora.
 
-Nota: A partire dal 29 maggio 2024, DMS non supporta nativamente l'estensione pgvector. Tuttavia, puoi esplorare le seguenti opzioni per aggirare questa limitazione:
+Nota: Al 29 maggio 2024, DMS non supporta nativamente l'estensione pgvector. Tuttavia, è possibile esplorare le seguenti opzioni per aggirare questa limitazione:
 
-Utilizza la [migrazione omogenea DMS](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), che sfrutta la replica logica nativa. In questo caso, sia il database di origine che quello di destinazione devono essere PostgreSQL. DMS può sfruttare la replica logica nativa a questo scopo.
+Utilizzare la [migrazione omogenea DMS](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), che sfrutta la replica logica nativa. In questo caso, sia il database di origine che quello di destinazione devono essere PostgreSQL. DMS può sfruttare la replica logica nativa a questo scopo.
 
-Considera i requisiti e i vincoli specifici del tuo progetto quando scegli l'approccio di migrazione più adatto.
+Considerare i requisiti e i vincoli specifici del proprio progetto quando si sceglie l'approccio di migrazione più adatto.

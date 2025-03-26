@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { VectorCollection } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 import {
@@ -8,27 +8,26 @@ import {
 import { VectorCollectionStandbyReplicas } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
-import {
-  BedrockFoundationModel,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
-import {
-  ChunkingStrategy,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
-import {
-  S3DataSource,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/s3-data-source";
+import { BedrockFoundationModel } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
+import { ChunkingStrategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
+import { S3DataSource } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/s3-data-source";
 import {
   WebCrawlerDataSource,
   CrawlingScope,
   CrawlingFilters,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
-import {
-  ParsingStategy
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/parsing";
+import { ParsingStategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/parsing";
 
-import { KnowledgeBase, IKnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
+import {
+  KnowledgeBase,
+  IKnowledgeBase,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { aws_bedrock as bedrock } from "aws-cdk-lib";
-import { AwsCustomResource, PhysicalResourceId, AwsCustomResourcePolicy } from 'aws-cdk-lib/custom-resources';
+import {
+  AwsCustomResource,
+  PhysicalResourceId,
+  AwsCustomResourcePolicy,
+} from "aws-cdk-lib/custom-resources";
 import { getThreshold } from "./utils/bedrock-guardrails";
 
 const BLOCKED_INPUT_MESSAGE = "this input message is blocked";
@@ -48,23 +47,32 @@ interface BedrockGuardrailProps {
 }
 
 interface BedrockCustomBotStackProps extends StackProps {
+  // Base configuration
   readonly ownerUserId: string;
   readonly botId: string;
+  readonly bedrockClaudeChatDocumentBucketName: string;
+  readonly useStandbyReplicas?: boolean;
+
+  // Knowledge base configuration
   readonly embeddingsModel: BedrockFoundationModel;
   readonly parsingModel?: BedrockFoundationModel;
   readonly existKnowledgeBaseId: string | undefined;
-  readonly bedrockClaudeChatDocumentBucketName: string;
-  readonly chunkingStrategy: ChunkingStrategy;
   readonly existingS3Urls: string[];
   readonly sourceUrls: string[];
-  readonly maxTokens?: number;
   readonly instruction?: string;
   readonly analyzer?: Analyzer;
+
+  // Chunking configuration
+  readonly chunkingStrategy: ChunkingStrategy;
+  readonly maxTokens?: number;
   readonly overlapPercentage?: number;
-  readonly guardrail?: BedrockGuardrailProps;
-  readonly useStandbyReplicas?: boolean;
+
+  // Crawling configuration
   readonly crawlingScope?: CrawlingScope;
   readonly crawlingFilters?: CrawlingFilters;
+
+  // Guardrail configuration
+  readonly guardrail?: BedrockGuardrailProps;
 }
 
 export class BedrockCustomBotStack extends Stack {
@@ -73,7 +81,7 @@ export class BedrockCustomBotStack extends Stack {
 
     const { docBucketsAndPrefixes } = this.setupBucketsAndPrefixes(props);
 
-    let kb: IKnowledgeBase
+    let kb: IKnowledgeBase;
 
     // if knowledge base arn does not exist
     if (props.existKnowledgeBaseId == undefined) {
@@ -105,7 +113,7 @@ export class BedrockCustomBotStack extends Stack {
         ],
         analyzer: props.analyzer,
       });
-  
+
       kb = new KnowledgeBase(this, "KB", {
         embeddingsModel: props.embeddingsModel,
         vectorStore: vectorCollection,
@@ -121,32 +129,39 @@ export class BedrockCustomBotStack extends Stack {
           knowledgeBase: kb,
           dataSourceName: bucket.bucketName,
           chunkingStrategy: props.chunkingStrategy,
-          parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
-            parsingModel: props.parsingModel.asIModel(this),
-          }) : undefined,
+          parsingStrategy: props.parsingModel
+            ? ParsingStategy.foundationModel({
+                parsingModel: props.parsingModel.asIModel(this),
+              })
+            : undefined,
           inclusionPrefixes: inclusionPrefixes,
         });
-      });    
+      });
 
       // Add Web Crawler Data Sources
       if (props.sourceUrls.length > 0) {
-        const webCrawlerDataSource = new WebCrawlerDataSource(this, 'WebCrawlerDataSource', {
-          knowledgeBase: kb,
-          sourceUrls: props.sourceUrls,
-          chunkingStrategy: props.chunkingStrategy,
-          parsingStrategy: props.parsingModel ? ParsingStategy.foundationModel({
-            parsingModel: props.parsingModel.asIModel(this),
-          }) : undefined,
-          crawlingScope: props.crawlingScope,
-          filters: {
-            excludePatterns: props.crawlingFilters?.excludePatterns,
-            includePatterns: props.crawlingFilters?.includePatterns,
+        const webCrawlerDataSource = new WebCrawlerDataSource(
+          this,
+          "WebCrawlerDataSource",
+          {
+            knowledgeBase: kb,
+            sourceUrls: props.sourceUrls,
+            chunkingStrategy: props.chunkingStrategy,
+            parsingStrategy: props.parsingModel
+              ? ParsingStategy.foundationModel({
+                  parsingModel: props.parsingModel.asIModel(this),
+                })
+              : undefined,
+            crawlingScope: props.crawlingScope,
+            filters: {
+              excludePatterns: props.crawlingFilters?.excludePatterns,
+              includePatterns: props.crawlingFilters?.includePatterns,
+            },
           }
-
+        );
+        new CfnOutput(this, "DataSourceIdWebCrawler", {
+          value: webCrawlerDataSource.dataSourceId,
         });
-        new CfnOutput(this, 'DataSourceIdWebCrawler', {
-          value: webCrawlerDataSource.dataSourceId
-        })
       }
 
       if (props.guardrail?.is_guardrail_enabled == true) {
@@ -154,7 +169,7 @@ export class BedrockCustomBotStack extends Stack {
         let contentPolicyConfigFiltersConfig = [];
         let contextualGroundingFiltersConfig = [];
         console.log("props.guardrail: ", props.guardrail);
-  
+
         if (
           props.guardrail.hateThreshold != undefined &&
           props.guardrail.hateThreshold > 0
@@ -165,7 +180,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "HATE",
           });
         }
-  
+
         if (
           props.guardrail.insultsThreshold != undefined &&
           props.guardrail.insultsThreshold > 0
@@ -176,7 +191,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "INSULTS",
           });
         }
-  
+
         if (
           props.guardrail.sexualThreshold != undefined &&
           props.guardrail.sexualThreshold > 0
@@ -187,7 +202,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "SEXUAL",
           });
         }
-  
+
         if (
           props.guardrail.violenceThreshold != undefined &&
           props.guardrail.violenceThreshold > 0
@@ -198,7 +213,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "VIOLENCE",
           });
         }
-  
+
         if (
           props.guardrail.misconductThreshold != undefined &&
           props.guardrail.misconductThreshold > 0
@@ -209,7 +224,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "MISCONDUCT",
           });
         }
-  
+
         if (
           props.guardrail.groundingThreshold != undefined &&
           props.guardrail.groundingThreshold > 0
@@ -219,7 +234,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "GROUNDING",
           });
         }
-  
+
         if (
           props.guardrail.relevanceThreshold != undefined &&
           props.guardrail.relevanceThreshold > 0
@@ -229,7 +244,7 @@ export class BedrockCustomBotStack extends Stack {
             type: "RELEVANCE",
           });
         }
-  
+
         console.log(
           "contentPolicyConfigFiltersConfig: ",
           contentPolicyConfigFiltersConfig
@@ -238,7 +253,7 @@ export class BedrockCustomBotStack extends Stack {
           "contextualGroundingFiltersConfig: ",
           contextualGroundingFiltersConfig
         );
-  
+
         // Deploy Guardrail if it contains at least one configuration value
         if (
           contentPolicyConfigFiltersConfig.length > 0 ||
@@ -276,14 +291,12 @@ export class BedrockCustomBotStack extends Stack {
           value: dataSource.dataSourceId,
         });
       });
-    }
-    else
-    {
+    } else {
       // if knowledgeBaseArn exists
-      const getKnowledgeBase = new AwsCustomResource(this, 'GetKnowledgeBase', {
+      const getKnowledgeBase = new AwsCustomResource(this, "GetKnowledgeBase", {
         onCreate: {
-          service: 'bedrock-agent',
-          action: 'GetKnowledgeBase',
+          service: "bedrock-agent",
+          action: "GetKnowledgeBase",
           parameters: {
             knowledgeBaseId: props.existKnowledgeBaseId,
           },
@@ -291,20 +304,20 @@ export class BedrockCustomBotStack extends Stack {
         },
         policy: AwsCustomResourcePolicy.fromStatements([
           new iam.PolicyStatement({
-            actions: [
-              'bedrock:GetKnowledgeBase',
+            actions: ["bedrock:GetKnowledgeBase"],
+            resources: [
+              `arn:aws:bedrock:${this.region}:${this.account}:knowledge-base/${props.existKnowledgeBaseId}`,
             ],
-            resources: [`arn:aws:bedrock:${this.region}:${this.account}:knowledge-base/${props.existKnowledgeBaseId}`],
           }),
-        ]),        
+        ]),
       });
 
-      const executionRoleArn = getKnowledgeBase.getResponseField('roleArn');
+      const executionRoleArn = getKnowledgeBase.getResponseField("roleArn");
 
-      kb = KnowledgeBase.fromKnowledgeBaseAttributes(this, 'MyKnowledgeBase', {
+      kb = KnowledgeBase.fromKnowledgeBaseAttributes(this, "MyKnowledgeBase", {
         knowledgeBaseId: props.existKnowledgeBaseId,
-        executionRoleArn: executionRoleArn
-      })
+        executionRoleArn: executionRoleArn,
+      });
     }
 
     new CfnOutput(this, "KnowledgeBaseId", {

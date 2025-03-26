@@ -5,6 +5,9 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { NagSuppressions } from "cdk-nag";
 
 export interface BedrockCustomBotCodebuildProps {
+  readonly envName: string;
+  readonly envPrefix: string;
+  readonly bedrockRegion: string;
   readonly sourceBucket: s3.Bucket;
 }
 
@@ -28,14 +31,9 @@ export class BedrockCustomBotCodebuild extends Construct {
         privileged: true,
       },
       environmentVariables: {
-        PK: { value: "" },
-        SK: { value: "" },
-        BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
-          value: "",
-        },
-        KNOWLEDGE: { value: "" },
-        BEDROCK_KNOWLEDGE_BASE: { value: "" },
-        BEDROCK_GUARDRAILS: { value: "" },
+        ENV_NAME: { value: props.envName },
+        ENV_PREFIX: { value: props.envPrefix },
+        BEDROCK_REGION: { value: props.bedrockRegion },
       },
       buildSpec: codebuild.BuildSpec.fromObject({
         version: "0.2",

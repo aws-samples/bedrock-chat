@@ -2,7 +2,7 @@
 
 ## Passaggio 1: Creare un Client OIDC
 
-Seguire le procedure per il provider OIDC di destinazione e annotare i valori per l'ID client OIDC e il segreto. Inoltre, l'URL dell'emittente è necessario nei passaggi successivi. Se durante il processo di configurazione è richiesto un URI di reindirizzamento, inserire un valore fittizio che verrà sostituito dopo il completamento della distribuzione.
+Seguire le procedure del provider OIDC di destinazione e annotare i valori per l'ID client OIDC e il segreto. Inoltre, l'URL dell'emittente è necessario nei passaggi successivi. Se durante il processo di configurazione è richiesto un URI di reindirizzamento, inserire un valore fittizio che verrà sostituito dopo il completamento della distribuzione.
 
 ## Passaggio 2: Archiviare le Credenziali in AWS Secrets Manager
 
@@ -24,9 +24,9 @@ I nomi delle chiavi devono corrispondere esattamente alle stringhe `clientId`, `
 
 ## Passaggio 3: Aggiornare cdk.json
 
-Nel file cdk.json, aggiungi il Provider di Identità e il Nome Segreto al file cdk.json.
+Nel file cdk.json, aggiungi l'ID Provider e il SecretName al file cdk.json.
 
-come segue:
+nel seguente modo:
 
 ```json
 {
@@ -48,7 +48,7 @@ come segue:
 
 #### Univocità
 
-Il `userPoolDomainPrefix` deve essere globalmente univoco tra tutti gli utenti Amazon Cognito. Se scegli un prefisso già utilizzato da un altro account AWS, la creazione del dominio del user pool non riuscirà. È una buona pratica includere identificatori, nomi di progetti o nomi di ambienti nel prefisso per garantire l'univocità.
+Il `userPoolDomainPrefix` deve essere globalmente univoco tra tutti gli utenti Amazon Cognito. Se scegli un prefisso già utilizzato da un altro account AWS, la creazione del dominio del pool di utenti non riuscirà. È una buona pratica includere identificatori, nomi di progetto o nomi di ambienti nel prefisso per garantire l'univocità.
 
 ## Passaggio 4: Distribuire lo Stack CDK
 
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Passaggio 5: Aggiornare il Client OIDC con gli URI di Reindirizzamento di Cognito
 
-Dopo aver distribuito lo stack, `AuthApprovedRedirectURI` sarà visibile negli output di CloudFormation. Torna alla tua configurazione OIDC e aggiorna gli URI di reindirizzamento corretti.
+Dopo aver distribuito lo stack, `AuthApprovedRedirectURI` verrà mostrato negli output di CloudFormation. Torna alla configurazione OIDC e aggiorna con i corretti URI di reindirizzamento.

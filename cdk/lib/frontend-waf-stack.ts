@@ -4,6 +4,7 @@ import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import { Construct } from "constructs";
 
 interface FrontendWafStackProps extends StackProps {
+  readonly envPrefix: string;
   readonly allowedIpV4AddressRanges: string[];
   readonly allowedIpV6AddressRanges: string[];
 }
@@ -25,6 +26,7 @@ export class FrontendWafStack extends Stack {
   constructor(scope: Construct, id: string, props: FrontendWafStackProps) {
     super(scope, id, props);
 
+    const sepHyphen = props.envPrefix ? "-" : "";
     const rules: wafv2.CfnWebACL.RuleProperty[] = [];
 
     // create Ipset for ACL
@@ -83,7 +85,7 @@ export class FrontendWafStack extends Stack {
     if (rules.length > 0) {
       const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
         defaultAction: { block: {} },
-        name: "FrontendWebAcl",
+        name: `${props.envPrefix}${sepHyphen}FrontendWebAcl`,
         scope: "CLOUDFRONT",
         visibilityConfig: {
           cloudWatchMetricsEnabled: true,

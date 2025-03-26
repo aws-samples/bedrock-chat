@@ -1,10 +1,10 @@
 # Administratorfunksjoner
 
-Administratorfunksjonene er et avgjørende verktøy som gir vesentlige innsikter i bruk av tilpassede chatbots og brukernes atferd. Uten disse funksjonene ville det være vanskelig for administratorer å forstå hvilke tilpassede chatbots som er populære, hvorfor de er populære, og hvem som bruker dem. Denne informasjonen er avgjørende for å optimalisere instruksjonsprompter, tilpasse RAG-datakilder og identifisere tunge brukere som potensielt kan være påvirkere.
+Administratorfunksjonene er et avgjørende verktøy som gir vesentlige innsikter i bruk av tilpassede chatbots og brukernes atferd. Uten denne funksjonaliteten ville det være vanskelig for administratorer å forstå hvilke tilpassede chatbots som er populære, hvorfor de er populære, og hvem som bruker dem. Denne informasjonen er avgjørende for å optimalisere instruksjonsprompter, tilpasse RAG-datakilder og identifisere hyppige brukere som potensielt kan være påvirkere.
 
 ## Tilbakemeldingssløyfe
 
-Resultatet fra LLM oppfyller ikke alltid brukerens forventninger. Noen ganger klarer den ikke å tilfredsstille brukerens behov. For effektivt å "integrere" LLM-er i forretningsdrift og dagligliv, er implementering av en tilbakemeldingssløyfe avgjørende. Bedrock Claude Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppstod. Basert på analyseresultatene kan brukere justere promptene, RAG-datakilder og parametere tilsvarende.
+Resultatet fra LLM oppfyller ikke alltid brukerens forventninger. Noen ganger klarer den ikke å tilfredsstille brukerens behov. For effektivt å "integrere" LLM-er i forretningsdrift og daglig liv, er det avgjørende å implementere en tilbakemeldingssløyfe. Bedrock Claude Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppsto. Basert på analyseresultatene kan brukere justere promptene, RAG-datakilder og parametere tilsvarende.
 
 ![](./imgs/feedback_loop.png)
 
@@ -14,34 +14,49 @@ Dataanalytikere kan få tilgang til samtalelogger ved hjelp av [Amazon Athena](h
 
 ## Administratorpanel
 
-Gir for øyeblikket en grunnleggende oversikt over chatbots og brukerbruk, med fokus på å samle inn data for hver bot og bruker over angitte tidsperioder og sortere resultatene etter bruksgebyrer.
+Gir for øyeblikket en grunnleggende oversikt over chatbots og brukerbruk, med fokus på å samle data for hver bot og bruker over angitte tidsperioder og sortere resultatene etter bruksgebyrer.
 
 ![](./imgs/admin_bot_analytics.png)
 
-> [!Note]
+> [!Merk]
 > Brukerbruksanalyse kommer snart.
 
 ### Forutsetninger
 
-Administratorbrukeren må være medlem av gruppen kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller AWS CLI. Merk at brukergruppe-IDen kan refereres ved å åpne CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Administratorbrukeren må være medlem av gruppen kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User Pools eller AWS CLI. Merk at brukergruppe-ID-en kan refereres ved å åpne CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
 ## Notater
 
-- Som nevnt i [arkitekturen](../README.md#architecture), vil administratorfunksjonene referere til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres hver time, vil de siste samtalene kanskje ikke umiddelbart gjenspeiles.
+- Som nevnt i [arkitekturen](../README.md#architecture), vil admin-funksjonene referere til S3-bucketen eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres en gang i timen, kan de nyeste samtalene ikke gjenspeiles umiddelbart.
 
-- Ved offentlig bruk av botter vil botter som overhodet ikke har blitt brukt i den angitte perioden, ikke bli oppført.
+- I offentlige bot-bruk vil bots som ikke har blitt brukt i det hele tatt i den angitte perioden ikke bli oppført.
 
-- Ved brukerbruk vil brukere som overhodet ikke har brukt systemet i den angitte perioden, ikke bli oppført.
+- I brukerbruk vil brukere som ikke har brukt systemet i det hele tatt i den angitte perioden ikke bli oppført.
 
-## Last ned samtaledata
+> [!Viktig]
+> **Database-navn for flere miljøer**
+>
+> Hvis du bruker flere miljøer (dev, prod, osv.), vil Athena-databasenavnet inkludere miljøprefikset. I stedet for `bedrockchatstack_usage_analysis`, vil databasenavnet være:
+>
+> - For standard miljø: `bedrockchatstack_usage_analysis`
+> - For navngitte miljøer: `<miljø-prefiks>_bedrockchatstack_usage_analysis` (f.eks. `dev_bedrockchatstack_usage_analysis`)
+>
+> I tillegg vil tabellnavnet inkludere miljøprefikset:
+>
+> - For standard miljø: `ddb_export`
+> - For navngitte miljøer: `<miljø-prefiks>_ddb_export` (f.eks. `dev_ddb_export`)
+>
+> Sørg for å justere dine spørringer tilsvarende når du jobber med flere miljøer.
 
-Du kan søke i samtaleloggene ved hjelp av Athena, ved å bruke SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemelding kan refereres i `MessageMap`-attributtet.
+## Last ned samtaledataene
+
+Du kan søke etter samtalelogger ved hjelp av Athena, ved bruk av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemelding kan refereres i `MessageMap`-attributtet.
 
 ### Spørring per Bot-ID
 
-Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, vist i venstre sidestolpe. Legg merke til slutten av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, vist på venstre sidepanel. Legg merke til den siste delen av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -62,6 +77,9 @@ WHERE
 ORDER BY
     d.datehour DESC;
 ```
+
+> [!Merk]
+> Hvis du bruker et navngitt miljø (f.eks. "dev"), erstatt `bedrockchatstack_usage_analysis.ddb_export` med `dev_bedrockchatstack_usage_analysis.dev_ddb_export` i spørringen over.
 
 ### Spørring per Bruker-ID
 
@@ -89,3 +107,6 @@ WHERE
 ORDER BY
     d.datehour DESC;
 ```
+
+> [!Merk]
+> Hvis du bruker et navngitt miljø (f.eks. "dev"), erstatt `bedrockchatstack_usage_analysis.ddb_export` med `dev_bedrockchatstack_usage_analysis.dev_ddb_export` i spørringen over.

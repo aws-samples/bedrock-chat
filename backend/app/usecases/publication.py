@@ -81,7 +81,6 @@ def create_bot_publication(user: User, bot_id: str, bot_publish_input: BotPublis
     environment_variables["PUBLISHED_API_ID"] = published_api_id
 
     # Set environment variables.
-    # NOTE: default values are set in `cdk/lib/constructs/api-publish-codebuild.ts`
     if bot_publish_input.throttle.rate_limit is not None:
         environment_variables["PUBLISHED_API_THROTTLE_RATE_LIMIT"] = str(
             bot_publish_input.throttle.rate_limit

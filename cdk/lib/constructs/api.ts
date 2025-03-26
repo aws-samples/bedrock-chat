@@ -27,6 +27,8 @@ import { excludeDockerImage } from "../constants/docker";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
 export interface ApiProps {
+  readonly envName: string;
+  readonly envPrefix: string;
   readonly database: ITable;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
@@ -185,6 +187,7 @@ export class Api extends Construct {
           "secretsmanager:RotateSecret",
           "secretsmanager:CancelRotateSecret",
           "secretsmanager:UpdateSecret",
+          "secretsmanager:TagResource",
         ],
         resources: [
           `arn:aws:secretsmanager:${Stack.of(this).region}:${
@@ -209,6 +212,8 @@ export class Api extends Construct {
       memorySize: 1024,
       timeout: Duration.minutes(15),
       environment: {
+        ENV_NAME: props.envName,
+        ENV_PREFIX: props.envPrefix,
         TABLE_NAME: database.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         USER_POOL_ID: props.auth.userPool.userPoolId,

@@ -3,10 +3,12 @@ import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NagSuppressions } from "cdk-nag";
 
 export interface ApiPublishCodebuildProps {
+  readonly envName: string;
+  readonly envPrefix: string;
+  readonly bedrockRegion: string;
   readonly sourceBucket: s3.Bucket;
 }
 
@@ -29,14 +31,9 @@ export class ApiPublishCodebuild extends Construct {
         privileged: true,
       },
       environmentVariables: {
-        // Need to be overridden when invoke the project
-        // PUBLISHED_API_THROTTLE_RATE_LIMIT: { value: undefined },
-        // PUBLISHED_API_THROTTLE_BURST_LIMIT: { value: undefined },
-        // PUBLISHED_API_QUOTA_LIMIT: { value: undefined },
-        // PUBLISHED_API_QUOTA_PERIOD: { value: undefined },
-        PUBLISHED_API_DEPLOYMENT_STAGE: { value: "api" },
-        PUBLISHED_API_ID: { value: "xy1234" },
-        PUBLISHED_API_ALLOWED_ORIGINS: { value: '["*"]' },
+        ENV_NAME: { value: props.envName },
+        ENV_PREFIX: { value: props.envPrefix },
+        BEDROCK_REGION: { value: props.bedrockRegion },
       },
       buildSpec: codebuild.BuildSpec.fromObject({
         version: "0.2",
@@ -53,14 +50,7 @@ export class ApiPublishCodebuild extends Construct {
               "npm ci",
               // Replace cdk's entrypoint. This is a workaround to avoid the issue that cdk synthesize all stacks.
               "sed -i 's|bin/bedrock-chat.ts|bin/api-publish.ts|' cdk.json",
-              `npx cdk deploy --require-approval never ApiPublishmentStack$PUBLISHED_API_ID \\
-         -c publishedApiThrottleRateLimit=$PUBLISHED_API_THROTTLE_RATE_LIMIT \\
-         -c publishedApiThrottleBurstLimit=$PUBLISHED_API_THROTTLE_BURST_LIMIT \\
-         -c publishedApiQuotaLimit=$PUBLISHED_API_QUOTA_LIMIT \\
-         -c publishedApiQuotaPeriod=$PUBLISHED_API_QUOTA_PERIOD \\
-         -c publishedApiDeploymentStage=$PUBLISHED_API_DEPLOYMENT_STAGE \\
-         -c publishedApiId=$PUBLISHED_API_ID \\
-         -c publishedApiAllowedOrigins=$PUBLISHED_API_ALLOWED_ORIGINS`,
+              "npx cdk deploy --require-approval never ApiPublishmentStack$PUBLISHED_API_ID",
             ],
           },
         },

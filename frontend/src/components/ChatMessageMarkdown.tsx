@@ -133,14 +133,14 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   const rehypePlugins = useMemo(() => {
     const rehypeExternalLinksOptions: Options = {
       target: '_blank',
-      properties: { style: 'word-break: break-all;' },
+      properties: { style: 'word-break: break-word;' },
     };
     return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]];
   }, []);
 
   return (
     <ReactMarkdown
-      className={twMerge(className, 'prose dark:prose-invert max-w-full break-all')}
+      className={twMerge(className, 'prose dark:prose-invert max-w-full break-words')}
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -161,9 +161,15 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                 children={codeText}
                 style={vscDarkPlus}
                 language={match[1]}
-                x
                 PreTag="div"
                 wrapLongLines={true}
+                customStyle={{
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%'
+                }}
+                className="code-block-wrap"
               />
             </CopyToClipboard>
           ) : (
@@ -243,7 +249,7 @@ const CopyToClipboard = ({
   codeText: string;
 }) => {
   return (
-    <div className="relative">
+    <div className="relative max-w-full overflow-hidden">
       {children}
       <div className="absolute right-2 top-2 flex gap-0">
         <ButtonDownload text={codeText} />

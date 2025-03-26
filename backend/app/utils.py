@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 REGION = os.environ.get("REGION", "us-east-1")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+ENV_NAME = os.environ.get("ENV_NAME", "default")
 
 logger.debug(f"REGION: {REGION}")
 logger.debug(f"BEDROCK_REGION: {BEDROCK_REGION}")
+logger.debug(f"ENV_NAME: {ENV_NAME}")
 
 PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
     "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
@@ -216,7 +218,9 @@ def store_api_key_to_secret_manager(
                 # Create new secret if it doesn't exist
                 logger.info(f"Creating new secret: {secret_name}")
                 response = secrets_client.create_secret(
-                    Name=secret_name, SecretString=secret_value
+                    Name=secret_name,
+                    SecretString=secret_value,
+                    Tags=[{"Key": "CDKEnvironment", "Value": ENV_NAME}],
                 )
                 logger.info(f"Created new secret: {secret_name}")
                 return response["ARN"]

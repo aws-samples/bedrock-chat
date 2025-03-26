@@ -36,6 +36,8 @@ describe("Bedrock Chat Stack Test", () => {
         env: {
           region: "us-west-2",
         },
+        envName: "test",
+        envPrefix: "test-",
         bedrockRegion: "us-east-1",
         crossRegionReferences: true,
         webAclId: "",
@@ -106,6 +108,8 @@ describe("Bedrock Chat Stack Test", () => {
         env: {
           region: "us-west-2",
         },
+        envName: "test",
+        envPrefix: "test-",
         bedrockRegion: "us-east-1",
         crossRegionReferences: true,
         webAclId: "",
@@ -173,6 +177,8 @@ describe("Bedrock Chat Stack Test", () => {
       env: {
         region: "us-west-2",
       },
+      envName: "test",
+      envPrefix: "test-",
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
@@ -219,6 +225,8 @@ describe("Bedrock Chat Stack Test", () => {
       env: {
         region: "us-east-1",
       },
+      envName: "test",
+      envPrefix: "test-",
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
@@ -299,6 +307,8 @@ describe("Bedrock Chat Stack Test", () => {
       env: {
         region: "us-east-1",
       },
+      envName: "test",
+      envPrefix: "test-",
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",

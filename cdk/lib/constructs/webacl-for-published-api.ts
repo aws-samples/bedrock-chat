@@ -3,6 +3,7 @@ import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import { CfnOutput } from "aws-cdk-lib";
 
 export interface WebAclForPublishedApiProps {
+  envPrefix: string;
   readonly allowedIpV4AddressRanges: string[];
   readonly allowedIpV6AddressRanges: string[];
 }
@@ -12,6 +13,7 @@ export class WebAclForPublishedApi extends Construct {
   constructor(scope: Construct, id: string, props: WebAclForPublishedApiProps) {
     super(scope, id);
 
+    const sepHyphen = props.envPrefix ? "-" : "";
     const rules: wafv2.CfnWebACL.RuleProperty[] = [];
 
     if (props.allowedIpV4AddressRanges.length > 0) {
@@ -58,7 +60,7 @@ export class WebAclForPublishedApi extends Construct {
     if (rules.length > 0) {
       const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
         defaultAction: { block: {} },
-        name: `ApiWebAcl-${id}`,
+        name: `${props.envPrefix}${sepHyphen}ApiWebAcl-${id}`,
         scope: "REGIONAL",
         visibilityConfig: {
           cloudWatchMetricsEnabled: true,
