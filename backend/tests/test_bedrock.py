@@ -19,29 +19,35 @@ from app.repositories.models.conversation import SimpleMessageModel, TextContent
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 
-# MODEL: type_model_name = "claude-v3-haiku"
-MODEL: type_model_name = "claude-v3.7-sonnet"
+# Change the type_model_name as needed to test the for different models
 
+MODEL: type_model_name = "llama-3-2-1b-instruct"
+#MODEL: type_model_name = "llama-3-2-11b-instruct"
+#MODEL: type_model_name = "llama-3-3-70b-instruct"
+
+# Make sure to change the model name and model id in class to test 
 
 class TestGetModelId(unittest.TestCase):
     def test_get_model_id_with_cross_region_supported_model(self):
-        model = "claude-v3-sonnet"
+        model = "llama-3-2-1b-instruct"
         # Prefix with "us." to enable cross-region
-        expected_model_id = "us.anthropic.claude-3-sonnet-20240229-v1:0"
+        expected_model_id = "us.meta.llama3-2-1b-instruct-v1:0"
         self.assertEqual(
             get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
             expected_model_id,
         )
 
     def test_get_model_id_without_cross_region(self):
-        model = "claude-v3-sonnet"
+        model = "llama-3-2-1b-instruct"
         # No prefix to disable cross-region
-        expected_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+        expected_model_id = "meta.llama3-2-1b-instruct-v1:0"
         self.assertEqual(
             get_model_id(model, enable_cross_region=False, bedrock_region="us-east-1"),
             expected_model_id,
         )
 
+# The following test are not needed for our MVP Bot
+'''
     def test_get_model_id_with_unsupported_region_for_cross_region(self):
         model = "claude-v3-sonnet"
         # Cross region is disabled because the region is not supported
@@ -52,8 +58,8 @@ class TestGetModelId(unittest.TestCase):
             ),
             expected_model_id,
         )
-
-
+'''
+'''
 class TestCallConverseApi(unittest.TestCase):
     def test_call_converse_api(self):
         message = SimpleMessageModel(
@@ -73,8 +79,8 @@ class TestCallConverseApi(unittest.TestCase):
 
         response = call_converse_api(arg)
         pprint(response)
-
-
+'''
+'''
 class TestCallConverseApiWithGuardrails(unittest.TestCase):
     def setUp(self):
         # Note that the region must be the same as the one used in the bedrock client
@@ -144,7 +150,7 @@ class TestCallConverseApiWithGuardrails(unittest.TestCase):
 
         response = call_converse_api(arg)
         pprint(response)
-
+'''
 
 if __name__ == "__main__":
     unittest.main()

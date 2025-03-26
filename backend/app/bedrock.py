@@ -319,13 +319,15 @@ def calculate_price(
 
     return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
 
-
+# Add LLM Models here
 def get_model_id(
     model: type_model_name,
     enable_cross_region: bool = ENABLE_BEDROCK_CROSS_REGION_INFERENCE,
     bedrock_region: str = BEDROCK_REGION,
 ) -> str:
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+    # Start by using the link above to find the ids for the model to be added
+    # Give it a name by following the same naming convention seen below (model-version-type)
     base_model_ids = {
         "claude-v2": "anthropic.claude-v2:1",
         "claude-instant-v1": "anthropic.claude-instant-v1",
@@ -352,6 +354,7 @@ def get_model_id(
 
     # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html
+    # Use the link above to identify and add the Model name to all the Regions it is supported in
     supported_regions = {
         "us-east-1": {
             "area": "us",

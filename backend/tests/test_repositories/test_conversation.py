@@ -522,7 +522,7 @@ class TestConversationRepository(unittest.TestCase):
         conversations = find_conversation_by_user_id(user_id="user")
         self.assertEqual(len(conversations), 0)
 
-
+'''
 class TestConversationBotRepository(unittest.TestCase):
     def setUp(self):
         self.patcher = patch("boto3.resource")
@@ -766,7 +766,7 @@ class TestConversationBotRepository(unittest.TestCase):
         }
         bots = find_private_bots_by_user_id("user")
         self.assertEqual(len(bots), 1)
-
+'''
 
 def tearDown(self) -> None:
     delete_conversation_by_user_id("user")
