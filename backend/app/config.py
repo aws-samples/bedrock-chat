@@ -67,9 +67,9 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
-        "llama-3-2-1b-instruct": {"input": 0.0008, "output": 0.0032},
-        "llama-3-2-11b-instruct": {"input": 0.00006, "output": 0.00024},
-        "llama-3-3-70b-instruct": {"input": 0.000035, "output": 0.00014},
+        "llama-3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama-3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama-3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -89,6 +89,9 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
+        "llama-3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama-3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama-3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},        
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -122,5 +125,8 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
+        "llama-3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama-3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama-3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},        
     },
 }
