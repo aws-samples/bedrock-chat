@@ -142,9 +142,25 @@ const translation = {
           name: 'ナレッジの取得',
           description: 'ナレッジから情報を取得します。',
         },
+        bedrock_agent: {
+          name: 'Bedrock Agent',
+          description: '設定されたBedrock Agentに質問を送信',
+        },
         firecrawl: {
           apiKey: 'Firecrawl APIキー',
           maxResults: '最大結果数'
+        },
+        bedrockAgent: {
+          name: 'Bedrock Agent',
+          description: 'Bedrock Agentをツールとして使用します。',
+          agentId: {
+            label: 'Agent ID',
+            placeholder: 'Agent IDを入力'
+          },
+          aliasId: {
+            label: 'Alias ID',
+            placeholder: 'Alias IDを入力'
+          }
         },
       },
     },

@@ -8,6 +8,8 @@ from app.routes.schemas.bot import (
     Agent,
     AgentInput,
     AgentToolInput,
+    BedrockAgentConfig,
+    BedrockAgentTool,
     FirecrawlConfig,
     InternetTool,
     PlainTool,
@@ -194,8 +196,21 @@ class InternetToolModel(BaseModel):
             firecrawl_config=firecrawl_config,
         )
 
+class BedrockAgentConfigModel(BaseModel):
+    agent_id: str
+    alias_id: str
 
-ToolModel = Annotated[PlainToolModel | InternetToolModel, Discriminator("tool_type")]
+class BedrockAgentModel(BaseModel):
+    tool_type: Literal["bedrockAgent"] = Field(
+        "bedrockAgent",
+        description="Type of tool. It does need additional settings for the bedrock agent.",
+    )
+    name: str
+    description: str
+    bedrockAgentConfig: Optional[BedrockAgentConfigModel] | None = None
+
+
+ToolModel = Annotated[PlainToolModel | InternetToolModel | BedrockAgentModel, Discriminator("tool_type")]
 
 
 class AgentModel(BaseModel):
@@ -231,6 +246,18 @@ class AgentModel(BaseModel):
                 tools.append(
                     InternetToolModel.from_tool_input(tool_input, user_id, bot_id)
                 )
+            elif tool_input.tool_type == "bedrockAgent":
+                tools.append(
+                    BedrockAgentModel(
+                        tool_type="bedrockAgent",
+                        name=tool_input.name,
+                        description=tool_input.description,
+                        bedrockAgentConfig=BedrockAgentConfigModel(
+                            agent_id=tool_input.bedrock_agent_config.agent_id,
+                            alias_id=tool_input.bedrock_agent_config.alias_id,
+                        ) if tool_input.bedrock_agent_config else None
+                    )
+                )
 
         return cls(tools=tools)
 
@@ -256,6 +283,15 @@ class AgentModel(BaseModel):
                         description=tool.description,
                         search_engine=tool.search_engine,
                         firecrawl_config=firecrawl_config,
+                    )
+                )
+            elif isinstance(tool, BedrockAgentModel):
+                tools.append(
+                    BedrockAgentTool(
+                        tool_type="bedrockAgent",
+                        name=tool.name,
+                        description=tool.description,
+                        bedrockAgentConfig=BedrockAgentConfig(**tool.bedrockAgentConfig.model_dump()) if tool.bedrockAgentConfig else None
                     )
                 )
             else:

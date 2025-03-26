@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
+from app.agents.tools.bedrock_agent import update_tool_description_from_agent
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.utils import get_tool_by_name
 from app.bedrock import call_converse_api, compose_args_for_converse_api
@@ -241,6 +242,11 @@ def chat(
         if bot and bot.is_agent_enabled()
         else {}
     )
+    
+    # Update description of bedrock_agent
+    if "bedrock_agent" in tools:
+        update_tool_description_from_agent(bot, tools)
+
     display_citation = bot is not None and bot.display_retrieved_chunks
 
     message_map = conversation.message_map

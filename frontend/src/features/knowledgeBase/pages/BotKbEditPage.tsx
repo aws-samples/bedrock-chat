@@ -35,7 +35,7 @@ import Toggle from '../../../components/Toggle';
 import RadioButton from '../../../components/RadioButton';
 import { useAgent } from '../../../features/agent/hooks/useAgent';
 import { AgentTool } from '../../../features/agent/types';
-import { isInternetTool } from '../../../features/agent/utils/typeGuards';
+import { isInternetTool, isBedrockAgentTool } from '../../../features/agent/utils/typeGuards';
 import { AvailableTools } from '../../../features/agent/components/AvailableTools';
 import {
   DEFAULT_FIXED_CHUNK_PARAMS,
@@ -906,6 +906,22 @@ const BotKbEditPage: React.FC = () => {
     // Use some() instead of every() since we want to find invalid tools
     const hasInvalidTool = tools.some((tool, idx) => {
       if (!isInternetTool(tool)) {
+        if (isBedrockAgentTool(tool)) {
+          if (!tool.bedrockAgentConfig?.agentId) {
+            setErrorMessages(
+              `tools-${idx}-bedrockAgentConfig.agent_id`,
+              t('input.validationError.required')
+            );
+            return true;
+          }
+          if (!tool.bedrockAgentConfig?.aliasId) {
+            setErrorMessages(
+              `tools-${idx}-bedrockAgentConfig.alias_id`,
+              t('input.validationError.required')
+            );
+            return true;
+          }
+        }
         return false;
       }
 
@@ -1236,6 +1252,18 @@ const BotKbEditPage: React.FC = () => {
             };
           }
 
+          if (isBedrockAgentTool(tool)) {
+            return {
+              ...baseTool,
+              bedrock_agent_config: tool.bedrockAgentConfig
+                ? {
+                    agent_id: tool.bedrockAgentConfig.agentId,
+                    alias_id: tool.bedrockAgentConfig.aliasId,
+                  }
+                : undefined,
+            };
+          }
+
           return baseTool;
         }),
       },
@@ -1380,6 +1408,18 @@ const BotKbEditPage: React.FC = () => {
                   ? {
                       api_key: tool.firecrawlConfig.apiKey,
                       max_results: tool.firecrawlConfig.maxResults,
+                    }
+                  : undefined,
+              };
+            }
+
+            if (isBedrockAgentTool(tool)) {
+              return {
+                ...baseTool,
+                bedrock_agent_config: tool.bedrockAgentConfig
+                  ? {
+                      agent_id: tool.bedrockAgentConfig.agentId,
+                      alias_id: tool.bedrockAgentConfig.aliasId,
                     }
                   : undefined,
               };

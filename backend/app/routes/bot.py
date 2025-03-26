@@ -10,6 +10,7 @@ from app.repositories.custom_bot import (
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
+    BedrockAgentTool,
     BedrockGuardrailsOutput,
     BedrockKnowledgeBaseOutput,
     BotInput,
@@ -23,8 +24,10 @@ from app.routes.schemas.bot import (
     ConversationQuickStarter,
     FirecrawlConfig,
     GenerationParams,
+    InternetTool,
     Knowledge,
     PlainTool,
+    Tool,
 )
 from app.routes.schemas.conversation import type_model_name
 from app.usecases.bot import (
@@ -187,11 +190,35 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     remove_uploaded_file(current_user.id, bot_id, filename)
 
 
-@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[PlainTool])
+@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[Tool])
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
-    return [
-        PlainTool(tool_type="plain", name=tool.name, description=tool.description)
-        for tool in tools
-    ]
+    result = []
+    for tool in tools:
+        if tool.name == "bedrock_agent":
+            result.append(
+                BedrockAgentTool(
+                    tool_type="bedrockAgent",
+                    name=tool.name,
+                    description=tool.description
+                )
+            )
+        elif tool.name == "internet_search":
+            result.append(
+                InternetTool(
+                    tool_type="internet",
+                    name=tool.name,
+                    description=tool.description,
+                    search_engine="duckduckgo"
+                )
+            )
+        else:
+            result.append(
+                PlainTool(
+                    tool_type="plain",
+                    name=tool.name,
+                    description=tool.description
+                )
+            )
+    return result

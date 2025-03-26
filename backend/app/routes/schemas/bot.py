@@ -83,6 +83,10 @@ class FirecrawlConfig(BaseSchema):
         return v
 
 
+class BedrockAgentConfig(BaseSchema):
+    agent_id: str
+    alias_id: str
+
 class PlainTool(BaseSchema):
     tool_type: Literal["plain"] = "plain"
     name: str
@@ -110,8 +114,13 @@ class InternetTool(BaseSchema):
             )
         return v
 
+class BedrockAgentTool(BaseSchema):
+    tool_type: Literal["bedrockAgent"]
+    name: str
+    description: str
+    bedrockAgentConfig: Optional[BedrockAgentConfig] | None = None
 
-Tool = Annotated[PlainTool | InternetTool, Discriminator("tool_type")]
+Tool = Annotated[PlainTool | InternetTool | BedrockAgentTool, Discriminator("tool_type")]
 
 
 class Agent(BaseSchema):
@@ -134,11 +143,12 @@ class Agent(BaseSchema):
 
 
 class AgentToolInput(BaseSchema):
-    tool_type: Literal["plain", "internet"]
+    tool_type: Literal["plain", "internet", "bedrockAgent"]
     name: str
     description: str
     search_engine: Literal["duckduckgo", "firecrawl"] | None = None
     firecrawl_config: FirecrawlConfig | None = None
+    bedrock_agent_config: BedrockAgentConfig | None = None
 
 
 class AgentInput(BaseSchema):

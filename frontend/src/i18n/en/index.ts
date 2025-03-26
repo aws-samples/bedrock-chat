@@ -142,9 +142,25 @@ const translation = {
           name: 'Retrieve Knowledge',
           description: 'Retrieve information from knowledge.',
         },
+        bedrock_agent: {
+          name: 'Bedrock Agent',
+          description: 'Ask a question to the configured Bedrock Agent',
+        },
         firecrawl: {
           apiKey: 'Firecrawl API Key',
           maxResults: 'Maximum Results'
+        },
+        bedrockAgent: {
+          name: 'Bedrock Agent',
+          description: 'Use Bedrock Agent as a tool.',
+          agentId: {
+            label: 'Agent ID',
+            placeholder: 'Enter Agent ID'
+          },
+          aliasId: {
+            label: 'Alias ID',
+            placeholder: 'Enter Alias ID'
+          }
         },
       },
     },
