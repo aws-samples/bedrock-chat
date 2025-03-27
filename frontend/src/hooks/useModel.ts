@@ -24,7 +24,7 @@ const NOVA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
-const DEFAULT_MODEL: Model = 'claude-v3.7-sonnet';
+const DEFAULT_MODEL: Model = 'llama-3-2-1b-instruct';
 
 const useModelState = create<{
   modelId: Model;
@@ -78,77 +78,77 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   >(() => {
     return !MISTRAL_ENABLED
       ? [
-          {
-            modelId: 'claude-v3-haiku',
-            label: t('model.claude-v3-haiku.label'),
-            description: t('model.claude-v3-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-haiku',
-            label: t('model.claude-v3.5-haiku.label'),
-            description: t('model.claude-v3.5-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3-sonnet',
-            label: t('model.claude-v3-sonnet.label'),
-            description: t('model.claude-v3-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet',
-            label: t('model.claude-v3.5-sonnet.label'),
-            description: t('model.claude-v3.5-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet-v2',
-            label: t('model.claude-v3.5-sonnet-v2.label'),
-            description: t('model.claude-v3.5-sonnet-v2.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.7-sonnet',
-            label: t('model.claude-v3.7-sonnet.label'),
-            description: t('model.claude-v3.7-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: true,
-          },
-          {
-            modelId: 'claude-v3-opus',
-            label: t('model.claude-v3-opus.label'),
-            description: t('model.claude-v3-opus.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
+          //{
+            //modelId: 'claude-v3-haiku',
+            //label: t('model.claude-v3-haiku.label'),
+            //description: t('model.claude-v3-haiku.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'claude-v3.5-haiku',
+            //label: t('model.claude-v3.5-haiku.label'),
+            //description: t('model.claude-v3.5-haiku.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'claude-v3-sonnet',
+            //label: t('model.claude-v3-sonnet.label'),
+            //description: t('model.claude-v3-sonnet.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'claude-v3.5-sonnet',
+            //label: t('model.claude-v3.5-sonnet.label'),
+            //description: t('model.claude-v3.5-sonnet.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'claude-v3.5-sonnet-v2',
+            //label: t('model.claude-v3.5-sonnet-v2.label'),
+            //description: t('model.claude-v3.5-sonnet-v2.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'claude-v3.7-sonnet',
+            //label: t('model.claude-v3.7-sonnet.label'),
+            //description: t('model.claude-v3.7-sonnet.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: true,
+          //},
+          //{
+            //modelId: 'claude-v3-opus',
+            //label: t('model.claude-v3-opus.label'),
+            //description: t('model.claude-v3-opus.description'),
+            //supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
           // New Amazon Nova models
-          {
-            modelId: 'amazon-nova-pro',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'amazon-nova-lite',
-            label: t('model.amazon-nova-lite.label'),
-            description: t('model.amazon-nova-lite.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'amazon-nova-micro',
-            label: t('model.amazon-nova-micro.label'),
-            description: t('model.amazon-nova-micro.description'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
+          //{
+            //modelId: 'amazon-nova-pro',
+            //label: t('model.amazon-nova-pro.label'),
+            //description: t('model.amazon-nova-pro.description'),
+            //supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'amazon-nova-lite',
+            //label: t('model.amazon-nova-lite.label'),
+            //description: t('model.amazon-nova-lite.description'),
+            //supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'amazon-nova-micro',
+            //label: t('model.amazon-nova-micro.label'),
+            //description: t('model.amazon-nova-micro.description'),
+            //supportMediaType: [],
+            //supportReasoning: false,
+          //},
           //Llama models
           {
             modelId: 'llama-3-2-1b-instruct',
@@ -173,24 +173,24 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
           },
         ]
       : [
-          {
-            modelId: 'mistral-7b-instruct',
-            label: t('model.mistral-7b-instruct.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'mixtral-8x7b-instruct',
-            label: t('model.mixtral-8x7b-instruct.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'mistral-large',
-            label: t('model.mistral-large.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
+          //{
+            //modelId: 'mistral-7b-instruct',
+            //label: t('model.mistral-7b-instruct.label'),
+            //supportMediaType: [],
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'mixtral-8x7b-instruct',
+            //label: t('model.mixtral-8x7b-instruct.label'),
+            //supportMediaType: [],
+            //supportReasoning: false,
+          //},
+          //{
+            //modelId: 'mistral-large',
+            //label: t('model.mistral-large.label'),
+            //supportMediaType: [],
+            //supportReasoning: false,
+          //},
         ];
   }, [t]);
 
