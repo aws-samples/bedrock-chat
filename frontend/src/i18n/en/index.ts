@@ -223,8 +223,8 @@ const translation = {
             body: 'This assistant is being updated. You can continue chatting while updates are pending. ',
           },
           noAvailableAssistants: {
-            title: 'No Assistants are Avaialble at this Time',
-            body: 'Please check again later',
+            title: 'No Assistants Available',
+            body: 'Please check again later.',
           }
         },
       },
