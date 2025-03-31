@@ -45,8 +45,8 @@ export const getParsingModel = (
   parsingModel: string
 ): BedrockFoundationModel | undefined => {
   switch (parsingModel) {
-    case "anthropic.claude-3-sonnet-v1":
-      return BedrockFoundationModel.ANTHROPIC_CLAUDE_SONNET_V1_0;
+    case "anthropic.claude-3-5-sonnet-v1":
+      return BedrockFoundationModel.ANTHROPIC_CLAUDE_3_5_SONNET_V1_0;
     case "anthropic.claude-3-haiku-v1":
       return BedrockFoundationModel.ANTHROPIC_CLAUDE_HAIKU_V1_0;
     case "disabled":

@@ -688,9 +688,9 @@ Bạn sẽ phân loại email này như thế nào?`,
           label: 'Tắt',
           hint: 'Không áp dụng phân tích nâng cao.',
         },
-        claude_3_sonnet_v1: {
-          label: 'Claude 3 Sonnet v1',
-          hint: 'Sử dụng Claude 3 Sonnet v1 cho phân tích tài liệu nâng cao.',
+        claude_3_5_sonnet_v1: {
+          label: 'Claude 3.5 Sonnet v1',
+          hint: 'Sử dụng Claude 3.5 Sonnet v1 cho phân tích tài liệu nâng cao.',
         },
         claude_3_haiku_v1: {
           label: 'Claude 3 Haiku v1',

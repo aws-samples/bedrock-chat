@@ -79,7 +79,7 @@ class TestCustomBotRepository(unittest.TestCase):
                     max_tokens=2000,
                     overlap_percentage=0,
                 ),
-                parsing_model="anthropic.claude-3-sonnet-v1",
+                parsing_model="anthropic.claude-3-5-sonnet-v1",
                 web_crawling_scope="DEFAULT",
             ),
             bedrock_guardrails=BedrockGuardrailsModel(

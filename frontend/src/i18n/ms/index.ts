@@ -680,9 +680,9 @@ const translation = {
           label: 'Dinonaktifkan',
           hint: 'Tiada penguraian lanjutan akan diterapkan.',
         },
-        claude_3_sonnet_v1: {
-          label: 'Claude 3 Sonnet v1',
-          hint: 'Gunakan Claude 3 Sonnet v1 untuk penguraian dokumen lanjutan.',
+        claude_3_5_sonnet_v1: {
+          label: 'Claude 3.5 Sonnet v1',
+          hint: 'Gunakan Claude 3.5 Sonnet v1 untuk penguraian dokumen lanjutan.',
         },
         claude_3_haiku_v1: {
           label: 'Claude 3 Haiku v1',
