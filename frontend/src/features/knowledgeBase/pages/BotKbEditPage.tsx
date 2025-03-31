@@ -301,7 +301,7 @@ const BotKbEditPage: React.FC = () => {
       label: t('knowledgeBaseSettings.parsingModel.claude_3_5_sonnet_v1.label'),
       value: 'anthropic.claude-3-5-sonnet-v1',
       description: t(
-        'knowledgeBaseSettings.parsingModel.claude_3_sonnet_v1.hint'
+        'knowledgeBaseSettings.parsingModel.claude_3_5_sonnet_v1.hint'
       ),
     },
     {

@@ -686,7 +686,7 @@ Jak sklasyfikowałbyś ten e-mail?`,
           label: 'Wyłączone',
           hint: 'Zaawansowane parsowanie nie będzie stosowane.'
         },
-        claude_3_sonnet_v1: {
+        claude_3_5_sonnet_v1: {
           label: 'Claude 3.5 Sonnet v1',
           hint: 'Użyj Claude 3.5 Sonnet v1 do zaawansowanego parsowania dokumentów.'
         },
