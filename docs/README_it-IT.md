@@ -7,9 +7,9 @@
 
 [English](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/README.md) | [日本語](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ja-JP.md) | [한국어](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ko-KR.md) | [中文](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_zh-CN.md) | [Français](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_fr-FR.md) | [Deutsch](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_de-DE.md) | [Español](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_es-ES.md) | [Italian](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_it-IT.md) | [Norsk](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_nb-NO.md) | [ไทย](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_th-TH.md) | [Bahasa Indonesia](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_id-ID.md) | [Bahasa Melayu](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_ms-MY.md) | [Tiếng Việt](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_vi-VN.md) | [Polski](https://github.com/aws-samples/bedrock-claude-chat/blob/v2/docs/README_pl-PL.md)
 
-> [!Avvertenza]
+> [!Attenzione]
 >
-> **Rilasciata la V2. Per aggiornare, leggere attentamente la [guida alla migrazione](./migration/V1_TO_V2_it-IT.md).** Senza alcuna attenzione, **I BOT DELLA V1 DIVENTERANNO INUTILIZZABILI.**
+> **Rilasciata la V2. Per aggiornare, si prega di rivedere attentamente la [guida alla migrazione](./migration/V1_TO_V2_it-IT.md).** Senza alcuna attenzione, **I BOT DELLA V1 DIVENTERANNO INUTILIZZABILI.**
 
 Un chatbot multilingua che utilizza modelli LLM forniti da [Amazon Bedrock](https://aws.amazon.com/bedrock/) per l'intelligenza artificiale generativa.
 
@@ -17,27 +17,27 @@ Un chatbot multilingua che utilizza modelli LLM forniti da [Amazon Bedrock](http
 
 [![Panoramica](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
 
-### Conversazione di Base
+### Conversazione Base
 
 ![](./imgs/demo.gif)
 
-### Personalizzazione del Bot
+### Personalizzazione Bot
 
-Aggiungi le tue istruzioni e fornisci conoscenze esterne tramite URL o file (noto come [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). Il bot può essere condiviso tra gli utenti dell'applicazione. Il bot personalizzato può anche essere pubblicato come API autonoma (Vedi [dettagli](./PUBLISH_API_it-IT.md)).
+Aggiungi le tue istruzioni personali e fornisci conoscenze esterne tramite URL o file (noto anche come [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). Il bot può essere condiviso tra gli utenti dell'applicazione. Il bot personalizzato può anche essere pubblicato come API autonoma (Vedi i [dettagli](./PUBLISH_API_it-IT.md)).
 
 ![](./imgs/bot_creation.png)
 ![](./imgs/bot_chat.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
 > [!Importante]
-> Per ragioni di governance, solo gli utenti autorizzati possono creare bot personalizzati. Per consentire la creazione di bot personalizzati, l'utente deve essere un membro del gruppo chiamato `CreatingBotAllowed`, che può essere configurato tramite la console di gestione > Pool di utenti Amazon Cognito o aws cli. Nota che l'ID del pool di utenti può essere recuperato accedendo a CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+> Per ragioni di governance, solo gli utenti autorizzati possono creare bot personalizzati. Per consentire la creazione di bot personalizzati, l'utente deve essere un membro del gruppo chiamato `CreatingBotAllowed`, che può essere configurato tramite la console di gestione > Pool di utenti Amazon Cognito o AWS CLI. Si noti che l'ID del pool di utenti può essere recuperato accedendo a CloudFormation > BedrockChatStack > Output > `AuthUserPoolIdxxxx`.
 
 ### Dashboard dell'Amministratore
 
 <details>
 <summary>Dashboard dell'Amministratore</summary>
 
-Analizza l'utilizzo per ogni utente / bot nella dashboard dell'amministratore. [dettagli](./ADMINISTRATOR_it-IT.md)
+Analizza l'utilizzo per ogni utente/bot nella dashboard dell'amministratore. [dettagli](./ADMINISTRATOR_it-IT.md)
 
 ![](./imgs/admin_bot_analytics.png)
 
@@ -57,7 +57,7 @@ Utilizzando la [funzionalità Agente](./AGENT_it-IT.md), il tuo chatbot può ges
 
 ## 🚀 Distribuzione Super-Facile
 
-- Nella regione us-east-1, aprire [Accesso al Modello Bedrock](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Gestisci accesso al modello` > Selezionare tutte le opzioni di `Anthropic / Claude 3`, tutte le opzioni di `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` e `Cohere / Embed Multilingual`, quindi `Salva modifiche`.
+- Nella regione us-east-1, aprire [Accesso al Modello Bedrock](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Gestisci accesso al modello` > Selezionare tutte le opzioni di `Anthropic / Claude 3`, tutte le opzioni di `Amazon / Nova`, `Amazon / Titan Text Embeddings V2` e `Cohere / Embed Multilingual`, quindi fare clic su `Salva modifiche`.
 
 <details>
 <summary>Screenshot</summary>
@@ -66,7 +66,7 @@ Utilizzando la [funzionalità Agente](./AGENT_it-IT.md), il tuo chatbot può ges
 
 </details>
 
-- Aprire [CloudShell](https://console.aws.amazon.com/cloudshell/home) nella regione in cui si desidera distribuire
+- Aprire [CloudShell](https://console.aws.amazon.com/cloudshell/home) nella regione in cui si desidera eseguire la distribuzione
 - Eseguire la distribuzione tramite i seguenti comandi. Se si desidera specificare la versione da distribuire o applicare criteri di sicurezza, specificare i parametri appropriati da [Parametri Opzionali](#parametri-opzionali).
 
 ```sh
@@ -76,22 +76,22 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- Ti verrà chiesto se sei un nuovo utente o se stai utilizzando la versione 2. Se non sei un utente che continua dalla versione 0, inserire `y`.
+- Verrà chiesto se si tratta di un nuovo utente o se si sta utilizzando la versione 2. Se non si è un utente che continua dalla versione 0, inserire `y`.
 
 ### Parametri Opzionali
 
 È possibile specificare i seguenti parametri durante la distribuzione per migliorare la sicurezza e la personalizzazione:
 
-- **--disable-self-register**: Disabilita la registrazione automatica (predefinito: abilitata). Se questo flag è impostato, sarà necessario creare tutti gli utenti su Cognito e non sarà consentita la registrazione autonoma degli account.
+- **--disable-self-register**: Disabilita la registrazione autonoma (predefinito: abilitata). Se questo flag è impostato, sarà necessario creare tutti gli utenti su Cognito e non sarà consentita la registrazione autonoma degli account.
 - **--enable-lambda-snapstart**: Abilita [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (predefinito: disabilitato). Se questo flag è impostato, migliora i tempi di avvio a freddo per le funzioni Lambda, fornendo tempi di risposta più rapidi per una migliore esperienza utente.
-- **--ipv4-ranges**: Elenco separato da virgole degli intervalli IPv4 consentiti. (predefinito: consente tutti gli indirizzi ipv4)
-- **--ipv6-ranges**: Elenco separato da virgole degli intervalli IPv6 consentiti. (predefinito: consente tutti gli indirizzi ipv6)
+- **--ipv4-ranges**: Elenco separato da virgole di intervalli IPv4 consentiti. (predefinito: consente tutti gli indirizzi ipv4)
+- **--ipv6-ranges**: Elenco separato da virgole di intervalli IPv6 consentiti. (predefinito: consente tutti gli indirizzi ipv6)
 - **--disable-ipv6**: Disabilita le connessioni su IPv6. (predefinito: abilitato)
-- **--allowed-signup-email-domains**: Elenco separato da virgole dei domini e-mail consentiti per la registrazione. (predefinito: nessuna restrizione di dominio)
+- **--allowed-signup-email-domains**: Elenco separato da virgole di domini di posta elettronica consentiti per la registrazione. (predefinito: nessuna restrizione di dominio)
 - **--bedrock-region**: Definisce la regione in cui Bedrock è disponibile. (predefinito: us-east-1)
-- **--repo-url**: L'URL del repository personalizzato di Bedrock Claude Chat da distribuire, se biforcato o con un controllo del codice sorgente personalizzato. (predefinito: https://github.com/aws-samples/bedrock-claude-chat.git)
+- **--repo-url**: L'URL del repository personalizzato di Bedrock Claude Chat da distribuire, se biforcato o con controllo del codice sorgente personalizzato. (predefinito: https://github.com/aws-samples/bedrock-claude-chat.git)
 - **--version**: La versione di Bedrock Claude Chat da distribuire. (predefinito: ultima versione in sviluppo)
-- **--cdk-json-override**: È possibile sovrascrivere qualsiasi valore di contesto CDK durante la distribuzione utilizzando il blocco JSON di override. Ciò consente di modificare la configurazione senza modificare direttamente il file cdk.json.
+- **--cdk-json-override**: È possibile sovrascrivere qualsiasi valore di contesto CDK durante la distribuzione utilizzando il blocco JSON di override. Questo consente di modificare la configurazione senza modificare direttamente il file cdk.json.
 
 Esempio di utilizzo:
 
@@ -135,40 +135,40 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 ![](./imgs/signin.png)
 
-Verrà visualizzata la schermata di registrazione come mostrato sopra, dove è possibile registrare la propria email e accedere.
+Apparirà la schermata di registrazione come mostrato sopra, dove è possibile registrare la propria email e accedere.
 
 > [!Importante]
-> Senza impostare il parametro opzionale, questo metodo di distribuzione consente a chiunque conosca l'URL di registrarsi. Per l'uso in produzione, è fortemente consigliato aggiungere restrizioni di indirizzi IP e disabilitare la registrazione automatica per mitigare i rischi di sicurezza (è possibile definire allowed-signup-email-domains per limitare gli utenti in modo che solo gli indirizzi email del dominio della propria azienda possano registrarsi). Utilizzare sia ipv4-ranges che ipv6-ranges per le restrizioni degli indirizzi IP e disabilitare la registrazione automatica utilizzando disable-self-register durante l'esecuzione di ./bin.
+> Senza impostare il parametro opzionale, questo metodo di distribuzione consente a chiunque conosca l'URL di registrarsi. Per l'uso in produzione, si consiglia vivamente di aggiungere restrizioni di indirizzi IP e disabilitare la registrazione autonoma per mitigare i rischi di sicurezza (è possibile definire allowed-signup-email-domains per limitare gli utenti in modo che solo gli indirizzi email del dominio della propria azienda possano registrarsi). Utilizzare sia ipv4-ranges che ipv6-ranges per le restrizioni degli indirizzi IP e disabilitare la registrazione autonoma utilizzando disable-self-register durante l'esecuzione di ./bin.
 
 > [!SUGGERIMENTO]
 > Se l'`URL Frontend` non appare o Bedrock Claude Chat non funziona correttamente, potrebbe essere un problema con l'ultima versione. In questo caso, aggiungere `--version "v1.2.6"` ai parametri e riprovare la distribuzione.
 
 ## Architettura
 
-È un'architettura basata su servizi gestiti AWS, che elimina la necessità di gestire l'infrastruttura. Utilizzando Amazon Bedrock, non è necessario comunicare con API esterne ad AWS. Questo consente di distribuire applicazioni scalabili, affidabili e sicure.
+Un'architettura basata su servizi gestiti AWS, che elimina la necessità di gestire l'infrastruttura. Utilizzando Amazon Bedrock, non è necessario comunicare con API esterne ad AWS. Questo permette di distribuire applicazioni scalabili, affidabili e sicure.
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): Database NoSQL per l'archiviazione della cronologia delle conversazioni
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Endpoint API backend ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Distribuzione dell'applicazione frontend ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): Restrizione degli indirizzi IP
-- [Amazon Cognito](https://aws.amazon.com/cognito/): Autenticazione utente
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Servizio gestito per utilizzare modelli di base tramite API
-- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Fornisce un'interfaccia gestita per la Generazione Aumentata dal Recupero ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), offrendo servizi per l'incorporazione e l'analisi dei documenti
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Ricezione di eventi dal flusso DynamoDB e avvio di Step Functions per incorporare conoscenze esterne
+- [Amazon Cognito](https://aws.amazon.com/cognito/): Autenticazione degli utenti
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Servizio gestito per utilizzare modelli foundational tramite API
+- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Fornisce un'interfaccia gestita per la Generazione Aumentata dal Recupero ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), offrendo servizi per l'incorporamento e l'analisi dei documenti
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Ricezione di eventi dal flusso di DynamoDB e avvio di Step Functions per incorporare conoscenze esterne
 - [AWS Step Functions](https://aws.amazon.com/step-functions/): Orchestrazione della pipeline di inserimento per incorporare conoscenze esterne in Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Funge da database backend per Bedrock Knowledge Bases, fornendo funzionalità di ricerca full-text e ricerca vettoriale, consentendo il recupero accurato di informazioni rilevanti
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Funge da database backend per Bedrock Knowledge Bases, fornendo capacità di ricerca full-text e ricerca vettoriale, permettendo il recupero accurato di informazioni rilevanti
 - [Amazon Athena](https://aws.amazon.com/athena/): Servizio di query per analizzare bucket S3
 
 ![](./imgs/arch.png)
 
-## Distribuzione tramite CDK
+## Distribuisci utilizzando CDK
 
-La distribuzione Super-easy utilizza [AWS CodeBuild](https://aws.amazon.com/codebuild/) per eseguire la distribuzione tramite CDK internamente. Questa sezione descrive la procedura per la distribuzione diretta con CDK.
+La distribuzione Super-facile utilizza [AWS CodeBuild](https://aws.amazon.com/codebuild/) per eseguire la distribuzione con CDK internamente. Questa sezione descrive la procedura per distribuire direttamente con CDK.
 
-- Assicurati di avere un ambiente UNIX, Docker e un runtime Node.js. In caso contrario, puoi utilizzare [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
+- Assicurati di avere UNIX, Docker e un ambiente runtime Node.js. In caso contrario, puoi utilizzare anche [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
 
 > [!Importante]
-> Se lo spazio di archiviazione nell'ambiente locale è insufficiente durante la distribuzione, il bootstrapping CDK potrebbe generare un errore. Se si sta eseguendo su Cloud9 ecc., si consiglia di espandere la dimensione del volume dell'istanza prima della distribuzione.
+> Se lo spazio di archiviazione nell'ambiente locale è insufficiente durante la distribuzione, il bootstrap di CDK potrebbe generare un errore. Se si sta eseguendo su Cloud9 ecc., si consiglia di espandere la dimensione del volume dell'istanza prima della distribuzione.
 
 - Clona questo repository
 
@@ -186,11 +186,11 @@ npm ci
 
 - Se necessario, modifica le seguenti voci in [cdk.json](./cdk/cdk.json)
 
-  - `bedrockRegion`: Regione in cui Bedrock è disponibile. **NOTA: Bedrock NON supporta al momento tutte le regioni.**
+  - `bedrockRegion`: Regione in cui Bedrock è disponibile. **NOTA: Bedrock NON supporta ancora tutte le regioni.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Intervallo di indirizzi IP consentiti.
-  - `enableLambdaSnapStart`: Per impostazione predefinita è true. Imposta su false se si distribuisce in una [regione che non supporta Lambda SnapStart per funzioni Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
+  - `enableLambdaSnapStart`: Predefinito su true. Impostare su false se si distribuisce in una [regione che non supporta Lambda SnapStart per funzioni Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
 
-- Prima di distribuire CDK, sarà necessario eseguire il Bootstrap una volta per la regione in cui si sta distribuendo.
+- Prima di distribuire CDK, dovrai eseguire il bootstrap una volta per la regione in cui stai distribuendo.
 
 ```
 npx cdk bootstrap
@@ -202,7 +202,7 @@ npx cdk bootstrap
 npx cdk deploy --require-approval never --all
 ```
 
-- Otterrai un output simile al seguente. L'URL dell'app web verrà visualizzato in `BedrockChatStack.FrontendURL`, quindi accedici dal tuo browser.
+- Otterrai un output simile al seguente. L'URL dell'app web verrà visualizzato in `BedrockChatStack.FrontendURL`, quindi accedervi dal proprio browser.
 
 ```sh
  ✅  BedrockChatStack
@@ -260,7 +260,7 @@ bedrockChatParams.set("prod", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["172.16.0.0/12"],
   enableLambdaSnapStart: true,
-  enableRagReplicas: true, // Maggiore disponibilità per la produzione
+  enableRagReplicas: true, // Disponibilità migliorata per la produzione
 });
 ```
 
@@ -269,7 +269,7 @@ bedrockChatParams.set("prod", {
 
 ### Distribuzione di Più Ambienti
 
-Puoi distribuire più ambienti dallo stesso codebase utilizzando il file `parameter.ts` e l'opzione `-c envName`.
+Puoi distribuire più ambienti dallo stesso codice base utilizzando il file `parameter.ts` e l'opzione `-c envName`.
 
 #### Prerequisiti
 
@@ -300,12 +300,12 @@ npx cdk deploy --all
 1. **Denominazione degli Stack**:
 
    - Gli stack principali per ogni ambiente avranno un prefisso con il nome dell'ambiente (es. `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - Tuttavia, gli stack dei bot personalizzati (`BrChatKbStack*`) e gli stack di pubblicazione API (`ApiPublishmentStack*`) non ricevono prefissi degli ambienti poiché vengono creati dinamicamente in fase di esecuzione
+   - Tuttavia, gli stack dei bot personalizzati (`BrChatKbStack*`) e gli stack di pubblicazione API (`ApiPublishmentStack*`) non ricevono prefissi di ambiente poiché vengono creati dinamicamente durante l'esecuzione
 
 2. **Denominazione delle Risorse**:
 
-   - Solo alcune risorse ricevono prefissi degli ambienti nei loro nomi (es. tabella `dev_ddb_export`, `dev-FrontendWebAcl`)
-   - La maggior parte delle risorse mantiene i loro nomi originali ma è isolata dall'essere in stack diversi
+   - Solo alcune risorse ricevono prefissi di ambiente nei loro nomi (es. tabella `dev_ddb_export`, `dev-FrontendWebAcl`)
+   - La maggior parte delle risorse mantiene i loro nomi originali ma è isolata trovandosi in stack diversi
 
 3. **Identificazione dell'Ambiente**:
 
@@ -313,7 +313,7 @@ npx cdk deploy --all
    - Puoi utilizzare questo tag per identificare a quale ambiente appartiene una risorsa
    - Esempio: `CDKEnvironment: dev` o `CDKEnvironment: prod`
 
-4. **Sostituzione dell'Ambiente Predefinito**: Se definisci un ambiente "default" in `parameter.ts`, sostituirà le impostazioni in `cdk.json`. Per continuare a utilizzare `cdk.json`, non definire un ambiente "default" in `parameter.ts`.
+4. **Sovrascrittura dell'Ambiente Predefinito**: Se definisci un ambiente "default" in `parameter.ts`, sovrascriverà le impostazioni in `cdk.json`. Per continuare a utilizzare `cdk.json`, non definire un ambiente "default" in `parameter.ts`.
 
 5. **Requisiti dell'Ambiente**: Per creare ambienti diversi da "default", è necessario utilizzare `parameter.ts`. L'opzione `-c envName` da sola non è sufficiente senza corrispondenti definizioni di ambiente.
 
@@ -323,7 +323,7 @@ npx cdk deploy --all
 
 ### Configurare il supporto per i modelli Mistral
 
-Aggiorna `enableMistral` a `true` in [cdk.json](./cdk/cdk.json), e esegui `npx cdk deploy`.
+Aggiornare `enableMistral` a `true` in [cdk.json](./cdk/cdk.json), e eseguire `npx cdk deploy`.
 
 ```json
 ...
@@ -331,7 +331,7 @@ Aggiorna `enableMistral` a `true` in [cdk.json](./cdk/cdk.json), e esegui `npx c
 ```
 
 > [!Importante]
-> Questo progetto si concentra sui modelli Anthropic Claude, i modelli Mistral sono supportati in modo limitato. Ad esempio, gli esempi di prompt sono basati sui modelli Claude. Questa è un'opzione solo per Mistral, una volta abilitati i modelli Mistral, potrai utilizzare solo i modelli Mistral per tutte le funzionalità di chat, NON sia Claude che Mistral.
+> Questo progetto si concentra sui modelli Anthropic Claude, i modelli Mistral sono supportati in modo limitato. Ad esempio, gli esempi di prompt sono basati sui modelli Claude. Questa è un'opzione solo per Mistral, una volta abilitati i modelli Mistral, potrai utilizzare solo i modelli Mistral per tutte le funzionalità di chat, NON entrambi Claude e Mistral.
 
 ### Configurare la generazione di testo predefinita
 
@@ -347,23 +347,23 @@ DEFAULT_GENERATION_CONFIG = {
 }
 ```
 
-### Rimuovere le risorse
+### Rimuovere risorse
 
-Se si utilizza CLI e CDK, eseguire `npx cdk destroy`. Altrimenti, accedere a [CloudFormation](https://console.aws.amazon.com/cloudformation/home) e quindi eliminare manualmente `BedrockChatStack` e `FrontendWafStack`. Si noti che `FrontendWafStack` si trova nella regione `us-east-1`.
+Se si utilizza CLI e CDK, eseguire `npx cdk destroy`. Altrimenti, accedere a [CloudFormation](https://console.aws.amazon.com/cloudformation/home) e quindi eliminare manualmente `BedrockChatStack` e `FrontendWafStack`. Notare che `FrontendWafStack` si trova nella regione us-east-1.
 
 ### Impostazioni Lingua
 
-Questa risorsa rileva automaticamente la lingua utilizzando [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). È possibile cambiare lingua dal menu dell'applicazione. In alternativa, è possibile utilizzare la Stringa di Query per impostare la lingua come mostrato di seguito.
+Questo asset rileva automaticamente la lingua utilizzando [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). È possibile cambiare lingua dal menu dell'applicazione. In alternativa, è possibile utilizzare la Stringa di Query per impostare la lingua come mostrato di seguito.
 
 > `https://example.com?lng=ja`
 
-### Disabilitare l'iscrizione autonoma
+### Disabilitare l'auto-registrazione
 
-Questo esempio ha l'iscrizione autonoma abilitata per impostazione predefinita. Per disabilitare l'iscrizione autonoma, aprire [cdk.json](./cdk/cdk.json) e impostare `selfSignUpEnabled` su `false`. Se si configura un [provider di identità esterno](#external-identity-provider), il valore verrà ignorato e disabilitato automaticamente.
+Questo esempio ha l'auto-registrazione abilitata per impostazione predefinita. Per disabilitare l'auto-registrazione, aprire [cdk.json](./cdk/cdk.json) e impostare `selfSignUpEnabled` su `false`. Se si configura un [provider di identità esterno](#external-identity-provider), il valore verrà ignorato e automaticamente disabilitato.
 
-### Limitare i Domini per gli Indirizzi Email di Iscrizione
+### Limitare i Domini per gli Indirizzi Email di Registrazione
 
-Per impostazione predefinita, questo esempio non limita i domini per gli indirizzi email di iscrizione. Per consentire le iscrizioni solo da domini specifici, aprire `cdk.json` e specificare i domini come elenco in `allowedSignUpEmailDomains`.
+Per impostazione predefinita, questo esempio non limita i domini per gli indirizzi email di registrazione. Per consentire la registrazione solo da domini specifici, aprire `cdk.json` e specificare i domini come elenco in `allowedSignUpEmailDomains`.
 
 ```ts
 "allowedSignUpEmailDomains": ["example.com"],
@@ -373,7 +373,7 @@ Per impostazione predefinita, questo esempio non limita i domini per gli indiriz
 
 Questo esempio supporta provider di identità esterno. Attualmente supportiamo [Google](./idp/SET_UP_GOOGLE_it-IT.md) e [provider OIDC personalizzato](./idp/SET_UP_CUSTOM_OIDC_it-IT.md).
 
-### Aggiungere automaticamente nuovi utenti ai gruppi
+### Aggiungere nuovi utenti ai gruppi automaticamente
 
 Questo esempio ha i seguenti gruppi per dare autorizzazioni agli utenti:
 
@@ -394,13 +394,13 @@ Per impostazione predefinita, i nuovi utenti si uniranno al gruppo `CreatingBotA
 `enableRagReplicas` è un'opzione in [cdk.json](./cdk/cdk.json) che controlla le impostazioni delle repliche per il database RAG, specificamente le Knowledge Bases che utilizzano Amazon OpenSearch Serverless.
 
 - **Predefinito**: true
-- **true**: Migliora la disponibilità abilitando repliche aggiuntive, adatto per ambienti di produzione ma aumentando i costi.
+- **true**: Migliora la disponibilità abilitando repliche aggiuntive, adatto per ambienti di produzione ma aumenta i costi.
 - **false**: Riduce i costi utilizzando meno repliche, adatto per sviluppo e test.
 
 Questa è un'impostazione a livello di account/regione che interessa l'intera applicazione piuttosto che singoli bot.
 
 > [!Nota]
-> A giugno 2024, Amazon OpenSearch Serverless supporta 0,5 OCU, riducendo i costi di ingresso per carichi di lavoro su piccola scala. Le distribuzioni di produzione possono iniziare con 2 OCU, mentre i carichi di lavoro di sviluppo/test possono utilizzare 1 OCU. OpenSearch Serverless si adatta automaticamente in base alle richieste del carico di lavoro. Per ulteriori dettagli, visita [annuncio](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+> A partire da giugno 2024, Amazon OpenSearch Serverless supporta 0,5 OCU, riducendo i costi di ingresso per carichi di lavoro su piccola scala. Le distribuzioni di produzione possono iniziare con 2 OCU, mentre i carichi di lavoro di sviluppo/test possono utilizzare 1 OCU. OpenSearch Serverless si adatta automaticamente in base alle richieste di carico di lavoro. Per ulteriori dettagli, visitare [annuncio](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
 
 ### Inferenza tra regioni
 
@@ -412,7 +412,7 @@ Questa è un'impostazione a livello di account/regione che interessa l'intera ap
 
 ### Lambda SnapStart
 
-[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) migliora i tempi di avvio a freddo per le funzioni Lambda, fornendo tempi di risposta più veloci per una migliore esperienza utente. D'altra parte, per le funzioni Python, c'è un [addebito a seconda delle dimensioni della cache](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) e [non è disponibile in alcune regioni](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) attualmente. Per disabilitare SnapStart, modificare `cdk.json`.
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) migliora i tempi di avvio a freddo per le funzioni Lambda, fornendo tempi di risposta più veloci per una migliore esperienza utente. D'altra parte, per le funzioni Python, c'è un [addebito a seconda della dimensione della cache](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) e [non è attualmente disponibile in alcune regioni](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions). Per disabilitare SnapStart, modificare `cdk.json`.
 
 ```json
 "enableLambdaSnapStart": false
@@ -429,7 +429,7 @@ Questa è un'impostazione a livello di account/regione che interessa l'intera ap
 }
 ```
 
-- `alternateDomainName`: Il nome di dominio personalizzato per l'applicazione di chat (ad es. chat.example.com)
+- `alternateDomainName`: Il nome di dominio personalizzato per l'applicazione di chat (es. chat.example.com)
 - `hostedZoneId`: L'ID della zona ospitata di Route 53 in cui verranno create i record DNS
 
 Quando questi parametri vengono forniti, la distribuzione eseguirà automaticamente:
@@ -443,18 +443,18 @@ Quando questi parametri vengono forniti, la distribuzione eseguirà automaticame
 
 ### Sviluppo Locale
 
-Vedi [SVILUPPO LOCALE](./LOCAL_DEVELOPMENT_it-IT.md).
+Vedere [SVILUPPO LOCALE](./LOCAL_DEVELOPMENT_it-IT.md).
 
 ### Contributo
 
-Grazie per aver considerato di contribuire a questo repository! Accogliamo con favore correzioni di bug, traduzioni linguistiche (i18n), miglioramenti delle funzionalità, [strumenti per agenti](./docs/AGENT.md#how-to-develop-your-own-tools) e altri miglioramenti.
+Grazie per aver considerato di contribuire a questo repository! Accogliamo con favore correzioni di bug, traduzioni linguistiche (i18n), miglioramenti delle funzionalità, [strumenti agente](./docs/AGENT.md#how-to-develop-your-own-tools) e altri miglioramenti.
 
-Per i miglioramenti delle funzionalità e altri miglioramenti, **prima di creare una Pull Request, apprezzeremmo molto se si potesse creare un Issue di Richiesta di Funzionalità per discutere l'approccio e i dettagli dell'implementazione. Per correzioni di bug e traduzioni linguistiche (i18n), procedere direttamente con la creazione di una Pull Request.**
+Per miglioramenti delle funzionalità e altri miglioramenti, **prima di creare una Pull Request, apprezzeremmo molto se poteste creare un'Issue di Richiesta Funzionalità per discutere l'approccio e i dettagli dell'implementazione. Per correzioni di bug e traduzioni linguistiche (i18n), procedere direttamente con la creazione di una Pull Request.**
 
-Si prega inoltre di consultare le seguenti linee guida prima di contribuire:
+Si prega di dare un'occhiata anche alle seguenti linee guida prima di contribuire:
 
 - [Sviluppo Locale](./LOCAL_DEVELOPMENT_it-IT.md)
-- [CONTRIBUTO](./CONTRIBUTING_it-IT.md)
+- [CONTRIBUIRE](./CONTRIBUTING_it-IT.md)
 
 ## Contatti
 
@@ -467,10 +467,10 @@ Si prega inoltre di consultare le seguenti linee guida prima di contribuire:
 - [k70suK3-k06a7ash1](https://github.com/k70suK3-k06a7ash1)
 - [fsatsuki](https://github.com/fsatsuki)
 
-## Collaboratori
+## Contributori
 
-[![bedrock claude chat contributors](https://contrib.rocks/image?repo=aws-samples/bedrock-claude-chat&max=1000)](https://github.com/aws-samples/bedrock-claude-chat/graphs/contributors)
+[![contributori di bedrock claude chat](https://contrib.rocks/image?repo=aws-samples/bedrock-claude-chat&max=1000)](https://github.com/aws-samples/bedrock-claude-chat/graphs/contributors)
 
 ## Licenza
 
-Questa libreria è rilasciata sotto la Licenza MIT-0. Consultare [il file di licenza](./LICENSE).
+Questa libreria è concessa in licenza sotto la Licenza MIT-0. Consulta [il file di LICENZA](./LICENSE).

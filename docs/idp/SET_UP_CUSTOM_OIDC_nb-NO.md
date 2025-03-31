@@ -2,7 +2,7 @@
 
 ## Trinn 1: Opprett en OIDC-klient
 
-Følg prosedyrene for den aktuelle OIDC-leverandøren, og noter verdiene for OIDC-klient-ID og hemmelighet. Utgiver-URL er også påkrevd i de påfølgende trinnene. Hvis omdirigerings-URI kreves i oppsettsprosessen, angir du en midlertidig verdi som vil bli erstattet etter at distribusjonen er fullført.
+Følg prosedyrene for den aktuelle OIDC-leverandøren, og noter verdiene for OIDC-klient-ID og hemmelighet. Utsteder-URL er også nødvendig i de påfølgende trinnene. Hvis en omdirigerings-URI kreves i oppsettsprosessen, kan du legge inn en midlertidig verdi som vil bli erstattet etter at distribusjonen er fullført.
 
 ## Trinn 2: Lagre Legitimasjon i AWS Secrets Manager
 
@@ -24,7 +24,7 @@ Nøkkelnavnene må nøyaktig samsvare med strengene `clientId`, `clientSecret` o
 
 ## Trinn 3: Oppdater cdk.json
 
-I din cdk.json-fil, legg til ID-leverandøren og hemmelighetsnavnet i cdk.json-filen.
+I cdk.json-filen legger du til ID-leverandøren og hemmelighetsnavnet i cdk.json-filen.
 
 som følger:
 
@@ -35,29 +35,29 @@ som følger:
     "identityProviders": [
       {
         "service": "oidc", // Ikke endre
-        "serviceName": "<DIN_TJENESTE_NAVN>", // Sett en verdi du vil
+        "serviceName": "<DIN_TJENESTE_NAVN>", // Sett en vilkårlig verdi du liker
         "secretName": "<DITT_HEMMELIGHETSNAVN>"
       }
     ],
-    "userPoolDomainPrefix": "<UNIKT_DOMENE_PREFIKS_FOR_DIN_BRUKERGRUPPE>"
+    "userPoolDomainPrefix": "<UNIKT_DOMENEPREFIX_FOR_DIN_BRUKERGRUPPE>"
   }
 }
 ```
 
-### Oppmerksomhet
+### Merk
 
 #### Unike navn
 
 `userPoolDomainPrefix` må være globalt unikt på tvers av alle Amazon Cognito-brukere. Hvis du velger et prefiks som allerede er i bruk av en annen AWS-konto, vil opprettelsen av brukergruppens domene mislykkes. Det er god praksis å inkludere identifikatorer, prosjektnavn eller miljønavn i prefikset for å sikre unike navn.
 
-## Trinn 4: Distribuer CDK-stakken
+## Trinn 4: Distribuer CDK-stakken din
 
-Distribuer CDK-stakken til AWS:
+Distribuer CDK-stakken din til AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## Trinn 5: Oppdater OIDC-klient med Cognito Redirect-URI-er
+## Trinn 5: Oppdater OIDC-klient med Cognito-omdirigerings-URI-er
 
-Etter at stakken er distribuert, vil `AuthApprovedRedirectURI` vises i CloudFormation-resultatene. Gå tilbake til OIDC-konfigurasjonen din og oppdater med de riktige redirect-URI-ene.
+Etter å ha distribuert stakken vil `AuthApprovedRedirectURI` vises i CloudFormation-resultatene. Gå tilbake til OIDC-konfigurasjonen din og oppdater med de riktige omdirigerings-URI-ene.

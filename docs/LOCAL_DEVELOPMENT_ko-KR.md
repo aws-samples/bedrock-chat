@@ -11,7 +11,7 @@
 1. AWS 환경에 배포하려면 [CDK를 사용하여 배포](../README.md#deploy-using-cdk)를 참조하세요.
 2. `frontend/.env.template`을 복사하여 `frontend/.env.local`로 저장합니다.
 3. `npx cdk deploy`의 출력 결과(예: `BedrockChatStack.AuthUserPoolClientIdXXXXX`)를 기반으로 `.env.local`의 내용을 채웁니다.
-4. 다음 명령을 실행합니다:
+4. 다음 명령어를 실행합니다:
 
 ```zsh
 cd frontend && npm ci && npm run dev
@@ -19,7 +19,7 @@ cd frontend && npm ci && npm run dev
 
 ## (선택사항, 권장) 사전 커밋 훅 설정
 
-GitHub 워크플로우에서 타입 검사 및 린팅을 도입했습니다. 이는 풀 리퀘스트가 생성될 때 실행되지만, 린팅이 완료될 때까지 기다리는 것은 좋은 개발 경험이 아닙니다. 따라서 이러한 린팅 작업은 커밋 단계에서 자동으로 수행되어야 합니다. 이를 위해 [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install)을 메커니즘으로 도입했습니다. 필수는 아니지만 효율적인 개발 경험을 위해 채택하는 것을 권장합니다. 또한 [Prettier](https://prettier.io/)로 TypeScript 포맷팅을 강제하지는 않지만, 코드 리뷰 중 불필요한 차이를 방지하기 위해 기여할 때 채택해 주시기를 바랍니다.
+GitHub 워크플로우를 통해 타입 검사 및 린팅을 도입했습니다. 이는 풀 리퀘스트가 생성될 때 실행되지만, 린팅이 완료될 때까지 기다리는 것은 개발 경험에 좋지 않습니다. 따라서 이러한 린팅 작업은 커밋 단계에서 자동으로 수행되어야 합니다. 이를 위해 [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install)을 메커니즘으로 도입했습니다. 필수는 아니지만 효율적인 개발 경험을 위해 채택하는 것을 권장합니다. 또한 [Prettier](https://prettier.io/)로 TypeScript 포맷팅을 강제하지는 않지만, 코드 리뷰 중 불필요한 차이를 방지하기 위해 기여할 때 채택해 주시기를 부탁드립니다.
 
 ### Lefthook 설치
 
@@ -37,8 +37,8 @@ pip install poetry
 poetry install
 ```
 
-자세한 내용은 [백엔드 README](../backend/README_ko-KR.md)를 확인하세요.
+더 자세한 내용은 [백엔드 README](../backend/README_ko-KR.md)를 확인해 주세요.
 
 ### 사전 커밋 훅 생성
 
-프로젝트의 루트 디렉터리에서 `lefthook install`을 실행하세요.
+프로젝트의 루트 디렉터리에서 `lefthook install`을 실행하면 됩니다.
