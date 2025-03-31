@@ -196,7 +196,7 @@ def _bedrock_agent_invoke(
 
     # Find the Bedrock Agent tool configuration
     bedrock_tool = next(
-        (tool for tool in bot.agent.tools if tool.tool_type == "bedrockAgent"), None
+        (tool for tool in bot.agent.tools if tool.tool_type == "bedrock_agent"), None
     )
     if not bedrock_tool or not bedrock_tool.bedrockAgentConfig:
         raise ValueError("Bedrock Agent configuration is missing")
@@ -225,7 +225,7 @@ def update_tool_description_from_agent(bot: BotModel, tools: dict) -> None:
         return
 
     bedrock_tool = next(
-        (tool for tool in bot.agent.tools if tool.tool_type == "bedrockAgent"), None
+        (tool for tool in bot.agent.tools if tool.tool_type == "bedrock_agent"), None
     )
     if not bedrock_tool or not bedrock_tool.bedrockAgentConfig:
         return

@@ -905,38 +905,34 @@ const BotKbEditPage: React.FC = () => {
 
     // Use some() instead of every() since we want to find invalid tools
     const hasInvalidTool = tools.some((tool, idx) => {
-      if (!isInternetTool(tool)) {
-        if (isBedrockAgentTool(tool)) {
-          if (!tool.bedrockAgentConfig?.agentId) {
-            setErrorMessages(
-              `tools-${idx}-bedrockAgentConfig.agent_id`,
-              t('input.validationError.required')
-            );
-            return true;
-          }
-          if (!tool.bedrockAgentConfig?.aliasId) {
-            setErrorMessages(
-              `tools-${idx}-bedrockAgentConfig.alias_id`,
-              t('input.validationError.required')
-            );
-            return true;
-          }
-        }
-        return false;
+      // BedrockAgentTool validation
+      if (isBedrockAgentTool(tool) && !tool.bedrockAgentConfig?.agentId) {
+        setErrorMessages(
+          `tools-${idx}-bedrockAgentConfig.agent_id`,
+          t('input.validationError.required')
+        );
+        return true;
       }
-
-      const isFirecrawlTool = tool.searchEngine === 'firecrawl';
-      const hasInvalidConfig =
-        !tool.firecrawlConfig || !tool.firecrawlConfig.apiKey;
-
-      if (isFirecrawlTool && hasInvalidConfig) {
+      
+      if (isBedrockAgentTool(tool) && !tool.bedrockAgentConfig?.aliasId) {
+        setErrorMessages(
+          `tools-${idx}-bedrockAgentConfig.alias_id`,
+          t('input.validationError.required')
+        );
+        return true;
+      }
+      
+      // Firecrawl tool validation
+      if (isInternetTool(tool) && 
+          tool.searchEngine === 'firecrawl' && 
+          (!tool.firecrawlConfig || !tool.firecrawlConfig.apiKey)) {
         setErrorMessages(
           `tools-${idx}-firecrawlConfig.apiKey`,
           t('input.validationError.required')
         );
-        return true; // Found an invalid tool
+        return true;
       }
-
+      
       return false; // Tool is valid
     });
 

@@ -4,4 +4,4 @@ export const isInternetTool = (tool: AgentTool): tool is InternetAgentTool =>
   tool.toolType === "internet";
 
 export const isBedrockAgentTool = (tool: AgentTool): tool is BedrockAgentTool =>
-  tool.toolType === "bedrockAgent";
+  tool.toolType === "bedrock_agent";

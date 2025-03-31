@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Literal
 
+from app.agents.tools.agent_tool import AgentTool
 from app.agents.utils import get_available_tools, get_tool_by_name
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
@@ -43,6 +44,7 @@ from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
+    BedrockAgentTool,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -51,7 +53,10 @@ from app.routes.schemas.bot import (
     BotSummaryOutput,
     ConversationQuickStarter,
     GenerationParams,
+    InternetTool,
     Knowledge,
+    PlainTool,
+    Tool,
     type_sync_status,
 )
 from app.routes.schemas.bot_guardrails import BedrockGuardrailsOutput
@@ -812,6 +817,33 @@ def remove_uploaded_file(user_id: str, bot_id: str, filename: str):
     return
 
 
-def fetch_available_agent_tools():
+def fetch_available_agent_tools() -> list[Tool]:
     """Fetch available tools for bot."""
-    return get_available_tools()
+    tools: list[AgentTool] = get_available_tools()
+    result: list[Tool] = []
+    for tool in tools:
+        if tool.name == "bedrock_agent":
+            result.append(
+                BedrockAgentTool(
+                    tool_type="bedrock_agent",
+                    name=tool.name,
+                    description=tool.description,
+                )
+            )
+        elif tool.name == "internet_search":
+            result.append(
+                InternetTool(
+                    tool_type="internet",
+                    name=tool.name,
+                    description=tool.description,
+                    search_engine="duckduckgo",
+                )
+            )
+        else:
+            result.append(
+                PlainTool(
+                    tool_type="plain", name=tool.name, description=tool.description
+                )
+            )
+
+    return result

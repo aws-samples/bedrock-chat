@@ -65,7 +65,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                 ...preTools,
                 {
                   ...tool,
-                  toolType: 'bedrockAgent' as ToolType,
+                  toolType: 'bedrock_agent' as ToolType,
                   name: 'bedrock_agent',
                   bedrockAgentConfig: {
                     agentId: '',
@@ -116,7 +116,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
           if (tool.name === 'bedrock_agent') {
             return {
               ...tool,
-              toolType: 'bedrockAgent' as ToolType,
+              toolType: 'bedrock_agent' as ToolType,
               name: 'bedrock_agent',
               bedrockAgentConfig: config,
             } as AgentTool;

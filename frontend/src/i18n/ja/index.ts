@@ -144,7 +144,7 @@ const translation = {
         },
         bedrock_agent: {
           name: 'Bedrock Agent',
-          description: '設定されたBedrock Agentに質問を送信',
+          description: '設定されたBedrock Agentに質問を送信します。',
         },
         firecrawl: {
           apiKey: 'Firecrawl APIキー',

@@ -117,7 +117,7 @@ class InternetTool(BaseSchema):
 
 
 class BedrockAgentTool(BaseSchema):
-    tool_type: Literal["bedrockAgent"]
+    tool_type: Literal["bedrock_agent"]
     name: str
     description: str
     bedrockAgentConfig: Optional[BedrockAgentConfig] | None = None
@@ -148,7 +148,7 @@ class Agent(BaseSchema):
 
 
 class AgentToolInput(BaseSchema):
-    tool_type: Literal["plain", "internet", "bedrockAgent"]
+    tool_type: Literal["plain", "internet", "bedrock_agent"]
     name: str
     description: str
     search_engine: Literal["duckduckgo", "firecrawl"] | None = None
