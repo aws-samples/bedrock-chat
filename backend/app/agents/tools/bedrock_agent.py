@@ -214,35 +214,6 @@ def _bedrock_agent_invoke(
     return results
 
 
-def update_tool_description_from_agent(bot: BotModel, tools: dict) -> None:
-    """Update bedrock_agent tool description with the actual agent description from AWS Bedrock
-
-    Args:
-        bot: Bot model containing agent configuration
-        tools: Dictionary of tools where key is tool name and value is tool instance
-    """
-    if not bot or not bot.is_agent_enabled() or "bedrock_agent" not in tools:
-        return
-
-    bedrock_tool = next(
-        (tool for tool in bot.agent.tools if tool.tool_type == "bedrock_agent"), None
-    )
-    if not bedrock_tool or not bedrock_tool.bedrockAgentConfig:
-        return
-
-    agent_id = bedrock_tool.bedrockAgentConfig.agent_id
-    if not agent_id:
-        return
-
-    try:
-        agent = BedrockAgent()
-        description = agent.get_agent_description(agent_id)
-        tools["bedrock_agent"].description = description
-        logger.info(f"Updated bedrock_agent tool description to: {description}")
-    except Exception as e:
-        logger.error(f"Failed to update bedrock_agent tool description: {e}")
-
-
 # Create an instance of AgentTool
 bedrock_agent_tool = AgentTool(
     name="bedrock_agent",

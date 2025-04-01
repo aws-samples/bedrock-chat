@@ -3,7 +3,7 @@ import os
 from typing import Literal
 
 from app.agents.tools.agent_tool import AgentTool
-from app.agents.utils import get_available_tools, get_tool_by_name
+from app.agents.utils import get_available_tools
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
