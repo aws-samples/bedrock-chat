@@ -51,7 +51,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     '353:ce504bb9edc03fa62d3f80c5d1fadcb2f7346e0f-15'
   );
 
-  const { data: starredBots } = api.bots({
+  const { data: starredBots, mutate: mutateStarredBots } = api.bots({
     // getting the groupId from localstorage
     group_id: groupId,
   });
@@ -111,12 +111,29 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
         mutateMyBots();
       });
     },
-    updateBotSharing: (botId: string, isShareing: boolean) => {
+    updateBotSharing: (botId: string, isPublic: boolean) => {
+      const idxMybots = starredBots?.findIndex((bot) => bot.id === botId) ?? -1;
       mutateMyBots(
         produce(myBots, (draft) => {
           const idx = draft?.findIndex((bot) => bot.id === botId) ?? -1;
           if (draft) {
-            draft[idx].isPublic = isShareing;
+            draft[idx].isPublic = isPublic;
+          }
+        }),
+        {
+          revalidate: false,
+        }
+      );
+      mutateStarredBots(
+        produce(starredBots, (draft) => {
+          if (starredBots && isPublic) {
+            draft?.unshift({
+              ...starredBots[idxMybots],
+            });
+          } else if (!isPublic) {
+            const idxStarred =
+              draft?.findIndex((bot) => bot.id === botId) ?? -1;
+            draft?.splice(idxStarred, 1);
           }
         }),
         {
@@ -126,10 +143,11 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
 
       return api
         .updateBotVisibility(botId, {
-          toPublic: isShareing,
+          toPublic: isPublic,
         })
         .finally(() => {
           mutateMyBots();
+          mutateStarredBots();
         });
     },
     deleteMyBot: (botId: string) => {
@@ -142,8 +160,21 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
           revalidate: false,
         }
       );
+      mutateStarredBots(
+        produce(starredBots, (draft) => {
+          if (starredBots) {
+            const idxStarred =
+              draft?.findIndex((bot) => bot.id === botId) ?? -1;
+            draft?.splice(idxStarred, 1);
+          } 
+        }),
+        {
+          revalidate: false,
+        }
+      );
       return api.deleteBot(botId).finally(() => {
         mutateMyBots();
+        mutateStarredBots();
       });
     },
     uploadFile: (
