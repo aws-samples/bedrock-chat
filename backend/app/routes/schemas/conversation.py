@@ -201,6 +201,7 @@ class RelatedDocument(BaseSchema):
     source_id: str
     source_name: str | None = None
     source_link: str | None = None
+    page_number: int | None = None
 
 
 class ConversationMetaOutput(BaseSchema):

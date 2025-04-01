@@ -348,6 +348,8 @@ def store_related_documents(
                 "SourceLink": related_document.source_link,
                 "Content": related_document.content.model_dump(by_alias=True),
             }
+            if related_document.page_number is not None:
+                item_params["PageNumber"] = related_document.page_number
             writer.put_item(Item=item_params)
 
 
@@ -382,6 +384,7 @@ def find_related_documents_by_conversation_id(
                 source_id=decompose_related_document_source_id(composed_id=item["SK"]),
                 source_name=item["SourceName"],
                 source_link=item["SourceLink"],
+                page_number=item.get("PageNumber"),
             )
             for item in response.get("Items") or []
         )
@@ -422,6 +425,7 @@ def find_related_document_by_id(
         source_id=source_id,
         source_name=item["SourceName"],
         source_link=item["SourceLink"],
+        page_number=item.get("PageNumber"),
     )
 
 

@@ -137,6 +137,7 @@ def _function_result_to_related_document(
             content=TextToolResultModel(text=res),
             source_id=source_id,
             source_name=tool_name,
+            page_number=None,
         )
 
     elif isinstance(res, dict):
@@ -144,6 +145,8 @@ def _function_result_to_related_document(
         source_id_from_result = res.get("source_id")
         source_name = res.get("source_name")
         source_link = res.get("source_link")
+        page_number = res.get("page_number")
+        
         return RelatedDocumentModel(
             content=(
                 TextToolResultModel(
@@ -161,6 +164,7 @@ def _function_result_to_related_document(
             ),
             source_name=str(source_name) if source_name is not None else tool_name,
             source_link=str(source_link) if source_link is not None else None,
+            page_number=int(page_number) if page_number is not None else None,
         )
 
     else:
@@ -168,4 +172,5 @@ def _function_result_to_related_document(
             content=res,
             source_id=source_id,
             source_name=tool_name,
+            page_number=None,
         )

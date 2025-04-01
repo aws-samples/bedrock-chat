@@ -1,5 +1,5 @@
 import logging
-from typing import TypedDict
+from typing import TypedDict, Any
 from urllib.parse import urlparse
 
 from app.repositories.models.conversation import (
@@ -15,6 +15,7 @@ from mypy_boto3_bedrock_agent_runtime.type_defs import (
 from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 agent_client = get_bedrock_agent_runtime_client()
 
 
@@ -24,6 +25,8 @@ class SearchResult(TypedDict):
     source_name: str
     source_link: str
     rank: int
+    metadata: dict[str, Any]
+    page_number: int | None
 
 
 def search_result_to_related_document(
@@ -37,6 +40,7 @@ def search_result_to_related_document(
         source_id=f"{source_id_base}@{search_result['rank']}",
         source_name=search_result["source_name"],
         source_link=search_result["source_link"],
+        page_number=search_result["page_number"]
     )
 
 
@@ -129,6 +133,15 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             source = extract_source_from_retrieval_result(retrieval_result)
 
             if source is not None:
+                # ページ番号を取得
+                metadata = retrieval_result.get("metadata", {})
+                page_number = None
+                if "x-amz-bedrock-kb-document-page-number" in metadata:
+                    try:
+                        page_number = int(metadata["x-amz-bedrock-kb-document-page-number"])
+                    except (ValueError, TypeError):
+                        pass
+
                 search_results.append(
                     SearchResult(
                         rank=i,
@@ -136,6 +149,8 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                         content=content,
                         source_name=source[0],
                         source_link=source[1],
+                        metadata=metadata,
+                        page_number=page_number
                     )
                 )
 

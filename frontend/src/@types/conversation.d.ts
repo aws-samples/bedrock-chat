@@ -100,6 +100,7 @@ export type RelatedDocument = {
   sourceId: string;
   sourceName?: string;
   sourceLink?: string;
+  pageNumber?: number;
 };
 
 export type DisplayMessageContent = MessageContent & {
