@@ -1563,7 +1563,7 @@ const BotKbEditPage: React.FC = () => {
                 </div>
                 <div className="relative mt-3">
                   <Button
-                    className="absolute -top-3 right-0 text-xs"
+                    className="absolute -top-7 right-0 text-xs"
                     outlined
                     onClick={() => {
                       setIsOpenSamples(true);
