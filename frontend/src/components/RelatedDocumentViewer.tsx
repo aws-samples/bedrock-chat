@@ -16,7 +16,7 @@ const RelatedDocumentViewer: React.FC<{
   ), [props.relatedDocument.content]);
 
   const sourceName = useMemo(() => {
-    if (!props.relatedDocument.sourceName) return undefined;
+    if (!props.relatedDocument.sourceName) {return undefined;}
     if (props.relatedDocument.pageNumber) {
       return `${props.relatedDocument.sourceName} (p.${props.relatedDocument.pageNumber})`;
     }
@@ -24,7 +24,7 @@ const RelatedDocumentViewer: React.FC<{
   }, [props.relatedDocument.sourceName, props.relatedDocument.pageNumber]);
 
   const sourceLink = useMemo(() => {
-    if (!props.relatedDocument.sourceLink) return undefined;
+    if (!props.relatedDocument.sourceLink) {return undefined;}
     if (props.relatedDocument.pageNumber) {
       return `${props.relatedDocument.sourceLink}#page=${props.relatedDocument.pageNumber}`;
     }

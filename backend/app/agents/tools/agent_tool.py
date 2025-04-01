@@ -146,7 +146,7 @@ def _function_result_to_related_document(
         source_name = res.get("source_name")
         source_link = res.get("source_link")
         page_number = res.get("page_number")
-        
+
         return RelatedDocumentModel(
             content=(
                 TextToolResultModel(

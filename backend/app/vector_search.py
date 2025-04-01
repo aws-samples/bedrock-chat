@@ -40,7 +40,7 @@ def search_result_to_related_document(
         source_id=f"{source_id_base}@{search_result['rank']}",
         source_name=search_result["source_name"],
         source_link=search_result["source_link"],
-        page_number=search_result["page_number"]
+        page_number=search_result["page_number"],
     )
 
 
@@ -138,7 +138,9 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                 page_number = None
                 if "x-amz-bedrock-kb-document-page-number" in metadata:
                     try:
-                        page_number = int(metadata["x-amz-bedrock-kb-document-page-number"])
+                        page_number = int(
+                            metadata["x-amz-bedrock-kb-document-page-number"]
+                        )
                     except (ValueError, TypeError):
                         pass
 
@@ -150,7 +152,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                         source_name=source[0],
                         source_link=source[1],
                         metadata=metadata,
-                        page_number=page_number
+                        page_number=page_number,
                     )
                 )
 

@@ -1042,7 +1042,7 @@ class TestInsertKnowledge(unittest.TestCase):
                 "source_name": "AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "source_link": "https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "rank": 0,
-                "page_number": None
+                "page_number": None,
             },
             {
                 "bot_id": "bot_bb                    ",
@@ -1050,7 +1050,7 @@ class TestInsertKnowledge(unittest.TestCase):
                 "source_name": "AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "source_link": "https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "rank": 1,
-                "page_number": None
+                "page_number": None,
             },
             {
                 "bot_id": "bot_bb                    ",
@@ -1058,7 +1058,7 @@ class TestInsertKnowledge(unittest.TestCase):
                 "source_name": "AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "source_link": "https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonOpenSearchServerless_0131_v1.pdf",
                 "rank": 2,
-                "page_number": None
+                "page_number": None,
             },
         ]
         instruction = build_rag_prompt(
