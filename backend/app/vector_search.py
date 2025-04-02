@@ -133,7 +133,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             source = extract_source_from_retrieval_result(retrieval_result)
 
             if source is not None:
-                # ページ番号を取得
+                # get page number from metadata
                 metadata = retrieval_result.get("metadata", {})
                 page_number = None
                 if "x-amz-bedrock-kb-document-page-number" in metadata:
