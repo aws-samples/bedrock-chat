@@ -20,10 +20,6 @@ const translation = {
         description:
           'Phiên bản trước được tối ưu hóa cho tốc độ và gọn nhẹ, cho phép phản hồi gần như tức thời.',
       },
-      'claude-v3-sonnet': {
-        label: 'Claude 3 (Sonnet)',
-        description: 'Cân bằng giữa trí thông minh và tốc độ.',
-      },
       'claude-v3.5-sonnet': {
         label: 'Claude 3.5 (Sonnet) v1',
         description:

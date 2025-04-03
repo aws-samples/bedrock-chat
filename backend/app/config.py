@@ -63,17 +63,8 @@ DEFAULT_LLAMA_GENERATION_CONFIG: GenerationParams = {
 # See: https://aws.amazon.com/bedrock/pricing/
 BEDROCK_PRICING = {
     "us-east-1": {
-        "claude-instant-v1": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v2": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
         "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3.5-haiku": {"input": 0.001, "output": 0.005},
-        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3.5-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3.5-sonnet-v2": {"input": 0.00300, "output": 0.01500},
         "claude-v3.7-sonnet": {"input": 0.00300, "output": 0.01500},
@@ -92,15 +83,6 @@ BEDROCK_PRICING = {
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
     },
     "us-west-2": {
-        "claude-instant-v1": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v2": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3.7-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
@@ -139,7 +121,6 @@ BEDROCK_PRICING = {
         },
         "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3.5-haiku": {"input": 0.001, "output": 0.005},
-        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3.5-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3.5-sonnet-v2": {"input": 0.00300, "output": 0.01500},
         "claude-v3.7-sonnet": {"input": 0.00300, "output": 0.01500},

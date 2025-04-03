@@ -96,13 +96,6 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3-sonnet',
-        label: t('model.claude-v3-sonnet.label'),
-        description: t('model.claude-v3-sonnet.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
         modelId: 'claude-v3.5-sonnet',
         label: t('model.claude-v3.5-sonnet.label'),
         description: t('model.claude-v3.5-sonnet.description'),
