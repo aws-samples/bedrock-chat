@@ -168,9 +168,7 @@ const BotKbEditPage: React.FC = () => {
     description: string;
   }[] = (() => {
     const getGeneralModels = () => {
-      return AVAILABLE_MODEL_KEYS.filter(
-        (key) => key.includes('claude') || key.includes('nova') || key.includes('deepseek') || key.includes('llama')
-      ).map((key) => ({
+      return AVAILABLE_MODEL_KEYS.map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
         description: t(`model.${key}.description`) as string,
