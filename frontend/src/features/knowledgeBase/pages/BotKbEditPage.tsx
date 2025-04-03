@@ -189,7 +189,7 @@ const BotKbEditPage: React.FC = () => {
 
     const getGeneralModels = () => {
       return AVAILABLE_MODEL_KEYS.filter(
-        (key) => key.includes('claude') || key.includes('nova') || key.includes('deepseek')
+        (key) => key.includes('claude') || key.includes('nova') || key.includes('deepseek') || key.includes('llama')
       ).map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
@@ -1197,7 +1197,6 @@ const BotKbEditPage: React.FC = () => {
   }, [
     clearErrorMessages,
     s3Urls,
-    stopSequences.length,
     searchParams.maxResults,
     conversationQuickStarters,
     isToolValid,

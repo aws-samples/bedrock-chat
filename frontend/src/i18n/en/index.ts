@@ -84,6 +84,27 @@ const translation = {
         description:
           'State-of-the-art reasoning model optimized for general reasoning, math, science, and code generation. Supports English and Chinese languages.',
       },
+      // Meta Llama 3 models
+      'llama3-3-70b-instruct': {
+        label: 'Meta Llama 3.3 70B Instruct',
+        description: 'Latest Llama 3 model offering performance on par with the 405B model at a lower cost with excellent reasoning and instruction-following capabilities.',
+      },
+      'llama3-2-1b-instruct': {
+        label: 'Meta Llama 3.2 1B Instruct',
+        description: 'Lightweight model optimized for edge devices with efficient on-device processing for personal information management and multilingual knowledge retrieval.',
+      },
+      'llama3-2-3b-instruct': {
+        label: 'Meta Llama 3.2 3B Instruct',
+        description: 'Compact model delivering text generation, summarization, and sentiment analysis with low latency, ideal for mobile AI applications.',
+      },
+      'llama3-2-11b-instruct': {
+        label: 'Meta Llama 3.2 11B Instruct',
+        description: 'Multimodal model excelling at image understanding and visual reasoning for image captioning, visual question answering, and document processing.',
+      },
+      'llama3-2-90b-instruct': {
+        label: 'Meta Llama 3.2 90B Instruct',
+        description: 'Large multimodal model with advanced image understanding and visual reasoning capabilities for sophisticated visual intelligence applications.',
+      },
     },
     agent: {
       label: 'Agent',

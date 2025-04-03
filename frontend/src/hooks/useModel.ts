@@ -24,6 +24,13 @@ const NOVA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
+const LLAMA_SUPPORTED_MEDIA_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+];
+
 const DEFAULT_MODEL: Model = 'claude-v3.7-sonnet';
 
 const useModelState = create<{
@@ -156,6 +163,42 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
             description: t('model.deepseek-r1.description'),
             supportMediaType: [],
             supportReasoning: false, // Deep Seek always return a content reasoning block.
+          },
+          // Meta Llama 3 models
+          {
+            modelId: 'llama3-3-70b-instruct',
+            label: t('model.llama3-3-70b-instruct.label'),
+            description: t('model.llama3-3-70b-instruct.description'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama3-2-1b-instruct',
+            label: t('model.llama3-2-1b-instruct.label'),
+            description: t('model.llama3-2-1b-instruct.description'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama3-2-3b-instruct',
+            label: t('model.llama3-2-3b-instruct.label'),
+            description: t('model.llama3-2-3b-instruct.description'),
+            supportMediaType: [],
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama3-2-11b-instruct',
+            label: t('model.llama3-2-11b-instruct.label'),
+            description: t('model.llama3-2-11b-instruct.description'),
+            supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
+            supportReasoning: false,
+          },
+          {
+            modelId: 'llama3-2-90b-instruct',
+            label: t('model.llama3-2-90b-instruct.label'),
+            description: t('model.llama3-2-90b-instruct.description'),
+            supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
+            supportReasoning: false,
           },
         ]
       : [

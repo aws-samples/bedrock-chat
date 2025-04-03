@@ -5,8 +5,14 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
 from app.config import BEDROCK_PRICING
-from app.config import DEFAULT_DEEP_SEEK_GENERATION_CONFIG, DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
-from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
+from app.config import (
+    DEFAULT_DEEP_SEEK_GENERATION_CONFIG,
+    DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG,
+)
+from app.config import (
+    DEFAULT_LLAMA_GENERATION_CONFIG,
+    DEFAULT_MISTRAL_GENERATION_CONFIG,
+)
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -63,6 +69,17 @@ def is_deepseek_model(model: type_model_name) -> bool:
     return model in ["deepseek-r1"]
 
 
+def is_llama_model(model: type_model_name) -> bool:
+    """Check if the model is a Meta Llama model"""
+    return model in [
+        "llama3-3-70b-instruct",
+        "llama3-2-1b-instruct",
+        "llama3-2-3b-instruct",
+        "llama3-2-11b-instruct",
+        "llama3-2-90b-instruct",
+    ]
+
+
 def _prepare_deepseek_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> Tuple[InferenceConfigurationTypeDef, None]:
@@ -89,11 +106,55 @@ def _prepare_deepseek_model_params(
             else DEFAULT_DEEP_SEEK_GENERATION_CONFIG["top_p"]
         ),
     }
-    
-    # stopSequencesの設定
+
     inference_config["stopSequences"] = (
-        generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
+        generation_params.stop_sequences
+        if (
+            generation_params
+            and generation_params.stop_sequences
+            and any(generation_params.stop_sequences)
+        )
         else DEFAULT_DEEP_SEEK_GENERATION_CONFIG.get("stop_sequences", [])
+    )
+
+    return inference_config, None
+
+
+def _prepare_llama_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> Tuple[InferenceConfigurationTypeDef, None]:
+    """
+    Prepare inference configuration and additional model request fields for Meta Llama models
+    > Note that Llama models expect inference parameters as a JSON object under an inferenceConfig attribute,
+    > similar to Amazon Nova models.
+    """
+    # Base inference configuration
+    inference_config: InferenceConfigurationTypeDef = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_LLAMA_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_LLAMA_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_LLAMA_GENERATION_CONFIG["top_p"]
+        ),
+    }
+
+    inference_config["stopSequences"] = (
+        generation_params.stop_sequences
+        if (
+            generation_params
+            and generation_params.stop_sequences
+            and any(generation_params.stop_sequences)
+        )
+        else DEFAULT_LLAMA_GENERATION_CONFIG.get("stop_sequences", [])
     )
 
     return inference_config, None
@@ -208,7 +269,22 @@ def compose_args_for_converse_api(
 
     elif is_deepseek_model(model):
         # Special handling for DeepSeek models
-        inference_config, additional_model_request_fields = _prepare_deepseek_model_params(
+        inference_config, additional_model_request_fields = (
+            _prepare_deepseek_model_params(model, generation_params)
+        )
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if instructions and any(instructions)
+            else []
+        )
+
+    elif is_llama_model(model):
+        # Special handling for Llama models
+        inference_config, additional_model_request_fields = _prepare_llama_model_params(
             model, generation_params
         )
         system_prompts = (
@@ -251,7 +327,12 @@ def compose_args_for_converse_api(
                     else DEFAULT_GENERATION_CONFIG["top_p"]
                 ),
                 "stopSequences": (
-                    generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
+                    generation_params.stop_sequences
+                    if (
+                        generation_params
+                        and generation_params.stop_sequences
+                        and any(generation_params.stop_sequences)
+                    )
                     else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
                 ),
             }
@@ -280,7 +361,12 @@ def compose_args_for_converse_api(
                     else DEFAULT_GENERATION_CONFIG["top_p"]
                 ),
                 "stopSequences": (
-                    generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
+                    generation_params.stop_sequences
+                    if (
+                        generation_params
+                        and generation_params.stop_sequences
+                        and any(generation_params.stop_sequences)
+                    )
                     else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
                 ),
             }
@@ -306,7 +392,7 @@ def compose_args_for_converse_api(
         "messages": arg_messages,
         "system": system_prompts,
     }
-    
+
     if additional_model_request_fields is not None:
         args["additionalModelRequestFields"] = additional_model_request_fields
 
@@ -402,6 +488,12 @@ def get_model_id(
         "amazon-nova-micro": "amazon.nova-micro-v1:0",
         # DeepSeek models
         "deepseek-r1": "deepseek.r1-v1:0",
+        # Meta Llama 3 models
+        "llama3-3-70b-instruct": "meta.llama3-3-70b-instruct-v1:0",
+        "llama3-2-1b-instruct": "meta.llama3-2-1b-instruct-v1:0",
+        "llama3-2-3b-instruct": "meta.llama3-2-3b-instruct-v1:0",
+        "llama3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
+        "llama3-2-90b-instruct": "meta.llama3-2-90b-instruct-v1:0",
     }
 
     # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
@@ -421,6 +513,11 @@ def get_model_id(
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
                 "deepseek-r1",
+                "llama3-3-70b-instruct",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
+                "llama3-2-11b-instruct",
+                "llama3-2-90b-instruct",
             ],
         },
         "us-east-2": {
@@ -435,6 +532,11 @@ def get_model_id(
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
                 "deepseek-r1",
+                "llama3-3-70b-instruct",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
+                "llama3-2-11b-instruct",
+                "llama3-2-90b-instruct",
             ],
         },
         "us-west-2": {
@@ -451,6 +553,11 @@ def get_model_id(
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
                 "deepseek-r1",
+                "llama3-3-70b-instruct",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
+                "llama3-2-11b-instruct",
+                "llama3-2-90b-instruct",
             ],
         },
         "eu-central-1": {
@@ -462,6 +569,8 @@ def get_model_id(
                 "claude-v3-haiku",
                 "claude-v3-sonnet",
                 "claude-v3.5-sonnet",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
             ],
         },
         "eu-west-1": {
@@ -473,6 +582,8 @@ def get_model_id(
                 "claude-v3-haiku",
                 "claude-v3-sonnet",
                 "claude-v3.5-sonnet",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
             ],
         },
         "eu-west-2": {"area": "eu", "models": []},
@@ -485,6 +596,8 @@ def get_model_id(
                 "claude-v3-haiku",
                 "claude-v3-sonnet",
                 "claude-v3.5-sonnet",
+                "llama3-2-1b-instruct",
+                "llama3-2-3b-instruct",
             ],
         },
         "eu-north-1": {

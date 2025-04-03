@@ -135,4 +135,9 @@ export const AVAILABLE_MODEL_KEYS = [
   'amazon-nova-lite',
   'amazon-nova-micro',
   'deepseek-r1',
+  'llama3-3-70b-instruct',
+  'llama3-2-1b-instruct',
+  'llama3-2-3b-instruct',
+  'llama3-2-11b-instruct',
+  'llama3-2-90b-instruct',
 ] as const;

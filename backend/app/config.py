@@ -49,6 +49,14 @@ DEFAULT_DEEP_SEEK_GENERATION_CONFIG: GenerationParams = {
     "stop_sequences": [],
 }
 
+# Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-meta.html
+DEFAULT_LLAMA_GENERATION_CONFIG: GenerationParams = {
+    "max_tokens": 2048,
+    "top_p": 0.9,
+    "temperature": 0.7,
+    "stop_sequences": [],
+}
+
 
 # Used for price estimation.
 # NOTE: The following is based on 2024-03-07
@@ -76,6 +84,12 @@ BEDROCK_PRICING = {
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
         "deepseek-r1": {"input": 0.00135, "output": 0.0054},
+        # Meta Llama 3 models (US region)
+        "llama3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},
+        "llama3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
+        "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -96,6 +110,12 @@ BEDROCK_PRICING = {
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
         "deepseek-r1": {"input": 0.00135, "output": 0.0054},
+        # Meta Llama 3 models (US region)
+        "llama3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},
+        "llama3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
+        "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -130,5 +150,24 @@ BEDROCK_PRICING = {
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
         "deepseek-r1": {"input": 0.00135, "output": 0.0054},
+        # Meta Llama 3 models (US region)
+        "llama3-3-70b-instruct": {"input": 0.00072, "output": 0.00072},
+        "llama3-2-1b-instruct": {"input": 0.0001, "output": 0.0001},
+        "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
+        "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
+        "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+    },
+    # EU regions (eu-central-1, eu-west-1, eu-west-3)
+    "eu-central-1": {
+        "llama3-2-1b-instruct": {"input": 0.00013, "output": 0.00013},
+        "llama3-2-3b-instruct": {"input": 0.00019, "output": 0.00019},
+    },
+    "eu-west-1": {
+        "llama3-2-1b-instruct": {"input": 0.00013, "output": 0.00013},
+        "llama3-2-3b-instruct": {"input": 0.00019, "output": 0.00019},
+    },
+    "eu-west-3": {
+        "llama3-2-1b-instruct": {"input": 0.00013, "output": 0.00013},
+        "llama3-2-3b-instruct": {"input": 0.00019, "output": 0.00019},
     },
 }

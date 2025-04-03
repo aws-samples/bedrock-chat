@@ -19,6 +19,12 @@ supported_base_models = {
     "amazon.nova-lite-v1:0": "amazon-nova-lite",
     "amazon.nova-micro-v1:0": "amazon-nova-micro",
     "deepseek.r1-v1:0": "deepseek-r1",
+    # Meta Llama 3 models
+    "meta.llama3-3-70b-instruct-v1:0": "llama3-3-70b-instruct",
+    "meta.llama3-2-1b-instruct-v1:0": "llama3-2-1b-instruct",
+    "meta.llama3-2-3b-instruct-v1:0": "llama3-2-3b-instruct",
+    "meta.llama3-2-11b-instruct-v1:0": "llama3-2-11b-instruct",
+    "meta.llama3-2-90b-instruct-v1:0": "llama3-2-90b-instruct",
 }
 
 # Region definitions

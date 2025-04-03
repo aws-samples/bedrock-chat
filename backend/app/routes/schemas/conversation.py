@@ -24,6 +24,12 @@ type_model_name = Literal[
     "amazon-nova-micro",
     # DeepSeek models
     "deepseek-r1",
+    # Meta Llama 3 models
+    "llama3-3-70b-instruct",
+    "llama3-2-1b-instruct",
+    "llama3-2-3b-instruct",
+    "llama3-2-11b-instruct",
+    "llama3-2-90b-instruct",
 ]
 
 

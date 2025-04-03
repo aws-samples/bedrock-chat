@@ -82,7 +82,28 @@ const translation = {
       'deepseek-r1': {
         label: 'DeepSeek R-1',
         description:
-          '一般的な推論、数学、科学、コード生成に最適化された最先端の推論モデル。英語と中国語をサポート。',
+          '一般的な推論、数学、科学、コード生成に最適化された最先端の推論モデル。英語と中国語をサポート',
+      },
+      // Meta Llama 3シリーズ
+      'llama3-3-70b-instruct': {
+        label: 'Meta Llama 3.3 70B Instruct',
+        description: '405Bモデルと同等のパフォーマンスを低コストで提供する最新のLlama 3モデル。優れた推論能力と指示追従能力を備える',
+      },
+      'llama3-2-1b-instruct': {
+        label: 'Meta Llama 3.2 1B Instruct',
+        description: 'エッジデバイスに最適化された軽量モデル。個人情報管理や多言語知識検索に対応し、効率的なローカル処理を実現',
+      },
+      'llama3-2-3b-instruct': {
+        label: 'Meta Llama 3.2 3B Instruct',
+        description: 'テキスト生成、要約、感情分析などの機能を低遅延で提供するコンパクトモデル。モバイルAIアプリケーションに最適',
+      },
+      'llama3-2-11b-instruct': {
+        label: 'Meta Llama 3.2 11B Instruct',
+        description: '画像理解と視覚的推論に優れたマルチモーダルモデル。画像キャプション生成や視覚的質問応答など高度なタスクに対応',
+      },
+      'llama3-2-90b-instruct': {
+        label: 'Meta Llama 3.2 90B Instruct',
+        description: '高度な画像理解と視覚的推論機能を備えた大規模マルチモーダルモデル。複雑な推論と画像テキスト検索に優れた性能を発揮する',
       },
     },
     agent: {
