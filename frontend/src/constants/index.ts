@@ -63,7 +63,7 @@ export const DEFAULT_GENERATION_CONFIG: GenerationParams = {
   topK: 128,
   topP: 0.999,
   temperature: 0.6,
-  stopSequences: ['Human: ', 'Assistant: '],
+  stopSequences: [],
   reasoningParams: {
     budgetTokens: 1024,
   },
@@ -134,4 +134,5 @@ export const AVAILABLE_MODEL_KEYS = [
   'amazon-nova-pro',
   'amazon-nova-lite',
   'amazon-nova-micro',
+  'deepseek-r1',
 ] as const;

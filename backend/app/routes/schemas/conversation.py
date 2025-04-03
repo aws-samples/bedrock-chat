@@ -22,6 +22,8 @@ type_model_name = Literal[
     "amazon-nova-pro",
     "amazon-nova-lite",
     "amazon-nova-micro",
+    # DeepSeek models
+    "deepseek-r1",
 ]
 
 

@@ -187,9 +187,9 @@ const BotKbEditPage: React.FC = () => {
         description: t(`model.${key}.description`) as string,
       }));
 
-    const getClaudeAndNovaModels = () => {
+    const getGeneralModels = () => {
       return AVAILABLE_MODEL_KEYS.filter(
-        (key) => key.includes('claude') || key.includes('nova')
+        (key) => key.includes('claude') || key.includes('nova') || key.includes('deepseek')
       ).map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
@@ -197,7 +197,7 @@ const BotKbEditPage: React.FC = () => {
       }));
     };
 
-    return MISTRAL_ENABLED ? getMistralModels() : getClaudeAndNovaModels();
+    return MISTRAL_ENABLED ? getMistralModels() : getGeneralModels();
   })();
 
   const embeddingsModelOptions: {
@@ -1150,10 +1150,6 @@ const BotKbEditPage: React.FC = () => {
       }
     }
 
-    if (stopSequences.length === 0) {
-      setErrorMessages('stopSequences', t('input.validationError.required'));
-      return false;
-    }
 
     if (searchParams.maxResults < EDGE_SEARCH_PARAMS.maxResults.MIN) {
       setErrorMessages(

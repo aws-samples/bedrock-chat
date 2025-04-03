@@ -149,6 +149,14 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
             supportMediaType: [],
             supportReasoning: false,
           },
+          // DeepSeek models
+          {
+            modelId: 'deepseek-r1',
+            label: t('model.deepseek-r1.label'),
+            description: t('model.deepseek-r1.description'),
+            supportMediaType: [],
+            supportReasoning: false, // Deep Seek always return a content reasoning block.
+          },
         ]
       : [
           {

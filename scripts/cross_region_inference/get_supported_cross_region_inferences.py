@@ -18,6 +18,7 @@ supported_base_models = {
     "amazon.nova-pro-v1:0": "amazon-nova-pro",
     "amazon.nova-lite-v1:0": "amazon-nova-lite",
     "amazon.nova-micro-v1:0": "amazon-nova-micro",
+    "deepseek.r1-v1:0": "deepseek-r1",
 }
 
 # Region definitions

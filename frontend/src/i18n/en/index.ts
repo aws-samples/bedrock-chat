@@ -79,12 +79,17 @@ const translation = {
         description:
           'A text-only model that delivers the lowest latency responses in the Amazon Nova family of models at a very low cost.',
       },
+      'deepseek-r1': {
+        label: 'DeepSeek R-1',
+        description:
+          'State-of-the-art reasoning model optimized for general reasoning, math, science, and code generation. Supports English and Chinese languages.',
+      },
     },
     agent: {
       label: 'Agent',
       help: {
         overview:
-          'By using the Agent functionality, your chatbot can automatically handle more complex tasks.',
+          'By using the Agent functionality, your chatbot can automatically handle more complex tasks. For details, please check <1>here</1>.',
       },
       hint: `The agent automatically determines which tools to use to answer the user's questions. Due to the time required for decision, the response time tends to be longer. Activating one or more tools enables the agent's functionality. Conversely, if no tools are selected, the agent's functionality is not utilized. When the agent's functionality is enabled, the use of "Knowledge" is also treated as one of the tools. This means that "Knowledge" may not be used in responses.`,
       progress: {

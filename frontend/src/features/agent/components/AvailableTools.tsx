@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   AgentTool,
   BedrockAgentConfig,
@@ -185,7 +185,12 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
       </div>
 
       <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-        {t('agent.help.overview')}
+        <Trans
+          i18nKey="agent.help.overview"
+          components={{
+            1: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html" target="_blank" rel="noopener noreferrer" className="text-aws-sea-blue-light dark:text-aws-sea-blue-dark underline" />
+          }}
+        />
       </div>
       {availableTools === undefined && <Skeleton className="h-12 w-full" />}
 

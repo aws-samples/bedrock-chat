@@ -3,7 +3,7 @@ from typing_extensions import NotRequired, TypedDict
 
 class GenerationParams(TypedDict):
     max_tokens: int
-    top_k: int
+    top_k: NotRequired[int]
     top_p: float
     temperature: float
     stop_sequences: list[str]
@@ -41,6 +41,14 @@ DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
     "stop_sequences": ["[INST]", "[/INST]"],
 }
 
+# Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-deepseek.html
+DEFAULT_DEEP_SEEK_GENERATION_CONFIG: GenerationParams = {
+    "max_tokens": 4096,
+    "top_p": 0.9,
+    "temperature": 1.0,
+    "stop_sequences": [],
+}
+
 
 # Used for price estimation.
 # NOTE: The following is based on 2024-03-07
@@ -67,6 +75,7 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
+        "deepseek-r1": {"input": 0.00135, "output": 0.0054},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -86,6 +95,7 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
+        "deepseek-r1": {"input": 0.00135, "output": 0.0054},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -119,5 +129,6 @@ BEDROCK_PRICING = {
         "amazon-nova-pro": {"input": 0.0008, "output": 0.0032},
         "amazon-nova-lite": {"input": 0.00006, "output": 0.00024},
         "amazon-nova-micro": {"input": 0.000035, "output": 0.00014},
+        "deepseek-r1": {"input": 0.00135, "output": 0.0054},
     },
 }

@@ -5,7 +5,7 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
 from app.config import BEDROCK_PRICING
-from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_DEEP_SEEK_GENERATION_CONFIG, DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -56,6 +56,47 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
 def is_nova_model(model: type_model_name) -> bool:
     """Check if the model is an Amazon Nova model"""
     return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
+
+
+def is_deepseek_model(model: type_model_name) -> bool:
+    """Check if the model is a DeepSeek model"""
+    return model in ["deepseek-r1"]
+
+
+def _prepare_deepseek_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> Tuple[InferenceConfigurationTypeDef, None]:
+    """
+    Prepare inference configuration and additional model request fields for DeepSeek models
+    > Note that DeepSeek models expect inference parameters as a JSON object under an inferenceConfig attribute,
+    > similar to Amazon Nova models.
+    """
+    # Base inference configuration
+    inference_config: InferenceConfigurationTypeDef = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_DEEP_SEEK_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_DEEP_SEEK_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_DEEP_SEEK_GENERATION_CONFIG["top_p"]
+        ),
+    }
+    
+    # stopSequencesの設定
+    inference_config["stopSequences"] = (
+        generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
+        else DEFAULT_DEEP_SEEK_GENERATION_CONFIG.get("stop_sequences", [])
+    )
+
+    return inference_config, None
 
 
 def _prepare_nova_model_params(
@@ -147,7 +188,7 @@ def compose_args_for_converse_api(
 
     # Prepare model-specific parameters
     inference_config: InferenceConfigurationTypeDef
-    additional_model_request_fields: dict[str, Any]
+    additional_model_request_fields: dict[str, Any] | None
     system_prompts: list[SystemContentBlockTypeDef]
 
     if is_nova_model(model):
@@ -161,7 +202,22 @@ def compose_args_for_converse_api(
                     "text": "\n\n".join(instructions),
                 }
             ]
-            if len(instructions) > 0
+            if instructions and any(instructions)
+            else []
+        )
+
+    elif is_deepseek_model(model):
+        # Special handling for DeepSeek models
+        inference_config, additional_model_request_fields = _prepare_deepseek_model_params(
+            model, generation_params
+        )
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if instructions and any(instructions)
             else []
         )
 
@@ -195,8 +251,7 @@ def compose_args_for_converse_api(
                     else DEFAULT_GENERATION_CONFIG["top_p"]
                 ),
                 "stopSequences": (
-                    generation_params.stop_sequences
-                    if generation_params
+                    generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
                     else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
                 ),
             }
@@ -225,8 +280,7 @@ def compose_args_for_converse_api(
                     else DEFAULT_GENERATION_CONFIG["top_p"]
                 ),
                 "stopSequences": (
-                    generation_params.stop_sequences
-                    if generation_params
+                    generation_params.stop_sequences if (generation_params and generation_params.stop_sequences and any(generation_params.stop_sequences))
                     else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
                 ),
             }
@@ -251,8 +305,10 @@ def compose_args_for_converse_api(
         "modelId": get_model_id(model),
         "messages": arg_messages,
         "system": system_prompts,
-        "additionalModelRequestFields": additional_model_request_fields,
     }
+    
+    if additional_model_request_fields is not None:
+        args["additionalModelRequestFields"] = additional_model_request_fields
 
     if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
         args["guardrailConfig"] = {
@@ -265,6 +321,7 @@ def compose_args_for_converse_api(
             # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
             args["guardrailConfig"]["streamProcessingMode"] = "async"
 
+    # NOTE: Deep Seek doesn't support tool use. https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
     if tools:
         args["toolConfig"] = {
             "tools": [
@@ -343,6 +400,8 @@ def get_model_id(
         "amazon-nova-pro": "amazon.nova-pro-v1:0",
         "amazon-nova-lite": "amazon.nova-lite-v1:0",
         "amazon-nova-micro": "amazon.nova-micro-v1:0",
+        # DeepSeek models
+        "deepseek-r1": "deepseek.r1-v1:0",
     }
 
     # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
@@ -361,6 +420,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "us-east-2": {
@@ -374,6 +434,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "us-west-2": {
@@ -389,6 +450,7 @@ def get_model_id(
                 "claude-v3.5-sonnet",
                 "claude-v3.5-sonnet-v2",
                 "claude-v3.7-sonnet",
+                "deepseek-r1",
             ],
         },
         "eu-central-1": {
