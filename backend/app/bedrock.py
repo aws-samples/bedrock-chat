@@ -4,9 +4,10 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
-from app.config import BEDROCK_PRICING
-from app.config import DEFAULT_DEEP_SEEK_GENERATION_CONFIG, DEFAULT_GENERATION_CONFIG
 from app.config import (
+    BEDROCK_PRICING,
+    DEFAULT_DEEP_SEEK_GENERATION_CONFIG,
+    DEFAULT_GENERATION_CONFIG,
     DEFAULT_LLAMA_GENERATION_CONFIG,
     DEFAULT_MISTRAL_GENERATION_CONFIG,
 )
@@ -52,33 +53,22 @@ def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
 
 def is_nova_model(model: type_model_name) -> bool:
     """Check if the model is an Amazon Nova model"""
-    return model in ["amazon-nova-pro", "amazon-nova-lite", "amazon-nova-micro"]
+    return "amazon-nova" in model
 
 
 def is_deepseek_model(model: type_model_name) -> bool:
     """Check if the model is a DeepSeek model"""
-    return model in ["deepseek-r1"]
+    return "deepseek" in model
 
 
 def is_llama_model(model: type_model_name) -> bool:
     """Check if the model is a Meta Llama model"""
-    return model in [
-        "llama3-3-70b-instruct",
-        "llama3-2-1b-instruct",
-        "llama3-2-3b-instruct",
-        "llama3-2-11b-instruct",
-        "llama3-2-90b-instruct",
-    ]
+    return "llama" in model
 
 
 def is_mistral(model: type_model_name) -> bool:
     """Check if the model is a Mistral model"""
-    return model in [
-        "mistral-7b-instruct",
-        "mixtral-8x7b-instruct",
-        "mistral-large",
-        "mistral-large-2",
-    ]
+    return "mistral" in model
 
 
 def _prepare_deepseek_model_params(
@@ -471,7 +461,7 @@ def compose_args_for_converse_api(
             # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
             args["guardrailConfig"]["streamProcessingMode"] = "async"
 
-    # NOTE: Deep Seek doesn't support tool use. https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
+    # NOTE: Some models doesn't support tool use. https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
     if tools:
         args["toolConfig"] = {
             "tools": [

@@ -188,7 +188,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
         <Trans
           i18nKey="agent.help.overview"
           components={{
-            1: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html" target="_blank" rel="noopener noreferrer" className="text-aws-sea-blue-light dark:text-aws-sea-blue-dark underline" />
+            Link: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html" target="_blank" rel="noopener noreferrer" className="text-aws-sea-blue-light dark:text-aws-sea-blue-dark underline" />
           }}
         />
       </div>
