@@ -230,7 +230,6 @@ Cách truyền thống để định cấu hình các tham số là chỉnh sử
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ Cách truyền thống để định cấu hình các tham số là chỉnh sử
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -320,18 +318,6 @@ npx cdk deploy --all
 6. **Cô Lập Tài Nguyên**: Mỗi môi trường tạo bộ tài nguyên riêng của nó, cho phép bạn có môi trường phát triển, thử nghiệm và sản xuất trong cùng một tài khoản AWS mà không có xung đột.
 
 ## Khác
-
-### Cấu hình hỗ trợ mô hình Mistral
-
-Cập nhật `enableMistral` thành `true` trong [cdk.json](./cdk/cdk.json), và chạy `npx cdk deploy`.
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!Quan trọng]
-> Dự án này tập trung vào các mô hình Anthropic Claude, các mô hình Mistral được hỗ trợ hạn chế. Ví dụ, các ví dụ về lời nhắc dựa trên các mô hình Claude. Đây là một tùy chọn chỉ dành cho Mistral, một khi bạn bật để kích hoạt các mô hình Mistral, bạn chỉ có thể sử dụng các mô hình Mistral cho tất cả các tính năng chat, KHÔNG phải cả Claude và Mistral.
 
 ### Cấu hình sinh văn bản mặc định
 

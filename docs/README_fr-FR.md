@@ -230,7 +230,6 @@ La méthode traditionnelle pour configurer les paramètres consiste à modifier 
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ Pour une meilleure sécurité de type et une meilleure expérience de développe
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -320,18 +318,6 @@ npx cdk deploy --all
 6. **Isolation des Ressources** : Chaque environnement crée son propre ensemble de ressources, vous permettant d'avoir des environnements de développement, de test et de production dans le même compte AWS sans conflits.
 
 ## Autres
-
-### Configurer la prise en charge des modèles Mistral
-
-Mettez à jour `enableMistral` à `true` dans [cdk.json](./cdk/cdk.json), puis exécutez `npx cdk deploy`.
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!Important]
-> Ce projet se concentre sur les modèles Claude d'Anthropic, les modèles Mistral sont pris en charge de manière limitée. Par exemple, les exemples de prompts sont basés sur les modèles Claude. Il s'agit d'une option uniquement pour Mistral, une fois que vous avez activé les modèles Mistral, vous ne pouvez utiliser que les modèles Mistral pour toutes les fonctionnalités de chat, PAS à la fois Claude et Mistral.
 
 ### Configurer la génération de texte par défaut
 

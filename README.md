@@ -230,7 +230,6 @@ The traditional way to configure parameters is by editing the `cdk.json` file. T
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ For better type safety and developer experience, you can use the `parameter.ts` 
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -320,18 +318,6 @@ npx cdk deploy --all
 6. **Resource Isolation**: Each environment creates its own set of resources, allowing you to have development, testing, and production environments in the same AWS account without conflicts.
 
 ## Others
-
-### Configure Mistral models support
-
-Update `enableMistral` to `true` in [cdk.json](./cdk/cdk.json), and run `npx cdk deploy`.
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!Important]
-> This project focus on Anthropic Claude models, the Mistral models are limited supported. For example, prompt examples are based on Claude models. This is a Mistral-only option, once you toggled to enable Mistral models, you can only use Mistral models for all the chat features, NOT both Claude and Mistral models.
 
 ### Configure default text generation
 

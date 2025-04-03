@@ -230,7 +230,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -317,18 +315,6 @@ npx cdk deploy --all
 6. **資源隔離**：每個環境都會創建自己的資源集，允許您在同一 AWS 賬戶中擁有開發、測試和生產環境，且不會衝突。
 
 ## 其他
-
-### 配置 Mistral 模型支持
-
-在 [cdk.json](./cdk/cdk.json) 中將 `enableMistral` 更新為 `true`，然後運行 `npx cdk deploy`。
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!重要]
-> 此專案專注於 Anthropic Claude 模型，Mistral 模型支援有限。例如，提示範例是基於 Claude 模型。這是一個僅限 Mistral 的選項，一旦啟用 Mistral 模型，您只能對所有聊天功能使用 Mistral 模型，而不能同時使用 Claude 和 Mistral 模型。
 
 ### 配置默認文本生成
 
