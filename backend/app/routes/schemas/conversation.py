@@ -15,9 +15,11 @@ type_model_name = Literal[
     "claude-v3.5-haiku",
     "claude-v3-haiku",
     "claude-v3-opus",
+    # Mistral
     "mistral-7b-instruct",
     "mixtral-8x7b-instruct",
     "mistral-large",
+    "mistral-large-2",
     # New Amazon Nova models
     "amazon-nova-pro",
     "amazon-nova-lite",

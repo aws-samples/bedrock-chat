@@ -22,9 +22,7 @@ import { ParsingModel } from '../types';
 import { ulid } from 'ulid';
 import {
   EDGE_GENERATION_PARAMS,
-  EDGE_MISTRAL_GENERATION_PARAMS,
   DEFAULT_GENERATION_CONFIG,
-  DEFAULT_MISTRAL_GENERATION_CONFIG,
   TooltipDirection,
 } from '../../../constants';
 import { Slider } from '../../../components/Slider';
@@ -68,18 +66,9 @@ import {
 } from '../types';
 import { toCamelCase } from '../../../utils/StringUtils';
 
-const MISTRAL_ENABLED: boolean =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
+const edgeGenerationParams = EDGE_GENERATION_PARAMS
 
-const edgeGenerationParams =
-  MISTRAL_ENABLED === true
-    ? EDGE_MISTRAL_GENERATION_PARAMS
-    : EDGE_GENERATION_PARAMS;
-
-const defaultGenerationConfig =
-  MISTRAL_ENABLED === true
-    ? DEFAULT_MISTRAL_GENERATION_CONFIG
-    : DEFAULT_GENERATION_CONFIG;
+const defaultGenerationConfig = DEFAULT_GENERATION_CONFIG
 
 const BotKbEditPage: React.FC = () => {
   const { i18n, t } = useTranslation();
@@ -178,15 +167,6 @@ const BotKbEditPage: React.FC = () => {
     label: string;
     description: string;
   }[] = (() => {
-    const getMistralModels = () =>
-      AVAILABLE_MODEL_KEYS.filter(
-        (key) => key.includes('mistral') || key.includes('mixtral')
-      ).map((key) => ({
-        key: key as Model,
-        label: t(`model.${key}.label`) as string,
-        description: t(`model.${key}.description`) as string,
-      }));
-
     const getGeneralModels = () => {
       return AVAILABLE_MODEL_KEYS.filter(
         (key) => key.includes('claude') || key.includes('nova') || key.includes('deepseek') || key.includes('llama')
@@ -197,7 +177,7 @@ const BotKbEditPage: React.FC = () => {
       }));
     };
 
-    return MISTRAL_ENABLED ? getMistralModels() : getGeneralModels();
+    return getGeneralModels();
   })();
 
   const embeddingsModelOptions: {

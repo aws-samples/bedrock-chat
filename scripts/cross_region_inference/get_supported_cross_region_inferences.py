@@ -15,6 +15,7 @@ supported_base_models = {
     "mistral.mistral-7b-instruct-v0:2": "mistral-7b-instruct",
     "mistral.mixtral-8x7b-instruct-v0:1": "mixtral-8x7b-instruct",
     "mistral.mistral-large-2402-v1:0": "mistral-large",
+    "mistral.mistral-large-2407-v1:0": "mistral-large-2",
     "amazon.nova-pro-v1:0": "amazon-nova-pro",
     "amazon.nova-lite-v1:0": "amazon-nova-lite",
     "amazon.nova-micro-v1:0": "amazon-nova-micro",

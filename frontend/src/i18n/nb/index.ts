@@ -7,7 +7,6 @@ const translation = {
         },
         app: {
             name: 'ACO-gpt',
-            nameWithoutClaude: 'ACO-gpt',
             inputMessage: 'Send en melding',
             starredBots: 'Favorittbot',
             recentlyUsedBots: 'Nylig brukte boter',

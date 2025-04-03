@@ -22,7 +22,6 @@ import * as acm from "aws-cdk-lib/aws-certificatemanager";
 
 export interface FrontendProps {
   readonly webAclId: string;
-  readonly enableMistral: boolean;
   readonly accessLogBucket?: IBucket;
   readonly enableIpV6: boolean;
   /** 
@@ -172,14 +171,12 @@ export class Frontend extends Construct {
     backendApiEndpoint,
     webSocketApiEndpoint,
     userPoolDomainPrefix,
-    enableMistral,
     auth,
     idp,
   }: {
     backendApiEndpoint: string;
     webSocketApiEndpoint: string;
     userPoolDomainPrefix: string;
-    enableMistral: boolean;
     auth: Auth;
     idp: Idp;
   }) {
@@ -191,7 +188,6 @@ export class Frontend extends Construct {
         VITE_APP_WS_ENDPOINT: webSocketApiEndpoint,
         VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
-        VITE_APP_ENABLE_MISTRAL: enableMistral.toString(),
         VITE_APP_REGION: region,
         VITE_APP_USE_STREAMING: "true",
       };

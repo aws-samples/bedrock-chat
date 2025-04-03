@@ -6,8 +6,7 @@ const translation = {
       },
     },
     app: {
-      name: 'Bedrock Claude Chat',
-      nameWithoutClaude: 'Bedrock Chat',
+      name: 'Bedrock Chat',
       inputMessage: 'How can I Help You?',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
@@ -63,6 +62,11 @@ const translation = {
         label: 'Mistral Large',
         description:
           'Ideal for complex tasks that require substantial reasoning capabilities, or ones that are highly specialized, such as Synthetic Text Generation or Code Generation.',
+      },
+      'mistral-large-2': {
+        label: 'Mistral Large2',
+        description:
+          'Advanced LLM supporting dozens of languages and 80+ coding languages, with best-in-class agentive capabilities including native function calling, JSON output, and reasoning.',
       },
       'amazon-nova-pro': {
         label: 'Amazon Nova Pro',

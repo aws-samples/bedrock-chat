@@ -52,7 +52,6 @@ describe("Bedrock Chat Stack Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
-        enableMistral: false,
         selfSignUpEnabled: true,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -125,7 +124,6 @@ describe("Bedrock Chat Stack Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
-        enableMistral: false,
         selfSignUpEnabled: true,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -188,7 +186,6 @@ describe("Bedrock Chat Stack Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
       autoJoinUserGroups: [],
-      enableMistral: false,
       selfSignUpEnabled: true,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -199,12 +196,6 @@ describe("Bedrock Chat Stack Test", () => {
     const template = Template.fromStack(stack);
 
     template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
-    // verify the stack has environment variable VITE_APP_ENABLE_MISTRAL is set to "false"
-    template.hasResourceProperties("Custom::CDKNodejsBuild", {
-      environment: {
-        VITE_APP_ENABLE_MISTRAL: "false",
-      },
-    });
   });
 
   test("custom domain configuration", () => {
@@ -236,7 +227,6 @@ describe("Bedrock Chat Stack Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
       autoJoinUserGroups: [],
-      enableMistral: false,
       selfSignUpEnabled: true,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -318,7 +308,6 @@ describe("Bedrock Chat Stack Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
       autoJoinUserGroups: [],
-      enableMistral: false,
       selfSignUpEnabled: true,
       enableIpV6: true,
       documentBucket: bedrockRegionResourcesStack.documentBucket,

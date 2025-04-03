@@ -5,13 +5,9 @@ import { Slider } from './Slider';
 import Help from '../components/Help';
 import {
   EDGE_GENERATION_PARAMS,
-  EDGE_MISTRAL_GENERATION_PARAMS,
 } from '../constants';
 
-const generationConfigParam =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
-    ? EDGE_MISTRAL_GENERATION_PARAMS
-    : EDGE_GENERATION_PARAMS;
+const generationConfigParam = EDGE_GENERATION_PARAMS
 
 interface GenerationConfigProps {
   topK: number;

@@ -7,9 +7,6 @@ import useLocalStorage from './useLocalStorage';
 import { ActiveModels } from '../@types/bot';
 import { toCamelCase } from '../utils/StringUtils';
 
-const MISTRAL_ENABLED: boolean =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
-
 const CLAUDE_SUPPORTED_MEDIA_TYPES = [
   'image/jpeg',
   'image/png',
@@ -83,144 +80,152 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       description?: string;
     }[]
   >(() => {
-    return !MISTRAL_ENABLED
-      ? [
-          {
-            modelId: 'claude-v3-haiku',
-            label: t('model.claude-v3-haiku.label'),
-            description: t('model.claude-v3-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-haiku',
-            label: t('model.claude-v3.5-haiku.label'),
-            description: t('model.claude-v3.5-haiku.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3-sonnet',
-            label: t('model.claude-v3-sonnet.label'),
-            description: t('model.claude-v3-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet',
-            label: t('model.claude-v3.5-sonnet.label'),
-            description: t('model.claude-v3.5-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.5-sonnet-v2',
-            label: t('model.claude-v3.5-sonnet-v2.label'),
-            description: t('model.claude-v3.5-sonnet-v2.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'claude-v3.7-sonnet',
-            label: t('model.claude-v3.7-sonnet.label'),
-            description: t('model.claude-v3.7-sonnet.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: true,
-          },
-          {
-            modelId: 'claude-v3-opus',
-            label: t('model.claude-v3-opus.label'),
-            description: t('model.claude-v3-opus.description'),
-            supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          // New Amazon Nova models
-          {
-            modelId: 'amazon-nova-pro',
-            label: t('model.amazon-nova-pro.label'),
-            description: t('model.amazon-nova-pro.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'amazon-nova-lite',
-            label: t('model.amazon-nova-lite.label'),
-            description: t('model.amazon-nova-lite.description'),
-            supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'amazon-nova-micro',
-            label: t('model.amazon-nova-micro.label'),
-            description: t('model.amazon-nova-micro.description'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          // DeepSeek models
-          {
-            modelId: 'deepseek-r1',
-            label: t('model.deepseek-r1.label'),
-            description: t('model.deepseek-r1.description'),
-            supportMediaType: [],
-            supportReasoning: false, // Deep Seek always return a content reasoning block.
-          },
-          // Meta Llama 3 models
-          {
-            modelId: 'llama3-3-70b-instruct',
-            label: t('model.llama3-3-70b-instruct.label'),
-            description: t('model.llama3-3-70b-instruct.description'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'llama3-2-1b-instruct',
-            label: t('model.llama3-2-1b-instruct.label'),
-            description: t('model.llama3-2-1b-instruct.description'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'llama3-2-3b-instruct',
-            label: t('model.llama3-2-3b-instruct.label'),
-            description: t('model.llama3-2-3b-instruct.description'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'llama3-2-11b-instruct',
-            label: t('model.llama3-2-11b-instruct.label'),
-            description: t('model.llama3-2-11b-instruct.description'),
-            supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-          {
-            modelId: 'llama3-2-90b-instruct',
-            label: t('model.llama3-2-90b-instruct.label'),
-            description: t('model.llama3-2-90b-instruct.description'),
-            supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
-            supportReasoning: false,
-          },
-        ]
-      : [
-          {
-            modelId: 'mistral-7b-instruct',
-            label: t('model.mistral-7b-instruct.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'mixtral-8x7b-instruct',
-            label: t('model.mixtral-8x7b-instruct.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-          {
-            modelId: 'mistral-large',
-            label: t('model.mistral-large.label'),
-            supportMediaType: [],
-            supportReasoning: false,
-          },
-        ];
+    return [
+      {
+        modelId: 'claude-v3-haiku',
+        label: t('model.claude-v3-haiku.label'),
+        description: t('model.claude-v3-haiku.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'claude-v3.5-haiku',
+        label: t('model.claude-v3.5-haiku.label'),
+        description: t('model.claude-v3.5-haiku.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'claude-v3-sonnet',
+        label: t('model.claude-v3-sonnet.label'),
+        description: t('model.claude-v3-sonnet.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'claude-v3.5-sonnet',
+        label: t('model.claude-v3.5-sonnet.label'),
+        description: t('model.claude-v3.5-sonnet.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'claude-v3.5-sonnet-v2',
+        label: t('model.claude-v3.5-sonnet-v2.label'),
+        description: t('model.claude-v3.5-sonnet-v2.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'claude-v3.7-sonnet',
+        label: t('model.claude-v3.7-sonnet.label'),
+        description: t('model.claude-v3.7-sonnet.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true,
+      },
+      {
+        modelId: 'claude-v3-opus',
+        label: t('model.claude-v3-opus.label'),
+        description: t('model.claude-v3-opus.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      // New Amazon Nova models
+      {
+        modelId: 'amazon-nova-pro',
+        label: t('model.amazon-nova-pro.label'),
+        description: t('model.amazon-nova-pro.description'),
+        supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'amazon-nova-lite',
+        label: t('model.amazon-nova-lite.label'),
+        description: t('model.amazon-nova-lite.description'),
+        supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'amazon-nova-micro',
+        label: t('model.amazon-nova-micro.label'),
+        description: t('model.amazon-nova-micro.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      // DeepSeek models
+      {
+        modelId: 'deepseek-r1',
+        label: t('model.deepseek-r1.label'),
+        description: t('model.deepseek-r1.description'),
+        supportMediaType: [],
+        supportReasoning: false, // Deep Seek always return a content reasoning block.
+      },
+      // Meta Llama 3 models
+      {
+        modelId: 'llama3-3-70b-instruct',
+        label: t('model.llama3-3-70b-instruct.label'),
+        description: t('model.llama3-3-70b-instruct.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'llama3-2-1b-instruct',
+        label: t('model.llama3-2-1b-instruct.label'),
+        description: t('model.llama3-2-1b-instruct.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'llama3-2-3b-instruct',
+        label: t('model.llama3-2-3b-instruct.label'),
+        description: t('model.llama3-2-3b-instruct.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'llama3-2-11b-instruct',
+        label: t('model.llama3-2-11b-instruct.label'),
+        description: t('model.llama3-2-11b-instruct.description'),
+        supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      {
+        modelId: 'llama3-2-90b-instruct',
+        label: t('model.llama3-2-90b-instruct.label'),
+        description: t('model.llama3-2-90b-instruct.description'),
+        supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: false,
+      },
+      // Mistral
+      {
+        modelId: 'mistral-7b-instruct',
+        label: t('model.mistral-7b-instruct.label'),
+        description: t('model.mistral-7b-instruct.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'mixtral-8x7b-instruct',
+        label: t('model.mixtral-8x7b-instruct.label'),
+        description: t('model.mixtral-8x7b-instruct.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'mistral-large',
+        label: t('model.mistral-large.label'),
+        description: t('model.mistral-large.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+      {
+        modelId: 'mistral-large-2',
+        label: t('model.mistral-large-2.label'),
+        description: t('model.mistral-large-2.description'),
+        supportMediaType: [],
+        supportReasoning: false,
+      },
+    ];
   }, [t]);
 
   const [filteredModels, setFilteredModels] = useState(availableModels);
@@ -238,9 +243,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
   // Update filtered models when activeModels changes
   useEffect(() => {
-    if (MISTRAL_ENABLED) {
-      setFilteredModels(availableModels);
-    } else if (processedActiveModels) {
+    if (processedActiveModels) {
       const filtered = availableModels.filter((model) => {
         const key = toCamelCase(model.modelId) as keyof ActiveModels;
         return processedActiveModels[key] !== false;

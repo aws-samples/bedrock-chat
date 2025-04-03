@@ -25,7 +25,6 @@ describe("resolveBedrockChatParameters", () => {
       const app = createTestApp();
       const inputParams = {
         bedrockRegion: "eu-west-1",
-        enableMistral: true,
       };
 
       // When
@@ -33,14 +32,12 @@ describe("resolveBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("eu-west-1");
-      expect(result.enableMistral).toBe(true);
     });
 
     test("should get parameters from context when parametersInput is not provided", () => {
       // Given
       const app = createTestApp({
         bedrockRegion: "ap-northeast-1",
-        enableMistral: true,
       });
 
       // When
@@ -48,7 +45,6 @@ describe("resolveBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("ap-northeast-1");
-      expect(result.enableMistral).toBe(true);
     });
   });
 
@@ -62,7 +58,6 @@ describe("resolveBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("us-east-1"); // default value
-      expect(result.enableMistral).toBe(false); // default value
       expect(result.allowedIpV4AddressRanges).toEqual([
         "0.0.0.0/1",
         "128.0.0.0/1",
@@ -74,7 +69,6 @@ describe("resolveBedrockChatParameters", () => {
       const app = createTestApp();
       const inputParams = {
         bedrockRegion: "us-west-2",
-        enableMistral: true,
         allowedIpV4AddressRanges: ["192.168.0.0/16"],
         allowedIpV6AddressRanges: ["2001:db8::/32"],
         identityProviders: [{ service: "google", secretName: "GoogleSecret" }],
@@ -96,7 +90,6 @@ describe("resolveBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("us-west-2");
-      expect(result.enableMistral).toBe(true);
       expect(result.allowedIpV4AddressRanges).toEqual(["192.168.0.0/16"]);
       expect(result.allowedIpV6AddressRanges).toEqual(["2001:db8::/32"]);
       expect(result.identityProviders).toEqual([
@@ -160,7 +153,6 @@ describe("resolveBedrockChatParameters", () => {
       // Given
       const app = createTestApp();
       const inputParams = {
-        enableMistral: true,
         selfSignUpEnabled: false,
         enableRagReplicas: true,
         enableBedrockCrossRegionInference: false,
@@ -171,7 +163,6 @@ describe("resolveBedrockChatParameters", () => {
       const result = resolveBedrockChatParameters(app, inputParams);
 
       // Then
-      expect(result.enableMistral).toBe(true);
       expect(result.selfSignUpEnabled).toBe(false);
       expect(result.enableRagReplicas).toBe(true);
       expect(result.enableBedrockCrossRegionInference).toBe(false);
@@ -212,7 +203,6 @@ describe("resolveBedrockChatParameters", () => {
   test("should correctly parse parameters mimicking cdk.json context properties", () => {
     // Given
     const app = createTestApp({
-      enableMistral: false,
       bedrockRegion: "us-east-1",
       allowedIpV4AddressRanges: ["0.0.0.0/1", "128.0.0.0/1"],
       allowedIpV6AddressRanges: [
@@ -241,7 +231,6 @@ describe("resolveBedrockChatParameters", () => {
 
     // Then
     expect(result.bedrockRegion).toBe("us-east-1");
-    expect(result.enableMistral).toBe(false);
     expect(result.allowedIpV4AddressRanges).toEqual([
       "0.0.0.0/1",
       "128.0.0.0/1",
@@ -285,7 +274,6 @@ describe("getBedrockChatParameters", () => {
       // Given
       const defaultParams: BedrockChatParametersInput = {
         bedrockRegion: "us-west-2",
-        enableMistral: true,
       };
       paramsMap.set("default", defaultParams);
 
@@ -296,14 +284,12 @@ describe("getBedrockChatParameters", () => {
       expect(result.envName).toBe("default");
       expect(result.envPrefix).toBe("");
       expect(result.bedrockRegion).toBe("us-west-2");
-      expect(result.enableMistral).toBe(true);
     });
 
     test("should use CDK context when default doesn't exist in paramsMap and envName is undefined", () => {
       // Given
       app = createTestApp({
         bedrockRegion: "eu-west-1",
-        enableMistral: true,
       });
 
       // When
@@ -313,7 +299,6 @@ describe("getBedrockChatParameters", () => {
       expect(result.envName).toBe("default");
       expect(result.envPrefix).toBe("");
       expect(result.bedrockRegion).toBe("eu-west-1");
-      expect(result.enableMistral).toBe(true);
     });
 
     test("should throw error when envName doesn't exist in paramsMap", () => {
@@ -372,7 +357,6 @@ describe("getBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("us-east-1");
-      expect(result.enableMistral).toBe(false);
       expect(result.enableBedrockCrossRegionInference).toBe(true);
       expect(result.enableRagReplicas).toBe(true);
       expect(result.enableLambdaSnapStart).toBe(true);
@@ -386,7 +370,6 @@ describe("getBedrockChatParameters", () => {
       // Given
       const customParams: BedrockChatParametersInput = {
         bedrockRegion: "us-east-2",
-        enableMistral: true,
         enableBedrockCrossRegionInference: false,
         enableRagReplicas: false,
         enableLambdaSnapStart: false,
@@ -401,7 +384,6 @@ describe("getBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("us-east-2");
-      expect(result.enableMistral).toBe(true);
       expect(result.enableBedrockCrossRegionInference).toBe(false);
       expect(result.enableRagReplicas).toBe(false);
       expect(result.enableLambdaSnapStart).toBe(false);
@@ -419,7 +401,6 @@ describe("getBedrockChatParameters", () => {
 
       // Then
       expect(result.bedrockRegion).toBe("us-east-1");
-      expect(result.enableMistral).toBe(false);
       expect(result.enableBedrockCrossRegionInference).toBe(true);
       expect(result.enableRagReplicas).toBe(true);
       expect(result.enableLambdaSnapStart).toBe(true);

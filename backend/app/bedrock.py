@@ -5,10 +5,7 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
 from app.config import BEDROCK_PRICING
-from app.config import (
-    DEFAULT_DEEP_SEEK_GENERATION_CONFIG,
-    DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG,
-)
+from app.config import DEFAULT_DEEP_SEEK_GENERATION_CONFIG, DEFAULT_GENERATION_CONFIG
 from app.config import (
     DEFAULT_LLAMA_GENERATION_CONFIG,
     DEFAULT_MISTRAL_GENERATION_CONFIG,
@@ -39,12 +36,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "false") == "true"
-DEFAULT_GENERATION_CONFIG = (
-    DEFAULT_MISTRAL_GENERATION_CONFIG
-    if ENABLE_MISTRAL
-    else DEFAULT_CLAUDE_GENERATION_CONFIG
-)
 ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
     os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false") == "true"
 )
@@ -77,6 +68,16 @@ def is_llama_model(model: type_model_name) -> bool:
         "llama3-2-3b-instruct",
         "llama3-2-11b-instruct",
         "llama3-2-90b-instruct",
+    ]
+
+
+def is_mistral(model: type_model_name) -> bool:
+    """Check if the model is a Mistral model"""
+    return model in [
+        "mistral-7b-instruct",
+        "mixtral-8x7b-instruct",
+        "mistral-large",
+        "mistral-large-2",
     ]
 
 
@@ -120,6 +121,51 @@ def _prepare_deepseek_model_params(
     return inference_config, None
 
 
+def _prepare_mistral_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> Tuple[InferenceConfigurationTypeDef, Dict[str, int] | None]:
+    """
+    Prepare inference configuration and additional model request fields for Mistral models
+    > Note that Mistral models expect inference parameters as a JSON object under an inferenceConfig attribute,
+    > similar to other models.
+    """
+    # Base inference configuration
+    inference_config: InferenceConfigurationTypeDef = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_MISTRAL_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_MISTRAL_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_MISTRAL_GENERATION_CONFIG["top_p"]
+        ),
+    }
+
+    inference_config["stopSequences"] = (
+        generation_params.stop_sequences
+        if (
+            generation_params
+            and generation_params.stop_sequences
+            and any(generation_params.stop_sequences)
+        )
+        else DEFAULT_MISTRAL_GENERATION_CONFIG.get("stop_sequences", [])
+    )
+
+    # Add top_k if specified in generation params
+    additional_fields = None
+    if generation_params and generation_params.top_k is not None:
+        additional_fields = {"topK": generation_params.top_k}
+
+    return inference_config, additional_fields
+
+
 def _prepare_llama_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> Tuple[InferenceConfigurationTypeDef, None]:
@@ -157,7 +203,10 @@ def _prepare_llama_model_params(
         else DEFAULT_LLAMA_GENERATION_CONFIG.get("stop_sequences", [])
     )
 
-    return inference_config, None
+    # No additional fields for Llama models
+    additional_fields = None
+
+    return inference_config, additional_fields
 
 
 def _prepare_nova_model_params(
@@ -286,6 +335,21 @@ def compose_args_for_converse_api(
         # Special handling for Llama models
         inference_config, additional_model_request_fields = _prepare_llama_model_params(
             model, generation_params
+        )
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if instructions and any(instructions)
+            else []
+        )
+
+    elif is_mistral(model):
+        # Special handling for Mistral models
+        inference_config, additional_model_request_fields = (
+            _prepare_mistral_model_params(model, generation_params)
         )
         system_prompts = (
             [
@@ -482,6 +546,7 @@ def get_model_id(
         "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
         "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
         "mistral-large": "mistral.mistral-large-2402-v1:0",
+        "mistral-large-2": "mistral.mistral-large-2407-v1:0",
         # New Amazon Nova models
         "amazon-nova-pro": "amazon.nova-pro-v1:0",
         "amazon-nova-lite": "amazon.nova-lite-v1:0",

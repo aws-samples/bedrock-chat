@@ -9,8 +9,7 @@ const translation = {
       },
     },
     app: {
-      name: 'Bedrock Claude Chat',
-      nameWithoutClaude: 'Bedrock Chat',
+      name: 'Bedrock Chat',
       inputMessage: 'お手伝いできることはありますか？',
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',
@@ -61,8 +60,14 @@ const translation = {
           'Mixtral-8x7BはMistral AIによって開発された基盤モデルで、英語、フランス語、ドイツ語、イタリア語、スペイン語のテキストをサポートし、コード生成機能を備えています。',
       },
       'mistral-large': {
-        label:
+        label: 'Mistral Large',
+        description:
           '実質的な推論機能を必要とする複雑なタスクや、合成テキスト生成およびコード生成などの高度に専門化されたタスクに最適です',
+      },
+      'mistral-large-2': {
+        label: 'Mistral Large2',
+        description:
+          '数十の言語と80以上のコーディング言語をサポートする先進的なLLMで、ネイティブ関数呼び出し、JSON出力、推論機能などのクラス最高レベルのエージェント機能を備えています',
       },
       'amazon-nova-pro': {
         label: 'Amazon Nova Pro',

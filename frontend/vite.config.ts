@@ -17,7 +17,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
       manifest: {
-        name: 'Bedrock Claude Chat',
+        name: 'Bedrock Chat',
         short_name: 'Bedrock Chat',
         description: 'AWS-native chatbot using Bedrock + Claude',
         start_url: '/index.html',

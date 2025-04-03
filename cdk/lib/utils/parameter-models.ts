@@ -30,7 +30,6 @@ function getEnvVar(name: string, defaultValue?: string): string | undefined {
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Bedrock configuration
-  enableMistral: z.boolean().default(false),
   enableBedrockCrossRegionInference: z.boolean().default(true),
 
   // IP address restrictions
@@ -166,7 +165,6 @@ export function resolveBedrockChatParameters(
     envName,
     envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
-    enableMistral: app.node.tryGetContext("enableMistral"),
     allowedIpV4AddressRanges: app.node.tryGetContext(
       "allowedIpV4AddressRanges"
     ),

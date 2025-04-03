@@ -27,7 +27,6 @@ export interface WebSocketProps {
   readonly websocketSessionTable: ITable;
   readonly largeMessageBucket: s3.IBucket;
   readonly accessLogBucket?: s3.Bucket;
-  readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
 }
@@ -117,7 +116,6 @@ export class WebSocket extends Construct {
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
         WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
-        ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
       },

@@ -10,8 +10,7 @@ from functools import partial
 from typing import Literal
 
 import boto3
-from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
-from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
+from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -41,13 +40,6 @@ from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
-ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
-
-DEFAULT_GENERATION_CONFIG = (
-    DEFAULT_MISTRAL_GENERATION_CONFIG
-    if ENABLE_MISTRAL
-    else DEFAULT_CLAUDE_GENERATION_CONFIG
-)
 
 logger = logging.getLogger(__name__)
 logger.setLevel("INFO")
