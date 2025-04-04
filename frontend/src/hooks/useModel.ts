@@ -152,8 +152,8 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         label: t('model.deepseek-r1.label'),
         description: t('model.deepseek-r1.description'),
         supportMediaType: [],
-        supportReasoning: true, // Deep Seek always return a content reasoning block.
-        forceReasoningEnabled: true, // Always On the Reasoning Button.
+        supportReasoning: true,
+        forceReasoningEnabled: true, // Deep Seek always return reasoning contents.
       },
       // Meta Llama 3 models
       {
