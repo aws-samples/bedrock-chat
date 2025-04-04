@@ -19,6 +19,9 @@ import { NagSuppressions } from "cdk-nag";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as targets from "aws-cdk-lib/aws-route53-targets";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as cr from "aws-cdk-lib/custom-resources";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as lambda from "aws-cdk-lib/aws-lambda";
 
 export interface FrontendProps {
   readonly webAclId: string;
@@ -211,7 +214,7 @@ export class Frontend extends Construct {
       return { ...defaultProps, ...oAuthProps };
     })();
 
-    new NodejsBuild(this, "ReactBuild", {
+    const build = new NodejsBuild(this, "ReactBuild", {
       assets: [
         {
           path: "../frontend",
@@ -236,6 +239,76 @@ export class Frontend extends Construct {
       distribution: this.cloudFrontWebDistribution,
       outputSourceDirectory: "dist",
     });
+
+    // Create a custom resource to invalidate CloudFront cache
+    const invalidateCacheRole = new iam.Role(this, 'InvalidateCacheRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    });
+
+    invalidateCacheRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['cloudfront:CreateInvalidation'],
+        resources: [`arn:aws:cloudfront::${Stack.of(this).account}:distribution/${this.cloudFrontWebDistribution.distributionId}`],
+      })
+    );
+
+    const invalidateCacheFunction = new lambda.Function(this, 'InvalidateCacheFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`
+        const AWS = require('aws-sdk');
+        const cloudfront = new AWS.CloudFront();
+        
+        exports.handler = async (event) => {
+          const params = {
+            DistributionId: '${this.cloudFrontWebDistribution.distributionId}',
+            InvalidationBatch: {
+              CallerReference: Date.now().toString(),
+              Paths: {
+                Quantity: 1,
+                Items: ['/*']
+              }
+            }
+          };
+          
+          try {
+            await cloudfront.createInvalidation(params).promise();
+            return {
+              statusCode: 200,
+              body: JSON.stringify({ message: 'Cache invalidation successful' })
+            };
+          } catch (error) {
+            console.error('Error invalidating cache:', error);
+            throw error;
+          }
+        };
+      `),
+      role: invalidateCacheRole,
+      timeout: Duration.seconds(30),
+    });
+
+    // Create a custom resource to trigger the Lambda function
+    const triggerInvalidation = new cr.AwsCustomResource(this, 'TriggerInvalidation', {
+      policy: cr.AwsCustomResourcePolicy.fromStatements([
+        new iam.PolicyStatement({
+          actions: ['lambda:InvokeFunction'],
+          resources: [invalidateCacheFunction.functionArn],
+        }),
+      ]),
+      onCreate: {
+        service: 'Lambda',
+        action: 'invoke',
+        parameters: {
+          FunctionName: invalidateCacheFunction.functionName,
+          InvocationType: 'Event',
+        },
+        physicalResourceId: cr.PhysicalResourceId.of('TriggerInvalidation'),
+      },
+    });
+
+    // Set up dependencies
+    triggerInvalidation.node.addDependency(build);
+    triggerInvalidation.node.addDependency(invalidateCacheFunction);
 
     if (idp.isExist()) {
       new CfnOutput(this, "CognitoDomain", { value: cognitoDomain });
