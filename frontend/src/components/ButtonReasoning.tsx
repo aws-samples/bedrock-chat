@@ -9,6 +9,7 @@ type Props = BaseProps & {
   showReasoning: boolean;
   icon?: boolean;
   onToggleReasoning: () => void;
+  forceReasoningEnabled?: boolean;
 };
 
 const ButtonReasoning: React.FC<Props> = ({
@@ -16,13 +17,16 @@ const ButtonReasoning: React.FC<Props> = ({
   showReasoning,
   icon,
   onToggleReasoning,
+  forceReasoningEnabled = false,
 }) => {
   const { t } = useTranslation();
+  // Always display as ON when forceReasoningEnabled is true
+  const displayShowReasoning = forceReasoningEnabled ? true : showReasoning;
   return (
     <button
       className={twMerge(
         'flex items-center justify-center whitespace-nowrap rounded-lg border',
-        showReasoning
+        displayShowReasoning
           ? 'border-aws-sea-blue-light bg-aws-sea-blue-light/10 text-aws-sea-blue-light dark:border-aws-sea-blue-dark dark:bg-aws-sea-blue-dark/10 dark:text-aws-sea-blue-dark'
           : 'border-aws-font-color-light/20 text-aws-font-color-light/70 dark:border-aws-font-color-dark/20 dark:text-aws-font-color-dark/70',
         icon ? 'p-2 text-xl' : 'p-1 px-3',
@@ -32,9 +36,12 @@ const ButtonReasoning: React.FC<Props> = ({
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        onToggleReasoning();
+        // Only prevent toggle when reasoningEnabled is explicitly set to true in the model
+        if (!forceReasoningEnabled) {
+          onToggleReasoning();
+        }
       }}
-      aria-pressed={showReasoning}
+      aria-pressed={displayShowReasoning}
       title="Reasoning">
       <LuTimerReset className={icon ? '' : 'mr-2'} />
       {!icon && t('reasoning.button.label')}

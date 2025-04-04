@@ -77,6 +77,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       label: string;
       supportMediaType: string[];
       supportReasoning: boolean;
+      forceReasoningEnabled?: boolean;
       description?: string;
     }[]
   >(() => {
@@ -151,7 +152,8 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         label: t('model.deepseek-r1.label'),
         description: t('model.deepseek-r1.description'),
         supportMediaType: [],
-        supportReasoning: false, // Deep Seek always return a content reasoning block.
+        supportReasoning: true, // Deep Seek always return a content reasoning block.
+        forceReasoningEnabled: true, // Always On the Reasoning Button.
       },
       // Meta Llama 3 models
       {
@@ -344,6 +346,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         return ext === 'jpeg' ? ['.jpg', '.jpeg'] : [`.${ext}`];
       }) ?? [],
     availableModels: filteredModels,
+    forceReasoningEnabled: model?.forceReasoningEnabled ?? false,
   };
 };
 

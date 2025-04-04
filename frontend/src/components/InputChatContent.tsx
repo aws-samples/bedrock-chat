@@ -155,6 +155,9 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
   (props, focusInputRef) => {
     const { t } = useTranslation();
     const { disabledImageUpload, model, acceptMediaType } = useModel();
+    
+    // Calculate whether reasoning should be forced enabled based on the model
+    const forceReasoningEnabled = model?.forceReasoningEnabled === true;
 
     const extendedAcceptMediaType = useMemo(() => {
       return [...acceptMediaType, ...SUPPORTED_FILE_EXTENSIONS];
@@ -497,6 +500,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
                 <ButtonReasoning
                   disabled={props.isLoading || props.canContinue}
                   showReasoning={reasoningEnabled}
+                  forceReasoningEnabled={forceReasoningEnabled}
                   onToggleReasoning={() => onChangeReasoning(!reasoningEnabled)}
                 />
               )}
