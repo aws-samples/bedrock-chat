@@ -6,7 +6,7 @@ const translation = {
             },
         },
         app: {
-            name: 'ACO-gpt',
+            name: 'Bedrock Chat',
             inputMessage: 'Send en melding',
             starredBots: 'Favorittbot',
             recentlyUsedBots: 'Nylig brukte boter',
