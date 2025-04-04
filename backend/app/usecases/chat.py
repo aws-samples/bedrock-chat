@@ -1,9 +1,9 @@
 import logging
 from typing import Callable
 
-from app.agents.tools.agent_tool import ToolRunResult
+from app.agents.tools.agent_tool import AgentTool, ToolRunResult
 from app.agents.utils import get_tools
-from app.bedrock import call_converse_api, compose_args_for_converse_api
+from app.bedrock import call_converse_api, compose_args_for_converse_api, is_not_tooluse_supported
 from app.prompt import build_rag_prompt, get_prompt_to_cite_tool_results
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -235,7 +235,10 @@ def chat(
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
-    tools = get_tools(bot)
+    # # Set tools only when tooluse is supported
+    tools: Dict[str, AgentTool] = {}
+    if not is_not_tooluse_supported(chat_input.message.model):
+        tools = get_tools(bot)
 
     display_citation = bot is not None and bot.display_retrieved_chunks
 
@@ -253,13 +256,58 @@ def chat(
     related_documents: list[RelatedDocumentModel] = []
     search_results: list[SearchResult] = []
     if bot is not None:
-        if bot.is_agent_enabled():
+        if bot.is_agent_enabled() and not is_not_tooluse_supported(chat_input.message.model):
             if display_citation:
                 instructions.append(
                     get_prompt_to_cite_tool_results(
                         model=chat_input.message.model,
                     )
                 )
+        elif bot.has_knowledge() and is_not_tooluse_supported(chat_input.message.model):
+            # Fetch most related documents from vector store
+            # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+            content = conversation.message_map[user_msg_id].content[-1]
+            if isinstance(content, TextContentModel):
+                pseudo_tool_use_id = "new-message-assistant"
+
+                if on_thinking:
+                    on_thinking(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "name": "knowledge_base_tool",
+                            "input": {
+                                "query": content.body,
+                            },
+                        }
+                    )
+
+                search_results = search_related_docs(bot=bot, query=content.body)
+                logger.info(f"Search results from vector store: {search_results}")
+
+                if on_tool_result:
+                    on_tool_result(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "status": "success",
+                            "related_documents": [
+                                search_result_to_related_document(
+                                    search_result=result,
+                                    source_id_base=pseudo_tool_use_id,
+                                )
+                                for result in search_results
+                            ],
+                        }
+                    )
+
+                # Insert contexts to instruction
+                instructions.append(
+                    build_rag_prompt(
+                        search_results=search_results,
+                        model=chat_input.message.model,
+                        display_citation=display_citation,
+                    )
+                )
+
 
     # Leaf node id
     # If `continue_generate` is True, note that new message is not added to the message map.
