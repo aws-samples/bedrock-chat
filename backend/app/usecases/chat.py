@@ -1,9 +1,13 @@
 import logging
-from typing import Callable
+from typing import Callable, Dict
 
 from app.agents.tools.agent_tool import AgentTool, ToolRunResult
 from app.agents.utils import get_tools
-from app.bedrock import call_converse_api, compose_args_for_converse_api, is_not_tooluse_supported
+from app.bedrock import (
+    call_converse_api,
+    compose_args_for_converse_api,
+    is_not_tooluse_supported,
+)
 from app.prompt import build_rag_prompt, get_prompt_to_cite_tool_results
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -256,7 +260,9 @@ def chat(
     related_documents: list[RelatedDocumentModel] = []
     search_results: list[SearchResult] = []
     if bot is not None:
-        if bot.is_agent_enabled() and not is_not_tooluse_supported(chat_input.message.model):
+        if bot.is_agent_enabled() and not is_not_tooluse_supported(
+            chat_input.message.model
+        ):
             if display_citation:
                 instructions.append(
                     get_prompt_to_cite_tool_results(
@@ -307,7 +313,6 @@ def chat(
                         display_citation=display_citation,
                     )
                 )
-
 
     # Leaf node id
     # If `continue_generate` is True, note that new message is not added to the message map.
