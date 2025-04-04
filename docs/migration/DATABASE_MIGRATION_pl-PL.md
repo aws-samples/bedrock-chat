@@ -1,14 +1,14 @@
 # Przewodnik po Migracji Bazy Danych
 
-Ten przewodnik opisuje kroki migracji danych podczas aktualizacji Bedrock Claude Chat, która obejmuje wymianę klastra Aurora. Poniższa procedura zapewnia płynne przejście przy jednoczesnym zminimalizowaniu przestoju i utraty danych.
+Ten przewodnik opisuje kroki migracji danych podczas aktualizacji Bedrock Claude Chat, która obejmuje wymianę klastra Aurora. Poniższa procedura zapewnia płynne przejście przy minimalnym czasie przestoju i utracie danych.
 
 ## Przegląd
 
-Proces migracji polega na zeskanowaniu wszystkich botów i uruchomieniu zadań ECS do osadzania dla każdego z nich. Takie podejście wymaga przeliczenia osadzeń, co może być czasochłonne i wiązać się z dodatkowymi kosztami z powodu wykonywania zadań ECS oraz opłat za korzystanie z usługi Bedrock Cohere. Jeśli chcesz uniknąć tych kosztów i wymagań czasowych, zapoznaj się z [alternatywnymi opcjami migracji](#alternative-migration-options) przedstawionymi w dalszej części tego przewodnika.
+Proces migracji polega na skanowaniu wszystkich botów i uruchamianiu zadań ECS do osadzania dla każdego z nich. Takie podejście wymaga przeliczenia osadzeń, co może być czasochłonne i wiązać się z dodatkowymi kosztami ze względu na wykonywanie zadań ECS oraz opłaty za korzystanie z usługi Bedrock Cohere. Jeśli wolisz uniknąć tych kosztów i wymagań czasowych, zapoznaj się z [alternatywnymi opcjami migracji](#alternative-migration-options) przedstawionymi w dalszej części tego przewodnika.
 
 ## Kroki migracji
 
-- Po wykonaniu [npx cdk deploy](../README.md#deploy-using-cdk) z zastąpieniem Aurora, otwórz skrypt [migrate.py](./migrate.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Po wykonaniu [npx cdk deploy](../README.md#deploy-using-cdk) z wymianą Aurora, otwórz skrypt [migrate.py](./migrate.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
 # Otwórz stos CloudFormation w konsoli AWS Management Console i skopiuj wartości z zakładki Outputs.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Uruchom skrypt `migrate.py`, aby zainicjować proces migracji. Ten skrypt przeskanuje wszystkie boty, uruchomi zadania osadzania ECS i utworzy dane w nowym klastrze Aurora. Należy pamiętać, że:
+- Uruchom skrypt `migrate.py`, aby rozpocząć proces migracji. Ten skrypt przeskanuje wszystkie boty, uruchomi zadania osadzania ECS i utworzy dane w nowym klastrze Aurora. Należy pamiętać, że:
   - Skrypt wymaga `boto3`.
   - Środowisko wymaga uprawnień IAM do dostępu do tabeli dynamodb i wywoływania zadań ECS.
 
@@ -38,8 +38,8 @@ Jeśli wolisz nie korzystać z powyższej metody ze względu na związane z nią
 Najpierw zanotuj hasło dostępu do bieżącego klastra Aurora. Następnie uruchom `npx cdk deploy`, co spowoduje zastąpienie klastra. Potem utwórz tymczasową bazę danych, przywracając ją z migawki oryginalnej bazy danych.
 Użyj [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/), aby przeprowadzić migrację danych z tymczasowej bazy danych do nowego klastra Aurora.
 
-Uwaga: Według stanu na 29 maja 2024 r. DMS nie obsługuje natywnie rozszerzenia pgvector. Można jednak rozważyć następujące opcje obejścia tego ograniczenia:
+Uwaga: Według stanu na 29 maja 2024 roku, DMS nie obsługuje natywnie rozszerzenia pgvector. Możesz jednak rozważyć następujące opcje obejścia tego ograniczenia:
 
-Użyj [migracji jednorodnej DMS](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), która wykorzystuje natywną replikację logiczną. W tym przypadku zarówno źródłowa, jak i docelowa baza danych muszą być PostgreSQL. DMS może wykorzystać natywną replikację logiczną do tego celu.
+Użyj [migracji homogenicznej DMS](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), która wykorzystuje natywną replikację logiczną. W tym przypadku zarówno źródłowa, jak i docelowa baza danych muszą być PostgreSQL. DMS może wykorzystać natywną replikację logiczną do tego celu.
 
 Rozważ specyficzne wymagania i ograniczenia Twojego projektu przy wyborze najbardziej odpowiedniego podejścia migracyjnego.

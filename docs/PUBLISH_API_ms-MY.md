@@ -2,13 +2,13 @@
 
 ## Gambaran Keseluruhan
 
-Contoh ini termasuk fitur untuk menerbitkan API. Walaupun antara muka sembang boleh menjadi mudah untuk pengesahan awal, pelaksanaan sebenar bergantung kepada kes penggunaan khusus dan pengalaman pengguna (UX) yang dikehendaki untuk pengguna akhir. Dalam beberapa senario, antara muka sembang mungkin menjadi pilihan yang lebih disukai, manakala dalam senario lain, API kendiri mungkin lebih sesuai. Selepas pengesahan awal, contoh ini menyediakan kemampuan untuk menerbitkan bot yang disesuaikan mengikut keperluan projek. Dengan memasukkan tetapan untuk kuota, pengawal aliran, asal, dan sebagainya, titik akhir dapat diterbitkan bersama kunci API, menawarkan fleksibiliti untuk pelbagai pilihan integrasi.
+Sampel ini termasuk fitur untuk menerbitkan API. Walaupun antara muka sembang boleh menjadi mudah untuk pengesahan awal, pelaksanaan sebenar bergantung kepada kes penggunaan khusus dan pengalaman pengguna (UX) yang dikehendaki untuk pengguna akhir. Dalam beberapa senario, antara muka sembang mungkin menjadi pilihan yang lebih disukai, manakala dalam senario lain, API yang berdiri sendiri mungkin lebih sesuai. Selepas pengesahan awal, sampel ini menyediakan keupayaan untuk menerbitkan bot yang disesuaikan mengikut keperluan projek. Dengan memasukkan tetapan untuk kuota, pengawalcara, asal, dan sebagainya, titik akhir dapat diterbitkan bersama kunci API, menawarkan fleksibiliti untuk pilihan integrasi yang pelbagai.
 
 ## Keselamatan
 
-Penggunaan hanya kunci API tidak disarankan seperti yang diterangkan dalam: [AWS API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html). Oleh itu, contoh ini melaksanakan sekatan alamat IP yang mudah melalui AWS WAF. Peraturan WAF digunakan secara umum merentasi aplikasi kerana pertimbangan kos, dengan andaian bahawa sumber yang ingin disekat berkemungkinan sama merentasi semua API yang dikeluarkan. **Sila patuhi polisi keselamatan organisasi anda untuk pelaksanaan sebenar.** Lihat juga bahagian [Seni Bina](#architecture).
+Menggunakan hanya kunci API tidak disarankan seperti yang diterangkan dalam: [Panduan Pembangun AWS API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html). Oleh itu, contoh ini melaksanakan sekatan alamat IP yang mudah melalui AWS WAF. Peraturan WAF digunakan secara umum merentasi aplikasi kerana pertimbangan kos, dengan andaian bahawa sumber yang ingin disekat berkemungkinan sama merentasi semua API yang dikeluarkan. **Sila patuh kepada dasar keselamatan organisasi anda untuk pelaksanaan sebenar.** Lihat juga bahagian [Seni Bina](#architecture).
 
-## Cara Menerbitkan Bot API Tersuai
+## Cara Menerbitkan Bot API yang Disesuaikan
 
 ### Prasyarat
 
@@ -18,13 +18,13 @@ Atas sebab-sebab tadbir urus, hanya pengguna terhad yang boleh menerbitkan bot. 
 
 ### Tetapan Penerbitan API
 
-Selepas log masuk sebagai pengguna `PublishedAllowed` dan membuat bot, pilih `API PublishSettings`. Perhatikan bahawa hanya bot yang dikongsi boleh diterbitkan.
+Selepas log masuk sebagai pengguna `PublishedAllowed` dan membuat bot, pilih `API PublishSettings`. Ambil perhatian bahawa hanya bot berkongsi yang boleh diterbitkan.
 ![](./imgs/bot_api_publish_screenshot.png)
 
-Pada skrin berikut, kita boleh mengkonfigurasi beberapa parameter berkaitan pengawal trafik. Untuk maklumat lanjut, sila lihat: [Pengawal trafik permintaan API untuk keluaran yang lebih baik](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html).
+Pada skrin berikutnya, kita boleh mengkonfigurasi beberapa parameter berkenaan pembatasan. Untuk maklumat lanjut, sila lihat: [Membendung permintaan API untuk keluaran yang lebih baik](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html).
 ![](./imgs/bot_api_publish_screenshot2.png)
 
-Selepas penghantaran, skrin berikut akan muncul di mana anda boleh mendapatkan URL endpoint dan kunci API. Kita juga boleh menambah dan memadamkan kunci API.
+Selepas pengplotan, skrin berikut akan muncul di mana anda boleh mendapatkan URL endpoint dan kunci API. Kita juga boleh menambah dan memadam kunci API.
 
 ![](./imgs/bot_api_publish_screenshot3.png)
 
@@ -36,7 +36,7 @@ API diterbitkan seperti diagram berikut:
 
 WAF digunakan untuk pembatasan alamat IP. Alamat dapat dikonfigurasi dengan menetapkan parameter `publishedApiAllowedIpV4AddressRanges` dan `publishedApiAllowedIpV6AddressRanges` dalam `cdk.json`.
 
-Sebaik sahaja pengguna mengklik untuk menerbitkan bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) melancarkan tugas deployment CDK untuk memperuntukkan stack API (Lihat juga: [Definisi CDK](../cdk/lib/api-publishment-stack.ts)) yang mengandungi API Gateway, Lambda dan SQS. SQS digunakan untuk memisahkan permintaan pengguna dan operasi LLM kerana menjana output mungkin melebihi 30 saat, yang merupakan had kuota API Gateway. Untuk mengambil output, perlu mengakses API secara tidak serentak. Untuk maklumat lanjut, lihat [Spesifikasi API](#api-specification).
+Sebaik sahaja pengguna mengklik terbitkan bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) melancarkan tugas pengplotan CDK untuk menyediakan tumpukan API (Lihat juga: [Definisi CDK](../cdk/lib/api-publishment-stack.ts)) yang mengandungi API Gateway, Lambda dan SQS. SQS digunakan untuk memisahkan permintaan pengguna dan operasi LLM kerana menjana output mungkin melebihi 30 saat, yang merupakan had kuota API Gateway. Untuk mengambil output, perlu mengakses API secara tidak segerak. Untuk maklumat lanjut, lihat [Spesifikasi API](#api-specification).
 
 Klien perlu menetapkan `x-api-key` pada pengepala permintaan.
 

@@ -1,14 +1,14 @@
-# Google용 외부 ID 공급자 설정
+# Google를 외부 ID 공급자로 설정하기
 
 ## 1단계: Google OAuth 2.0 클라이언트 생성
 
-1. Google 개발자 콘솔로 이동하세요.
-2. 새 프로젝트를 생성하거나 기존 프로젝트를 선택하세요.
-3. "자격증명"으로 이동한 후 "자격증명 만들기"를 클릭하고 "OAuth 클라이언트 ID"를 선택하세요.
-4. 메시지가 표시되면 동의 화면을 구성하세요.
-5. 애플리케이션 유형으로 "웹 애플리케이션"을 선택하세요.
-6. 나중에 설정할 리디렉션 URI는 지금은 비워둔 채로 임시 저장하세요.[5단계 참조](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. 생성된 후, 클라이언트 ID와 클라이언트 비밀번호를 메모해 두세요.
+1. Google 개발자 콘솔로 이동합니다.
+2. 새 프로젝트를 생성하거나 기존 프로젝트를 선택합니다.
+3. "자격 증명"으로 이동한 후 "자격 증명 만들기"를 클릭하고 "OAuth 클라이언트 ID"를 선택합니다.
+4. 메시지가 표시되면 동의 화면을 구성합니다.
+5. 애플리케이션 유형에서 "웹 애플리케이션"을 선택합니다.
+6. 리디렉션 URI는 지금은 비워두고 나중에 설정할 수 있도록 임시로 저장합니다.[5단계 참조](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+7. 생성된 후 클라이언트 ID와 클라이언트 시크릿을 메모해 둡니다.
 
 자세한 내용은 [Google의 공식 문서](https://support.google.com/cloud/answer/6158849?hl=en)를 참조하세요.
 
@@ -22,7 +22,7 @@
    1. 키: clientId, 값: <YOUR_GOOGLE_CLIENT_ID>
    2. 키: clientSecret, 값: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. 프롬프트에 따라 비밀의 이름과 설명을 입력합니다. CDK 코드에서 사용할 비밀 이름을 기록해 둡니다. 예를 들어, googleOAuthCredentials. (3단계에서 <YOUR_SECRET_NAME> 변수 이름으로 사용)
+5. 프롬프트에 따라 비밀의 이름과 설명을 입력합니다. CDK 코드에서 사용할 비밀 이름을 메모해 두세요. 예를 들어, googleOAuthCredentials.(3단계 변수 이름 <YOUR_SECRET_NAME>에서 사용)
 6. 비밀을 검토하고 저장합니다.
 
 ### 주의
@@ -64,6 +64,6 @@ AWS에 CDK 스택을 배포합니다:
 npx cdk deploy --require-approval never --all
 ```
 
-## 5단계: Cognito 리다이렉트 URI로 Google OAuth 클라이언트 업데이트
+## 5단계: Google OAuth 클라이언트를 Cognito 리다이렉트 URI로 업데이트
 
-스택을 배포한 후, CloudFormation 출력에서 AuthApprovedRedirectURI가 표시됩니다. Google 개발자 콘솔로 돌아가서 올바른 리다이렉트 URI로 OAuth 클라이언트를 업데이트하세요.
+스택을 배포한 후, CloudFormation 출력에서 AuthApprovedRedirectURI를 확인할 수 있습니다. Google 개발자 콘솔로 돌아가서 올바른 리다이렉트 URI로 OAuth 클라이언트를 업데이트하세요.
