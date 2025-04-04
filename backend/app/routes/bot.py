@@ -111,10 +111,14 @@ def get_private_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
     check_is_user_authotized("get_assistant", current_user)
     bot = find_private_bot_by_id(current_user.id, bot_id)
+
+    # get the instructions with the template variables
+    instruction_template = getattr(bot.assistant_config, "instruction_template", bot.instruction)
+
     output = BotOutput(
         id=bot.id,
         title=bot.title,
-        instruction=bot.instruction,
+        instruction=instruction_template,
         description=bot.description,
         create_time=bot.create_time,
         last_used_time=bot.last_used_time,

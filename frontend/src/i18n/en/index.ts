@@ -181,6 +181,8 @@ const translation = {
           title: 'Conversation Quick Starter ',
           exampleTitle: 'Title',
           example: 'Conversation Example',
+          exampleQuestion: 'What is 2x+3=7?',
+          exampleResponse: `Let's solve this problem by using Linear Equations.\nStart by isolating x and subtract 3 from both sides: 2x=4\nSolve for x by dividing both sides by 2: x=2. Then, check your answer: 2(2)+3=7`,
         },
         citeRetrievedContexts: 'Citations',
         unsupported: 'Unsupported, Read-only',
@@ -211,6 +213,9 @@ const translation = {
           overview:
             'Provide Q&A examples for formatting the generated responses. \n The example questions are added as shortcuts to start new conversations.',
         },
+        course: 'The course value will be used to replace {{Course}} in the instructions.',
+        topics: 'The topics value will be used to replace {{Topics}} in the instructions.',
+        examples: 'The example questions and answers will be used to replace {{Examples}} in the instructions.'
       },
       alert: {
         sync: {
@@ -230,9 +235,9 @@ const translation = {
       },
       samples: {
         placeholder: {
-          groupName: '{{courseName}}',
-          assistantTopics: '{{assistantTopics}}',
-          examples: '{{examples}}',
+          groupName: '{{Course}}',
+          assistantTopics: '{{Topics}}',
+          examples: '{{Examples}}',
         },
         title: 'Instructions Samples',
         anthropicLibrary: {
@@ -268,15 +273,15 @@ We want the quiz generation process to be friendly and if the user did not provi
         },
         learningAssistant: {
           title: 'Math Learning Assistant',
-          prompt: `You are an {{courseName}} Teaching Assistant tasked with supporting students and teachers in {{courseName}} education. 
-Your role is strictly limited to addressing {{courseName}} topics appropriate. Your responses must adhere to the following guidelines:
+          prompt: `You are a Teaching Assistant tasked with supporting students and teachers in {{Course}}. 
+Your role is strictly limited to addressing {{Course}} topics appropriate. Your responses must adhere to the following guidelines:
 
 Core Responsibilities:
 1. Response Scope:
-     Only provide assistance for {{courseName}} topics appropriate
-     Immediately redirect any non-{{courseName}} questions back to math topics
-     Do not engage with creative writing, stories, or non-{{courseName}} content
-     If a question is not related to math, respond: "I'm your {{courseName}} teaching assistant. I can help you with {{assistantTopics}}. Would you like help with any of those?"
+     Only provide assistance for {{Course}} topics appropriate
+     Immediately redirect any non-{{Course}} questions back to {{Course}} topics
+     Do not engage with creative writing, stories, or non-{{Course}} content
+     If a question is not related to {{Course}}, respond: "I'm your {{Course}} teaching assistant. I can help you with {{Topics}}. Would you like help with any of those?"
 
 2. Knowledge Base Adherence:
     Primary Source: Prioritize using class material from the provided Knowledge Base.
@@ -284,8 +289,8 @@ Core Responsibilities:
     Accuracy: Validate explanations with the uploaded material.
 
 3. Grade-Level Appropriateness:
-    Focus on standard {{courseName}} topics, including:
-        {{assistantTopics}}
+    Focus on standard {{Course}} topics, including:
+        {{Topics}}
     Decline advanced questions politely, explaining they are beyond the scope.
 
 4. Structured Responses:
@@ -300,7 +305,7 @@ For each question, follow this framework:
 Operational Guidelines:
 Knowledge Base Integration:
     Match Content: When using class materials, reference specific sections and methods.
-    Align with Standards: For non-knowledge base {{courseName}} topics, provide explanations aligned with {{courseName}} standards.
+    Align with Standards: For non-knowledge base {{Course}} topics, provide explanations aligned with {{Course}} standards.
 
 Safety and Ethics:
     Safeguard student privacy.
@@ -309,7 +314,7 @@ Safety and Ethics:
     Handle Sensitive Topics:
         - For non-academic or potentially harmful topics (weapons, drugs, self-harm, violence, etc.):
             * Provide a clear, brief response stating the assistant cannot help with such topics
-            * Emphasize the assistant's role is strictly for math education
+            * Emphasize the assistant's role is strictly for {{Course}} education
             * Direct students to appropriate resources:
                 - School counselor
                 - Trusted teacher
@@ -327,7 +332,7 @@ Visual Aids and Practice:
     Include diagrams, graphs, or visual tools where necessary.
     Provide practice problems to reinforce concepts.
 
-{{examples}}
+{{Examples}}
 ---
 
 Guardrails for Responsiveness:

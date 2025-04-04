@@ -102,7 +102,7 @@ const BotKbEditPage: React.FC = () => {
   const [groupOptionsList, setGroupOptionsList] = useState<AssistantGroupType[]>([]);
   const [groupId, setGroupId] = useState('');
   const [assistantTopics, setAssistantTopics] = useState('');
-  const [assistantType, setAssistantType] = useState('');
+  const [assistantType, setAssistantType] = useState('learning_assistant');
   const [isAdvancedEditView, setIsAdvancedEditView] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -442,37 +442,6 @@ const BotKbEditPage: React.FC = () => {
     },
     [webCrawlingFilters]
   );
-
-  const generatePrompt = () => {
-    // called only when a new assistant is created
-		const COURSE_NAME_PLACEHOLDER = t('bot.samples.placeholder.groupName')
-		const COURSE_TOPICS_PLACEHOLDER = t('bot.samples.placeholder.assistantTopics')
-		const RESPONSE_EXAMPLES_PLACEHOLDER = t('bot.samples.placeholder.examples')
-    
-    let prompt = instruction ?? "";
-    
-    // get course name
-    const courseName = groupOptionsList.find((group) => group.value == groupId)?.label ?? title
-    if (courseName && courseName.trim().length > 0) {
-      prompt = prompt.replaceAll(COURSE_NAME_PLACEHOLDER, courseName);
-    }
-    
-    // get topics
-    let topics = assistantTopics.trim().length > 0 ? assistantTopics : courseName; 
-    prompt = prompt.replaceAll(COURSE_TOPICS_PLACEHOLDER, topics);
-
-    // get examples
-    let examples = conversationQuickStarters
-        .filter((convo: ConversationQuickStarter) => convo.title.trim().length > 0 && convo.example.trim().length > 0)
-        .map((convo: ConversationQuickStarter) => `Question: ${convo.title}\nAnswer: ${convo.example}. `)
-        .join(`\n`);
-
-    if (examples.trim().length > 0) {
-      examples = `Examples:\n${examples}`;
-      prompt = prompt.replaceAll(RESPONSE_EXAMPLES_PLACEHOLDER, examples);
-    }
-		return prompt;
-	}
 
   const onClickAddIncludePattern = useCallback(() => {
     setWebCrawlingFilters(
@@ -1246,7 +1215,7 @@ const BotKbEditPage: React.FC = () => {
       creatorConfig: null,
       title,
       description,
-      instruction: generatePrompt(),
+      instruction,
       generationParams: {
         maxTokens,
         temperature,
@@ -1522,12 +1491,14 @@ const BotKbEditPage: React.FC = () => {
                 value={title}
                 onChange={setTitle}
                 hint={t('input.hint.required')}
+                placeholder={"Algebra 1 Assistant"}
               />
               <InputText
                 label={t('bot.item.description')}
                 disabled={isLoading}
                 value={description}
                 onChange={setDescription}
+                placeholder={"Helps students with Algebra 1 concepts"}
               />
               {P0_FEATURE_FLAG && <div className="mt-3">
                 <Select
@@ -1539,7 +1510,7 @@ const BotKbEditPage: React.FC = () => {
               </div>}
               <div className="mt-3">
                 <Select
-                  label={"Course"}
+                  label={<div className="flex items-center gap-1">Course<Help direction={TooltipDirection.RIGHT} message={t('bot.help.course')} /></div>}
                   value={groupId}
                   options={groupOptionsList}
                   onChange={setGroupId}
@@ -1547,7 +1518,7 @@ const BotKbEditPage: React.FC = () => {
               </div>
               <div className="mt-3">
                 <InputText
-                    label={"Topics"}
+                    label={<div className="flex items-center gap-1">Topics<Help direction={TooltipDirection.RIGHT} message={t('bot.help.topics')} /></div>}
                     disabled={isLoading}
                     value={assistantTopics}
                     onChange={setAssistantTopics}
@@ -1557,35 +1528,8 @@ const BotKbEditPage: React.FC = () => {
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">
-                  <div className="text-lg font-bold">
-                    {"Instructions"}
-                  </div>
-                </div>
-                <div className="relative mt-3">
-                  <Button
-                    className="absolute -top-7 right-0 text-xs"
-                    outlined
-                    onClick={() => {
-                      setIsOpenSamples(true);
-                    }}>
-                    <PiNote className="mr-1" />
-                    {t('bot.button.instructionsSamples')}
-                  </Button>
-                  <Textarea
-                    label={t('bot.help.instructions')}
-                    disabled={isLoading}
-                    rows={5}
-                    value={instruction}
-                    onChange={setInstruction}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <div className="flex items-center gap-1">
-                  <div className="text-lg font-bold">
-                    {"Examples"}
-                  </div>
+                  <div className="text-lg font-bold">{"Examples"}</div>
+                  <Help direction={TooltipDirection.RIGHT} message={t('bot.help.examples')} />
                 </div>
 
                 <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
@@ -1602,7 +1546,7 @@ const BotKbEditPage: React.FC = () => {
                           <InputText
                             className="w-full"
                             label={"Question"}
-                            placeholder={"What is 2x+3=7?"}
+                            placeholder={t('bot.label.quickStarter.exampleQuestion')}
                             disabled={isLoading}
                             value={conversationQuickStarter.title}
                             onChange={(s) => {
@@ -1622,7 +1566,7 @@ const BotKbEditPage: React.FC = () => {
                           <Textarea
                             className="w-full"
                             label={"Response"}
-                            placeholder={"Let's solve this problem by using Linear Equations.\nStart by isolating x and subtract 3 from both sides: 2x=4\nSolve for x by dividing both sides by 2: x=2. Then, check your answer: 2(2)+3=7"}
+                            placeholder={t('bot.label.quickStarter.exampleResponse')}
                             disabled={isLoading}
                             rows={3}
                             value={conversationQuickStarter.example}
@@ -1666,6 +1610,75 @@ const BotKbEditPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              
+              <div className="mt-3">
+                <div className="flex items-center gap-1">
+                  <div className="text-lg font-bold">
+                    {"Instructions"}
+                  </div>
+                </div>
+                <div className="relative mt-3">
+                  <Button
+                    className="absolute -top-7 right-0 text-xs"
+                    outlined
+                    onClick={() => {
+                      setIsOpenSamples(true);
+                    }}>
+                    <PiNote className="mr-1" />
+                    {t('bot.button.instructionsSamples')}
+                  </Button>
+                  <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                    {t('bot.help.instructions')}
+                  </div>
+
+                  <div className="flex gap-4 mt-2">
+                    <RadioButton
+                      name="assistantType"
+                      value="learning_assistant"
+                      checked={assistantType === 'learning_assistant'}
+                      label={"Default"}
+                      onChange={() => {
+                        setAssistantType('learning_assistant');
+                        const prompt = assistantTypeOptions.find(option => option.value === 'learning_assistant')?.prompt ?? '';
+                        setInstruction(prompt);
+                      }}
+                    />
+                    <RadioButton
+                      name="assistantType"
+                      value="custom_assistant"
+                      checked={assistantType === 'custom_assistant'}
+                      label={"Custom"}
+                      onChange={() => {
+                        setAssistantType('custom_assistant');
+                        setInstruction('');
+                      }}
+                    />
+                  </div>
+                  {(assistantType === 'learning_assistant') ? 
+                  <ExpandableDrawerGroup
+                    isDefaultShow={false}
+                    label={"Learning Assistant Instructions"}
+                    className="py-2">
+                      <Textarea
+                        disabled={true}
+                        rows={5}
+                        value={instruction}
+                        onChange={setInstruction}
+                      />
+                  </ExpandableDrawerGroup> : 
+                  <Textarea
+                    disabled={isLoading}
+                    rows={5}
+                    value={instruction}
+                    onChange={setInstruction}
+                    placeholder={t('bot.samples.learningAssistant.prompt')
+                      .replaceAll(t('bot.samples.placeholder.groupName'), "Algebra 1")
+                      .replaceAll(t('bot.samples.placeholder.assistantTopics'), "Slope, Fractions, Inequalities")
+                      .replaceAll(t('bot.samples.placeholder.examples'), `Question: ${t('bot.label.quickStarter.exampleQuestion')}\nAnswer:${t('bot.label.quickStarter.exampleResponse')}`)}
+                  />}
+                </div>
+              </div>
+
 
               <div className="mt-3" />
               {isAdvancedEditView && <AvailableTools
@@ -1811,7 +1824,7 @@ const BotKbEditPage: React.FC = () => {
                               type="text"
                               disabled={isLoading || disabledKnowledgeEdit}
                               value={url}
-                              placeholder="https://aws.amazon.com/what-is/retrieval-augmented-generation/"
+                              placeholder="https://www.mathplanet.com/education/algebra-1/"
                               onChange={(s) => {
                                 onChangeUrls(s, idx);
                               }}

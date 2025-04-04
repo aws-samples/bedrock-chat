@@ -77,6 +77,7 @@ class AssistantConfigModel(BaseModel):
     # database access object
     assistant_type: str
     assistant_topics: str
+    instruction_template: str | None
 
 class CreatorConfigModel(BaseModel):
     # database access object

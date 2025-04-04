@@ -80,6 +80,9 @@ from app.utils import (
 from app.usecases.group import (
     validate_user_access_to_bot
 )
+from app.repositories.group import (
+    find_group_by_group_id
+)
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -113,6 +116,35 @@ def _update_s3_documents_by_diff(
         # Ignore errors when deleting a non-existent file from the S3 bucket used in knowledge bases.
         # This allows users to update bot if the uploaded file is missing after the bot is created.
         delete_file_from_s3(DOCUMENT_BUCKET, document_path, ignore_not_exist=True)
+
+def applyInstructionTemplateVarReplacement(user_id: str, instruction: str, group_id: str, assistant_topics: str, exampleList: list[ConversationQuickStarter]) -> str: 
+    compiled_instruction = instruction
+    if not compiled_instruction or len(compiled_instruction) == 0:
+        return compiled_instruction
+    logger.info(f"Start: applyInstructionTemplateVarReplacement for user_id: {user_id}")
+    # replace the template variables
+    # Make sure frontend and backend template vars are in sync
+    COURSE_NAME_PLACEHOLDER = "{{Course}}"
+    COURSE_TOPICS_PLACEHOLDER = "{{Topics}}"
+    RESPONSE_EXAMPLES_PLACEHOLDER = "{{Examples}}"
+
+    if exampleList and len(exampleList) > 0:
+        # checks that the question and answer are valid before adding to the instructions
+        examples = "\n".join(
+            f"Question: {convo.title.strip()}\nAnswer: {convo.example.strip()}."
+            for convo in exampleList
+            if (convo.title and len(convo.title.strip()) > 0) and (convo.example and len(convo.example.strip()) > 0)
+        )
+        compiled_instruction = compiled_instruction.replace(RESPONSE_EXAMPLES_PLACEHOLDER, examples)
+    
+    if assistant_topics and len(assistant_topics.strip()) > 0:
+        compiled_instruction = compiled_instruction.replace(COURSE_TOPICS_PLACEHOLDER, assistant_topics)
+
+    group = find_group_by_group_id(user_id, group_id)
+    compiled_instruction = compiled_instruction.replace(COURSE_NAME_PLACEHOLDER, group.group_name)
+
+    logger.info(f"End: applyInstructionTemplateVarReplacement for user_id: {user_id} instructions: {compiled_instruction}")
+    return compiled_instruction
 
 
 def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
@@ -196,12 +228,15 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
 
     creatorConfigModel = CreatorConfigModel(user_id=user_id, user_name=userName)
 
+    compiled_instruction = applyInstructionTemplateVarReplacement(user_id, bot_input.instruction, bot_input.group_id, bot_input.assistant_config.assistant_topics, bot_input.conversation_quick_starters)
+
+
     # Step 1: Construct the BotModel object
     new_bot = BotModel(
         id=bot_input.id,
         title=bot_input.title,
         description=bot_input.description or "",
-        instruction=bot_input.instruction,
+        instruction=compiled_instruction,
         create_time=current_time,
         last_used_time=current_time,
         public_bot_id=None,
@@ -249,7 +284,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         version=bot_input.version or None,
         group_id=bot_input.group_id or None,
         assistant_config=(
-            AssistantConfigModel(**bot_input.assistant_config.model_dump())
+            AssistantConfigModel(**bot_input.assistant_config.model_dump(), instruction_template=bot_input.instruction)
             if bot_input.assistant_config
             else None
         ),
@@ -263,7 +298,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     return BotOutput(
         id=new_bot.id,
         title=new_bot.title,
-        instruction=new_bot.instruction,
+        instruction=bot_input.instruction,
         description=new_bot.description,
         create_time=new_bot.create_time,
         last_used_time=new_bot.last_used_time,
@@ -425,11 +460,14 @@ def modify_owned_bot(
     else:
         updated_kb = current_bot_kb
 
+
+    compiled_instruction = applyInstructionTemplateVarReplacement(creator_id, modify_input.instruction, modify_input.group_id, modify_input.assistant_config.assistant_topics, modify_input.conversation_quick_starters)
+
     update_bot(
         creator_id,
         bot_id,
         title=modify_input.title,
-        instruction=modify_input.instruction,
+        instruction=compiled_instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=GenerationParamsModel(**generation_params),
         agent=agent,
@@ -464,7 +502,7 @@ def modify_owned_bot(
         ),
         group_id=modify_input.group_id if modify_input.group_id else None,
         assistant_config=(
-            AssistantConfigModel(**modify_input.assistant_config.model_dump())
+            AssistantConfigModel(**modify_input.assistant_config.model_dump(), instruction_template=modify_input.instruction)
             if modify_input.assistant_config
             else None
         )

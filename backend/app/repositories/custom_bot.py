@@ -366,6 +366,14 @@ def fetch_bots_by_group_id_and_type(user_id: str, group_id: str) -> list[BotMeta
             filtered_bots.append(item)
     return filtered_bots
 
+def create_assistant_config_model(assistant_config: dict) -> AssistantConfigModel:
+    # function added to handle new field: instruction_template
+    # extracting Assistant Config fields from DynamoDB
+    # expected input item["AssistantConfig"]
+    return AssistantConfigModel(
+        **{**assistant_config, "instruction_template": assistant_config.get("instruction_template", "")}
+    )
+
 
 def find_private_bots_by_user_id(
     user_id: str, limit: int | None = None
@@ -409,7 +417,7 @@ def find_private_bots_by_user_id(
                 None if "GroupId" not in item else item["GroupId"]
             ),
             assistant_config=(
-                AssistantConfigModel(**item["AssistantConfig"])
+                create_assistant_config_model(item["AssistantConfig"])
                 if "AssistantConfig" in item
                 else None
             ),
@@ -450,7 +458,7 @@ def find_private_bots_by_user_id(
                         None if "GroupId" not in item else item["GroupId"]
                     ),
                     assistant_config=(
-                        AssistantConfigModel(**item["AssistantConfig"])
+                        create_assistant_config_model(item["AssistantConfig"])
                         if "AssistantConfig" in item
                         else None
                     ),
@@ -565,7 +573,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             None if "GroupId" not in item else item["GroupId"]
         ),
         assistant_config=(
-            AssistantConfigModel(**item["AssistantConfig"])
+            create_assistant_config_model(item["AssistantConfig"])
             if "AssistantConfig" in item
             else None
         ),
@@ -607,7 +615,7 @@ def scan_bots_by_group_id_index(user_id: str) -> list[BotMeta]:
                 None if "GroupId" not in item else item["GroupId"]
             ),
             assistant_config=(
-                AssistantConfigModel(**item["AssistantConfig"])
+                create_assistant_config_model(item["AssistantConfig"])
                 if "AssistantConfig" in item
                 else None
             ),
@@ -652,7 +660,7 @@ def find_all_bots_by_group_id(group_id: str) -> list[BotMeta]:
                 None if "GroupId" not in item else item["GroupId"]
             ),
             assistant_config=(
-                AssistantConfigModel(**item["AssistantConfig"])
+                create_assistant_config_model(item["AssistantConfig"])
                 if "AssistantConfig" in item
                 else None
             ),
@@ -751,7 +759,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             None if "GroupId" not in item else item["GroupId"]
         ),
         assistant_config=(
-            AssistantConfigModel(**item["AssistantConfig"])
+            create_assistant_config_model(item["AssistantConfig"])
             if "AssistantConfig" in item
             else None
         ),
@@ -966,9 +974,9 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackIn
                     version=item.get("Version", None),
                     group_id=item.get("GroupId", None),
                     assistant_config=(
-                        AssistantConfigModel(**item["AssistantConfig"])
+                        create_assistant_config_model(item["AssistantConfig"])
                         if "AssistantConfig" in item
-                        else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+                        else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="", instruction_template="")
                     ),
                     creator_config=(
                         CreatorConfigModel(**item["CreatorConfig"])
@@ -1022,9 +1030,9 @@ def find_all_published_bots(
             version=item.get("Version", None),
             group_id=item.get("GroupId", None),
             assistant_config=(
-                AssistantConfigModel(**item["AssistantConfig"])
+                create_assistant_config_model(item["AssistantConfig"])
                 if "AssistantConfig" in item
-                else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="")
+                else AssistantConfigModel(assistant_type="custom_assistant", assistant_topics="", instruction_template="")
             ),
             creator_config=(
                 CreatorConfigModel(**item["CreatorConfig"])

@@ -16,11 +16,13 @@ from app.repositories.common import (
 
 logger = logging.getLogger(__name__)
 
+def extractGroupId(group_id: str): 
+    return group_id.split("#")[-1]
+
 def find_groups_by_user_id(user_id: str) -> list[GroupModel]:
     """Find all groups by user id."""
     table = _get_table_client(user_id)
     logger.info(f"Finding all groups with id: {user_id}")
-
 
     query_params = {
         "KeyConditionExpression": Key("PK").eq(user_id)
@@ -28,8 +30,7 @@ def find_groups_by_user_id(user_id: str) -> list[GroupModel]:
         & Key("SK").begins_with(f"{user_id}#GROUP#"),
     }
 
-    def extractGroupId(group_id: str): 
-        return group_id.split("#")[-1]
+    
 
     response = table.query(**query_params)
     groupList = [
@@ -65,3 +66,23 @@ def find_all_creator_id_by_group_id(group_id: str) -> list[BotCreatorModel]:
     ]
     logger.debug(f"Found all creators in group: {creators}")
     return creators
+
+def find_group_by_group_id(user_id: str, group_id: str) -> str:
+    table = _get_table_client(group_id)
+    logger.debug(f"Finding creators for group: {group_id}")
+    query_params = {
+        "KeyConditionExpression": Key("PK").eq(user_id)
+        & Key("SK").eq(f"{user_id}#GROUP#{group_id}"),
+    }
+    response = table.query(**query_params)
+    item = response["Items"][0]
+    group = GroupModel(
+        group_id=extractGroupId(item["SK"]),
+        group_name=item["GroupName"],
+        create_time=float(item["CreateTime"]),
+        update_time=float(item["UpdateTime"]),
+        create_by=item["CreateBy"],
+        role=item["Role"],
+        user_name=item["UserName"]
+    )
+    return group

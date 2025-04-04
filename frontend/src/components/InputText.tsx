@@ -1,9 +1,9 @@
-import React, { HTMLInputTypeAttribute } from 'react';
+import React, { HTMLInputTypeAttribute, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type Props = {
   className?: string;
-  label?: string;
+  label?: ReactNode;
   type?: HTMLInputTypeAttribute;
   value: string;
   disabled?: boolean;

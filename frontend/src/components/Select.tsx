@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo } from 'react';
+import { Fragment, ReactNode, useCallback, useMemo } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { PiCaretUpDown, PiCheck, PiX } from 'react-icons/pi';
 import ButtonIcon from './ButtonIcon';
@@ -6,7 +6,7 @@ import { BaseProps } from '../@types/common';
 import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
-  label?: string;
+  label?: ReactNode;
   value: string;
   options: {
     value: string;
