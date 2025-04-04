@@ -230,7 +230,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -320,18 +318,6 @@ npx cdk deploy --all
 6. **การแยกทรัพยากร**: แต่ละสภาพแวดล้อมสร้างชุดทรัพยากรของตนเอง ช่วยให้คุณมีสภาพแวดล้อมการพัฒนา การทดสอบ และการผลิตในบัญชี AWS เดียวกันโดยไม่มีความขัดแย้ง
 
 ## อื่นๆ
-
-### กำหนดค่าการสนับสนุนโมเดล Mistral
-
-อัปเดต `enableMistral` เป็น `true` ใน [cdk.json](./cdk/cdk.json) แล้วรัน `npx cdk deploy`
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!สำคัญ]
-> โครงการนี้มุ่งเน้นที่โมเดล Anthropic Claude โมเดล Mistral ได้รับการสนับสนุนอย่างจำกัด ตัวอย่างเช่น ตัวอย่างคำถามจะอ้างอิงจากโมเดล Claude นี่เป็นตัวเลือกสำหรับ Mistral เท่านั้น เมื่อคุณเปิดใช้งานโมเดล Mistral คุณจะสามารถใช้เฉพาะโมเดล Mistral สำหรับฟีเจอร์แชททั้งหมด ไม่ใช่ทั้ง Claude และ Mistral
 
 ### กำหนดค่าการสร้างข้อความเริ่มต้น
 

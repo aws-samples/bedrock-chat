@@ -230,7 +230,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "enableMistral": false,
     "selfSignUpEnabled": true
   }
 }
@@ -245,7 +244,6 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
-  enableMistral: false,
   selfSignUpEnabled: true,
 });
 
@@ -320,18 +318,6 @@ npx cdk deploy --all
 6. **리소스 격리**: 각 환경은 고유한 리소스 세트를 생성하여 동일한 AWS 계정에서 개발, 테스트, 프로덕션 환경을 충돌 없이 가질 수 있습니다.
 
 ## 기타
-
-### Mistral 모델 지원 구성
-
-[cdk.json](./cdk/cdk.json)에서 `enableMistral`을 `true`로 업데이트하고 `npx cdk deploy`를 실행하세요.
-
-```json
-...
-  "enableMistral": true,
-```
-
-> [!중요]
-> 이 프로젝트는 Anthropic Claude 모델에 중점을 두고 있으며, Mistral 모델은 제한적으로 지원됩니다. 예를 들어, 프롬프트 예시는 Claude 모델을 기반으로 합니다. 이는 Mistral 전용 옵션으로, Mistral 모델을 활성화하면 모든 채팅 기능에 대해 Claude와 Mistral 모델이 아닌 Mistral 모델만 사용할 수 있습니다.
 
 ### 기본 텍스트 생성 구성
 
