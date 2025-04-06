@@ -3,8 +3,8 @@ import logging
 import uuid
 from typing import Any, Generator, Iterator
 
-import botocore.crt
 import botocore.awsrequest
+import botocore.crt
 import botocore.session
 import requests
 from pydantic import BaseModel, ConfigDict
@@ -64,6 +64,7 @@ class MCPToolBundle(AgentToolBundle):
                 },
             },
         )
+        _logger.debug("MCP session initialized: name=%s url=%s", self.name, self.url)
 
         # prompts and resources are not supported yet
         # list tools
@@ -80,6 +81,7 @@ class MCPToolBundle(AgentToolBundle):
             tools.extend(result["tools"])
             if not (cursor := result.get("next_cursor")):
                 break
+        _logger.debug("MCP tools listed: tools=[%s]", ",".join([tool["name"] for tool in tools]))
 
         return [MCPTool(tool, self._session, self.url, self.aws_sigv4a_service) for tool in tools]
 
@@ -152,16 +154,13 @@ def _jsonrpc(
 
     # set up JSON-RPC 2.0 request
     request_id = uuid.uuid4().hex
-    body = json.dumps(
-        {
-            "jsonrpc": "2.0",
-            "id": request_id,
-            "method": method,
-            "params": params,
-        },
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
+    rpc_request = {
+        "jsonrpc": "2.0",
+        "id": request_id,
+        "method": method,
+        "params": params,
+    }
+    body = json.dumps(rpc_request, ensure_ascii=False, separators=(",", ":"))
 
     if aws_sigv4a_service:
         # handle AWS SigV4a signing
@@ -186,46 +185,60 @@ def _jsonrpc(
         )  # wrong type, should be botocore.awsrequest.HeadersDict
 
     # Send HTTP request
+    _logger.debug("MCP request: object=\"%s\"", str(rpc_request)[:1000])
     http_response = session.post(url, headers=headers, data=body, stream=True, timeout=10.0)  # type: ignore
 
     # handle HTTP response
     with http_response:
+        if not 200 <= http_response.status_code < 300:
+            _logger.error("Unsuccessful HTTP response: status_code=%s", http_response.status_code)
+            raise Exception(f"Unsuccessful HTTP response: status_code={http_response.status_code}")
+
         if http_response.headers.get("content-type", "").startswith("text/event-stream"):
             events = _parse_sse(http_response.iter_lines())
-        else:
+        elif http_response.headers.get("content-type", "").startswith("application/json"):
             events = [http_response.content]
+        else:
+            _logger.error("Invalid content type: content-type=\"%s\"", http_response.headers.get("content-type"))
+            raise Exception(f"Invalid content type: content-type=\"{http_response.headers.get('content-type')}\"")
 
         rpc_response: dict | None = None
         for event in events:
             try:
                 event = json.loads(event)
             except json.JSONDecodeError:
-                raise Exception(f"Invalid JSON response: status_code={http_response.status_code} content=\"{str(event)[:1000]}\"")
+                _logger.error("Invalid JSON response: content=\"%s\"", str(event)[:1000], exc_info=True)
+                raise Exception("Invalid JSON response")
 
             # handle JSON-RPC 2.0 Request/Response objects (may be batched)
             objects = event if isinstance(event, list) else [event]
             for obj in objects:
+                if not isinstance(obj, dict):
+                    _logger.error("Invalid JSON response: not a object: content=\"%s\"", str(obj)[:1000])
+                    raise Exception("Invalid JSON-RPC response: not a object")
                 if "jsonrpc" not in obj or obj["jsonrpc"] != "2.0":
-                    raise Exception(f"Invalid JSON-RPC object: status_code={http_response.status_code} content=\"{str(event)[:1000]}\"")
+                    _logger.error("Unexpected JSON-RPC version: jsonrpc=\"%s\"", obj.get("jsonrpc"))
+                    raise Exception(f"Unexpected JSON-RPC version: jsonrpc=\"{obj.get("jsonrpc")}\"")
                 if "id" in obj and obj["id"] == request_id:
+                    _logger.debug("MCP response: object=\"%s\"", str(obj)[:1000])
                     rpc_response = obj
                 else:
-                    _logger.info("Received message: msg=%s", json.dumps(obj, ensure_ascii=False, separators=(",", ":"))[:1000])
+                    _logger.info("MCP message: object=\"%s\"", str(obj)[:1000])
             
             if rpc_response is not None:
                 # early exit if we received the response
                 break
         
     if rpc_response is None:
-        raise Exception("No JSON-RPC response received: status_code={http_response.status_code}")
+        _logger.error("No JSON-RPC response received: status_code=%s", http_response.status_code)
+        raise Exception(f"No JSON-RPC response received: status_code={http_response.status_code}")
 
     if "error" in rpc_response:
         code = rpc_response["error"].get("code")
         message = rpc_response["error"].get("message")
         data = rpc_response["error"].get("data")
-        if data is not None:
-            data = json.dumps(data, ensure_ascii=False)[:1000]
-        raise Exception(f"JSON-RPC error: message={message}, code={code}, data={data}")
+        _logger.error("JSON-RPC error: code=%s message=\"%s\" data=\"%s\"", code, message, str(data)[:1000] if data is not None else "")
+        raise Exception(f"JSON-RPC error: code={code} message=\"{message}\"")
 
     if "Mcp-Session-Id" in http_response.headers:
         session.headers["Mcp-Session-Id"] = http_response.headers["Mcp-Session-Id"]
@@ -243,3 +256,5 @@ def _parse_sse(line_iterator: Iterator[bytes]) -> Generator[bytes, None, None]:
         elif line.startswith(b"data:"):
             lines.append(line[5:])
         # ignore event name
+    if lines:
+        yield b"".join(lines)
