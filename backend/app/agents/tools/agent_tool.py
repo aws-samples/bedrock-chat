@@ -174,3 +174,14 @@ def _function_result_to_related_document(
             source_name=tool_name,
             page_number=None,
         )
+
+
+class AgentToolBundle:
+    """AgentToolBundle represents a collection of AgentTool instances, with a name and description."""
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+
+    def get_tools(self) -> list[AgentTool]:
+        """get_tools returns a list of AgentTool instances."""
+        return []

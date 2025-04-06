@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Literal
 
-from app.agents.tools.agent_tool import AgentTool
+from app.agents.tools.agent_tool import AgentTool, AgentToolBundle
 from app.agents.utils import get_available_tools
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
@@ -811,7 +811,7 @@ def remove_uploaded_file(user_id: str, bot_id: str, filename: str):
 
 def fetch_available_agent_tools() -> list[Tool]:
     """Fetch available tools for bot."""
-    tools: list[AgentTool] = get_available_tools()
+    tools: list[AgentTool | AgentToolBundle] = get_available_tools()
     result: list[Tool] = []
     for tool in tools:
         if tool.name == "bedrock_agent":

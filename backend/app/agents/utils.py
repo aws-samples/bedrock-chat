@@ -1,6 +1,6 @@
 from typing import Dict
 
-from app.agents.tools.agent_tool import AgentTool
+from app.agents.tools.agent_tool import AgentTool, AgentToolBundle
 from app.agents.tools.internet_search import internet_search_tool
 from app.agents.tools.bedrock_agent import bedrock_agent_tool, BedrockAgent
 from app.agents.tools.knowledge import create_knowledge_tool
@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def get_available_tools() -> list[AgentTool]:
-    tools: list[AgentTool] = []
+def get_available_tools() -> list[AgentTool | AgentToolBundle]:
+    tools: list[AgentTool | AgentToolBundle] = []
     tools.append(internet_search_tool)
     tools.append(bedrock_agent_tool)
     return tools
@@ -43,7 +43,12 @@ def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
             if tool_config.name not in available_tools:
                 continue
 
-            tools[tool_config.name] = available_tools[tool_config.name]
+            tool = available_tools[tool_config.name]
+            if isinstance(tool, AgentToolBundle):
+                # resolves to actual tools
+                tools.update({t.name: t for t in tool.get_tools()})
+            else:
+                tools[tool_config.name] = tool
 
             """Update bedrock_agent tool description
             NOTE: tools["bedrock_agent"].description is used to determine which tool should be selected when a generative AI uses tooluse to resolve a user's request. 
