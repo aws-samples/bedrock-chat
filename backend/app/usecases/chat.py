@@ -259,16 +259,15 @@ def chat(
             if isinstance(content, TextContentModel):
                 pseudo_tool_use_id = "new-message-assistant"
 
-                if on_thinking:
-                    on_thinking(
-                        {
-                            "tool_use_id": pseudo_tool_use_id,
-                            "name": "knowledge_base_tool",
-                            "input": {
-                                "query": content.body,
-                            },
-                        }
-                    )
+                on_thinking(
+                    {
+                        "tool_use_id": pseudo_tool_use_id,
+                        "name": "knowledge_base_tool",
+                        "input": {
+                            "query": content.body,
+                        },
+                    }
+                )
 
                 search_results = search_related_docs(bot=bot, query=content.body)
                 logger.info(f"Search results from vector store: {search_results}")
