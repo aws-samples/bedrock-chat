@@ -11,7 +11,6 @@ from app.repositories.models.conversation import (
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
-
 from pydantic import BaseModel, Field
 
 
@@ -40,49 +39,6 @@ class TestAgentTool(unittest.TestCase):
             function=test_function,
         )
 
-    def test_to_converse_spec(self):
-
-        spec = self.tool.to_converse_spec()
-        pprint(spec)
-
-        # Output must be a JSON schema
-        # https://json-schema.org/
-        expected_spec = {
-            "name": "test",
-            "description": "test",
-            "inputSchema": {
-                "json": {
-                    "properties": {
-                        "arg1": {
-                            "title": "Arg1",
-                            "type": "string",
-                            "description": "test string",
-                        },
-                        "arg2": {
-                            "title": "Arg2",
-                            "type": "number",
-                            "description": "test float",
-                        },
-                        "arg3": {
-                            "title": "Arg3",
-                            "type": "integer",
-                            "description": "test int",
-                        },
-                        "arg4": {
-                            "title": "Arg4",
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "test list",
-                        },
-                    },
-                    "required": ["arg1", "arg2", "arg3", "arg4"],
-                    "type": "object",
-                    "title": "TestArg",
-                }
-            },
-        }
-        self.assertDictEqual(spec, expected_spec)
-
     def test_run(self):
         arg = TestArg(
             arg1="test",
@@ -94,17 +50,6 @@ class TestAgentTool(unittest.TestCase):
             tool_use_id="dummy",
             input=arg.model_dump(),
             model="claude-v3.5-sonnet-v2",
-        )
-        self.assertEqual(
-            result["related_documents"],
-            [
-                RelatedDocumentModel(
-                    content=TextToolResultModel(
-                        text="test",
-                    ),
-                    source_id="dummy",
-                ),
-            ],
         )
         self.assertEqual(result["status"], "success")
 

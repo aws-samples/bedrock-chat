@@ -100,25 +100,8 @@ BEDROCK_PRICING = {
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
     },
-    "ap-northeast-1": {
-        "claude-instant-v1": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v2": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-    },
+    "ap-northeast-1": {},
     "default": {
-        "claude-instant-v1": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v2": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
         "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3.5-haiku": {"input": 0.001, "output": 0.005},
         "claude-v3.5-sonnet": {"input": 0.00300, "output": 0.01500},

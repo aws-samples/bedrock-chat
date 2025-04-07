@@ -810,7 +810,9 @@ class BotMeta(BaseModel):
         _is_starred: bool = (
             is_starred if is_starred is not None else item.get("IsStarred", False)
         )
-        assert item["ItemType"].find("BOT") != -1, f"Invalid ItemType: {item['ItemType']}"
+        assert (
+            item["ItemType"].find("BOT") != -1
+        ), f"Invalid ItemType: {item['ItemType']}"
         return cls(
             id=item["BotId"],
             title=item["Title"],

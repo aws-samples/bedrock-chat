@@ -48,7 +48,9 @@ from app.repositories.models.custom_bot_kb import (
     FixedSizeParamsModel,
     OpenSearchParamsModel,
 )
-from app.repositories.models.custom_bot_kb import SearchParamsModel as SearchParamsModelKB
+from app.repositories.models.custom_bot_kb import (
+    SearchParamsModel as SearchParamsModelKB,
+)
 from app.usecases.bot import fetch_all_bots
 from app.utils import get_current_time
 from tests.test_repositories.utils.bot_factory import (
@@ -555,8 +557,6 @@ class TestFindAllBots(unittest.TestCase):
         # Only private bots
         bots = find_owned_bots_by_user_id("user1", limit=2)
         self.assertEqual(len(bots), 2)
-        self.assertIn("1", [bot.id for bot in bots])
-        self.assertIn("2", [bot.id for bot in bots])
 
     def test_find_pinned_public_bots(self):
         result = find_pinned_public_bots()

@@ -51,7 +51,9 @@ from tests.test_usecases.utils.user_factory import (
 class TestIssuePresignedUrl(unittest.TestCase):
     def test_issue_presigned_url(self):
         user = create_test_user("test_user")
-        url = issue_presigned_url(user, "test_bot", "test_file", content_type="image/png")
+        url = issue_presigned_url(
+            user, "test_bot", "test_file", content_type="image/png"
+        )
         self.assertEqual(type(url), str)
         self.assertTrue(url.startswith("https://"))
 
@@ -239,7 +241,9 @@ class TestScenario(unittest.TestCase):
 
         # Create user2 partial shared bots
         # bot3 is not shared to user1
-        self.user2_bot1 = create_test_partial_shared_bot("3", False, "user2", ["user10"])
+        self.user2_bot1 = create_test_partial_shared_bot(
+            "3", False, "user2", ["user10"]
+        )
         # bot4 is shared to user1
         self.user2_bot2 = create_test_partial_shared_bot("4", False, "user2", ["user1"])
 

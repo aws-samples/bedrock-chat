@@ -16,6 +16,7 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
     PlainToolModel,
     ReasoningParamsModel,
+    ToolModel,
     UsageStatsModel,
 )
 from app.repositories.models.custom_bot_kb import (
@@ -52,6 +53,23 @@ def _create_test_bot_model(
     usage_count=0,
     **kwargs
 ):
+    tools: list[ToolModel] = [
+        PlainToolModel(
+            tool_type="plain", name="tool1", description="tool1 description"
+        ),
+        PlainToolModel(
+            tool_type="plain", name="tool2", description="tool2 description"
+        ),
+    ]
+    if include_internet_tool:
+        tools.append(
+            InternetToolModel(
+                tool_type="internet",
+                name=internet_search_tool.name,
+                description=internet_search_tool.description,
+                search_engine="duckduckgo",
+            )
+        )
     return BotModel(
         id=id,
         title=title,
@@ -74,14 +92,7 @@ def _create_test_bot_model(
             reasoning_params=ReasoningParamsModel(budget_tokens=1024),
         ),
         agent=AgentModel(
-            tools=[
-                PlainToolModel(
-                    tool_type="plain", name="tool1", description="tool1 description"
-                ),
-                PlainToolModel(
-                    tool_type="plain", name="tool2", description="tool2 description"
-                ),
-            ]
+            tools=tools,
         ),
         knowledge=(
             KnowledgeModel(

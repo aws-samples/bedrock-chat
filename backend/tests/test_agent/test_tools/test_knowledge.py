@@ -10,6 +10,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
 )
 
 
@@ -24,7 +25,6 @@ class TestKnowledgeTool(unittest.TestCase):
             last_used_time=1627984879.9,
             # Pinned
             is_starred=True,
-            public_bot_id=None,
             owner_user_id="dummy",
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -32,6 +32,9 @@ class TestKnowledgeTool(unittest.TestCase):
                 top_p=0.999,
                 temperature=0.6,
                 stop_sequences=["Human: ", "Assistant: "],
+                reasoning_params=ReasoningParamsModel(
+                    budget_tokens=2000,
+                ),
             ),
             agent=AgentModel(tools=[]),
             knowledge=KnowledgeModel(
@@ -55,6 +58,11 @@ class TestKnowledgeTool(unittest.TestCase):
             bedrock_knowledge_base=None,
             bedrock_guardrails=None,
             active_models=ActiveModelsModel(),
+            shared_scope="private",
+            shared_status="private",
+            allowed_cognito_groups=[],
+            allowed_cognito_users=[],
+            usage_stats=None,
         )
         arg = KnowledgeToolInput(query="What are delicious Japanese dishes?")
         tool = create_knowledge_tool(bot=bot)

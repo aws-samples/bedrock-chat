@@ -2,8 +2,8 @@ import logging
 import sys
 import unittest
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 sys.path.append(".")
 
@@ -19,8 +19,8 @@ class TestUtils(unittest.TestCase):
 
         reg = cli_dict["_client_config"].region_name
 
-        LOGGER.debug("Region: ")
-        LOGGER.debug(reg)
+        logger.debug("Region: ")
+        logger.debug(reg)
 
         assert reg == "us-east-1"
 
@@ -34,8 +34,8 @@ class TestUtils(unittest.TestCase):
 
         reg = cli_dict["_client_config"].region_name
 
-        LOGGER.debug("Region: ")
-        LOGGER.debug(reg)
+        logger.debug("Region: ")
+        logger.debug(reg)
 
         assert reg == "us-west-2"
 
