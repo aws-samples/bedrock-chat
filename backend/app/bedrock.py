@@ -71,6 +71,11 @@ def is_mistral(model: type_model_name) -> bool:
     return "mistral" in model
 
 
+def is_not_tooluse_supported(model: type_model_name) -> bool:
+    """Check if the model is not supported for tool use"""
+    return model in ["deepseek-r1", "llama3-2-1b-instruct", "llama3-2-3b-instruct", ""]
+
+
 def _prepare_deepseek_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> Tuple[InferenceConfigurationTypeDef, None]:
