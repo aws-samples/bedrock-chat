@@ -653,8 +653,8 @@ def get_model_id(
         "eu-north-1": {
             "area": "eu",
             "models": [
-                "amazon-nova-lite", 
-                "amazon-nova-micro", 
+                "amazon-nova-lite",
+                "amazon-nova-micro",
                 "amazon-nova-pro",
             ],
         },
