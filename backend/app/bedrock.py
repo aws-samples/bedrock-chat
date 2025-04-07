@@ -549,7 +549,7 @@ def get_model_id(
     }
 
     # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
-    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html
+    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
     supported_regions = {
         "us-east-1": {
             "area": "us",
@@ -618,6 +618,7 @@ def get_model_id(
                 "amazon-nova-pro",
                 "claude-v3-haiku",
                 "claude-v3.5-sonnet",
+                "claude-v3.7-sonnet",
                 "llama3-2-1b-instruct",
                 "llama3-2-3b-instruct",
             ],
@@ -630,6 +631,7 @@ def get_model_id(
                 "amazon-nova-pro",
                 "claude-v3-haiku",
                 "claude-v3.5-sonnet",
+                "claude-v3.7-sonnet",
                 "llama3-2-1b-instruct",
                 "llama3-2-3b-instruct",
             ],
@@ -643,13 +645,18 @@ def get_model_id(
                 "amazon-nova-pro",
                 "claude-v3-haiku",
                 "claude-v3.5-sonnet",
+                "claude-v3.7-sonnet",
                 "llama3-2-1b-instruct",
                 "llama3-2-3b-instruct",
             ],
         },
         "eu-north-1": {
             "area": "eu",
-            "models": ["amazon-nova-lite", "amazon-nova-micro", "amazon-nova-pro"],
+            "models": [
+                "amazon-nova-lite", 
+                "amazon-nova-micro", 
+                "amazon-nova-pro",
+            ],
         },
         "ap-south-1": {
             "area": "apac",
