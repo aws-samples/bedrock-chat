@@ -97,17 +97,29 @@ const ChatPage: React.FC = () => {
   }, [conversationError, navigate, newChat, openSnackbar, t]);
 
   const { isWindows } = useIsWindows();
-
   const { getBotId } = useConversation();
-
   const { scrollToBottom, scrollToTop } = useScroll();
-
   const { conversationId: paramConversationId, botId: paramBotId } =
     useParams();
 
+    // fallbackBotId sets the default botId
+    // for users who do not have access to directly talk to an LLM 
+  const [fallbackBotId, setFallbackBotId] = useState<string | null>(null);
+  const [pageTitle, setPageTitle] = useState('');
+  const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
+  const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [ hasNoAssistants, setHasNoAssistants] = useState(false);
+
+
   const botId = useMemo(() => {
-    return paramBotId ?? getBotId(conversationId);
-  }, [conversationId, getBotId, paramBotId]);
+    /** Three ways to set the botId
+     * 1) User clicks on an assistant 
+     * 2) User clicks on a conversation
+     * 3) Defaults to first available assistant (for students)
+     */
+    return paramBotId ?? getBotId(conversationId) ?? fallbackBotId;
+  }, [conversationId, getBotId, paramBotId, fallbackBotId]);
 
   const {
     data: bot,
@@ -115,12 +127,7 @@ const ChatPage: React.FC = () => {
     isLoading: isLoadingBot,
   } = useBotSummary(botId ?? undefined);
 
-  const [pageTitle, setPageTitle] = useState('');
-  const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
-  const [description, setDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [ hasNoAssistants, setHasNoAssistants] = useState(false);
-
+  
 
   useEffect(() => {
     setIsLoading(true);
@@ -151,6 +158,7 @@ const ChatPage: React.FC = () => {
         setIsAvailabilityBot(true);
         setPageTitle(starredBots[0].title);
         setDescription(starredBots[0].description || t('bot.label.noDescription'));
+        setFallbackBotId(starredBots[0].id);
       } else {
         // an alert message will be displayed and input chat disabled
         setPageTitle(t('bot.alert.sync.noAvailableAssistants.title'));
