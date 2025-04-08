@@ -27,7 +27,7 @@ export class Database extends Construct {
       // SK: ConversationId | BotId
       sortKey: { name: "SK", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
       stream: StreamViewType.NEW_IMAGE,
       pointInTimeRecovery: props?.pointInTimeRecovery,
       encryption: TableEncryption.AWS_MANAGED,
