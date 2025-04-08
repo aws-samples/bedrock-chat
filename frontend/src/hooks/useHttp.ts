@@ -70,15 +70,21 @@ const useHttp = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOnce: <RES = any, DATA = any>(
       url: string,
-      params?: DATA,
+      params?: DATA | any, // Allow it to accept axios config
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errorProcess?: (err: any) => void
     ) => {
       return new Promise<AxiosResponse<RES>>((resolve, reject) => {
+        // Check if params is an object with a 'params' property (axios config)
+        const isAxiosConfig = params && 
+          (params.params !== undefined || 
+           params.headers !== undefined || 
+           params.timeout !== undefined);
+           
+        const config = isAxiosConfig ? params : { params };
+        
         api
-          .get<RES, AxiosResponse<RES>, DATA>(url, {
-            params,
-          })
+          .get<RES, AxiosResponse<RES>, DATA>(url, config)
           .then((data) => {
             resolve(data);
           })

@@ -24,7 +24,6 @@ import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import { UsageAnalysis } from "./usage-analysis";
 import { excludeDockerImage } from "../constants/docker";
-import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
 import { ValidatedPythonFunction } from './validated-python-function';
 
@@ -39,7 +38,10 @@ export interface ApiProps {
   readonly largeMessageBucket: IBucket;
   readonly apiPublishProject: codebuild.IProject;
   readonly bedrockCustomBotProject: codebuild.IProject;
-  readonly usageAnalysis?: UsageAnalysis;
+  readonly usageAnalysis: UsageAnalysis;
+  readonly botsMetadataTableArn: string;
+  readonly botsMetadataConfigTableArn: string;
+  readonly botsMetadataConfigTableName: string;
   readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
@@ -59,7 +61,7 @@ export class Api extends Construct {
     } = props;
 
     const usageAnalysisOutputLocation =
-      `s3://${props.usageAnalysis?.resultOutputBucket.bucketName}` || "";
+      `s3://${props.usageAnalysis.resultOutputBucket.bucketName}` || "";
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -138,17 +140,7 @@ export class Api extends Construct {
           "athena:GetQueryResults",
           "athena:GetDataCatalog",
         ],
-        resources: [props.usageAnalysis?.workgroupArn || ""],
-      })
-    );
-    handlerRole.addToPolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ["glue:GetDatabase", "glue:GetDatabases"],
-        resources: [
-          props.usageAnalysis?.database.databaseArn || "",
-          props.usageAnalysis?.database.catalogArn || "",
-        ],
+        resources: [props.usageAnalysis.workgroupArn || ""],
       })
     );
     handlerRole.addToPolicy(
@@ -156,15 +148,17 @@ export class Api extends Construct {
         effect: iam.Effect.ALLOW,
         actions: [
           "glue:GetDatabase",
+          "glue:GetDatabases",
           "glue:GetTable",
           "glue:GetTables",
           "glue:GetPartition",
           "glue:GetPartitions",
         ],
         resources: [
-          props.usageAnalysis?.database.databaseArn || "",
-          props.usageAnalysis?.database.catalogArn || "",
-          props.usageAnalysis?.ddbExportTable.tableArn || "",
+          props.usageAnalysis.database.databaseArn || "",
+          props.usageAnalysis.database.catalogArn || "",
+          props.usageAnalysis.ddbExportTable.tableArn || "",
+          props.usageAnalysis.botsAnalyticsTable.tableArn || "",
         ],
       })
     );
@@ -194,9 +188,10 @@ export class Api extends Construct {
         resources: [props.ltiDataTable.tableArn],
       })
     );
-    props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
-    props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
+    props.usageAnalysis.resultOutputBucket.grantReadWrite(handlerRole);
+    props.usageAnalysis.ddbBucket.grantRead(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
+    props.usageAnalysis.botsBucket.grantRead(handlerRole);
 
     const handler = new ValidatedPythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
@@ -225,11 +220,15 @@ export class Api extends Construct {
         // KNOWLEDGE_BASE_CODEBUILD_PROJECT_NAME:
         //   props.bedrockCustomBotProject.projectName,
         USAGE_ANALYSIS_DATABASE:
-          props.usageAnalysis?.database.databaseName || "",
+          props.usageAnalysis.database.databaseName || "",
         USAGE_ANALYSIS_TABLE:
-          props.usageAnalysis?.ddbExportTable.tableName || "",
-        USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis?.workgroupName || "",
+          props.usageAnalysis.ddbExportTable.tableName || "",
+        USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis.workgroupName || "",
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
+        BOTS_METADATA_TABLE_ARN: props.botsMetadataTableArn,
+        BOTS_METADATA_CONFIG_TABLE_NAME: props.botsMetadataConfigTableName,
+        BOTS_ANALYTICS_TABLE_ARN: props.usageAnalysis.botsAnalyticsTable.tableArn || "",
+        BOTS_BUCKET_ARN: props.usageAnalysis.botsBucket.bucketArn || "",
         FRONTEND_URL: props.frontendURL,
         ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
@@ -321,5 +320,25 @@ export class Api extends Construct {
     this.handler = handler;
 
     new CfnOutput(this, "BackendApiUrl", { value: api.apiEndpoint });
+
+    // Add permissions for DynamoDB resources
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:BatchGetItem"
+        ],
+        resources: [
+          database.tableArn,
+          props.botsMetadataTableArn,
+          props.botsMetadataConfigTableArn
+        ].filter(arn => arn !== ""),
+      })
+    );
   }
 }

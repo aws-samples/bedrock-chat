@@ -16,6 +16,8 @@ from app.routes.lti import router as lti_router
 from app.routes.conversation import router as conversation_router
 from app.routes.published_api import router as published_api_router
 from app.routes.group import router as group_router
+from app.routes.metadata import router as metadata_router
+from app.routes.analytics import router as analytics_router
 from app.user import User
 from app.utils import is_running_on_lambda
 from app.websocket_local import register_websocket_routes
@@ -35,7 +37,7 @@ is_published_api = PUBLISHED_API_ID is not None
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(levelname)s:%(name)s:%(lineno)d - %(message)s"
+    format='%(asctime)s - %(name)s:%(lineno)d  - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,7 @@ if not is_published_api:
         {"name": "bot", "description": "Bot API"},
         {"name": "api_publication", "description": "API Publication API"},
         {"name": "admin", "description": "Admin API"},
+        {"name": "metadata", "description": "Metadata API"},
     ]
     title = "Bedrock Claude Chat"
 else:
@@ -65,6 +68,8 @@ if not is_published_api:
     app.include_router(api_publication_router)
     app.include_router(admin_router)
     app.include_router(group_router)
+    app.include_router(metadata_router)
+    app.include_router(analytics_router)
 else:
     app.include_router(published_api_router)
 
@@ -133,9 +138,8 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
 
 @app.middleware("http")
 async def add_log_requests(request: Request, call_next: ASGIApp):
-    logger.info(f"Request path: {request.url.path}")
-    logger.info(f"Request method: {request.method}")
-    logger.info(f"Request headers: {request.headers}")
+    logger.info(f"Request: {request.method} {request.url.path}")
+    logger.debug(f"Request headers: {request.headers}")
 
     body = await request.body()
     logger.info(f"Request body: {body.decode('utf-8')[:100]}...")

@@ -379,6 +379,8 @@ class ConverseApiStreamHandler:
                 feedback=None,
                 used_chunks=None,
                 thinking_log=None,
+                input_token_count=input_token_count,
+                output_token_count=output_token_count,
             )
 
             price = calculate_price(self.model, input_token_count, output_token_count)

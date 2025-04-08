@@ -201,3 +201,19 @@ def convert_decimals_for_json(obj: Any) -> Any:
     elif isinstance(obj, list):
         return [convert_decimals_for_json(item) for item in obj]
     return obj
+
+def get_table(table_name: str) -> Any:
+    """Get a DynamoDB table resource by name"""
+    dynamodb = boto3.resource('dynamodb')
+    return dynamodb.Table(table_name)
+
+def get_table_name_from_arn(arn: str) -> str:
+    """Extract table name from DynamoDB table ARN.
+    
+    Args:
+        arn (str): DynamoDB table ARN in format arn:aws:dynamodb:region:account:table/table-name
+        
+    Returns:
+        str: The table name
+    """
+    return arn.split('/')[-1]

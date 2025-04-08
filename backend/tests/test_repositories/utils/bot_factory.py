@@ -15,6 +15,8 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
+    AssistantConfigModel,
+    CreatorConfigModel,
 )
 from app.routes.schemas.bot import type_sync_status
 
@@ -75,6 +77,16 @@ def create_test_private_bot(
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
         active_models=ActiveModelsModel(),
+        version="1.0",
+        group_id="test-group",
+        assistant_config=AssistantConfigModel(
+            assistant_type="general",
+            assistant_topics="test topics"
+        ),
+        creator_config=CreatorConfigModel(
+            user_id=owner_user_id,
+            user_name="Test User"
+        ),
     )
 
 
@@ -130,4 +142,14 @@ def create_test_public_bot(
         bedrock_knowledge_base=bedrock_knowledge_base,
         bedrock_guardrails=bedrock_guardrails,
         active_models=ActiveModelsModel(),
+        version="1.0",
+        group_id="test-group",
+        assistant_config=AssistantConfigModel(
+            assistant_type="general",
+            assistant_topics="test topics"
+        ),
+        creator_config=CreatorConfigModel(
+            user_id=owner_user_id,
+            user_name="Test User"
+        ),
     )

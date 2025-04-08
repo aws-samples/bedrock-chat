@@ -1,4 +1,3 @@
-import asyncio
 import base64
 import json
 import logging
@@ -7,6 +6,7 @@ from datetime import datetime
 from decimal import Decimal as decimal
 from functools import partial
 from typing import Literal
+import asyncio
 
 import boto3
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
@@ -44,6 +44,8 @@ from app.routes.schemas.bot import BotMetaOutput, type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+from app.repositories.metadata_repository import MetadataRepository
+from app.repositories.bot_metadata import construct_bot_metadata
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
@@ -108,6 +110,28 @@ def store_bot(user_id: str, custom_bot: BotModel):
         item["GuardrailsParams"] = custom_bot.bedrock_guardrails.model_dump()
 
     response = table.put_item(Item=item)
+
+    # --- Trigger Metadata Sync --- 
+    try:
+        logger.info(f"Initiating metadata sync for new bot {custom_bot.id}...")
+        # Ensure the top-level owner_user_id field is set correctly
+        custom_bot.owner_user_id = user_id
+
+        # Construct the metadata (Sync call)
+        constructed_metadata = construct_bot_metadata(custom_bot)
+        custom_bot.metadata = constructed_metadata # Assign to the model instance
+        
+        metadata_repo = MetadataRepository()
+        # Direct sync call (assuming save_normalized_bot_metadata is made sync in Phase 2)
+        metadata_repo.save_normalized_bot_metadata(custom_bot) 
+        logger.info(f"Completed metadata sync for new bot {custom_bot.id}")
+    except ValueError as ve:
+         logger.error(f"Validation error during metadata sync prep for new bot {custom_bot.id}: {ve}", exc_info=True)
+    except Exception as e:
+        logger.error(f"Failed metadata sync trigger for new bot {custom_bot.id}: {e}", exc_info=True)
+        # Don't fail the main operation for sync failure, just log error
+    # --- End Metadata Sync --- 
+
     return response
 
 
@@ -194,6 +218,33 @@ def update_bot(
             raise RecordNotFoundError(f"Bot with id {bot_id} not found")
         else:
             raise e
+
+    # --- Trigger Metadata Sync --- 
+    try:
+        logger.info(f"Initiating metadata sync for updated bot {bot_id}...")
+        # Fetch the full bot model to get the current complete state after update (Sync call)
+        updated_bot_model = find_private_bot_by_id(user_id, bot_id) 
+        
+        if updated_bot_model:
+            # Construct the metadata for the updated model (Sync call)
+            constructed_metadata = construct_bot_metadata(updated_bot_model)
+            updated_bot_model.metadata = constructed_metadata # Assign to the model instance
+            
+            metadata_repo = MetadataRepository()
+            # Direct sync call (assuming save_normalized_bot_metadata is made sync in Phase 2)
+            metadata_repo.save_normalized_bot_metadata(updated_bot_model) 
+            logger.info(f"Completed metadata sync for updated bot {bot_id}")
+        else:
+             logger.error(f"Bot {bot_id} not found after update, cannot sync metadata.")
+
+    except RecordNotFoundError:
+         logger.error(f"Bot {bot_id} not found after update, cannot sync metadata.", exc_info=True)
+    except ValueError as ve:
+         logger.error(f"Validation error during metadata sync prep for updated bot {bot_id}: {ve}", exc_info=True)
+    except Exception as e:
+         logger.error(f"Failed metadata sync trigger for updated bot {bot_id}: {e}", exc_info=True)
+         # Don't fail the main operation for sync failure
+    # --- End Metadata Sync --- 
 
     return response
 
@@ -769,7 +820,8 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             else None
         )
     )
-    logger.info(f"Found public bot: {bot}")
+    logger.info(f"Found public bot: owner_user_id(PK)={bot.owner_user_id}, SK={item['SK']}")
+    logger.debug(f"Found public bot: {bot}")
     return bot
 
 
@@ -909,6 +961,18 @@ def delete_bot_by_id(user_id: str, bot_id: str):
             raise RecordNotFoundError(f"Bot with id {bot_id} not found")
         else:
             raise e
+
+    # --- Trigger Metadata Sync (Soft Delete) --- 
+    try:
+        logger.info(f"Initiating metadata soft delete for bot {bot_id}...")
+        metadata_repo = MetadataRepository()
+        # Direct sync call (assuming mark_bot_metadata_as_deleted is made sync in Phase 2)
+        metadata_repo.mark_bot_metadata_as_deleted(bot_id) 
+        logger.info(f"Completed metadata soft delete for bot {bot_id}")
+    except Exception as e:
+        logger.error(f"Failed metadata soft delete trigger for bot {bot_id}: {e}", exc_info=True)
+        # Don't fail the main operation for sync failure
+    # --- End Metadata Sync --- 
 
     return response
 

@@ -370,3 +370,15 @@ Please also take a look at the following guidelines before contributing:
 ## License
 
 This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
+
+## Analytics Naming Conventions
+
+To ensure consistency between backend and frontend, we follow strict naming conventions for analytics data fields. These conventions help prevent errors like NaN values or missing data in the dashboard.
+
+For detailed information about analytics field names and types, see [Analytics Naming Conventions](./backend/docs/analytics_naming_conventions.md).
+
+Key principles:
+- Use `snake_case` for all field names
+- Maintain consistent field names between backend and frontend
+- Transform data appropriately while preserving field names
+- Handle null values consistently

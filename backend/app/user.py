@@ -1,16 +1,13 @@
 from pydantic import BaseModel
+from typing import List, Optional
 
+# Define a schema for a single membership
+class UserMembership(BaseModel):
+    group_id: Optional[str] = None
+    role: str
 
 class User(BaseModel):
     id: str
     name: str
-    groups: list[str]
-
-    def is_admin(self) -> bool:
-        return "Admin" in self.groups
-
-    def is_creating_bot_allowed(self) -> bool:
-        return self.is_admin() or "CreatingBotAllowed" in self.groups
-
-    def is_publish_allowed(self) -> bool:
-        return self.is_admin() or "PublishAllowed" in self.groups
+    # Replace 'groups' and the old 'memberships' with a list of UserMembership objects
+    memberships: List[UserMembership] = []

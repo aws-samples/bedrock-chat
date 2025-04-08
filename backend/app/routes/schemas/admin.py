@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from app.routes.schemas.base import BaseSchema
 from app.routes.schemas.bot import AssistantConfig, CreatorConfig, Knowledge, type_sync_status
 from pydantic import Field
@@ -15,28 +17,6 @@ class PublishedBotOutput(BaseSchema):
 class PublishedBotOutputsWithNextToken(BaseSchema):
     bots: list[PublishedBotOutput]
     next_token: str | None
-
-
-class UsagePerBotOutput(BaseSchema):
-    id: str = Field(..., description="bot_id")
-    title: str
-    description: str
-    is_published: bool
-    published_datetime: int | None
-    owner_user_id: str
-    # model_id: str
-    total_price: float
-    num_of_users: int
-    num_of_convos: int
-    assistant_config: AssistantConfig | None
-    creator_config: CreatorConfig | None
-    group_id: str | None
-
-
-class UsagePerUserOutput(BaseSchema):
-    id: str = Field(..., description="user_id")
-    email: str
-    total_price: float
 
 
 class PublicBotOutput(BaseSchema):

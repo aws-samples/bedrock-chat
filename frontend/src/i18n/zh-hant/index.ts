@@ -281,9 +281,9 @@ const translation = {
         },
         help: {
           overview:
-            'Monitor the usage status of Shared Bots and Published Bot APIs.',
+            'Monitor the usage status of Assistants and Published Bot APIs.',
           calculationPeriod:
-            'If the Calculation Period is not set, the cost for today will be displayed.',
+            'If the Calculation Period is not set, the cost for last 30 days will be displayed.',
         },
       },
       apiManagement: {

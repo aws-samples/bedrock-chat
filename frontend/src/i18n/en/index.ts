@@ -514,13 +514,13 @@ How would you categorize this email?`,
           noPublicBotUsages:
             'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
-          // Add these new keys:
           assistantName: 'Assistant Name',
           course: 'Course',
           school: 'School',
           owner: 'Owner',
           conversations: 'Conversations',
           users: 'Users',
+          messages: 'Messages',
           cost: 'Cost',
           SearchCondition: {
             title: 'Calculation Period',
@@ -531,9 +531,15 @@ How would you categorize this email?`,
         },
         help: {
           overview:
-            'Monitor the usage status of Shared Bots and Published Bot APIs.',
+            'Monitor the usage status of Assistants and Published Bot APIs.',
           calculationPeriod:
-            'If the Calculation Period is not set, the cost for today will be displayed.',
+            'If the Calculation Period is not set, the cost for last 30 days will be displayed.',
+        },
+        error: {
+          fetchFailed: 'Failed to fetch analytics data',
+          unknown: 'An unknown error occurred while fetching analytics data',
+          endpointNotFound: 'Analytics endpoint not found - This feature may not be available yet',
+          invalidResponse: 'Invalid response from server - not valid JSON',
         },
       },
       apiManagement: {
@@ -575,6 +581,11 @@ How would you categorize this email?`,
       },
       validationError: {
         period: 'Enter both From and To',
+      },
+    },
+    analytics: {
+      label: {
+        pageTitle: 'Analytics',
       },
     },
     deleteDialog: {
@@ -905,6 +916,8 @@ How would you categorize this email?`,
           'Each document size must be no more than {{maxSize}}.',
         fileCountExceeded: 'Could not upload more than {{maxCount}} files.',
       },
+      failedToFetchData: 'Failed to fetch data',
+      unknown: 'An unknown error occurred'
     },
     validation: {
       title: 'Validation Error',
@@ -985,17 +998,20 @@ How would you categorize this email?`,
       },
       contextualGroundingCheck: {
         label: 'Contextual Grounding Check',
-        hint: 'Use this policy to validate if model responses are grounded in the reference source and relevant to user’s query to filter model hallucination.',
+        hint: 'Use this policy to validate if model responses are grounded in the reference source and relevant to user\'s query to filter model hallucination.',
         groundingThreshold: {
           label: 'Grounding',
           hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 0.99: blocks almost everything',
         },
         relevanceThreshold: {
           label: 'Relevance',
-          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything",
+          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything"
         },
       },
     },
+  },
+  notFound: {
+    title: 'Not Found',
   },
 };
 

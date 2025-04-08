@@ -25,8 +25,14 @@ export class UsageAnalysis extends Construct {
   public readonly resultOutputBucket: s3.IBucket;
   public readonly workgroupName: string;
   public readonly workgroupArn: string;
+  public readonly botsBucket: s3.IBucket;
+  public readonly botsAnalyticsTable: glue.ITable;
+  public readonly sourceDatabase: Database;
+
   constructor(scope: Construct, id: string, props: UsageAnalysisProps) {
     super(scope, id);
+
+    this.sourceDatabase = props.sourceDatabase;
 
     const GLUE_DATABASE_NAME = `${Stack.of(
       this
@@ -109,61 +115,68 @@ export class UsageAnalysis extends Construct {
         ]),
       },
       {
+        name: "InputTokens",
+        type: glue.Schema.struct([
+          { name: "N", type: glue.Schema.decimal(20, 0) },
+        ]),
+      },
+      {
+        name: "OutputTokens",
+        type: glue.Schema.struct([
+          { name: "N", type: glue.Schema.decimal(20, 0) },
+        ]),
+      },
+      {
         name: "BotId",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
       {
-        name: "Description",
+        name: "Metadata",
+        type: glue.Schema.struct([{
+          name: "L",
+          type: glue.Schema.array(
+            glue.Schema.struct([
+              {
+                name: "M",
+                type: glue.Schema.struct([
+                  { name: "key", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) },
+                  { name: "value", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) },
+                  { name: "type", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) },
+                  { name: "parent_key", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) }
+                ])
+              }
+            ])
+          )
+        }])
+      },
+      {
+        name: "Feedback",
+        type: glue.Schema.struct([{
+          name: "M",
+          type: glue.Schema.struct([
+            { name: "rating", type: glue.Schema.struct([{ name: "N", type: glue.Schema.INTEGER }]) },
+            { name: "category", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) },
+            { name: "comment", type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]) },
+            { name: "tags", type: glue.Schema.struct([{ 
+              name: "L", 
+              type: glue.Schema.array(glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]))
+            }]) },
+            { name: "metrics", type: glue.Schema.struct([{
+              name: "M",
+              type: glue.Schema.map(glue.Schema.STRING, glue.Schema.decimal(10, 2))
+            }]) },
+            { name: "created_at", type: glue.Schema.struct([{ name: "N", type: glue.Schema.decimal(20, 0) }]) }
+          ])
+        }])
+      },
+      {
+        name: "Sentiment",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
       {
-        name: "Instruction",
+        name: "Topic",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "PublicBotId",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "IsPinned",
-        type: glue.Schema.struct([{ name: "BOOL", type: glue.Schema.BOOLEAN }]),
-      },
-      {
-        name: "Knowledge",
-        type: glue.Schema.struct([
-          {
-            name: "M",
-            type: glue.Schema.map(
-              glue.Schema.STRING,
-              glue.Schema.array(glue.Schema.STRING)
-            ),
-          },
-        ]),
-      },
-      {
-        name: "LastBotUsed",
-        type: glue.Schema.struct([{ name: "N", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "LastExecId",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "SyncStatus",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "SyncStatusReason",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "PublishedApiStackName",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
-      {
-        name: "PublishedApiDatetime",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
-      },
+      }
     ]);
 
     const ddbExportTable = new glue.S3Table(this, "DdbExportTable", {
@@ -221,7 +234,6 @@ export class UsageAnalysis extends Construct {
     const cfnDdbExportTable = ddbExportTable.node
       .defaultChild as aws_glue.CfnTable;
     cfnDdbExportTable.addPropertyOverride("TableInput.Parameters", {
-      has_encrypted_data: false,
       "projection.enabled": true,
       "projection.datehour.type": "date",
       // NOTE: To account for timezones that are ahead of UTC, specify a far future date instead of `NOW` for the end of the range.
@@ -233,33 +245,119 @@ export class UsageAnalysis extends Construct {
         `s3://${ddbBucket.bucketName}/` + "${datehour}/AWSDynamoDB/data/",
     });
 
+    new CfnOutput(this, "ConversationAnalyticsTableRef", {
+      value: cfnDdbExportTable.ref,
+      description: "The name of the Glue table containing conversation analytics data",
+    });
+
+    // Create bots table for analytics
+    const botsBucket = new s3.Bucket(this, "BotsBucket", {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: props.accessLogBucket,
+      serverAccessLogsPrefix: "BotsBucket",
+    });
+
+    // Define the bots analytics table
+    const BOTS_ANALYTICS_TABLE_NAME = 'bots_analytics';
+
+    const botsAnalyticsTable = new aws_glue.CfnTable(this, 'BotsAnalyticsTable', {
+      catalogId: Stack.of(this).account,
+      databaseName: GLUE_DATABASE_NAME,
+      tableInput: {
+        name: BOTS_ANALYTICS_TABLE_NAME,
+        storageDescriptor: {
+          columns: [
+            { name: 'bot_id', type: 'string' },          // 1
+            { name: 'course_id', type: 'string' },       // 2
+            { name: 'course_name', type: 'string' },     // 3
+            { name: 'create_time', type: 'string' },     // 4
+            { name: 'deleted_at', type: 'string' },      // 5
+            { name: 'description', type: 'string' },     // 6
+            { name: 'district_id', type: 'string' },     // 7
+            { name: 'district_name', type: 'string' },   // 8
+            { name: 'is_deleted', type: 'string' },      // 9
+            { name: 'is_public', type: 'string' },       // 10
+            { name: 'last_used_time', type: 'string' },  // 11
+            { name: 'owner_user_id', type: 'string' },   // 12
+            { name: 'school_id', type: 'string' },       // 13
+            { name: 'school_name', type: 'string' },     // 14
+            { name: 'title', type: 'string' },           // 15
+            { name: 'updated_at', type: 'string' }       // 16
+          ],
+          location: `s3://${botsBucket.bucketName}/bots_analytics`,
+          inputFormat: 'org.apache.hadoop.mapred.TextInputFormat',
+          outputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',
+          serdeInfo: {
+            serializationLibrary: 'org.apache.hadoop.hive.serde2.OpenCSVSerde',
+            parameters: {
+              'separatorChar': ',',
+              'quoteChar': '"',
+              'escapeChar': '\\'
+            }
+          }
+        },
+        tableType: 'EXTERNAL_TABLE',
+        parameters: { 
+          'EXTERNAL': 'TRUE',
+          'skip.header.line.count': '1' 
+        } 
+      }
+    });
+
     const exportHandler = new python.PythonFunction(this, "ExportHandler", {
       entry: path.join(__dirname, "../../../backend/s3_exporter/"),
-      runtime: Runtime.PYTHON_3_11,
+      runtime: Runtime.PYTHON_3_12,
       environment: {
         BUCKET_NAME: ddbBucket.bucketName,
+        BOTS_BUCKET_NAME: botsBucket.bucketName,
         TABLE_ARN: props.sourceDatabase.table.tableArn,
+        BOTS_METADATA_TABLE_ARN: props.sourceDatabase.botsMetadataTableArn,
+        BOTS_METADATA_CONFIG_TABLE_ARN: props.sourceDatabase.botsMetadataConfigTableNameArn,
       },
       logRetention: logs.RetentionDays.THREE_MONTHS,
+      bundling: {
+        assetExcludes: ['.venv', '__pycache__', '*.pyc', '.pytest_cache'],
+      }
     });
     exportHandler.role?.addToPrincipalPolicy(
       new iam.PolicyStatement({
-        actions: ["dynamodb:ExportTableToPointInTime"],
-        resources: [props.sourceDatabase.table.tableArn],
+        actions: ["dynamodb:ExportTableToPointInTime", "dynamodb:Scan", "dynamodb:Query"],
+        resources: [props.sourceDatabase.table.tableArn, props.sourceDatabase.botsMetadataTableArn, props.sourceDatabase.botsMetadataConfigTableNameArn],
       })
     );
     ddbBucket.grantReadWrite(exportHandler);
+    botsBucket.grantReadWrite(exportHandler);
 
     new events.Rule(this, "ScheduleRule", {
       schedule: events.Schedule.cron({ minute: "5" }),
       targets: [new targets.LambdaFunction(exportHandler)],
     });
 
-    new CfnOutput(this, "UsageAnalysisWorkgroup", {
+    new CfnOutput(this, "AnalyticsWorkgroup", {
       value: wg.name,
     });
-    new CfnOutput(this, "UsageAnalysisOutputLocation", {
+    new CfnOutput(this, "AnalyticsOutputLocation", {
       value: `s3://${queryResultBucket.bucketName}`,
+    });
+
+    new CfnOutput(this, "BotsBucketName", {
+      value: botsBucket.bucketName,
+      description: "The name of the S3 bucket containing bot analytics data",
+    });
+
+    new CfnOutput(this, "DdbBucketName", {
+      value: ddbBucket.bucketName,
+      description: "The name of the S3 bucket containing DynamoDB exports for analytics",
+    });
+
+    new CfnOutput(this, "BotsBucketArn", {
+      value: botsBucket.bucketArn,
+      description: "The ARN of the S3 bucket containing bot analytics data",
     });
 
     this.database = database;
@@ -270,5 +368,24 @@ export class UsageAnalysis extends Construct {
     this.workgroupArn = `arn:aws:athena:*:${Stack.of(this).account}:workgroup/${
       wg.name
     }`;
+    this.botsBucket = botsBucket;
+    
+    // Create a proper table reference
+    const botsAnalyticsTableArn = Stack.of(this).formatArn({
+      service: 'glue',
+      resource: 'table',
+      resourceName: `${database.databaseName}/${BOTS_ANALYTICS_TABLE_NAME}`
+    });
+    this.botsAnalyticsTable = glue.Table.fromTableArn(this, 'BotsAnalyticsTableRef', botsAnalyticsTableArn);
+
+    new CfnOutput(this, "BotsAnalyticsTableArn", {
+      value: botsAnalyticsTableArn,
+      description: "The name of the Glue table containing bot analytics data",
+    });
+
+    new CfnOutput(this, "BotsAnalyticsTableName", {
+      value: BOTS_ANALYTICS_TABLE_NAME,
+      description: "The name of the Glue table containing bot analytics data",
+    });
   }
 }

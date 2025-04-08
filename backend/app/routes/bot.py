@@ -1,6 +1,6 @@
 from typing import Any, Dict, Literal
 
-from app.dependencies import check_is_user_authotized
+from app.dependencies import check_is_user_authorized
 from app.repositories.custom_bot import (
     find_private_bot_by_id,
     find_private_bots_by_user_id,
@@ -52,7 +52,7 @@ def post_bot(
 ):
     """Create new private owned bot."""
     current_user: User = request.state.current_user
-    check_is_user_authotized("create_assistant", current_user)
+    check_is_user_authorized("create_assistant", current_user)
     return create_new_bot(current_user.id, bot_input)
 
 
@@ -60,7 +60,7 @@ def post_bot(
 def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
     """Modify owned bot title, instruction and description."""
     current_user: User = request.state.current_user
-    check_is_user_authotized("edit_assistant", current_user)
+    check_is_user_authorized("edit_assistant", current_user)
     return modify_owned_bot(current_user.id, bot_id, modify_input)
 
 
@@ -68,7 +68,7 @@ def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
 def patch_bot_pin_status(request: Request, bot_id: str, pinned_input: BotPinnedInput):
     """Modify owned bot pin status."""
     current_user: User = request.state.current_user
-    check_is_user_authotized("edit_assistant", current_user)
+    check_is_user_authorized("edit_assistant", current_user)
     return modify_pin_status(current_user.id, bot_id, pinned=pinned_input.pinned)
 
 
@@ -78,7 +78,7 @@ def patch_bot_visibility(
 ):
     """Switch bot visibility"""
     current_user: User = request.state.current_user
-    check_is_user_authotized("edit_assistant_visibility", current_user)
+    check_is_user_authorized("edit_assistant_visibility", current_user)
     update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)
 
 
@@ -109,7 +109,7 @@ def get_all_bots(
 def get_private_bot(request: Request, bot_id: str):
     """Get private bot by id."""
     current_user: User = request.state.current_user
-    check_is_user_authotized("get_assistant", current_user)
+    check_is_user_authorized("get_assistant", current_user)
     bot = find_private_bot_by_id(current_user.id, bot_id)
 
     # get the instructions with the template variables
@@ -198,7 +198,7 @@ def delete_bot(request: Request, bot_id: str):
     If the bot is shared, just remove the alias.
     """
     current_user: User = request.state.current_user
-    check_is_user_authotized("delete_assistant", current_user)
+    check_is_user_authorized("delete_assistant", current_user)
     remove_bot_by_id(current_user.id, bot_id)
 
 
@@ -208,7 +208,7 @@ def get_bot_presigned_url(
 ):
     """Get presigned url for bot"""
     current_user: User = request.state.current_user
-    check_is_user_authotized("get_presigned_url", current_user)
+    check_is_user_authorized("get_presigned_url", current_user)
     url = issue_presigned_url(current_user.id, bot_id, filename, contentType)
     return BotPresignedUrlOutput(url=url)
 
@@ -217,7 +217,7 @@ def get_bot_presigned_url(
 def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     """Delete uploaded file for bot"""
     current_user: User = request.state.current_user
-    check_is_user_authotized("delete_uploaded_file", current_user)
+    check_is_user_authorized("delete_uploaded_file", current_user)
     remove_uploaded_file(current_user.id, bot_id, filename)
 
 
@@ -225,6 +225,6 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     current_user: User = request.state.current_user
-    check_is_user_authotized("get_assistant_agents", current_user)
+    check_is_user_authorized("get_assistant_agents", current_user)
     tools = fetch_available_agent_tools()
     return [AgentTool(name=tool.name, description=tool.description) for tool in tools]

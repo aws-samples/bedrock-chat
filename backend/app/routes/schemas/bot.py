@@ -12,7 +12,7 @@ from app.routes.schemas.bot_kb import (
     BedrockKnowledgeBaseOutput,
 )
 from app.routes.schemas.conversation import type_model_name
-from pydantic import Field, create_model, validator
+from pydantic import Field, create_model, validator, field_validator
 
 if TYPE_CHECKING:
     from app.repositories.models.custom_bot import BotModel
@@ -76,8 +76,15 @@ class Knowledge(BaseSchema):
     filenames: list[str]
     s3_urls: list[str]
 
-    @validator("s3_urls", each_item=True)
-    def validate_s3_url(cls, v):
+    @field_validator("s3_urls", mode='before')
+    @classmethod
+    def validate_s3_urls(cls, v):
+        if isinstance(v, list):
+            return [cls.validate_single_s3_url(url) for url in v]
+        return v
+    
+    @classmethod
+    def validate_single_s3_url(cls, v):
         if not v.startswith("s3://"):
             raise ValueError(f"Invalid S3 URL format: {v}")
 

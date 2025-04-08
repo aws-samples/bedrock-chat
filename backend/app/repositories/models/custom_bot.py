@@ -1,11 +1,13 @@
-from typing import Any, Dict, List, Literal, Type, get_args
+from typing import Any, Dict, List, Literal, Type, get_args, Optional
+from datetime import datetime
 
 from app.repositories.models.common import DynamicBaseModel, Float
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.bot import type_sync_status
 from app.routes.schemas.conversation import type_model_name
-from pydantic import BaseModel, ConfigDict, create_model
+from app.repositories.models.bot_metadata import BotMetadata, HierarchyMetadata, TagMetadata, AttributeMetadata
+from pydantic import BaseModel, ConfigDict, create_model, Field
 
 
 def _create_model_activate_model(model_names: List[str]) -> Type[DynamicBaseModel]:
@@ -92,7 +94,6 @@ class BotModel(BaseModel):
     instruction: str
     create_time: float
     last_used_time: float
-    # This can be used as the bot is public or not. Also used for GSI PK
     public_bot_id: str | None
     owner_user_id: str
     is_pinned: bool
@@ -114,6 +115,36 @@ class BotModel(BaseModel):
     group_id: str | None
     assistant_config: AssistantConfigModel | None
     creator_config: CreatorConfigModel | None
+    metadata: Optional[BotMetadata] = None
+
+    def get_hierarchy(self, level: str) -> List[HierarchyMetadata]:
+        """Get hierarchical metadata of a specific level"""
+        if not self.metadata:
+            return []
+        return [h for h in self.metadata.hierarchy if h.level == level]
+
+    def get_tags(self, category: Optional[str] = None) -> List[TagMetadata]:
+        """Get all tags, optionally filtered by category"""
+        if not self.metadata:
+            return []
+        if category:
+            return [t for t in self.metadata.tags if t.category == category]
+        return self.metadata.tags
+
+    def get_attributes(self) -> List[AttributeMetadata]:
+        """Get all attributes"""
+        if not self.metadata:
+            return []
+        return self.metadata.attributes
+        
+    def get_attribute_value(self, key: str) -> Any:
+        """Get the value of a specific attribute"""
+        if not self.metadata:
+            return None
+        for attr in self.metadata.attributes:
+            if attr.key == key:
+                return attr.value
+        return None
 
     def has_knowledge(self) -> bool:
         return (

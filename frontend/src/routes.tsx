@@ -4,7 +4,8 @@ import NotFound from './pages/NotFound.tsx';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotKbEditPage from './features/knowledgeBase/pages/BotKbEditPage.tsx';
 import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
-import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage.tsx';
+import AnalyticsBotPage from './pages/AnalyticsBotPage.tsx';
 import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
 import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
 import { useTranslation } from 'react-i18next';
@@ -42,8 +43,12 @@ const rootChildren = [
     element: <ChatPage />,
   },
   {
-    path: '/admin/shared-bot-analytics',
-    element: <AdminSharedBotAnalyticsPage />,
+    path: '/analytics',
+    element: <AnalyticsDashboardPage />,
+  },
+  {
+    path: '/analytics/bots/:botId',
+    element: <AnalyticsBotPage />,
   },
   {
     path: '/admin/api-management',
@@ -83,8 +88,8 @@ export const usePageLabel = () => {
   const pageLabel: { path: (typeof allPaths)[number]; label: string }[] = [
     { path: '/bot/explore', label: t('bot.explore.label.pageTitle') },
     {
-      path: '/admin/shared-bot-analytics',
-      label: t('admin.sharedBotAnalytics.label.pageTitle'),
+      path: '/analytics',
+      label: t('analytics.label.pageTitle'),
     },
     {
       path: '/admin/api-management',

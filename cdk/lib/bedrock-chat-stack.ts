@@ -23,6 +23,9 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as cw_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -170,9 +173,12 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
       usageAnalysis,
       largeMessageBucket,
+      botsMetadataTableArn: database.botsMetadataTableArn,
+      botsMetadataConfigTableArn: database.botsMetadataConfigTableNameArn,
+      botsMetadataConfigTableName: database.botsMetadataConfigTable.tableName,
       enableMistral: props.enableMistral,
       enableBedrockCrossRegionInference:
-      props.enableBedrockCrossRegionInference,
+        props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
       frontendURL: frontend.getOrigin(),
     });
@@ -262,5 +268,83 @@ export class BedrockChatStack extends cdk.Stack {
       value: largeMessageBucket.bucketName,
       exportName: "BedrockClaudeChatLargeMessageBucketName",
     });
+
+    // --- BEGIN MONITORING STUBS (Referencing existing constructs) ---
+
+    // Create an SNS Topic for alarms
+    const alarmTopic = new sns.Topic(this, 'AnalyticsAlarmTopic', {
+      displayName: 'Analytics System Alarms',
+    });
+
+    // 1. CloudWatch Dashboard Stub
+    const dashboard = new cloudwatch.Dashboard(this, 'AnalyticsDashboard', {
+      dashboardName: `${this.stackName}-AnalyticsMonitoring`,
+    });
+
+    // Add Placeholder Widgets
+    dashboard.addWidgets(
+      new cloudwatch.TextWidget({ markdown: '# Analytics API Performance', width: 24, height: 1 }),
+      // Placeholder: API Gateway metrics from the 'backendApi' construct instance
+      // new cloudwatch.GraphWidget({ title: "API Latency", left: [backendApi.api.metricLatency()], width: 12 }),
+      // new cloudwatch.GraphWidget({ title: "API 5XX Errors", left: [backendApi.api.metricServerError()], width: 12 }),
+
+      new cloudwatch.TextWidget({ markdown: '# Backend Lambda Performance (Analytics)', width: 24, height: 1 }),
+      // Placeholder: Need references to specific analytics Lambda functions if they exist within backendApi or usageAnalysis constructs
+
+      new cloudwatch.TextWidget({ markdown: '# DynamoDB GSI Performance (BotsMetadataTable)', width: 24, height: 1 }),
+      // Use the actual table object from the database construct
+      // new cloudwatch.GraphWidget({ title: "OwnerUserIdIndex Throttles", left: [database.botsMetadataTable.metricThrottledRequestsForOperations({dimensionsMap: {GlobalSecondaryIndexName: 'OwnerUserIdIndex'}})], width: 12 }),
+      // new cloudwatch.GraphWidget({ title: "GroupIdIndex Throttles", left: [database.botsMetadataTable.metricThrottledRequestsForOperations({dimensionsMap: {GlobalSecondaryIndexName: 'BotsMetadataGroupIdIndex'}})], width: 12 }),
+
+      new cloudwatch.TextWidget({ markdown: '# Athena Query Performance & Cost', width: 24, height: 1 }),
+      // Placeholder - requires custom metrics or logs insights
+
+      new cloudwatch.TextWidget({ markdown: '# ETL Performance (S3 Exporter)', width: 24, height: 1 }),
+      // Placeholder: Need reference to the ETL Lambda (potentially inside usageAnalysis?)
+      // Example: usageAnalysis.exportHandler?.metricErrors()
+    );
+
+    // 2. CloudWatch Alarm Stubs (Placeholders)
+
+    // Alarm for DDB GSI Throttling (Example: OwnerUserIdIndex Writes)
+    /*
+    new cloudwatch.Alarm(this, 'OwnerIndexWriteThrottleAlarm', {
+      alarmName: `${this.stackName}-OwnerIndexWriteThrottled`,
+      metric: database.botsMetadataTable.metric('WriteThrottleEvents', {
+        dimensionsMap: { GlobalSecondaryIndexName: 'OwnerUserIdIndex' },
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 10, evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    }).addAlarmAction(new cw_actions.SnsAction(alarmTopic));
+    */
+
+    // Alarm for API Gateway 5XX Errors (Example)
+    /*
+    new cloudwatch.Alarm(this, 'AnalyticsApi5xxAlarm', {
+       alarmName: `${this.stackName}-AnalyticsApi5xxHigh`,
+       metric: backendApi.api.metricServerError({
+         period: cdk.Duration.minutes(1), statistic: 'Sum'
+       }),
+       threshold: 5, evaluationPeriods: 3,
+       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    }).addAlarmAction(new cw_actions.SnsAction(alarmTopic));
+    */
+
+    // Alarm for specific Analytics Lambda Errors (Example - requires lambda ref)
+    /*
+    new cloudwatch.Alarm(this, 'AnalyticsLambdaErrorAlarm', {
+      alarmName: `${this.stackName}-AnalyticsLambdaErrorsHigh`,
+      // metric: specificAnalyticsLambda.metricErrors({ period: cdk.Duration.minutes(5) }),
+      threshold: 1, evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    }).addAlarmAction(new cw_actions.SnsAction(alarmTopic));
+    */
+
+    // --- END MONITORING STUBS ---
   }
 }

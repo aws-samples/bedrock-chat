@@ -13,12 +13,20 @@
                 "app.main:app",
                 "--reload",
                 "--host", "0.0.0.0",
-                "--port", "8000"
+                "--port", "8000",
+                "--log-level", "debug"
             ],
-            "cwd": "${workspaceFolder}/backend",  // <== Set correct working directory
+            "cwd": "${workspaceFolder}/backend",
             "jinja": true,
             "justMyCode": true,
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend",
+                "LOG_LEVEL": "INFO",
+                "ANALYTICS_LOG_LEVEL": "INFO", 
+                "PYTHONVERBOSE": "0",
+                "UVICORN_LOG_LEVEL": "info"
+            }
         }
     ]
 }

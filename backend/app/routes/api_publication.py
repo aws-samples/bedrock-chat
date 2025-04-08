@@ -1,4 +1,4 @@
-from app.dependencies import check_publish_allowed
+from app.dependencies import get_current_user, check_permission
 from app.routes.schemas.api_publication import (
     ApiKeyInput,
     ApiKeyOutput,
@@ -24,7 +24,7 @@ def post_bot_publication(
     request: Request,
     bot_id: str,
     bot_publish_input: BotPublishInput,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Publish a bot.
     This method is intended to be used by the bot owner.
@@ -44,7 +44,7 @@ def post_bot_publication(
 def get_bot_publication(
     request: Request,
     bot_id: str,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Get bot publication
     This can be used by both owner and admin.
@@ -61,7 +61,7 @@ def get_bot_publication(
 def delete_bot_publication(
     request: Request,
     bot_id: str,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Delete bot publication
     This can be used by both owner and admin.
@@ -81,7 +81,7 @@ def get_bot_publication_api_key(
     request: Request,
     bot_id: str,
     api_key_id: str,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Get bot publication API key. Only the owner can access the key."""
     current_user: User = request.state.current_user
@@ -95,7 +95,7 @@ def post_bot_publication_api_key(
     request: Request,
     bot_id: str,
     api_key_input: ApiKeyInput,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Create bot publication API key. Only the owner can create the key."""
     current_user: User = request.state.current_user
@@ -108,7 +108,7 @@ def delete_bot_publication_api_key(
     request: Request,
     bot_id: str,
     api_key_id: str,
-    pub_check=Depends(check_publish_allowed),
+    pub_check=Depends(check_permission('publish_assistant')),
 ):
     """Delete bot publication API key.
     This can be used by both owner and admin.

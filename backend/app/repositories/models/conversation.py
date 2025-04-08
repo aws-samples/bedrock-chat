@@ -36,6 +36,7 @@ from mypy_boto3_bedrock_runtime.type_defs import (
     ToolUseBlockTypeDef,
 )
 from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
+from pydantic import ConfigDict
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import ToolRunResult
@@ -186,9 +187,29 @@ class AttachmentContentModel(BaseModel):
 
 
 class FeedbackModel(BaseModel):
-    thumbs_up: bool
-    category: str
-    comment: str
+    """Feedback model for message ratings and comments"""
+    # Core feedback
+    rating: int = Field(ge=1, le=5, description="Rating from 1-5 stars")
+    category: str  # Main category of feedback
+    comment: str  # User's written feedback
+    
+    # Additional context
+    tags: list[str] = []  # Relevant tags/labels
+    metrics: dict[str, float] = {}  # Quantitative metrics
+    created_at: float  # Timestamp when feedback was created
+    
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "example": {
+                "rating": 4,
+                "category": "Response Quality",
+                "comment": "Good explanation but could use more examples",
+                "tags": ["helpful", "clear", "needs-examples"],
+                "metrics": {"response_time": 2.5, "accuracy": 0.95},
+                "created_at": 1234567890
+            }
+        }
+    )
 
 
 class ChunkModel(BaseModel):
@@ -607,6 +628,10 @@ class MessageModel(BaseModel):
     thinking_log: list[SimpleMessageModel] | None = Field(
         default=None, description="Only available for agent."
     )
+    input_token_count: int | None = Field(default=None, description="Number of input tokens used for this message")
+    output_token_count: int | None = Field(default=None, description="Number of output tokens used for this message")
+    sentiment: str | None = Field(default=None, description="Sentiment of the message (positive, negative, neutral)")
+    topic: str | None = Field(default=None, description="Topic/category of the message")
 
     @field_validator("thinking_log", mode="before")
     @classmethod
@@ -643,6 +668,10 @@ class MessageModel(BaseModel):
             feedback=None,
             used_chunks=None,
             thinking_log=None,
+            input_token_count=None,
+            output_token_count=None,
+            sentiment=None,
+            topic=None,
         )
 
 

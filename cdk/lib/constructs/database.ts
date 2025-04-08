@@ -2,6 +2,7 @@ import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   AttributeType,
   BillingMode,
+  ProjectionType,
   Table,
   TableEncryption,
   StreamViewType,
@@ -18,7 +19,11 @@ export class Database extends Construct {
   readonly tableAccessRole: Role;
   readonly websocketSessionTable: Table;
   readonly ltiDataTable: Table;
-
+  readonly botsMetadataConfigTable: Table;
+  readonly botsMetadataTable: Table;
+  readonly botsMetadataTableName: string;
+  readonly botsMetadataTableArn: string;
+  readonly botsMetadataConfigTableNameArn: string;
   constructor(scope: Construct, id: string, props?: DatabaseProps) {
     super(scope, id);
 
@@ -83,10 +88,73 @@ export class Database extends Construct {
     // Grant access to the lti_data table in the existing tableAccessRole
     ltiDataTable.grantReadData(tableAccessRole);
 
+    // Metadata config table
+    const botsMetadataConfigTable = new Table(this, "BotsMetadataConfigTable", {
+      partitionKey: { name: "id", type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      encryption: TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: props?.pointInTimeRecovery,
+    });
+
+    // Bot metadata table
+    const botsMetadataTable = new Table(this, "BotsMetadataTable", {
+      partitionKey: { name: "bot_id", type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      encryption: TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: props?.pointInTimeRecovery,
+    });
+
+    // Add GSIs for searching by metadata
+    botsMetadataTable.addGlobalSecondaryIndex({
+      indexName: "HierarchyIndex",
+      partitionKey: { name: "hierarchy_level", type: AttributeType.STRING },
+      sortKey: { name: "hierarchy_id", type: AttributeType.STRING },
+      // ProjectionType.ALL is simplest but consider KEYS_ONLY or INCLUDE if performance/cost is critical
+    });
+
+    botsMetadataTable.addGlobalSecondaryIndex({
+      indexName: "TagCategoryIndex",
+      partitionKey: { name: "tag_category", type: AttributeType.STRING },
+      // Add a sort key if needed for finer querying within a category
+    });
+
+    botsMetadataTable.addGlobalSecondaryIndex({
+      indexName: "AttributeKeyIndex",
+      partitionKey: { name: "attribute_key", type: AttributeType.STRING },
+      // Add sort key (e.g., attribute_value) if needed
+    });
+
+    // GSI for querying bots by owner_user_id
+    botsMetadataTable.addGlobalSecondaryIndex({
+      indexName: "OwnerUserIdIndex",
+      partitionKey: { name: "owner_user_id", type: AttributeType.STRING },
+      sortKey: { name: "bot_id", type: AttributeType.STRING }, // Sort by bot_id
+      projectionType: ProjectionType.INCLUDE, 
+      nonKeyAttributes: ['group_id'],
+    });
+
+    // GSI for querying bots by group_id
+    botsMetadataTable.addGlobalSecondaryIndex({ 
+      indexName: "BotsMetadataGroupIdIndex",
+      partitionKey: { name: "group_id", type: AttributeType.STRING },
+      sortKey: { name: "bot_id", type: AttributeType.STRING }, // Sort by bot_id
+      projectionType: ProjectionType.INCLUDE, 
+      nonKeyAttributes: ['owner_user_id'], 
+    });
+
+
+    // Grant access to the metadata tables
+    botsMetadataConfigTable.grantReadWriteData(tableAccessRole);
+    botsMetadataTable.grantReadWriteData(tableAccessRole);
+
     this.table = table;
     this.tableAccessRole = tableAccessRole;
     this.websocketSessionTable = websocketSessionTable;
     this.ltiDataTable = ltiDataTable;
+    this.botsMetadataConfigTable = botsMetadataConfigTable;
+    this.botsMetadataTable = botsMetadataTable;
 
     new CfnOutput(this, "ConversationTableName", {
       value: table.tableName,
@@ -95,5 +163,21 @@ export class Database extends Construct {
     new CfnOutput(this, "LtiDataTableName", {
       value: ltiDataTable.tableName,
     });
+
+    new CfnOutput(this, "BotsMetadataConfigTableName", {
+      value: botsMetadataConfigTable.tableName,
+    });
+
+    new CfnOutput(this, "BotsMetadataConfigTableArn", {
+      value: botsMetadataConfigTable.tableArn,
+    });
+    
+    new CfnOutput(this, "BotsMetadataTableArn", {
+      value: botsMetadataTable.tableArn,
+    });
+
+    // Export ARN for use in Lambda
+    this.botsMetadataTableArn = botsMetadataTable.tableArn;
+    this.botsMetadataConfigTableNameArn = botsMetadataConfigTable.tableArn;
   }
 }

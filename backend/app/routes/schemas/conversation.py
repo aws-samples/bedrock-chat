@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 from app.repositories.models.common import Base64EncodedBytes
 from app.routes.schemas.base import BaseSchema
 from mypy_boto3_bedrock_runtime.literals import DocumentFormatType, ImageFormatType
-from pydantic import Discriminator, Field, JsonValue, root_validator
+from pydantic import Discriminator, Field, JsonValue, model_validator
 
 type_model_name = Literal[
     "claude-instant-v1",
@@ -61,15 +61,15 @@ class FeedbackInput(BaseSchema):
     )
     comment: str | None = Field(None, description="optional comment")
 
-    @root_validator(pre=True)
-    def check_category(cls, values):
+    @model_validator(mode='before')
+    def check_category(cls, data):
+        values = data if isinstance(data, dict) else data.model_dump()
         thumbs_up = values.get("thumbs_up")
         category = values.get("category")
 
         if not thumbs_up and category is None:
             raise ValueError("category is required if `thumbs_up` is `False`")
-
-        return values
+        return data
 
 
 class FeedbackOutput(BaseSchema):

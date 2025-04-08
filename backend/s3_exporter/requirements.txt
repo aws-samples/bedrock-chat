@@ -1,1 +1,5 @@
 boto3==1.34.19
+# Remove pandas and pyarrow as they're too large for Lambda packaging
+# pandas==2.1.1 
+# pyarrow==14.0.1
+# Use lightweight alternatives if needed

@@ -314,8 +314,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             {props.isAssistantCreator && <DrawerItem
                   isActive={false}
                   icon={<SiSimpleanalytics />}
-                  to="/admin/shared-bot-analytics"
-                  labelComponent={getPageLabel('/admin/shared-bot-analytics')}
+                  to="/analytics" 
+                  labelComponent={getPageLabel('/analytics')}
                   onClick={closeSamllDrawer}
             />}
 

@@ -8,7 +8,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from pydantic import TypeAdapter
 
-from app.utils import convert_decimals_for_json, convert_floats_to_decimals
+from app.utils import convert_decimals_for_json, convert_floats_to_decimals, get_current_time
 from app.repositories.common import (
     TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
@@ -59,6 +59,8 @@ def store_conversation(
         "TotalPrice": decimal(str(conversation.total_price)),
         "LastMessageId": conversation.last_message_id,
         "ShouldContinue": conversation.should_continue,
+        "InputTokens": decimal(str(sum(msg.input_token_count or 0 for msg in conversation.message_map.values()))),
+        "OutputTokens": decimal(str(sum(msg.output_token_count or 0 for msg in conversation.message_map.values()))),
     }
     
     if conversation.bot_id:
@@ -321,12 +323,27 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
 def update_feedback(
     user_id: str, conversation_id: str, message_id: str, feedback: FeedbackModel
 ):
-    logger.info(f"Updating feedback for conversation: {conversation_id}")
+    """Update feedback for a message in a conversation.
+    
+    Args:
+        user_id: The user ID
+        conversation_id: The conversation ID
+        message_id: The message ID to update feedback for
+        feedback: The feedback model containing rating, comments etc.
+    """
+    logger.info(f"Updating feedback for conversation: {conversation_id}, message: {message_id}")
+    
+    # Set creation timestamp
+    feedback.created_at = get_current_time()
+    
     table = _get_table_client(user_id)
     conv = find_conversation_by_id(user_id, conversation_id)
+    
+    # Update the feedback in the message map
     message_map = conv.message_map
     message_map[message_id].feedback = feedback
 
+    # Update in DynamoDB
     response = table.update_item(
         Key={
             "PK": user_id,
@@ -334,13 +351,12 @@ def update_feedback(
         },
         UpdateExpression="set MessageMap = :m",
         ExpressionAttributeValues={
-            ":m": json.dumps(
-                {k: v.model_dump(by_alias=True) for k, v in message_map.items()}
-            )
+            ":m": json.dumps({k: v.model_dump(by_alias=True) for k, v in message_map.items()})
         },
         ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         ReturnValues="UPDATED_NEW",
     )
+
     logger.info(f"Updated feedback response: {response}")
     return response
 

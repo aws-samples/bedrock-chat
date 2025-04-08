@@ -1,12 +1,46 @@
-bedrock-python-sdk
-bedrock-python-sdk.zip
-verification
+# Backup files
+*.bak
+*~
+repo_backup_*/
 
+# Python
 __pycache__/
-.venv
-.DS_Store
-.idea/
-.vscode/*
-!.vscode/launch.json
-backend/.env-mohan-dev.sh
+*.py[cod]
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Temp test files
+# Virtual environments
+.venv/
+*/.venv/
+venv/
+*/venv/
+
+# Cursor IDE files
+.cursor/
+.cursorignore
+
+# Development environment files
+.env*
+!.env.example
+!.env.template
+*/.env-*-dev.sh
+
+# Documentation
+*/docs/
+
+# Test configuration
+.coveragerc
+pytest.ini
+
+# CDK build artifacts
+cdk/.venv/
+cdk/cdk.out/
+
+# Local development files
 CLAUDE.md
+
+# Backups
+repo_backup*/
+.DS_Store
