@@ -189,7 +189,7 @@ poetry run python ../docs/migration/migrate_v2_v3.py
 poetry run python ../docs/migration/migrate_v2_v3.py --verify-only
 ```
 
-The migration script will generate a report file with details about the migration process. Check this file to ensure all your data was migrated correctly.
+The migration script will generate a report file in your current directory with details about the migration process. Check this file to ensure all your data was migrated correctly.
 
 #### Handling Large Data Volumes
 
