@@ -172,6 +172,9 @@ V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Replace with your  v
 
 Then run the script using Poetry from the backend directory:
 
+> [!NOTE]
+> The Python requirements version was changed to 3.13.0 or later (Possibly changed in future development. See pyproject.toml). If you have venv installed with a different Python version, you'll need to remove it once.
+
 ```bash
 # Navigate to the backend directory
 cd backend
