@@ -99,7 +99,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
           if (draft) {
             draft[idx].title = params.title;
             draft[idx].description = params.description ?? '';
-            draft[idx].description = params.assistantConfig.assistantType;
+            draft[idx].groupId = params.groupId
           }
         }),
         {

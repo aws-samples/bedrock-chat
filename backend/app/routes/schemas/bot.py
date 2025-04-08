@@ -203,9 +203,7 @@ class BotModifyInput(BaseSchema):
             return False
 
         # Check if guardrails are enabled or any of the settings have changed
-        if self.bedrock_guardrails.is_guardrail_enabled == True or (
-            current_bot_model.bedrock_guardrails
-            and (
+        if (current_bot_model.bedrock_guardrails and (
                 self.bedrock_guardrails.is_guardrail_enabled
                 != current_bot_model.bedrock_guardrails.is_guardrail_enabled
                 or self.bedrock_guardrails.hate_threshold
@@ -214,6 +212,10 @@ class BotModifyInput(BaseSchema):
                 != current_bot_model.bedrock_guardrails.insults_threshold
                 or self.bedrock_guardrails.sexual_threshold
                 != current_bot_model.bedrock_guardrails.sexual_threshold
+                or self.bedrock_guardrails.violence_threshold
+                != current_bot_model.bedrock_guardrails.violence_threshold
+                or self.bedrock_guardrails.misconduct_threshold
+                != current_bot_model.bedrock_guardrails.misconduct_threshold
                 or self.bedrock_guardrails.grounding_threshold
                 != current_bot_model.bedrock_guardrails.grounding_threshold
                 or self.bedrock_guardrails.relevance_threshold
