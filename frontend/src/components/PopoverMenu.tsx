@@ -5,6 +5,7 @@ import { PiDotsThreeOutlineFill } from 'react-icons/pi';
 type Props = {
   className?: string;
   target?: 'bottom-left' | 'bottom-right';
+  disabled?: boolean;
   children: ReactNode;
 };
 
@@ -25,7 +26,8 @@ const PopoverMenu: React.FC<Props> = (props) => {
           <Popover.Button
             className={`${
               props.className ?? ''
-            } group inline-flex items-center rounded-lg border border-aws-squid-ink-light/50 bg-aws-paper-light p-1 px-3 text-base hover:brightness-75 dark:border-aws-font-color-gray/50 dark:bg-aws-paper-dark`}>
+            } group inline-flex items-center rounded-lg border border-aws-squid-ink-light/50 bg-aws-paper-light p-1 px-3 text-base hover:brightness-75 disabled:hover:brightness-100 dark:border-aws-font-color-gray/50 dark:bg-aws-paper-dark`}
+            disabled={props.disabled}>
             <PiDotsThreeOutlineFill />
           </Popover.Button>
           <Transition

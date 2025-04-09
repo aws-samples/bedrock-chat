@@ -14,17 +14,11 @@
 A multilingual generative AI platform powered by [Amazon Bedrock](https://aws.amazon.com/bedrock/).
 Supports chat, custom bots with knowledge (RAG), bot sharing via a bot store, and task automation using agents.
 
+![](./docs/imgs/demo.gif)
+
 > [!Warning]
 >
-> **V3 released. To update, please carefully review the [migration guide](./docs/migration/V2_TO_V3.md).** Without any care, **BOTS FROM V1 WILL BECOME UNUSABLE.**
-
-### Watch Overview and Installation on YouTube
-
-[![Overview](https://img.youtube.com/vi/PDTGrHlaLCQ/hq1.jpg)](https://www.youtube.com/watch?v=PDTGrHlaLCQ)
-
-### Basic Conversation
-
-![](./docs/imgs/demo.gif)
+> **V3 released. To update, please carefully review the [migration guide](./docs/migration/V2_TO_V3.md).** Without any care, **BOTS FROM V2 WILL BECOME UNUSABLE.**
 
 ### Bot Personalization / Bot store
 
@@ -37,6 +31,10 @@ Add your own instruction and knowledge (a.k.a [RAG](https://aws.amazon.com/what-
 ![](./docs/imgs/fine_grained_permission.png)
 ![](./docs/imgs/bot_store.png)
 ![](./docs/imgs/bot_api_publish_screenshot3.png)
+
+You can also import existing [Amazon Bedrock's KnowledgeBase](https://aws.amazon.com/bedrock/knowledge-bases/).
+
+![](./docs/imgs/import_existing_kb.png)
 
 </details>
 
@@ -104,7 +102,7 @@ You can specify the following parameters during deployment to enhance security a
 - **--allowed-signup-email-domains**: Comma-separated list of allowed email domains for sign-up. (default: no domain restriction)
 - **--bedrock-region**: Define the region where bedrock is available. (default: us-east-1)
 - **--repo-url**: The custom repo of Bedrock Chat to deploy, if forked or custom source control. (default: https://github.com/aws-samples/bedrock-chat.git)
-- # **--version**: The version of Bedrock Chat to deploy. (default: latest version in development)
+- **--version**: The version of Bedrock Chat to deploy. (default: latest version in development)
 - **--cdk-json-override**: You can override any CDK context values during deployment using the override JSON block. This allows you to modify the configuration without editing the cdk.json file directly.
 
 Example usage:
@@ -155,7 +153,7 @@ The sign-up screen will appear as shown above, where you can register your email
 > Without setting the optional parameter, this deployment method allows anyone who knows the URL to sign up. For production use, it is strongly recommended to add IP address restrictions and disable self-signup to mitigate security risks (you can define allowed-signup-email-domains to restrict users so that only email addresses from your company’s domain can sign up). Use both ipv4-ranges and ipv6-ranges for IP address restrictions, and disable self-signup by using disable-self-register when executing ./bin.
 
 > [!TIP]
-> If the `Frontend URL` does not appear or Bedrock Chat does not work properly, it may be a problem with the latest version. In this case, please add `--version "v1.2.6"` to the parameters and try deployment again.
+> If the `Frontend URL` does not appear or Bedrock Chat does not work properly, it may be a problem with the latest version. In this case, please add `--version "v3.0.0"` to the parameters and try deployment again.
 
 ## Architecture
 
@@ -478,7 +476,7 @@ By default, newly created users will be joined to the `CreatingBotAllowed` group
 
 ### Configure RAG Replicas
 
-`enableRagReplicas` is an option in [cdk.json](./cdk/cdk.json) that controls the replica settings for the RAG database, specifically the Knowledge Bases using Amazon OpenSearch Serverless.
+`enableRagReplicas` is an option in [cdk.json](./cdk/cdk.json) that controls the replica settings for the RAG database, specifically the Knowledge Bases using Amazon OpenSearch Serverless. This also affects bot store database.
 
 - **Default**: true
 - **true**: Enhances availability by enabling additional replicas, making it suitable for production environments but increasing costs.
@@ -488,6 +486,23 @@ This is an account/region-level setting, affecting the entire application rather
 
 > [!Note]
 > As of June 2024, Amazon OpenSearch Serverless supports 0.5 OCU, lowering entry costs for small-scale workloads. Production deployments can start with 2 OCUs, while dev/test workloads can use 1 OCU. OpenSearch Serverless automatically scales based on workload demands. For more detail, visit [announcement](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
+
+### Configure Bot Store
+
+The bot store feature allows users to share and discover custom bots. You can configure the bot store through the following settings in [cdk.json](./cdk/cdk.json):
+
+```json
+{
+  "context": {
+    "enableBotStore": true,
+    "botStoreLanguage": "en"
+  }
+}
+```
+
+- **enableBotStore**: Controls whether the bot store feature is enabled (default: `true`)
+- **botStoreLanguage**: Sets the primary language for bot search and discovery (default: `"en"`). This affects how bots are indexed and searched in the bot store, optimizing text analysis for the specified language.
+- **enableRagReplicas**: This setting (mentioned in the previous section) also applies to the bot store's OpenSearch database. Setting it to `true` improves availability but increases costs, while `false` reduces costs but may affect availability.
 
 ### Cross-region inference
 

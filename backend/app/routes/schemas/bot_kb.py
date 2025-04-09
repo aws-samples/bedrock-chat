@@ -14,7 +14,10 @@ type_kb_chunking_strategy = Literal[
 type_kb_embeddings_model = Literal["titan_v2", "cohere_multilingual_v3"]
 type_kb_search_type = Literal["hybrid", "semantic"]
 type_kb_parsing_model = Literal[
-    "anthropic.claude-3-5-sonnet-v1", "anthropic.claude-3-haiku-v1", "disabled"
+    "anthropic.claude-3-5-sonnet-v1",
+    "anthropic.claude-3-haiku-v1",
+    "anthropic.claude-3-sonnet-v1",
+    "disabled",
 ]
 type_kb_web_crawling_scope = Literal["DEFAULT", "HOST_ONLY", "SUBDOMAINS"]
 

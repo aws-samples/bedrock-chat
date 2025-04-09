@@ -138,7 +138,6 @@ const translation = {
         noBots: 'Brak Botów.',
         noBotsRecentlyUsed: 'Brak Ostatnio Używanych Botów Współdzielonych.',
         retrievingKnowledge: '[Pobieranie Wiedzy...]',
-        selectParsingModel: 'Wybierz Model Analizy',
         dndFileUpload:
           'Możesz przesłać pliki poprzez przeciągnięcie i upuszczenie.\nObsługiwane pliki: {{fileExtensions}}',
         uploadError: 'Komunikat Błędu',
@@ -813,28 +812,6 @@ Jak sklasyfikowałbyś ten e-mail?`,
         misconduct: {
           label: 'Niewłaściwe zachowanie',
           hint: 'Opisuje dane wejściowe i odpowiedzi modelu, które szukają lub dostarczają informacji o angażowaniu się w działania niewłaściwe lub szkodzenie, oszukiwanie lub wykorzystywanie osoby, grupy lub instytucji. 0: wyłączone, 1: niskie, 2: średnie, 3: wysokie',
-        },
-      },
-      promptAttacks: {
-        hint: 'Opisuje dane wejściowe użytkownika mające na celu ominięcie funkcji bezpieczeństwa i moderacji modelu podstawowego w celu generowania szkodliwych treści (znane jako jailbreak) oraz ignorowanie i nadpisywanie instrukcji określonych przez programistę (określane jako wstrzykiwanie monitów). Aby użyć tego z tagowaniem wejścia, zapoznaj się z sekcją Atak Monitów.',
-      },
-      deniedTopics: {
-        hint: 'Dodaj do 30 zabronionych tematów, aby zablokować dane wejściowe użytkownika lub odpowiedzi modelu związane z tym tematem.',
-      },
-      wordFilters: {
-        hint: 'Użyj tych filtrów, aby zablokować określone słowa i frazy w danych wejściowych użytkownika i odpowiedziach modelu.',
-        profanityFilter: {
-          hint: 'Włącz tę funkcję, aby blokować wulgarne słowa w danych wejściowych użytkownika i odpowiedziach modelu. Lista słów opiera się na globalnej definicji wulgaryzmów i może ulec zmianie.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Określ do 10 000 słów lub fraz (maksymalnie 3 słowa), które mają być blokowane przez zabezpieczenie. Zablokowana wiadomość pojawi się, jeśli dane wejściowe użytkownika lub odpowiedzi modelu zawierają te słowa lub frazy.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Użyj tych filtrów do obsługi wszelkich danych związanych z prywatnością.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
         },
       },
       contextualGroundingCheck: {

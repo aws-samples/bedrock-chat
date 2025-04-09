@@ -16,6 +16,8 @@ import { twMerge } from 'tailwind-merge';
 import IconPinnedBot from './IconPinnedBot';
 
 type Props = BaseProps & {
+  onlyIcon?: boolean;
+  disabled?: boolean;
   onClickEdit?: () => void;
   onClickCopyUrl?: () => void;
   onClickShare?: () => void;
@@ -47,7 +49,15 @@ const MenuBot: React.FC<Props> = (props) => {
   }, [props, t]);
 
   return (
-    <PopoverMenu className={twMerge(props.className)} target="bottom-right">
+    <PopoverMenu
+      className={twMerge(
+        'h-8',
+        props.onlyIcon &&
+          'border-0 bg-transparent hover:bg-aws-squid-ink-light/20',
+        props.className
+      )}
+      target="bottom-right"
+      disabled={props.disabled}>
       {props.onClickEdit && (
         <PopoverItem onClick={props.onClickEdit}>
           <PiPencilLine />

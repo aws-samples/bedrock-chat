@@ -1,11 +1,14 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useCallback } from 'react';
 import { BaseProps } from '../@types/common';
+import ButtonIcon from './ButtonIcon';
+import { PiX } from 'react-icons/pi';
 
 type Props = BaseProps & {
   isOpen: boolean;
   title?: string;
   widthFromContent?: boolean;
+  showCloseIcon?: boolean;
   children: React.ReactNode;
   onClose?: () => void;
   onAfterLeave?: () => void;
@@ -57,7 +60,7 @@ const ModalDialog: React.FC<Props> = (props) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
                 <Dialog.Panel
-                  className={`rounded-2xl bg-white dark:bg-aws-paper-dark p-6 text-left align-middle shadow-xl transition-all ${
+                  className={`relative rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-aws-paper-dark ${
                     !props.widthFromContent && 'w-full max-w-md'
                   }`}>
                   {props.title && (
@@ -66,6 +69,13 @@ const ModalDialog: React.FC<Props> = (props) => {
                       className="border-b pb-2 text-lg font-medium leading-6 text-aws-font-color-light dark:text-aws-font-color-white-dark">
                       {props.title}
                     </Dialog.Title>
+                  )}
+                  {props.showCloseIcon && (
+                    <ButtonIcon
+                      className="absolute right-2 top-2"
+                      onClick={onClose}>
+                      <PiX />
+                    </ButtonIcon>
                   )}
 
                   <div className="mt-3">

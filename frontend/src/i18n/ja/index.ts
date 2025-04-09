@@ -1,7 +1,7 @@
 // Check for any missing settings by uncomment
-// import en from '../en';
-// const translation: typeof en = {
-const translation = {
+import en from '../en';
+const translation: typeof en = {
+  // const translation = {
   translation: {
     signIn: {
       button: {
@@ -17,6 +17,7 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: '管理者用機能',
       userGroups: 'ユーザーグループ',
+      backChat: 'チャットに戻る',
     },
     model: {
       'claude-v3-haiku': {
@@ -214,7 +215,7 @@ const translation = {
         notAvailable: 'このボットは利用できません。',
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
-        pinned: '管理者認定ボット',
+        noStarredBots: 'スター付きのボットはありません。',
         retrievingKnowledge: '[ナレッジを取得中...]',
         referenceLink: '参考ドキュメント',
         dndFileUpload:
@@ -243,8 +244,8 @@ const translation = {
         edit: 'ボットを編集',
         copyLink: '共有リンクをコピー',
         copiedLink: 'コピーしました',
-        markAsEssential: '管理者認定に登録',
-        removeEssential: '管理者認定を解除',
+        markAsEssential: '利用推奨ボットに登録',
+        removeEssential: '利用推奨ボットを解除',
       },
       help: {
         overview:
@@ -423,8 +424,6 @@ const translation = {
         instructionsSamples: 'サンプル',
         chooseFiles: 'ファイルを選択',
         apiSettings: 'API公開設定',
-        pinBot: '管理者認定に登録',
-        unpinBot: '管理者認定を解除',
         viewAll: '全て見る',
         removeFromRecent: '履歴から削除',
       },
@@ -442,6 +441,8 @@ const translation = {
           search: 'ユーザーとユーザーグループを検索できます',
           noSearchResults: '検索結果がありません',
           memberManagement: 'メンバーの管理',
+          group: 'グループ',
+          user: 'ユーザー',
           sharing: {
             not_shared: 'どのグループとグループにも共有されていません。',
             shared_only_users: '{{count}}人のユーザに共有されています。',
@@ -472,6 +473,9 @@ const translation = {
         },
         button: {
           manage: '管理',
+          removeAccess: 'アクセス権限を削除',
+          cancelRemoval: '削除をキャンセル',
+          cancelAddition: '追加をキャンセル',
         },
       },
       error: {
@@ -530,6 +534,9 @@ const translation = {
             'クライアントは、同時に <Bold> {{ limit }}</Bold> リクエストAPIを呼び出すことができます。',
           requestsLimit:
             '<Bold>{{period}}</Bold> <Bold>{{limit}}</Bold> リクエストAPIを呼び出すことができます。',
+          owner: 'オーナー',
+          privateBot: 'プライベートボット',
+          sharedAllUsers: '全てのユーザーに共有されています',
         },
         alert: {
           noApiKeys: {
@@ -561,6 +568,13 @@ const translation = {
         label: '利用推奨ボット',
         description:
           '管理者が厳選した利用が推奨されているボットです。業務効率化が見込めるので積極的に使いましょう。',
+        noEssentialBotsMessage: {
+          title: '利用推奨ボットがありません',
+          content: `利用推奨ボットが登録されていないため、管理者以外にこのセクションは表示されていません。<br/>
+          利用推奨ボットとして登録するには、ボットを全てのユーザーに共有する必要があります。<br/>
+          チャット画面、マイボット画面、スター付きのボット一覧画面、最近使用したボット一覧画面に表示されている当該ボットのメニューから、登録することができます。<br/>
+          ボットの横に表示されている<MenuButton/> ボタンを押すと、メニューを開くことができます。`,
+        },
       },
       trending: {
         label: '人気のボット',
@@ -589,6 +603,11 @@ const translation = {
     deleteDialog: {
       title: '削除',
       content: 'チャット「<Bold>{{title}}</Bold>」を削除しますか？',
+      pinnedBotError: {
+        title: '削除できません',
+        content:
+          'このボットは利用推奨ボットに登録されています。利用推奨ボットの変更は管理者が行うことができます。',
+      },
     },
     clearDialog: {
       title: '削除',
@@ -596,6 +615,12 @@ const translation = {
     },
     languageDialog: {
       title: '言語の切替',
+    },
+    drawerOptionsDialog: {
+      title: 'サイドメニューオプション',
+      label: {
+        displayCount: '表示数',
+      },
     },
     feedbackDialog: {
       title: 'フィードバック',
@@ -643,6 +668,8 @@ const translation = {
       add: '追加',
       continue: '生成を続ける',
       botManagement: 'ボットの管理',
+      drawerOption: 'サイドメニューオプション',
+      mode: 'モード',
     },
     input: {
       hint: {
@@ -725,6 +752,7 @@ const translation = {
       budgetTokens: {
         label: '思考予算トークン',
         hint: '深い思考に割り当てるトークンの最大数。より大きな値は、より複雑な思考を可能にしますが、応答時間が長くなる可能性があります。',
+        help: '深い思考に割り当てる思考予算トークンは、トークンの最大長よりも長くできません。',
       },
     },
     searchSettings: {
@@ -753,6 +781,12 @@ const translation = {
         'ナレッジを設定するための埋め込みモデルの選択や、ナレッジとして追加したドキュメントの分割方法などを設定します。ボット作成後の変更はできません。',
       embeddingModel: {
         label: '埋め込みモデル',
+        titan_v2: {
+          label: 'Titan Embedding Text v2',
+        },
+        cohere_multilingual_v3: {
+          label: 'Embed Multilingual v3',
+        },
       },
       chunkingStrategy: {
         label: 'チャンキング戦略',
@@ -907,6 +941,20 @@ const translation = {
         fileSizeExceeded: 'ファイルサイズは{{maxSize}}以下にしてください。',
         fileCountExceeded: 'ファイル数は{{maxCount}}以下にしてください。',
       },
+      cannotAccessBot:
+        'このボットにアクセスできません。新しいチャットへリダイレクトしました。',
+      share: {
+        markedEssential: {
+          title: '共有設定を変更できません',
+          content:
+            'このボットは管理者によって利用推奨ボットに登録されています。利用推奨ボットは全ユーザーに共有する必要があります。',
+        },
+        publication: {
+          title: '共有設定を変更できません',
+          content:
+            'このボットは管理者によってAPIとして公開されています。APIを公開するためには、全ユーザーに共有する必要があります。',
+        },
+      },
     },
     validation: {
       title: 'バリデーションエラー',
@@ -926,6 +974,14 @@ const translation = {
       },
       quickStarter: {
         message: 'タイトルと入力例は、どちらも入力してください。',
+      },
+      maxBudgetTokens: {
+        message:
+          '思考予算トークンは、トークンの最大長である{{size}}より大きい値を設定できません。',
+      },
+      required: '{{key}}は必須入力です。',
+      number: {
+        greaterThen: '{{key}}は{{value}}より大きい数字にしてください。',
       },
     },
     helper: {

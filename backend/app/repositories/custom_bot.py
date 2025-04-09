@@ -726,6 +726,9 @@ def find_bot_by_id(bot_id: str) -> BotModel:
                     "chunking_configuration": item["BedrockKnowledgeBase"].get(
                         "chunking_configuration", None
                     ),
+                    "parsing_model": item["BedrockKnowledgeBase"].get(
+                        "parsing_model", "disabled"
+                    ),
                 }
             )
             if "BedrockKnowledgeBase" in item

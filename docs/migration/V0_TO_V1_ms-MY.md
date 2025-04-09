@@ -26,7 +26,7 @@ git checkout v1
 git pull origin v1
 ```
 
-- Jika anda ingin memulihkan item dengan DMS, JANGAN LUPA untuk melumpuhkan putaran kata laluan dan catat kata laluan untuk mengakses pangkalan data. Jika memulihkan dengan skrip migrasi([migrate.py](./migrate.py)), anda tidak perlu mencatat kata laluan.
+- Jika anda ingin memulihkan item dengan DMS, JANGAN LUPA untuk melumpuhkan putaran kata laluan dan catat kata laluan untuk mengakses pangkalan data. Jika memulihkan dengan skrip migrasi([migrate_v0_v1.py](./migrate_v0_v1.py)), anda tidak perlu mencatat kata laluan.
 - Keluarkan semua [API yang diterbitkan](../PUBLISH_API_ms-MY.md) supaya CloudFormation dapat mengeluarkan kluster Aurora sedia ada.
 - Jalankan [npx cdk deploy](../README.md#deploy-using-cdk) mencetuskan penggantian kluster Aurora dan MEMADAMKAN SEMUA ITEM VEKTOR.
 - Ikuti [Panduan Migrasi Pangkalan Data](./DATABASE_MIGRATION_ms-MY.md) untuk memulihkan item vektor.

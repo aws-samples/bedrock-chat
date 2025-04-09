@@ -15,7 +15,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { useMemo } from 'react';
-import BotDiscoverPage from './pages/BotDiscoverPage.tsx';
+import BotDiscoverPage from './features/discover/pages/BotDiscoverPage.tsx';
 import BotRecentlyUsedPage from './pages/BotRecentlyUsedPage.tsx';
 import BotStarredPage from './pages/BotStarredPage.tsx';
 import ConversationHistoryPage from './pages/ConversationHistoryPage.tsx';

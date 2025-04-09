@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   PiBinoculars,
   PiCertificate,
@@ -9,20 +9,22 @@ import {
   PiCaretLeft,
   PiCaretRight,
 } from 'react-icons/pi';
-import InputText from '../components/InputText';
+import InputText from '../../../components/InputText';
 import useBotStore from '../hooks/useBotStore';
 import { twMerge } from 'tailwind-merge';
 import useBotSearch from '../hooks/useBotSearch';
-import BotSearchResults, {
-  CardBot,
-  SkeletonBot,
-} from '../components/BotSearchResults';
+import BotSearchResults, { SkeletonBot } from '../components/BotSearchResults';
+import useLoginUser from '../../../hooks/useLoginUser';
+import Alert from '../../../components/Alert';
+import MenuBot from '../../../components/MenuBot';
+import CardBotForDiscover from '../components/CardBotForDiscover';
 
 // for pagination
 const ITEMS_PER_PAGE = 6;
 
 const BotDiscoverPage: React.FC = () => {
   const { t } = useTranslation();
+  const { isAdmin } = useLoginUser();
   const [inputValue, setInputValue] = useState('');
 
   const [trendingCurrentPage, setTrendingCurrentPage] = useState(1);
@@ -34,6 +36,7 @@ const BotDiscoverPage: React.FC = () => {
     popularBots,
     isLoadingPopularBots,
     pinnedBots,
+    isLoadingPinnedBots,
   } = useBotStore();
 
   const {
@@ -180,7 +183,9 @@ const BotDiscoverPage: React.FC = () => {
             <>
               <div
                 className={twMerge(
-                  pinnedBots.length === 0 ? 'invisible h-0 scale-y-0' : 'mt-6',
+                  isLoadingPinnedBots || (pinnedBots.length === 0 && !isAdmin)
+                    ? 'invisible h-0 scale-y-0'
+                    : 'mt-6',
                   'transition-all duration-300'
                 )}>
                 <div className="flex items-center text-2xl font-bold">
@@ -191,16 +196,35 @@ const BotDiscoverPage: React.FC = () => {
                   {t('discover.essential.description')}
                 </div>
 
+                {pinnedBots.length === 0 && isAdmin && (
+                  <div className="mt-2">
+                    <Alert
+                      className="flex"
+                      severity="info"
+                      title={t(
+                        'discover.essential.noEssentialBotsMessage.title'
+                      )}>
+                      <Trans
+                        className="inline-flex"
+                        i18nKey="discover.essential.noEssentialBotsMessage.content"
+                        components={{
+                          MenuButton: (
+                            <div className="inline-flex">
+                              <MenuBot
+                                className="h-6 bg-transparent"
+                                disabled
+                              />
+                            </div>
+                          ),
+                        }}
+                      />
+                    </Alert>
+                  </div>
+                )}
+
                 <div className="mt-3 grid grid-cols-1 gap-6 md:grid-cols-2">
                   {pinnedBots.map((bot) => (
-                    <CardBot
-                      key={bot.id}
-                      title={bot.title}
-                      description={bot.description}
-                      id={bot.id}
-                      // not display pinned icon in Essential section
-                      sharedStatus={''}
-                    />
+                    <CardBotForDiscover key={bot.id} bot={bot} hidePinnedIcon />
                   ))}
                 </div>
               </div>
@@ -227,12 +251,7 @@ const BotDiscoverPage: React.FC = () => {
                         {(trendingCurrentPage - 1) * ITEMS_PER_PAGE + idx + 1}.
                       </div>
                       <div className="w-full min-w-0 flex-1">
-                        <CardBot
-                          title={bot.title}
-                          description={bot.description}
-                          id={bot.id}
-                          sharedStatus={bot.sharedStatus}
-                        />
+                        <CardBotForDiscover bot={bot} />
                       </div>
                     </div>
                   ))}
@@ -266,13 +285,7 @@ const BotDiscoverPage: React.FC = () => {
                     </>
                   )}
                   {currentDiscoverBots.map((bot) => (
-                    <CardBot
-                      key={bot.id}
-                      title={bot.title}
-                      description={bot.description}
-                      id={bot.id}
-                      sharedStatus={bot.sharedStatus}
-                    />
+                    <CardBotForDiscover key={bot.id} bot={bot} />
                   ))}
                 </div>
 

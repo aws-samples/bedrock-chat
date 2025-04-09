@@ -72,6 +72,7 @@ export const Admin: Story = () => {
       onDeleteConversation={() => {}}
       onClearConversations={() => {}}
       onSelectLanguage={() => {}}
+      onClickDrawerOptions={() => {}}
     />
   );
 };
@@ -88,6 +89,7 @@ export const NonAdmin: Story = () => {
       onDeleteConversation={() => {}}
       onClearConversations={() => {}}
       onSelectLanguage={() => {}}
+      onClickDrawerOptions={() => {}}
     />
   );
 };

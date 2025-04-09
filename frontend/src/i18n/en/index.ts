@@ -216,7 +216,6 @@ const translation = {
         noBotsRecentlyUsed: 'No Recently Used Bots.',
         noStarredBots: 'No Starred Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
-        selectParsingModel: 'Select Parsing Model',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
@@ -381,8 +380,8 @@ How would you categorize this email?`,
         },
         alert: {
           botUnshared: {
-            title: 'Please Share The Bot',
-            body: 'You cannot publish an API for the bot that is not shared.',
+            title: 'Please Share The Bot with All Users',
+            body: 'You cannot publish an API for the bot that is not shared with all users.',
           },
           deploying: {
             title: 'The API deployment is in PROGRESS',
@@ -419,8 +418,6 @@ How would you categorize this email?`,
         delete: 'Delete',
         share: 'Share',
         apiSettings: 'API Publish Settings',
-        pinBot: 'Mark as Essential',
-        unpinBot: 'Remove Essential Status',
         copy: 'Copy',
         copied: 'Copied',
         instructionsSamples: 'Samples',
@@ -565,6 +562,13 @@ How would you categorize this email?`,
         label: 'Essential',
         description:
           'These bots are officially selected by administrators. Use them actively to improve your work efficiency as part of standard operations.',
+        noEssentialBotsMessage: {
+          title: 'No Essential Bots',
+          content: `Essential section is hidden for non-admin users since there are no Essential bots.<br/>
+          Bots shared with All Users can be marked as Essential.<br/>
+          Use the bot menu in Chat, My Bots, Starred Bots, or Recently Used Bots views to mark a bot as Essential.<br/>
+          Click the <MenuButton/> button on these views to access the menu.`,
+        },
       },
       trending: {
         label: 'Trending',
@@ -605,6 +609,12 @@ How would you categorize this email?`,
     },
     languageDialog: {
       title: 'Switch language',
+    },
+    drawerOptionsDialog: {
+      title: 'Side Menu Options',
+      label: {
+        displayCount: 'Display Count',
+      },
     },
     feedbackDialog: {
       title: 'Feedback',
@@ -652,6 +662,7 @@ How would you categorize this email?`,
       continue: 'Continue to Generate',
       botManagement: 'Bot Management',
       mode: 'Mode',
+      drawerOption: 'Side Menu Options',
     },
     input: {
       hint: {
@@ -734,6 +745,7 @@ How would you categorize this email?`,
       budgetTokens: {
         label: 'Reasoning Budget Tokens',
         hint: 'The maximum number of tokens to allocate for reasoning steps. Larger values allow for more complex reasoning but may increase response time',
+        help: 'Sets the token budget for reasoning steps. Cannot exceed the Max Tokens value.',
       },
     },
     searchSettings: {
@@ -934,7 +946,7 @@ How would you categorize this email?`,
         publication: {
           title: 'Unable to Change Sharing Settings',
           content:
-            'This bot is published as API by administrator. Published APIs must be shared with all users.',
+            'This bot is published as API by administrator. Published API must be shared with all users.',
         },
       },
     },
@@ -957,6 +969,10 @@ How would you categorize this email?`,
       },
       quickStarter: {
         message: 'Please input both Title and Conversation Example.',
+      },
+      required: '{{key}} is required',
+      number: {
+        greaterThen: '{{key}} must be greater then {{value}} ',
       },
     },
     helper: {
@@ -994,28 +1010,6 @@ How would you categorize this email?`,
         misconduct: {
           label: 'Misconduct',
           hint: 'Describes input prompts and model responses that seeks or provides information about engaging in misconduct activity, or harming, defrauding, or taking advantage of a person, group or institution. 0: disable, 1: low, 2: middle, 3: High',
-        },
-      },
-      promptAttacks: {
-        hint: 'Describes user prompts intended to bypass the safety and moderation capabilities of a foundation model in order to generate harmful content (also known as jailbreak), and ignore and override instructions specified by the developer (referred to as prompt injection). Please refer to Prompt Attack for more details to use it with input tagging.',
-      },
-      deniedTopics: {
-        hint: 'Add up to 30 denied topics to block user inputs or model responses associated with the topic.',
-      },
-      wordFilters: {
-        hint: 'Use these filters to block certain words and phrases in user inputs and model responses.',
-        profanityFilter: {
-          hint: 'Enable this feature to block profane words in user inputs and model responses. The list of words is based on the global definition of profanity and is subject to change.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Specify up to 10,000 words or phrases (max 3 words) to be blocked by the guardrail. A blocked message will show if user input or model responses contain these words or phrases.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Use these filters to handle any data related to privacy.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
         },
       },
       contextualGroundingCheck: {

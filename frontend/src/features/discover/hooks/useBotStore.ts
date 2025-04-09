@@ -1,6 +1,6 @@
-import useBotApi from './useBotApi';
+import useBotApi from '../../../hooks/useBotApi';
 import useBotStoreApi from './useBotStoreApi';
-import { BotMeta } from '../@types/bot';
+import { BotMeta } from '../../../@types/bot';
 import { useCallback } from 'react';
 
 const useBotStore = () => {

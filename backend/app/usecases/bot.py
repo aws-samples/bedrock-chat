@@ -152,7 +152,6 @@ def modify_owned_bot(
     user: User, bot_id: str, modify_input: BotModifyInput
 ) -> BotModifyOutput:
     """Modify owned bot."""
-    # TODO: refactor
     bot = find_bot_by_id(bot_id)
 
     if not bot.is_editable_by_user(user):
@@ -417,13 +416,9 @@ def fetch_bot_summary(user: User, bot_id: str) -> BotSummaryOutput:
     logger.debug(f"bot.is_accessible_by_user(user): {bot.is_accessible_by_user(user)}")
 
     if not bot.is_owned_by_user(user):
-        if not alias_exists(user.id, bot_id):
-            # NOTE: At the first time using shared bot, alias is not created yet.
-            logger.info(f"Create alias for user {user.id} and bot {bot_id}")
-            store_alias(
-                user_id=user.id, alias=BotAliasModel.from_bot_for_initial_alias(bot)
-            )
-        alias = find_alias_by_bot_id(user.id, bot_id)
+        # Update to the latest information
+        alias = BotAliasModel.from_bot_for_initial_alias(bot)
+        store_alias(user_id=user.id, alias=alias)
         return alias.to_summary_output(bot)
 
     return bot.to_summary_output(user)

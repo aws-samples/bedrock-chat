@@ -23,14 +23,13 @@ const Toggle: React.FC<Props> = (props) => {
   };
 
   return (
-    <div
-      className={twMerge('my-2 flex flex-col pr-3', props.className)}
-      onClick={handleClick}>
+    <div className={twMerge('my-2 flex flex-col pr-3', props.className)}>
       <label
         className={twMerge(
           'relative inline-flex items-center',
           props.disabled ? '' : 'cursor-pointer'
-        )}>
+        )}
+        onClick={handleClick}>
         <input
           type="checkbox"
           className="peer sr-only"

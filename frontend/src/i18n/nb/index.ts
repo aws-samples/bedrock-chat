@@ -648,28 +648,6 @@ Hvordan vil du kategorisere denne e-posten?`,
           hint: 'Describes input prompts and model responses that seeks or provides information about engaging in misconduct activity, or harming, defrauding, or taking advantage of a person, group or institution. 0: disable, 1: low, 2: middle, 3: High',
         },
       },
-      promptAttacks: {
-        hint: 'Describes user prompts intended to bypass the safety and moderation capabilities of a foundation model in order to generate harmful content (also known as jailbreak), and ignore and override instructions specified by the developer (referred to as prompt injection). Please refer to Prompt Attack for more details to use it with input tagging.',
-      },
-      deniedTopics: {
-        hint: 'Add up to 30 denied topics to block user inputs or model responses associated with the topic.',
-      },
-      wordFilters: {
-        hint: 'Use these filters to block certain words and phrases in user inputs and model responses.',
-        profanityFilter: {
-          hint: 'Enable this feature to block profane words in user inputs and model responses. The list of words is based on the global definition of profanity and is subject to change.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Specify up to 10,000 words or phrases (max 3 words) to be blocked by the guardrail. A blocked message will show if user input or model responses contain these words or phrases.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Use these filters to handle any data related to privacy.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
-        },
-      },
       contextualGroundingCheck: {
         label: 'Sjekk av kontekstuell forankring',
         hint: 'Bruk denne policyen for å validere om modellens svar er forankret i referansekilden og relevante for brukerens forespørsel for å filtrere modellhallusinasjoner.',

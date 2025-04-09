@@ -51,6 +51,8 @@ const useBotApi = () => {
             }
             return 0;
           },
+          // Errors will unavailable bot automatically without retry
+          shouldRetryOnError: false,
         }
       );
     },

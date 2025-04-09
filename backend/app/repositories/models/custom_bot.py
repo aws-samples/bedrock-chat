@@ -108,12 +108,18 @@ class ReasoningParamsModel(BaseModel):
 
 
 class GenerationParamsModel(BaseModel):
-    max_tokens: int
-    top_k: int
-    top_p: Float
-    temperature: Float
-    stop_sequences: list[str]
-    reasoning_params: ReasoningParamsModel
+    max_tokens: int = DEFAULT_GENERATION_CONFIG["max_tokens"]
+    top_k: int = DEFAULT_GENERATION_CONFIG.get("top_k", 0)
+    top_p: Float = DEFAULT_GENERATION_CONFIG["top_p"]
+    temperature: Float = DEFAULT_GENERATION_CONFIG["temperature"]
+    stop_sequences: list[str] = DEFAULT_GENERATION_CONFIG["stop_sequences"]
+    reasoning_params: ReasoningParamsModel = Field(
+        default_factory=lambda: ReasoningParamsModel(
+            budget_tokens=DEFAULT_GENERATION_CONFIG.get("reasoning_params", {}).get(
+                "budget_tokens", 1024
+            )
+        )
+    )
 
 
 class FirecrawlConfigModel(BaseModel):

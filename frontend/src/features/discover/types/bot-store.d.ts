@@ -1,4 +1,4 @@
-import { BotMeta } from './bot';
+import { BotMeta } from '../../../@types/bot';
 
 export type SearchBotsRequest = {
   query: string;

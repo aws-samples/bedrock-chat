@@ -26,7 +26,7 @@ git checkout v1
 git pull origin v1
 ```
 
-- Wenn Sie Elemente mit DMS wiederherstellen möchten, VERGESSEN SIE NICHT, die Passwortrotation zu deaktivieren und notieren Sie sich das Passwort für den Datenbankzugriff. Bei Verwendung des Migrationsskripts ([migrate.py](./migrate.py)) müssen Sie sich das Passwort nicht notieren.
+- Wenn Sie Elemente mit DMS wiederherstellen möchten, VERGESSEN SIE NICHT, die Passwortrotation zu deaktivieren und notieren Sie sich das Passwort für den Datenbankzugriff. Bei Verwendung des Migrationsskripts ([migrate_v0_v1.py](./migrate_v0_v1.py)) müssen Sie sich das Passwort nicht notieren.
 - Entfernen Sie alle [veröffentlichten APIs](../PUBLISH_API_de-DE.md), damit CloudFormation den vorhandenen Aurora-Cluster entfernen kann.
 - Führen Sie [npx cdk deploy](../README.md#deploy-using-cdk) aus, um den Aurora-Cluster zu ersetzen und ALLE VEKTORELEMENTE ZU LÖSCHEN.
 - Folgen Sie dem [Datenbank-Migrationsleitfaden](./DATABASE_MIGRATION_de-DE.md), um Vektorelemente wiederherzustellen.

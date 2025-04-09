@@ -5,8 +5,8 @@ import {
   GetPopularBotsResponse,
   SearchBotsRequest,
   SearchBotsResponse,
-} from '../@types/bot-store';
-import useHttp from './useHttp';
+} from '../types/bot-store';
+import useHttp from '../../../hooks/useHttp';
 
 const useBotStoreApi = () => {
   const http = useHttp();

@@ -139,7 +139,6 @@ const translation = {
         noBots: 'Tiada Bot.',
         noBotsRecentlyUsed: 'Tiada Bot Berkongsi Yang Baru Digunakan.',
         retrievingKnowledge: '[Sedang Mendapatkan Pengetahuan...]',
-        selectParsingModel: 'Pilih Model Penguraian',
         dndFileUpload:
           'Anda boleh memuat naik fail dengan seret dan lepas.\nFail yang disokong: {{fileExtensions}}',
         uploadError: 'Mesej Ralat',
@@ -792,28 +791,6 @@ const translation = {
         misconduct: {
           label: 'Penyalahgunaan',
           hint: 'Menggambarkan prompt input dan respons model yang mencari atau menyediakan maklumat tentang terlibat dalam aktiviti penyalahgunaan, atau mencederakan, menipu, atau mengambil kesempatan daripada seseorang, kumpulan atau institusi. 0: matikan, 1: rendah, 2: sederhana, 3: Tinggi',
-        },
-      },
-      promptAttacks: {
-        hint: 'Menggambarkan prompt pengguna yang bertujuan untuk melepasi keupayaan keselamatan dan moderasi model asas untuk menjana kandungan berbahaya (juga dikenali sebagai jailbreak), dan mengabaikan serta mengatasi arahan yang ditetapkan oleh pembangun (dirujuk sebagai suntikan prompt). Sila rujuk Serangan Prompt untuk maklumat lanjut untuk menggunakannya dengan penandaan input.',
-      },
-      deniedTopics: {
-        hint: 'Tambah sehingga 30 topik yang ditolak untuk menyekat input pengguna atau respons model yang berkaitan dengan topik tersebut.',
-      },
-      wordFilters: {
-        hint: 'Gunakan penapis ini untuk menyekat perkataan dan frasa tertentu dalam input pengguna dan respons model.',
-        profanityFilter: {
-          hint: 'Aktifkan ciri ini untuk menyekat perkataan kotor dalam input pengguna dan respons model. Senarai perkataan adalah berdasarkan definisi global tentang kata kotor dan tertakluk kepada perubahan.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Nyatakan sehingga 10,000 perkataan atau frasa (maksimum 3 perkataan) untuk disekat oleh tali panduan. Mesej yang disekat akan dipaparkan jika input pengguna atau respons model mengandungi perkataan atau frasa ini.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Gunakan penapis ini untuk mengendalikan sebarang data yang berkaitan dengan privasi.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
         },
       },
       contextualGroundingCheck: {

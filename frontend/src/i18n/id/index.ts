@@ -141,7 +141,6 @@ const translation = {
         noBots: 'Tidak Ada Bot.',
         noBotsRecentlyUsed: 'Tidak Ada Bot Bersama yang Baru Digunakan.',
         retrievingKnowledge: '[Mengambil Pengetahuan...]',
-        selectParsingModel: 'Pilih Model Parsing',
         dndFileUpload:
           'Anda dapat mengunggah file dengan drag and drop.\nFile yang didukung: {{fileExtensions}}',
         uploadError: 'Pesan Kesalahan',
@@ -812,28 +811,6 @@ const translation = {
         misconduct: {
           label: 'Perilaku Buruk',
           hint: 'Menggambarkan prompt input dan respons model yang mencari atau memberikan informasi tentang keterlibatan dalam kegiatan pelanggaran etik, atau mencelakai, menipu, atau memanfaatkan seseorang, kelompok, atau institusi. 0: nonaktifkan, 1: rendah, 2: sedang, 3: tinggi',
-        },
-      },
-      promptAttacks: {
-        hint: 'Menggambarkan prompt pengguna yang dimaksudkan untuk melewati kemampuan keamanan dan moderasi dari model dasar untuk menghasilkan konten berbahaya (juga dikenal sebagai jailbreak), dan mengabaikan serta menimpa instruksi yang ditentukan oleh developer (disebut injeksi prompt). Silakan merujuk ke Serangan Prompt untuk detail lebih lanjut untuk penggunaan dengan input tagging.',
-      },
-      deniedTopics: {
-        hint: 'Tambahkan hingga 30 topik yang dilarang untuk memblokir input pengguna atau respons model yang terkait dengan topik tersebut.',
-      },
-      wordFilters: {
-        hint: 'Gunakan filter ini untuk memblokir kata dan frasa tertentu dalam input pengguna dan respons model.',
-        profanityFilter: {
-          hint: 'Aktifkan fitur ini untuk memblokir kata-kata kasar dalam input pengguna dan respons model. Daftar kata didasarkan pada definisi kata-kata kasar global dan dapat berubah.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Tentukan hingga 10.000 kata atau frasa (maks. 3 kata) yang akan diblokir oleh guardrail. Pesan pemblokiran akan ditampilkan jika input pengguna atau respons model mengandung kata-kata atau frasa ini.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Gunakan filter ini untuk menangani data apa pun yang terkait dengan privasi.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
         },
       },
       contextualGroundingCheck: {

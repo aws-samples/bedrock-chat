@@ -8,7 +8,7 @@ Der Migrationsprozess umfasst das Scannen aller Bots und das Starten von Einbett
 
 ## Migrationschritte
 
-- Nach [npx cdk deploy](../README.md#deploy-using-cdk) mit Aurora-Ersatz öffnen Sie das Skript [migrate.py](./migrate.py) und aktualisieren Sie die folgenden Variablen mit den entsprechenden Werten. Die Werte können im `CloudFormation` > `BedrockChatStack` > `Outputs`-Tab nachgeschlagen werden.
+- Nach [npx cdk deploy](../README.md#deploy-using-cdk) mit Aurora-Ersatz öffnen Sie das Skript [migrate_v0_v1.py](./migrate_v0_v1.py) und aktualisieren Sie die folgenden Variablen mit den entsprechenden Werten. Die Werte können im `CloudFormation` > `BedrockChatStack` > `Outputs`-Tab nachgeschlagen werden.
 
 ```py
 # Öffnen Sie den CloudFormation-Stack in der AWS Management Console und kopieren Sie die Werte aus der Outputs-Registerkarte.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Führen Sie das Skript `migrate.py` aus, um den Migrationsprozess zu starten. Dieses Skript wird alle Bots scannen, Embedding-ECS-Tasks starten und die Daten im neuen Aurora-Cluster erstellen. Beachten Sie:
+- Führen Sie das Skript `migrate_v0_v1.py` aus, um den Migrationsprozess zu starten. Dieses Skript wird alle Bots scannen, Embedding-ECS-Tasks starten und die Daten im neuen Aurora-Cluster erstellen. Beachten Sie:
   - Das Skript benötigt `boto3`.
   - Die Umgebung erfordert IAM-Berechtigungen für den Zugriff auf die DynamoDB-Tabelle und zum Starten von ECS-Tasks.
 

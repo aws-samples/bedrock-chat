@@ -26,6 +26,7 @@ import { BotStoreLanguageSchema } from "../utils/parameter-models";
 export type Language = z.infer<typeof BotStoreLanguageSchema>;
 
 export interface BotStoreProps {
+  envPrefix: string;
   readonly botTable: dynamodb.ITable;
   readonly useStandbyReplicas: boolean;
   readonly language: Language;
@@ -37,16 +38,20 @@ export class BotStore extends Construct {
   constructor(scope: Construct, id: string, props: BotStoreProps) {
     super(scope, id);
 
-    const collectionName = generatePhysicalName(this, "Collection", {
-      maxLength: 32,
-      lower: true,
-    });
+    const collectionName = generatePhysicalName(
+      this,
+      `${props.envPrefix}Collection`,
+      {
+        maxLength: 32,
+        lower: true,
+      }
+    );
 
     const standbyReplicas =
       props.useStandbyReplicas === true ? "ENABLED" : "DISABLED";
 
     const networkPolicy = new oss.CfnSecurityPolicy(this, "NetworkPolicy", {
-      name: generatePhysicalName(this, "NetworkPolicy", {
+      name: generatePhysicalName(this, `${props.envPrefix}NetworkPolicy`, {
         maxLength: 32,
         lower: true,
       }),
@@ -72,7 +77,7 @@ export class BotStore extends Construct {
       this,
       "EncryptionPolicy",
       {
-        name: generatePhysicalName(this, "EncryptionPolicy", {
+        name: generatePhysicalName(this, `${props.envPrefix}EncryptionPolicy`, {
           maxLength: 32,
           lower: true,
         }),
@@ -91,7 +96,6 @@ export class BotStore extends Construct {
 
     this.collection = new oss.CfnCollection(this, "Collection", {
       name: collectionName,
-      // type: 'VECTORSEARCH',
       type: "SEARCH",
       standbyReplicas,
     });
@@ -109,7 +113,7 @@ export class BotStore extends Construct {
 
     const ingestionLogGroup = new logs.LogGroup(this, "IngensionLogGroup", {
       logGroupName:
-        `/aws/vendedlogs/OpenSearchIngestion/bot-table-osis-pipeline/${id}`.toLowerCase(),
+        `/aws/vendedlogs/OpenSearchIngestion/${props.envPrefix}bot-table-osis-pipeline/${id}`.toLowerCase(),
       removalPolicy: RemovalPolicy.DESTROY,
       retention: logs.RetentionDays.ONE_WEEK,
     });
@@ -190,7 +194,7 @@ export class BotStore extends Construct {
     osisPolicy.attachToRole(osisRole);
 
     const dataAccessPolicy = new oss.CfnAccessPolicy(this, "DataAccessPolicy", {
-      name: generatePhysicalName(this, "DataAccessPolicy", {
+      name: generatePhysicalName(this, `${props.envPrefix}DataAccessPolicy`, {
         maxLength: 32,
         lower: true,
       }),
@@ -263,7 +267,7 @@ export class BotStore extends Construct {
           {
             opensearch: {
               hosts: [endpoint],
-              index: "bot",
+              index: `${props.envPrefix}bot`,
               ...(props.language === "en"
                 ? {} // For en, index_type, template_type, template_content are not required
                 : {
@@ -287,10 +291,14 @@ export class BotStore extends Construct {
     };
 
     new osis.CfnPipeline(this, "OsisPipeline", {
-      pipelineName: generatePhysicalName(this, "OsisPipeline", {
-        maxLength: 25,
-        lower: true,
-      }),
+      pipelineName: generatePhysicalName(
+        this,
+        `${props.envPrefix}OsisPipeline`,
+        {
+          maxLength: 25,
+          lower: true,
+        }
+      ),
       minUnits: 1,
       maxUnits: 4,
       logPublishingOptions: {
@@ -342,6 +350,7 @@ export class BotStore extends Construct {
   }
 
   public addDataAccessPolicy(
+    envPrefix: string,
     id: string,
     principal: IRole | string,
     collectionPermissions: string[],
@@ -354,7 +363,7 @@ export class BotStore extends Construct {
     }
 
     const newPolicy = new oss.CfnAccessPolicy(this, id, {
-      name: generatePhysicalName(this, id, {
+      name: generatePhysicalName(this, `${envPrefix}${id}`, {
         maxLength: 32,
         lower: true,
       }),

@@ -39,6 +39,8 @@ import { usePageLabel } from '../routes';
 import { twMerge } from 'tailwind-merge';
 import Button from './Button';
 import Skeleton from './Skeleton';
+import { isPinnedBot } from '../utils/BotUtils';
+import IconPinnedBot from './IconPinnedBot';
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -53,6 +55,7 @@ type Props = BaseProps & {
   onDeleteConversation: (conversation: ConversationMeta) => void;
   onClearConversations: () => void;
   onSelectLanguage: () => void;
+  onClickDrawerOptions: () => void;
 };
 
 type ItemProps = BaseProps & {
@@ -198,7 +201,7 @@ const Drawer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { getPageLabel } = usePageLabel();
-  const { opened, switchOpen } = useDrawer();
+  const { opened, switchOpen, drawerOptions } = useDrawer();
   const { conversations, starredBots, recentlyUsedUnstarredBots } = props;
 
   const location = useLocation();
@@ -320,18 +323,24 @@ const Drawer: React.FC<Props> = (props) => {
                   </div>
                 )}
                 {starredBots
-                  ?.slice(0, 15)
+                  ?.slice(0, drawerOptions.displayCount.starredBots)
                   .map((bot) => (
-                  <DrawerItem
-                    key={bot.id}
-                    isActive={botId === bot.id && !conversationId}
-                    to={`/bot/${bot.id}`}
-                    icon={<PiRobot />}
-                    labelComponent={bot.title}
-                    onClick={onClickNewBotChat}
-                  />
-                ))}
-                
+                    <DrawerItem
+                      key={bot.id}
+                      isActive={botId === bot.id && !conversationId}
+                      to={`/bot/${bot.id}`}
+                      icon={
+                        isPinnedBot(bot.sharedStatus) ? (
+                          <IconPinnedBot showAlways />
+                        ) : (
+                          <PiRobot />
+                        )
+                      }
+                      labelComponent={bot.title}
+                      onClick={onClickNewBotChat}
+                    />
+                  ))}
+
                 {starredBots && starredBots.length > 15 && (
                   <Button
                     text
@@ -359,13 +368,19 @@ const Drawer: React.FC<Props> = (props) => {
                   </div>
                 )}
                 {recentlyUsedUnstarredBots
-                  ?.slice(0, 15)
+                  ?.slice(0, drawerOptions.displayCount.recentlyUsedBots)
                   .map((bot) => (
                     <DrawerItem
                       key={bot.id}
                       isActive={false}
                       to={`/bot/${bot.id}`}
-                      icon={<PiRobot />}
+                      icon={
+                        isPinnedBot(bot.sharedStatus) ? (
+                          <IconPinnedBot showAlways />
+                        ) : (
+                          <PiRobot />
+                        )
+                      }
                       labelComponent={bot.title}
                       onClick={onClickNewBotChat}
                     />
@@ -401,7 +416,7 @@ const Drawer: React.FC<Props> = (props) => {
                   </div>
                 )}
                 {conversations
-                  ?.slice(0, 5)
+                  ?.slice(0, drawerOptions.displayCount.conversationHistory)
                   .map((conversation, idx) => (
                     <Item
                       key={idx}
@@ -484,6 +499,7 @@ const Drawer: React.FC<Props> = (props) => {
               onSignOut={props.onSignOut}
               onSelectLanguage={props.onSelectLanguage}
               onClearConversations={props.onClearConversations}
+              onClickDrawerOptions={props.onClickDrawerOptions}
             />
           </div>
         </nav>

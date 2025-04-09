@@ -140,9 +140,10 @@ const ChatPage: React.FC = () => {
       setPageTitle(t('bot.label.normalChat'));
     }
     if (botError) {
-      if (botError.response?.status === 404) {
-        setPageTitle(t('bot.label.notAvailableBot'));
-      } else {
+      setPageTitle(t('bot.label.notAvailableBot'));
+
+      // redirect to new chat(no bot chat) if not set conversationId
+      if (!conversationId) {
         openSnackbar(t('error.cannotAccessBot'));
         newChat();
         navigate('/');

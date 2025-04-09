@@ -45,8 +45,7 @@ Currently provides a basic overview of chatbot and user usage, focusing on aggre
 
 - In user usages, users who have not used the system at all during the specified period will not be listed.
 
-> [!Important] > **Multi-Environment Database Names**
->
+> [!Important]
 > If you're using multiple environments (dev, prod, etc.), the Athena database name will include the environment prefix. Instead of `bedrockchatstack_usage_analysis`, the database name will be:
 >
 > - For default environment: `bedrockchatstack_usage_analysis`

@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
@@ -38,7 +39,10 @@ def search_knowledge(
         return search_results
 
     except Exception as e:
-        logger.error(f"Failed to run AnswerWithKnowledgeTool: {e}")
+        error_traceback = traceback.format_exc()
+        logger.error(
+            f"Failed to run AnswerWithKnowledgeTool: {e}\nTraceback: {error_traceback}"
+        )
         raise e
 
 

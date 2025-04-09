@@ -23,7 +23,7 @@ export class Database extends Construct {
     super(scope, id);
 
     // Conversation Table
-    const conversationTable = new Table(this, "ConversationTable", {
+    const conversationTable = new Table(this, "ConversationTableV3", {
       // PK: UserId
       partitionKey: { name: "PK", type: AttributeType.STRING },
       // SK: ConversationId
@@ -41,7 +41,7 @@ export class Database extends Construct {
     });
 
     // Bot Table
-    const botTable = new Table(this, "BotTable", {
+    const botTable = new Table(this, "BotTableV3", {
       // PK: UserId
       partitionKey: { name: "PK", type: AttributeType.STRING },
       // SK: ItemType

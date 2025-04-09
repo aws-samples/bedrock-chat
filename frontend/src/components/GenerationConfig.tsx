@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import InputText from './InputText';
 import { Slider } from './Slider';
 import Help from '../components/Help';
-import {
-  EDGE_GENERATION_PARAMS,
-} from '../constants';
+import { EDGE_GENERATION_PARAMS } from '../constants';
 
-const generationConfigParam = EDGE_GENERATION_PARAMS
+const generationConfigParam = EDGE_GENERATION_PARAMS;
 
 interface GenerationConfigProps {
   topK: number;
@@ -132,21 +130,13 @@ const GenerationConfig: React.FC<GenerationConfigProps> = ({
       <div className="mt-2">
         <Slider
           value={props.budgetTokens}
-          hint={t('generationConfig.budgetTokens.hint', {
-            defaultValue:
-              'Maximum tokens to allocate for reasoning steps (must be ≤ Max Tokens)',
-          })}
+          hint={t('generationConfig.budgetTokens.hint')}
           label={
             <div className="flex items-center gap-1">
-              {t('generationConfig.budgetTokens.label', {
-                defaultValue: 'Budget Tokens',
-              })}
+              {t('generationConfig.budgetTokens.label')}
               <Help
                 direction="right"
-                message={t('generationConfig.budgetTokens.help', {
-                  defaultValue:
-                    'Sets the token budget for reasoning steps. Cannot exceed the Max Tokens value.',
-                })}
+                message={t('generationConfig.budgetTokens.help')}
               />
             </div>
           }

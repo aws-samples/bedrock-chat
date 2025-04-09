@@ -26,7 +26,7 @@ git checkout v1
 git pull origin v1
 ```
 
-- DMS로 항목을 복원하려면 비밀번호 순환을 비활성화하고 데이터베이스 액세스를 위한 비밀번호를 기록해야 합니다. 마이그레이션 스크립트([migrate.py](./migrate.py))로 복원하는 경우 비밀번호를 기록할 필요가 없습니다.
+- DMS로 항목을 복원하려면 비밀번호 순환을 비활성화하고 데이터베이스 액세스를 위한 비밀번호를 기록해야 합니다. 마이그레이션 스크립트([migrate_v0_v1.py](./migrate_v0_v1.py))로 복원하는 경우 비밀번호를 기록할 필요가 없습니다.
 - CloudFormation이 기존 Aurora 클러스터를 제거할 수 있도록 모든 [게시된 API](../PUBLISH_API_ko-KR.md)를 제거합니다.
 - [npx cdk deploy](../README.md#deploy-using-cdk)를 실행하면 Aurora 클러스터 교체가 트리거되고 모든 벡터 항목이 삭제됩니다.
 - [데이터베이스 마이그레이션 가이드](./DATABASE_MIGRATION_ko-KR.md)를 따라 벡터 항목을 복원합니다.

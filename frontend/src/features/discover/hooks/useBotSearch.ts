@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { BotMeta } from '../@types/bot';
+import { BotMeta } from '../../../@types/bot';
 import useBotStoreApi from './useBotStoreApi';
 import { useDebounce } from 'use-debounce';
 
@@ -30,18 +30,15 @@ const useBotSearch = () => {
     }
   }, [debouncedQuery, mutateSearchResults]);
 
-  const handleSearch = useCallback(
-    (query: string) => {
-      setSearchQuery(query);
-      
-      if (!query.trim()) {
-        setHasSearched(false);
-        setDisplayQuery('');
-      }
-      // Actual search is executed in useEffect when debouncedQuery changes
-    },
-    []
-  );
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+
+    if (!query.trim()) {
+      setHasSearched(false);
+      setDisplayQuery('');
+    }
+    // Actual search is executed in useEffect when debouncedQuery changes
+  }, []);
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');

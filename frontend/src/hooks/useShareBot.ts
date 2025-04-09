@@ -2,6 +2,7 @@ import { KeyedMutator } from 'swr';
 import useBotApi from './useBotApi';
 import { BotListItem, SharedScope } from '../@types/bot';
 import { produce } from 'immer';
+import { useRef } from 'react';
 
 const useShareBot = (
   params: {
@@ -19,6 +20,7 @@ const useShareBot = (
 ) => {
   const { botId, myBots, mutateMyBots } = params;
   const { getMyBot, updateBotSharedScope } = useBotApi();
+  const requestIdRef = useRef<number>(0);
 
   const { data, isLoading, mutate } = getMyBot(botId);
 
@@ -34,6 +36,7 @@ const useShareBot = (
         return;
       }
 
+      // Optimistic UI update
       if (mutateMyBots) {
         mutateMyBots(
           produce(myBots, (draft) => {
@@ -59,6 +62,9 @@ const useShareBot = (
         );
       }
 
+      // Increment request ID
+      const currentRequestId = ++requestIdRef.current;
+
       return updateBotSharedScope(
         botId,
         sharedScope === 'partial'
@@ -71,8 +77,11 @@ const useShareBot = (
               targetSharedScope: sharedScope,
             }
       ).finally(() => {
-        mutateMyBots ? mutateMyBots() : null;
-        mutate();
+        // Only execute mutate for the latest request
+        if (currentRequestId === requestIdRef.current) {
+          mutateMyBots ? mutateMyBots() : null;
+          mutate();
+        }
       });
     },
     updateSharedUsersAndGroups: (userIds: string[], groupIds: string[]) => {
@@ -93,12 +102,18 @@ const useShareBot = (
         }
       );
 
+      // Increment request ID
+      const currentRequestId = ++requestIdRef.current;
+
       return updateBotSharedScope(botId, {
         targetSharedScope: 'partial',
         targetAllowedGroupIds: groupIds,
         targetAllowedUserIds: userIds,
       }).finally(() => {
-        mutate();
+        // Only execute mutate for the latest request
+        if (currentRequestId === requestIdRef.current) {
+          mutate();
+        }
       });
     },
   };

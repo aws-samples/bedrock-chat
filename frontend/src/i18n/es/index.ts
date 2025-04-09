@@ -727,28 +727,6 @@ Las categorías de clasificación son:
           hint: 'Describe indicaciones de entrada y respuestas del modelo que buscan o proporcionan información sobre actividades inapropiadas o malintencionadas, o de cómo dañar, defraudar o aprovecharse de una persona, grupo o institución. 0: desactivar, 1: bajo, 2: medio, 3: Alto',
         },
       },
-      promptAttacks: {
-        hint: 'Describe indicaciones de usuario destinadas a eludir las capacidades de seguridad y moderación de un modelo base para generar contenido dañino (también conocido como fuga de jailbreak), e ignorar y anular las instrucciones especificadas por el desarrollador (referido como inyección de prompt). Consulta Prompt Attack para obtener más detalles y úsalo con etiquetado de entradas.',
-      },
-      deniedTopics: {
-        hint: 'Agrega hasta 30 temas denegados para bloquear entradas de usuario o respuestas del modelo asociadas con el tema.',
-      },
-      wordFilters: {
-        hint: 'Usa estos filtros para bloquear ciertas palabras y frases en las entradas de usuario y respuestas del modelo.',
-        profanityFilter: {
-          hint: 'Habilita esta función para bloquear palabras profanas en las entradas de usuario y respuestas del modelo. La lista de palabras se basa en la definición global de palabras profanas y está sujeta a cambios.',
-        },
-        customWordsAndPhrases: {
-          hint: 'Especifica hasta 10,000 palabras o frases (máx. 3 palabras) para que sean bloqueadas por el guardrail. Se mostrará un mensaje bloqueado si las entradas de usuario o respuestas del modelo contienen estas palabras o frases.',
-        },
-      },
-      sensitiveInformationFilters: {
-        hint: 'Usa estos filtros para manejar cualquier dato relacionado con la privacidad.',
-        personallyIdentifiableInformationTypes: {
-          PIITypes: {},
-          regexPatterns: {},
-        },
-      },
       contextualGroundingCheck: {
         label: 'Verificación de Fundamento Contextual',
         hint: 'Usa esta política para validar si las respuestas del modelo están fundamentadas en la fuente de referencia y son relevantes para la consulta del usuario para filtrar la alucinación del modelo.',

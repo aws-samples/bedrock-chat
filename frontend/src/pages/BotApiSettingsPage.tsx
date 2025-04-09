@@ -21,6 +21,9 @@ import DialogConfirmAddApiKey from '../components/DialogConfirmAddApiKey';
 import Help from '../components/Help';
 import DialogConfirmDeleteApi from '../components/DialogConfirmDeleteApi';
 import useSnackbar from '../hooks/useSnackbar';
+import DialogShareBot from '../components/DialogShareBot';
+import useShareBot from '../hooks/useShareBot';
+import IconPinnedBot from '../components/IconPinnedBot';
 
 const PERIOD_OPTIONS: {
   label: string;
@@ -50,7 +53,6 @@ const BotApiSettingsPage: React.FC = () => {
     botPublication,
     isLoadingBotPublication,
     isUnpublishedBot,
-    shareBot,
     publishBot,
     createApiKey,
     mutateBotPublication,
@@ -58,14 +60,6 @@ const BotApiSettingsPage: React.FC = () => {
   } = useBotApiSettings(botId ?? '');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingShare, setIsLoadingShare] = useState(false);
-
-  const onClickShare = useCallback(() => {
-    setIsLoadingShare(true);
-    shareBot().finally(() => {
-      setIsLoadingShare(false);
-    });
-  }, [shareBot]);
 
   const isDeploying = useMemo(() => {
     return botPublication?.codebuildStatus === 'IN_PROGRESS';
@@ -275,8 +269,30 @@ const BotApiSettingsPage: React.FC = () => {
     });
   }, [clearApiSettings, deleteBotPublication, fillApiSettings, open, t]);
 
+  const { updateSharedScope, updateSharedUsersAndGroups } = useShareBot({
+    botId,
+  });
+  const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
+
   return (
     <>
+      <DialogShareBot
+        isOpen={isOpenShareDialog}
+        botId={myBot?.id}
+        sharedStatus={myBot?.sharedStatus}
+        sharedScope={myBot?.sharedScope}
+        allowedGroupIds={myBot?.allowedCognitoGroups}
+        allowedUserIds={myBot?.allowedCognitoUsers}
+        onChangeSharedScope={(scope) => {
+          updateSharedScope(scope);
+        }}
+        onUpdateAllowedUserAndGroup={(userIds, groupIds) => {
+          updateSharedUsersAndGroups(userIds, groupIds);
+        }}
+        onClose={() => {
+          setIsOpenShareDialog(false);
+        }}
+      />
       <DialogConfirmAddApiKey
         isOpen={isOpenAddApiKeyDialog}
         loading={isAddingApiKey}
@@ -311,7 +327,13 @@ const BotApiSettingsPage: React.FC = () => {
               ) : (
                 <>
                   <div className="flex flex-col gap-1">
-                    <div className="text-lg font-bold">{myBot?.title}</div>
+                    <div className="flex items-center gap-1 text-lg font-bold">
+                      <IconPinnedBot
+                        botSharedStatus={myBot?.sharedStatus}
+                        className="text-aws-aqua"
+                      />
+                      <div>{myBot?.title}</div>
+                    </div>
                     {myBot?.description ? (
                       <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                         {myBot?.description}
@@ -548,12 +570,14 @@ const BotApiSettingsPage: React.FC = () => {
                   {t('button.back')}
                 </Button>
                 {!hasShared && !isInitialLoading && (
-                  <Button loading={isLoadingShare} onClick={onClickShare}>
+                  <Button
+                    onClick={() => {
+                      setIsOpenShareDialog(true);
+                    }}>
                     {t('bot.button.share')}
                   </Button>
                 )}
-                {!isLoadingShare &&
-                  !hasCreated &&
+                {!hasCreated &&
                   !isDeploying &&
                   hasShared &&
                   !hasFailedDeploy && (

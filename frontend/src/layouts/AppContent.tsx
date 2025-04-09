@@ -19,6 +19,7 @@ import DialogConfirmDeleteChat from '../components/DialogConfirmDeleteChat';
 import DialogConfirmClearConversations from '../components/DialogConfirmClearConversations';
 import DialogSelectLanguage from '../components/DialogSelectLanguage';
 import useLocalStorage from '../hooks/useLocalStorage';
+import DialogDrawerOptions from '../components/DialogDrawerOptions';
 
 type Props = BaseProps & {
   signOut?: () => void;
@@ -83,7 +84,9 @@ const AppContent: React.FC<Props> = (props) => {
     []
   );
 
-  const [isOpenSelectLangage, setIsOpenSelectLangage] = useState(false);
+  const [isOpenSelectLanguage, setIsOpenSelectLanguage] = useState(false);
+  const [isOpenDrawerOptions, setIsOpenDrawerOptions] = useState(false);
+  const { drawerOptions, setDrawerOptions } = useDrawer();
 
   return (
     <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
@@ -103,7 +106,10 @@ const AppContent: React.FC<Props> = (props) => {
           setDeleteTarget(conversation);
         }}
         onClearConversations={() => setIsOpenClearConversations(true)}
-        onSelectLanguage={() => setIsOpenSelectLangage(true)}
+        onSelectLanguage={() => setIsOpenSelectLanguage(true)}
+        onClickDrawerOptions={() => {
+          setIsOpenDrawerOptions(true);
+        }}
       />
       <DialogConfirmDeleteChat
         isOpen={isOpenDeleteChat}
@@ -119,15 +125,24 @@ const AppContent: React.FC<Props> = (props) => {
         onDelete={clearConversations}
       />
       <DialogSelectLanguage
-        isOpen={isOpenSelectLangage}
+        isOpen={isOpenSelectLanguage}
         initialLanguage={i18n.language}
         onSelectLanguage={(language) => {
           i18n.changeLanguage(language);
-          setIsOpenSelectLangage(false);
+          setIsOpenSelectLanguage(false);
         }}
         onClose={() => {
-          setIsOpenSelectLangage(false);
+          setIsOpenSelectLanguage(false);
         }}
+      />
+      <DialogDrawerOptions
+        isOpen={isOpenDrawerOptions}
+        drawerOptions={drawerOptions}
+        onChangeDrawerOptions={(options) => {
+          setDrawerOptions(options);
+          setIsOpenDrawerOptions(false);
+        }}
+        onClose={() => setIsOpenDrawerOptions(false)}
       />
 
       <main className="relative flex min-h-dvh flex-1 flex-col overflow-y-hidden transition-width">

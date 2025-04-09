@@ -8,7 +8,7 @@ Proces migracji polega na zeskanowaniu wszystkich botów i uruchomieniu zadań E
 
 ## Kroki migracji
 
-- Po wykonaniu [npx cdk deploy](../README.md#deploy-using-cdk) z zastąpieniem Aurora, otwórz skrypt [migrate.py](./migrate.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Po wykonaniu [npx cdk deploy](../README.md#deploy-using-cdk) z zastąpieniem Aurora, otwórz skrypt [migrate_v0_v1.py](./migrate_v0_v1.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
 # Otwórz stos CloudFormation w konsoli AWS Management Console i skopiuj wartości z zakładki Outputs.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Uruchom skrypt `migrate.py`, aby zainicjować proces migracji. Ten skrypt przeskanuje wszystkie boty, uruchomi zadania osadzania ECS i utworzy dane w nowym klastrze Aurora. Należy pamiętać, że:
+- Uruchom skrypt `migrate_v0_v1.py`, aby zainicjować proces migracji. Ten skrypt przeskanuje wszystkie boty, uruchomi zadania osadzania ECS i utworzy dane w nowym klastrze Aurora. Należy pamiętać, że:
   - Skrypt wymaga `boto3`.
   - Środowisko wymaga uprawnień IAM do dostępu do tabeli dynamodb i wywoływania zadań ECS.
 
