@@ -6,17 +6,17 @@ Siga los procedimientos del proveedor OIDC de destino y anote los valores del ID
 
 ## Paso 2: Almacenar Credenciales en AWS Secrets Manager
 
-1. Ir a la Consola de Administración de AWS.
-2. Navegar a Secrets Manager y elegir "Almacenar un nuevo secreto".
-3. Seleccionar "Otro tipo de secretos".
-4. Ingresar el ID de cliente y el secreto de cliente como pares de clave-valor.
+1. Vaya a la Consola de Administración de AWS.
+2. Navegue hasta Secrets Manager y elija "Almacenar un nuevo secreto".
+3. Seleccione "Otro tipo de secretos".
+4. Introduzca el ID de cliente y el secreto de cliente como pares clave-valor.
 
    - Clave: `clientId`, Valor: <YOUR_GOOGLE_CLIENT_ID>
    - Clave: `clientSecret`, Valor: <YOUR_GOOGLE_CLIENT_SECRET>
    - Clave: `issuerUrl`, Valor: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Seguir los avisos para nombrar y describir el secreto. Tomar nota del nombre del secreto, ya que lo necesitará en su código CDK (Utilizado en el nombre de variable de Step 3 <YOUR_SECRET_NAME>).
-6. Revisar y almacenar el secreto.
+5. Siga las indicaciones para nombrar y describir el secreto. Anote el nombre del secreto, ya que lo necesitará en su código CDK (Utilizado en el nombre de variable de Step 3 <YOUR_SECRET_NAME>).
+6. Revise y almacene el secreto.
 
 ### Atención
 
@@ -48,11 +48,11 @@ de la siguiente manera:
 
 #### Unicidad
 
-El `userPoolDomainPrefix` debe ser único globalmente en todos los usuarios de Amazon Cognito. Si elige un prefijo que ya está en uso por otra cuenta de AWS, la creación del dominio del grupo de usuarios fallará. Es una buena práctica incluir identificadores, nombres de proyectos o nombres de entorno en el prefijo para garantizar la unicidad.
+El `userPoolDomainPrefix` debe ser globalmente único en todos los usuarios de Amazon Cognito. Si elige un prefijo que ya está en uso por otra cuenta de AWS, la creación del dominio del grupo de usuarios fallará. Es una buena práctica incluir identificadores, nombres de proyectos o nombres de entorno en el prefijo para garantizar la unicidad.
 
-## Paso 4: Desplegar tu Stack de CDK
+## Paso 4: Desplegar su Stack de CDK
 
-Despliega tu stack de CDK en AWS:
+Despliegue su stack de CDK en AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Paso 5: Actualizar el Cliente OIDC con las URI de Redirección de Cognito
 
-Después de implementar la pila, `AuthApprovedRedirectURI` se mostrará en las salidas de CloudFormation. Vuelva a su configuración de OIDC y actualice con las URI de redirección correctas.
+Después de desplegar la pila, `AuthApprovedRedirectURI` se mostrará en las salidas de CloudFormation. Vuelva a su configuración de OIDC y actualice con las URI de redirección correctas.

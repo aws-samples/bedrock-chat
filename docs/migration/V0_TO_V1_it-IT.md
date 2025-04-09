@@ -1,13 +1,13 @@
 # Guida alla Migrazione (da v0 a v1)
 
-Se stai già utilizzando Bedrock Chat con una versione precedente (~`0.4.x`), devi seguire i passaggi seguenti per eseguire la migrazione.
+Se stai già utilizzando Bedrock Chat con una versione precedente (~`0.4.x`), dovrai seguire i passaggi riportati di seguito per eseguire la migrazione.
 
 ## Perché devo farlo?
 
-Questo aggiornamento principale include importanti aggiornamenti sulla sicurezza.
+Questo importante aggiornamento include importanti aggiornamenti per la sicurezza.
 
-- Lo storage del database vettoriale (ovvero, pgvector su Aurora PostgreSQL) è ora crittografato, il che innesca una sostituzione durante la distribuzione. Ciò significa che gli elementi vettoriali esistenti verranno eliminati.
-- Abbiamo introdotto il gruppo di utenti Cognito `CreatingBotAllowed` per limitare gli utenti che possono creare bot. Gli utenti esistenti attuali non sono in questo gruppo, quindi dovrai allegare manualmente l'autorizzazione se desideri che abbiano la capacità di creare bot. Vedi: [Personalizzazione Bot](../../README.md#bot-personalization)
+- L'archiviazione del database vettoriale (ovvero, pgvector su Aurora PostgreSQL) è ora crittografata, il che attiva una sostituzione durante la distribuzione. Questo significa che gli elementi vettoriali esistenti verranno eliminati.
+- Abbiamo introdotto il gruppo di utenti Cognito `CreatingBotAllowed` per limitare gli utenti che possono creare bot. Gli utenti esistenti attuali non sono in questo gruppo, quindi dovrai allegare manualmente l'autorizzazione se vuoi che abbiano la capacità di creare bot. Vedi: [Personalizzazione Bot](../../README.md#bot-personalization)
 
 ## Prerequisiti
 
@@ -18,7 +18,7 @@ Leggere la [Guida alla Migrazione del Database](./DATABASE_MIGRATION_it-IT.md) e
 ### Migrazione dell'archivio vettoriale
 
 - Apri il terminale e naviga nella directory del progetto
-- Estrai il branch che desideri distribuire. Passa al branch desiderato (in questo caso, `v1`) ed estrai gli ultimi cambiamenti:
+- Estrai il branch che desideri distribuire. Di seguito è riportato il passaggio al branch desiderato (in questo caso, `v1`) e il pull degli ultimi cambiamenti:
 
 ```sh
 git fetch
@@ -30,10 +30,10 @@ git pull origin v1
 - Rimuovi tutte le [API pubblicate](../PUBLISH_API_it-IT.md) in modo che CloudFormation possa rimuovere il cluster Aurora esistente.
 - Esegui [npx cdk deploy](../README.md#deploy-using-cdk) che attiva la sostituzione del cluster Aurora e CANCELLA TUTTI GLI ELEMENTI VETTORIALI.
 - Segui la [Guida alla Migrazione del Database](./DATABASE_MIGRATION_it-IT.md) per ripristinare gli elementi vettoriali.
-- Verifica che l'utente possa utilizzare i bot esistenti che hanno conoscenza, ovvero i bot RAG.
+- Verifica che l'utente possa utilizzare i bot esistenti con conoscenza, ovvero i bot RAG.
 
-### Allegare l'autorizzazione CreatingBotAllowed
+### Associare l'autorizzazione CreatingBotAllowed
 
 - Dopo la distribuzione, tutti gli utenti non saranno in grado di creare nuovi bot.
-- Se vuoi che utenti specifici possano creare bot, aggiungi tali utenti al gruppo `CreatingBotAllowed` utilizzando la console di gestione o l'interfaccia a riga di comando.
+- Se si desidera che utenti specifici possano creare bot, aggiungi tali utenti al gruppo `CreatingBotAllowed` utilizzando la console di gestione o la CLI.
 - Verifica se l'utente può creare un bot. Nota che gli utenti devono effettuare nuovamente l'accesso.

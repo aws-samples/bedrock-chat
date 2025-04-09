@@ -8,7 +8,7 @@ Consultez [backend/README](../backend/README_fr-FR.md).
 
 Dans cet exemple, vous pouvez modifier et lancer localement le frontend en utilisant des ressources AWS (`API Gateway`, `Cognito`, etc.) qui ont été déployées avec `npx cdk deploy`.
 
-1. Consultez [Déploiement avec CDK](../README.md#deploy-using-cdk) pour le déploiement sur l'environnement AWS.
+1. Consultez [Déployer avec CDK](../README.md#deploy-using-cdk) pour le déploiement sur l'environnement AWS.
 2. Copiez `frontend/.env.template` et enregistrez-le sous `frontend/.env.local`.
 3. Remplissez le contenu de `.env.local` en fonction des résultats de sortie de `npx cdk deploy` (comme `BedrockChatStack.AuthUserPoolClientIdXXXXX`).
 4. Exécutez la commande suivante :
@@ -27,7 +27,7 @@ Reportez-vous [ici](https://github.com/evilmartians/lefthook#install). Si vous u
 
 ### Installer poetry
 
-Ceci est nécessaire car le linting du code Python dépend de `mypy` et `black`.
+Ceci est requis car le linting du code Python dépend de `mypy` et `black`.
 
 ```sh
 cd backend

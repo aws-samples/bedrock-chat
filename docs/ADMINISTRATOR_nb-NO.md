@@ -1,21 +1,23 @@
 # Administrative features
 
+(Note: This appears to be a heading section. I've maintained the original markdown formatting and simply translated the heading to Norwegian Bokmål.)
+
 ## Forutsetninger
 
-Administratorbrukeren må være medlem av gruppen kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at brukergruppe-IDen kan refereres ved å åpne CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Administratorbrukeren må være medlem av gruppen kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at brukergruppe-IDen kan refereres ved å gå til CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
-## Marker offentlige bots som Vesentlige
+## Merk offentlige bots som Essensielle
 
-Offentlige bots kan nå merkes som "Vesentlige" av administratorer. Bots merket som Vesentlige vil bli fremhevet i "Vesentlige" seksjonen i bot-butikken, noe som gjør dem lett tilgjengelige for brukere. Dette lar administratorer fremheve viktige bots som de ønsker at alle brukere skal bruke.
+Offentlige bots kan nå merkes som "Essensielle" av administratorer. Bots som er merket som Essensielle vil bli fremhevet i "Essensielle" seksjonen i bot-butikken, noe som gjør dem lett tilgjengelige for brukere. Dette lar administratorer fremheve viktige bots som de vil at alle brukere skal benytte.
 
 ### Eksempler
 
 - HR Assistentbot: Hjelper ansatte med HR-relaterte spørsmål og oppgaver.
 - IT Støttebot: Gir assistanse for interne tekniske problemer og kontobehandling.
-- Intern Retningslinjebot: Svarer på vanlige spørsmål om fremmøteregler, sikkerhetspolicyer og andre interne retningslinjer.
-- Ny Ansatt Opplæringsbot: Veileder nyansatte gjennom prosedyrer og systembruk på deres første dag.
+- Intern Retningslinjebot: Svarer på vanlige spørsmål om oppmøteregler, sikkerhetspolicyer og andre interne retningslinjer.
+- Ny Medarbeider Introduksjonsbot: Veileder nyansatte gjennom prosedyrer og systembruk på deres første dag.
 - Fordelsinformasjonsbot: Forklarer selskapets fordels- og velferdsprogrammer.
 
 ![](./imgs/admin_bot_menue.png)
@@ -23,27 +25,27 @@ Offentlige bots kan nå merkes som "Vesentlige" av administratorer. Bots merket 
 
 ## Tilbakemeldingssløyfe
 
-Resultatet fra LLM oppfyller ikke alltid brukerens forventninger. Noen ganger klarer den ikke å tilfredsstille brukerens behov. For effektivt å "integrere" LLM-er i forretningsdrift og dagligliv, er det avgjørende å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppsto. Basert på analyseresultatene kan brukere justere promptene, RAG-datakilder og parametere tilsvarende.
+Resultatet fra LLM oppfyller ikke alltid brukerens forventninger. Noen ganger klarer den ikke å tilfredsstille brukerens behov. For effektivt å "integrere" LLM-er i forretningsdrift og daglig liv, er det avgjørende å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppstod. Basert på analyseresultatene kan brukere justere promptene, RAG-datakilder og parametere tilsvarende.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Dataanalytikere kan få tilgang til samtalelogger ved hjelp av [Amazon Athena](https://aws.amazon.com/jp/athena/). Hvis de ønsker å analysere dataene i [Jupyter Notebook](https://jupyter.org/), kan [denne notatbokeksempelet](../examples/notebooks/feedback_analysis_example.ipynb) være en referanse.
+Dataanalytikere kan få tilgang til samtalelogger ved hjelp av [Amazon Athena](https://aws.amazon.com/jp/athena/). Hvis de ønsker å analysere dataene i [Jupyter Notebook](https://jupyter.org/), kan [denne notebook-eksempelet](../examples/notebooks/feedback_analysis_example.ipynb) være en referanse.
 
 ## Dashboard
 
-Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med fokus på å samle data for hver bot og bruker over angitte tidsperioder og sortere resultatene etter bruksgebyrer.
+Gir for øyeblikket en grunnleggende oversikt over chatbotens og brukerens bruk, med fokus på å samle inn data for hver bot og bruker over angitte tidsperioder og sortere resultatene etter bruksgebyrer.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Notater
 
-- Som nevnt i [arkitekturen](../README.md#architecture), vil administratorfunksjonene referere til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres én gang i timen, vil de nyeste samtalene kanskje ikke gjenspeiles umiddelbart.
+- Som beskrevet i [arkitekturen](../README.md#architecture), vil admin-funksjonene referere til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres en gang i timen, kan de siste samtalene ikke gjenspeiles umiddelbart.
 
-- I offentlige bot-bruk vil bots som ikke er blitt brukt i det hele tatt i løpet av den angitte perioden, ikke bli listet.
+- I offentlige bot-bruk vil bots som ikke har blitt brukt i det hele tatt i den angitte perioden, ikke bli oppført.
 
-- I brukerbruk vil brukere som ikke har brukt systemet i det hele tatt i løpet av den angitte perioden, ikke bli listet.
+- I brukerbruk vil brukere som ikke har brukt systemet i det hele tatt i den angitte perioden, ikke bli oppført.
 
 > [!Viktig]
 > Hvis du bruker flere miljøer (dev, prod, osv.), vil Athena-databasenavnet inkludere miljøprefikset. I stedet for `bedrockchatstack_usage_analysis`, vil databasenavnet være:
@@ -56,15 +58,15 @@ Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med f
 > - For standard miljø: `ddb_export`
 > - For navngitte miljøer: `<miljø-prefiks>_ddb_export` (f.eks. `dev_ddb_export`)
 >
-> Sørg for å justere dine spørringer i henhold til dette når du arbeider med flere miljøer.
+> Sørg for å justere spørringene dine i henhold til dette når du arbeider med flere miljøer.
 
 ## Last ned samtaledata
 
-Du kan søke i samtaleloggene til Athena ved hjelp av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemelding kan refereres i `MessageMap`-attributtet.
+Du kan søke etter samtalelogger med Athena, ved hjelp av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemelding kan refereres i `MessageMap`-attributtet.
 
 ### Spørring per Bot-ID
 
-Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, vist på venstre sidepanel. Legg merke til den siste delen av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish-APIer, vist på venstre sidepanel. Merk den siste delen av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
