@@ -181,6 +181,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     // Conversation Store for search
     const conversationStore = new ConversationStore(this, "ConversationStore", {
+      envPrefix: props.envPrefix,
       conversationTable: database.conversationTable,
       useStandbyReplicas: props.useStandbyReplicas,
       language: props.botStoreLanguage,
@@ -221,6 +222,7 @@ export class BedrockChatStack extends cdk.Stack {
     
     // Add permissions to API handler for ConversationStore
     conversationStore.addDataAccessPolicy(
+      props.envPrefix,
       "ConversationDAPolicyApiHandler",
       backendApi.handler.role!,
       ["aoss:DescribeCollectionItems"],
@@ -233,6 +235,7 @@ export class BedrockChatStack extends cdk.Stack {
     if (devAccessArn) {
       // Access to BotStore
       botStore?.addDataAccessPolicy(
+        props.envPrefix,
         "DAPolicyDevAccess",
         devAccessArn,
         [
@@ -250,9 +253,10 @@ export class BedrockChatStack extends cdk.Stack {
           "aoss:UpdateIndex"
         ]
       );
-      
+
       // Access to ConversationStore
       conversationStore.addDataAccessPolicy(
+        props.envPrefix,
         "ConversationDAPolicyDevAccess",
         devAccessArn,
         [

@@ -25,6 +25,7 @@ import { BotStoreLanguageSchema } from "../utils/parameter-models";
 export type Language = z.infer<typeof BotStoreLanguageSchema>;
 
 export interface ConversationStoreProps {
+  envPrefix: string;
   readonly conversationTable: dynamodb.ITable;
   readonly useStandbyReplicas: boolean;
   readonly language: Language;
@@ -36,7 +37,7 @@ export class ConversationStore extends Construct {
   constructor(scope: Construct, id: string, props: ConversationStoreProps) {
     super(scope, id);
 
-    const collectionName = generatePhysicalName(this, "ConversationCollection", {
+    const collectionName = generatePhysicalName(this, `${props.envPrefix}ConversationCollection`, {
       maxLength: 32,
       lower: true,
     });
@@ -45,7 +46,7 @@ export class ConversationStore extends Construct {
       props.useStandbyReplicas === true ? "ENABLED" : "DISABLED";
 
     const networkPolicy = new oss.CfnSecurityPolicy(this, "NetworkPolicy", {
-      name: generatePhysicalName(this, "ConversationNetworkPolicy", {
+      name: generatePhysicalName(this, `${props.envPrefix}ConversationNetworkPolicy`, {
         maxLength: 32,
         lower: true,
       }),
@@ -71,7 +72,7 @@ export class ConversationStore extends Construct {
       this,
       "EncryptionPolicy",
       {
-        name: generatePhysicalName(this, "ConversationEncryptionPolicy", {
+        name: generatePhysicalName(this, `${props.envPrefix}ConversationEncryptionPolicy`, {
           maxLength: 32,
           lower: true,
         }),
@@ -107,7 +108,7 @@ export class ConversationStore extends Construct {
 
     const ingestionLogGroup = new logs.LogGroup(this, "IngensionLogGroup", {
       logGroupName:
-        `/aws/vendedlogs/OpenSearchIngestion/conversation-table-osis-pipeline/${id}`.toLowerCase(),
+        `/aws/vendedlogs/OpenSearchIngestion/${props.envPrefix}conversation-table-osis-pipeline/${id}`.toLowerCase(),
       removalPolicy: RemovalPolicy.DESTROY,
       retention: logs.RetentionDays.ONE_WEEK,
     });
@@ -188,7 +189,7 @@ export class ConversationStore extends Construct {
     osisPolicy.attachToRole(osisRole);
 
     const dataAccessPolicy = new oss.CfnAccessPolicy(this, "DataAccessPolicy", {
-      name: generatePhysicalName(this, "ConversationDataAccessPolicy", {
+      name: generatePhysicalName(this, `${props.envPrefix}ConversationDataAccessPolicy`, {
         maxLength: 32,
         lower: true,
       }),
@@ -261,7 +262,7 @@ export class ConversationStore extends Construct {
           {
             opensearch: {
               hosts: [endpoint],
-              index: "conversation",
+              index: `${props.envPrefix}conversation`,
               ...(props.language === "en"
                 ? {} // For en, index_type, template_type, template_content are not required
                 : {
@@ -285,7 +286,7 @@ export class ConversationStore extends Construct {
     };
 
     new osis.CfnPipeline(this, "OsisPipeline", {
-      pipelineName: generatePhysicalName(this, "ConversationOsisPipeline", {
+      pipelineName: generatePhysicalName(this, `${props.envPrefix}ConversationOsisPipeline`, {
         maxLength: 25,
         lower: true,
       }),
@@ -387,6 +388,7 @@ export class ConversationStore extends Construct {
   }
 
   public addDataAccessPolicy(
+    envPrefix: string,
     id: string,
     principal: IRole | string,
     collectionPermissions: string[],
@@ -399,7 +401,7 @@ export class ConversationStore extends Construct {
     }
 
     const newPolicy = new oss.CfnAccessPolicy(this, id, {
-      name: generatePhysicalName(this, id, {
+      name: generatePhysicalName(this, `${envPrefix}${id}`, {
         maxLength: 32,
         lower: true,
       }),

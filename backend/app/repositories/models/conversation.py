@@ -710,15 +710,36 @@ class ConversationMeta(BaseModel):
         """Create a ConversationMeta instance from OpenSearch response"""
         source = hit["_source"]
         
-        # Extract conversation ID from SK (e.g. "CONVERSATION#uuid" -> "uuid")
-        conversation_id = source.get("SK", "").replace("CONVERSATION#", "")
+        # Extract conversation ID from SK (e.g. "{user_id}#CONV#{conversation_id}" -> "{conversation_id}")
+        sk = source.get("SK", "")
+        conversation_id = sk.split("#CONV#")[1]
+
+        # Get model from MessageMap
+        model = ""
+        try:
+            message_map_str = source.get("MessageMap", "{}")
+            message_map = json.loads(message_map_str)
+            
+            # Try to get model from system message first
+            if "system" in message_map and "model" in message_map["system"]:
+                model = message_map["system"]["model"]
+            # If no system message or no model in system message,
+            # try the first message with a model field
+            else:
+                for msg_id, msg_data in message_map.items():
+                    if "model" in msg_data:
+                        model = msg_data["model"]
+                        break
+        except (json.JSONDecodeError, TypeError):
+            # In case of any error during JSON parsing, default to empty string
+            model = ""
         
         return cls(
             id=conversation_id,
-            title=source.get("title", "Untitled conversation"),
-            create_time=source.get("createTime", 0),
-            model=source.get("model", ""),
-            bot_id=source.get("botId"),
+            title=source.get("Title", "Untitled conversation"),
+            create_time=float(source.get("CreateTime", 0)),  # Fix field name and ensure it's a float
+            model=model,
+            bot_id=source.get("BotId")
         )
 
 
