@@ -20,6 +20,11 @@ from app.agents.tools.agent_tool import (
 _logger = logging.getLogger(__name__)
 
 
+class SigV4AsymAuth(BaseModel):
+    service: str
+    region: str = "*"
+
+
 class MCPToolBundle(AgentToolBundle):
     """MCPToolBundle is a agent tool bundle, which acts as MCP (Model Context Protocol) client for specified MCP server.
     Only supports MCP server with protocol version 2025-03-26 with Streamable HTTP transport.
@@ -30,7 +35,8 @@ class MCPToolBundle(AgentToolBundle):
         name: str,
         description: str,
         url: str,
-        aws_sigv4a_service: str | None = None,
+        *,
+        iam_auth: SigV4AsymAuth | None = None,
     ):
         """Initialize MCPToolBundle.
         Args:
@@ -41,7 +47,7 @@ class MCPToolBundle(AgentToolBundle):
         """
         super().__init__(name=name, description=description)
         self.url = url
-        self.aws_sigv4a_service = aws_sigv4a_service
+        self.iam_auth = iam_auth
         self._session: requests.Session | None = None
 
     def get_tools(self) -> list[AgentTool]:
@@ -53,7 +59,6 @@ class MCPToolBundle(AgentToolBundle):
         _ = _jsonrpc(
             self._session,
             self.url,
-            self.aws_sigv4a_service,
             "initialize",
             {
                 "protocolVersion": "2025-03-26",
@@ -63,6 +68,7 @@ class MCPToolBundle(AgentToolBundle):
                     "version": "2.9.0",
                 },
             },
+            iam_auth=self.iam_auth,
         )
         _logger.debug("MCP session initialized: name=%s url=%s", self.name, self.url)
 
@@ -74,16 +80,16 @@ class MCPToolBundle(AgentToolBundle):
             result = _jsonrpc(
                 self._session,
                 self.url,
-                self.aws_sigv4a_service,
                 "tools/list",
                 {"cursor": cursor} if cursor else {},
+                iam_auth=self.iam_auth,
             )
             tools.extend(result["tools"])
             if not (cursor := result.get("next_cursor")):
                 break
         _logger.debug("MCP tools listed: tools=[%s]", ",".join([tool["name"] for tool in tools]))
 
-        return [MCPTool(tool, self._session, self.url, self.aws_sigv4a_service) for tool in tools]
+        return [MCPTool(tool, self._session, self.url, iam_auth=self.iam_auth) for tool in tools]
 
 
 class AnyInput(BaseModel):
@@ -97,7 +103,8 @@ class MCPTool(AgentTool):
         tool: dict[str, Any],
         session: requests.Session,
         url: str,
-        aws_sigv4a_service: str | None = None,
+        *,
+        iam_auth: SigV4AsymAuth | None = None,
     ):
         super().__init__(
             name=tool["name"],
@@ -108,7 +115,7 @@ class MCPTool(AgentTool):
         self.tool = tool
         self._session = session
         self.url = url
-        self.aws_sigv4a_service = aws_sigv4a_service
+        self.iam_auth = iam_auth
 
     def _generate_input_schema(self) -> dict[str, Any]:
         return self.tool["inputSchema"]
@@ -122,12 +129,12 @@ class MCPTool(AgentTool):
         r = _jsonrpc(
             self._session,
             self.url,
-            self.aws_sigv4a_service,
             "tools/call",
             {
                 "name": self.tool["name"],
                 "arguments": tool_input.model_dump(),
             },
+            iam_auth=self.iam_auth,
         )
         return {
             "content": r,
@@ -137,9 +144,10 @@ class MCPTool(AgentTool):
 def _jsonrpc(
     session: requests.Session,
     url: str,
-    aws_sigv4a_service: str | None,
     method: str,
     params: dict,
+    *,
+    iam_auth: SigV4AsymAuth | None = None,
 ) -> Any:
     """Do JSON-RPC 2.0 request on MCP HTTP transport."""
     # set up headers
@@ -162,7 +170,7 @@ def _jsonrpc(
     }
     body = json.dumps(rpc_request, ensure_ascii=False, separators=(",", ":"))
 
-    if aws_sigv4a_service:
+    if iam_auth:
         # handle AWS SigV4a signing
         headers["x-amz-content-sha256"] = "UNSIGNED-PAYLOAD"
         request = botocore.awsrequest.AWSRequest(
@@ -174,19 +182,17 @@ def _jsonrpc(
         request.context["payload_signing_enabled"] = False
 
         signer = botocore.crt.auth.CrtSigV4AsymAuth(  # type: ignore
-            botocore.session.Session().get_credentials(), aws_sigv4a_service, "*"
+            botocore.session.Session().get_credentials(), iam_auth.service, iam_auth.region
         )
         signer.add_auth(request)
 
         prepared = request.prepare()
         url = prepared.url
-        headers = (
-            prepared.headers
-        )  # wrong type, should be botocore.awsrequest.HeadersDict
+        headers = dict(prepared.headers)
 
     # Send HTTP request
     _logger.debug("MCP request: object=\"%s\"", str(rpc_request)[:1000])
-    http_response = session.post(url, headers=headers, data=body, stream=True, timeout=10.0)  # type: ignore
+    http_response = session.post(url, headers=headers, data=body, stream=True, timeout=10.0)
 
     # handle HTTP response
     with http_response:
