@@ -1,16 +1,16 @@
 # Sediakan penyedia identiti luar untuk Google
 
-## Langkah 1: Cipta Klien OAuth 2.0 Google
+## Langkah 1: Buat Klien OAuth 2.0 Google
 
 1. Pergi ke Konsol Pembangun Google.
-2. Cipta projek baru atau pilih projek sedia ada.
+2. Buat projek baru atau pilih projek sedia ada.
 3. Navigasi ke "Credentials", kemudian klik "Create Credentials" dan pilih "OAuth client ID".
 4. Konfigurasikan skrin persetujuan jika diminta.
 5. Untuk jenis aplikasi, pilih "Web application".
-6. Tinggalkan URI pengalihan kosong buat sementara untuk ditetapkan kemudian.[Lihat Langkah 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+6. Biarkan URI pengalihan kosong buat masa ini untuk ditetapkan kemudian, dan simpan sementara.[Lihat Langkah 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. Setelah dibuat, catat Client ID dan Client Secret.
 
-Untuk maklumat lanjut, lawati [dokumen rasmi Google](https://support.google.com/cloud/answer/6158849?hl=en)
+Untuk butiran lanjut, lawati [dokumen rasmi Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
 ## Langkah 2: Simpan Credentials Google OAuth dalam AWS Secrets Manager
 
@@ -22,12 +22,12 @@ Untuk maklumat lanjut, lawati [dokumen rasmi Google](https://support.google.com/
    1. Kunci: clientId, Nilai: <YOUR_GOOGLE_CLIENT_ID>
    2. Kunci: clientSecret, Nilai: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Ikuti arahan untuk memberi nama dan menghuraikan rahsia. Catat nama rahsia kerana anda akan memerlukannya dalam kod CDK anda. Contohnya, googleOAuthCredentials. (Gunakan dalam nama pembolehubah Langkah 3 <YOUR_SECRET_NAME>)
+5. Ikuti petunjuk untuk menamakan dan menjelaskan rahsia. Catat nama rahsia kerana anda akan memerlukannya dalam kod CDK anda. Contohnya, googleOAuthCredentials. (Gunakan dalam nama pembolehubah Langkah 3 <YOUR_SECRET_NAME>)
 6. Semak dan simpan rahsia.
 
 ### Perhatian
 
-Nama kunci mestilah sepadan tepat dengan rentetan 'clientId' dan 'clientSecret'.
+Nama kunci mestilah sepadan dengan rentetan 'clientId' dan 'clientSecret' dengan tepat.
 
 ## Langkah 3: Kemas Kini cdk.json
 
@@ -45,7 +45,7 @@ seperti berikut:
         "secretName": "<NAMA_RAHSIA_ANDA>"
       }
     ],
-    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_KUMPULAN_PENGGUNA_ANDA>"
+    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_USER_POOL_ANDA>"
   }
 }
 ```
@@ -54,7 +54,7 @@ seperti berikut:
 
 #### Keunikan
 
-Awalan userPoolDomainPrefix mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, penciptaan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
+Awalan userPoolDomainPrefix mestilah unik secara global merentas semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, penghasilan domain user pool akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
 
 ## Langkah 4: Deploy Stack CDK Anda
 
@@ -66,4 +66,4 @@ npx cdk deploy --require-approval never --all
 
 ## Langkah 5: Kemas Kini Klien Google OAuth dengan URI Pengalihan Cognito
 
-Selepas menggunakan stack, AuthApprovedRedirectURI akan dipaparkan dalam output CloudFormation. Kembali ke Konsol Pembangun Google dan kemas kini klien OAuth dengan URI pengalihan yang betul.
+Selepas menggunakan stack, AuthApprovedRedirectURI akan dipaparkan dalam output CloudFormation. Kembali ke Google Developer Console dan kemas kini klien OAuth dengan URI pengalihan yang betul.

@@ -2,7 +2,7 @@
 
 ## Étape 1 : Créer un client OAuth 2.0 Google
 
-1. Accédez à la Console des développeurs Google.
+1. Accédez à la Console Google Developer.
 2. Créez un nouveau projet ou sélectionnez un projet existant.
 3. Accédez à "Identifiants", puis cliquez sur "Créer des identifiants" et choisissez "ID client OAuth".
 4. Configurez l'écran de consentement si demandé.
@@ -12,12 +12,12 @@
 
 Pour plus de détails, consultez [le document officiel de Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
-## Étape 2 : Stocker les identifiants Google OAuth dans AWS Secrets Manager
+## Étape 2 : Stocker les identifiants OAuth de Google dans AWS Secrets Manager
 
 1. Accédez à la Console de gestion AWS.
-2. Accédez à Secrets Manager et choisissez "Stocker un nouveau secret".
+2. Naviguez vers Secrets Manager et choisissez "Stocker un nouveau secret".
 3. Sélectionnez "Autre type de secrets".
-4. Saisissez les clientId et clientSecret Google OAuth sous forme de paires clé-valeur.
+4. Saisissez les clientId et clientSecret OAuth de Google sous forme de paires clé-valeur.
 
    1. Clé : clientId, Valeur : <YOUR_GOOGLE_CLIENT_ID>
    2. Clé : clientSecret, Valeur : <YOUR_GOOGLE_CLIENT_SECRET>
@@ -45,7 +45,7 @@ comme ceci :
         "secretName": "<VOTRE_NOM_DE_SECRET>"
       }
     ],
-    "userPoolDomainPrefix": "<PRÉFIXE_DE_DOMAINE_UNIQUE_POUR_VOTRE_USER_POOL>"
+    "userPoolDomainPrefix": "<PREFIXE_DE_DOMAINE_UNIQUE_POUR_VOTRE_USER_POOL>"
   }
 }
 ```
@@ -54,7 +54,7 @@ comme ceci :
 
 #### Unicité
 
-Le userPoolDomainPrefix doit être globalement unique pour tous les utilisateurs Amazon Cognito. Si vous choisissez un préfixe déjà utilisé par un autre compte AWS, la création du domaine de l'user pool échouera. Il est recommandé d'inclure des identifiants, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
+Le userPoolDomainPrefix doit être globalement unique pour tous les utilisateurs Amazon Cognito. Si vous choisissez un préfixe déjà utilisé par un autre compte AWS, la création du domaine de la user pool échouera. Il est recommandé d'inclure des identificateurs, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
 
 ## Étape 4 : Déployer Votre Stack CDK
 
@@ -66,4 +66,4 @@ npx cdk deploy --require-approval never --all
 
 ## Étape 5 : Mettre à jour le client OAuth Google avec les URI de redirection Cognito
 
-Après avoir déployé la pile, AuthApprovedRedirectURI est visible dans les sorties CloudFormation. Retournez dans la Console des développeurs Google et mettez à jour le client OAuth avec les URI de redirection corrects.
+Après le déploiement de la stack, AuthApprovedRedirectURI apparaît dans les sorties CloudFormation. Retournez dans la Console Google Developer et mettez à jour le client OAuth avec les URI de redirection corrects.

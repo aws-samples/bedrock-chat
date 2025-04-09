@@ -8,7 +8,7 @@ Lihat [backend/README](../backend/README_ms-MY.md).
 
 Dalam contoh ini, anda boleh mengubah dan melancarkan frontend secara tempatan menggunakan sumber AWS (`API Gateway`, `Cognito`, dll.) yang telah digunakan dengan `npx cdk deploy`.
 
-1. Merujuk kepada [Deploy menggunakan CDK](../README.md#deploy-using-cdk) untuk menggunakan di persekitaran AWS.
+1. Merujuk kepada [Deploy menggunakan CDK](../README.md#deploy-using-cdk) untuk menggunakan pada persekitaran AWS.
 2. Salin `frontend/.env.template` dan simpan sebagai `frontend/.env.local`.
 3. Isi kandungan `.env.local` berdasarkan keputusan output `npx cdk deploy` (seperti `BedrockChatStack.AuthUserPoolClientIdXXXXX`).
 4. Jalankan perintah berikut:
@@ -19,15 +19,15 @@ cd frontend && npm ci && npm run dev
 
 ## (Pilihan, disyorkan) Sediakan kait pra-commit
 
-Kami telah memperkenalkan aliran kerja GitHub untuk memeriksa jenis dan menyemak semula. Ini dilakukan apabila Permintaan Tarik dibuat, tetapi menunggu semakan semula selesai sebelum meneruskan bukanlah pengalaman pembangunan yang baik. Oleh itu, tugas semakan semula ini perlu dilakukan secara automatik pada peringkat commit. Kami telah memperkenalkan [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) sebagai mekanisme untuk mencapai ini. Ia tidak wajib, tetapi kami mengesyorkan untuk menggunakannya bagi pengalaman pembangunan yang cekap. Tambahan pula, walaupun kami tidak memaksa pemformatan TypeScript dengan [Prettier](https://prettier.io/), kami akan menghargai jika anda dapat menggunakannya semasa menyumbang, kerana ia membantu menghalang perbezaan yang tidak perlu semasa semakan kod.
+Kami telah memperkenalkan alur kerja GitHub untuk menyemak jenis dan pemeriksaan kod. Ini dilakukan apabila Permintaan Tarik dibuat, tetapi menunggu pemeriksaan kod selesai sebelum meneruskan bukan pengalaman pembangunan yang baik. Oleh itu, tugas pemeriksaan kod ini perlu dilakukan secara automatik pada peringkat commit. Kami telah memperkenalkan [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) sebagai mekanisme untuk mencapai ini. Ia tidak wajib, tetapi kami mengesyorkan untuk menggunakannya bagi pengalaman pembangunan yang cekap. Tambahan pula, walaupun kami tidak mewajibkan pemformatan TypeScript dengan [Prettier](https://prettier.io/), kami akan menghargai jika anda menggunakannya semasa menyumbang, kerana ia membantu mencegah perbezaan yang tidak perlu semasa ulasan kod.
 
 ### Pasang lefthook
 
-Merujuk [di sini](https://github.com/evilmartians/lefthook#install). Jika anda pengguna mac dan homebrew, hanya jalankan `brew install lefthook`.
+Rujuk [di sini](https://github.com/evilmartians/lefthook#install). Jika anda pengguna mac dan homebrew, hanya jalankan `brew install lefthook`.
 
 ### Pasang poetry
 
-Ini diperlukan kerana semakan semula kod Python bergantung kepada `mypy` dan `black`.
+Ini diperlukan kerana pemeriksaan kod Python bergantung kepada `mypy` dan `black`.
 
 ```sh
 cd backend
@@ -41,4 +41,4 @@ Untuk maklumat lanjut, sila semak [README backend](../backend/README_ms-MY.md).
 
 ### Cipta kait pra-commit
 
-Hanya jalankan `lefthook install` pada direktori akar projek ini.
+Hanya jalankan `lefthook install` pada direktori root projek ini.

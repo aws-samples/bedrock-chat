@@ -1,10 +1,29 @@
-# Fonctionnalités d'administration
+# Fonctionnalités administratives
 
-Les fonctionnalités d'administration sont un outil essentiel car elles fournissent des informations cruciales sur l'utilisation des bots personnalisés et le comportement des utilisateurs. Sans cette fonctionnalité, il serait difficile pour les administrateurs de comprendre quels bots personnalisés sont populaires, pourquoi ils le sont, et qui les utilise. Ces informations sont essentielles pour optimiser les invites d'instruction, personnaliser les sources de données RAG et identifier les utilisateurs intensifs qui pourraient devenir des influenceurs.
+## Prérequis
+
+L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui peut être configuré via la console de gestion > Pools d'utilisateurs Amazon Cognito ou l'interface de ligne de commande AWS. Notez que l'identifiant du pool d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Sorties > `AuthUserPoolIdxxxx`.
+
+![](./imgs/group_membership_admin.png)
+
+## Marquer les bots publics comme Essentiels
+
+Les bots publics peuvent désormais être marqués comme "Essentiels" par les administrateurs. Les bots marqués comme Essentiels seront présentés dans la section "Essentiels" du magasin de bots, les rendant facilement accessibles aux utilisateurs. Cela permet aux administrateurs de mettre en avant les bots importants qu'ils souhaitent que tous les utilisateurs utilisent.
+
+### Exemples
+
+- Bot Assistant RH : Aide les employés avec des questions et des tâches liées aux ressources humaines.
+- Bot Support IT : Fournit une assistance pour les problèmes techniques internes et la gestion des comptes.
+- Bot Guide des Politiques Internes : Répond aux questions fréquemment posées sur les règles de présence, les politiques de sécurité et autres réglementations internes.
+- Bot d'Intégration des Nouveaux Employés : Guide les nouveaux employés à travers les procédures et l'utilisation des systèmes lors de leur premier jour.
+- Bot d'Information sur les Avantages : Explique les programmes d'avantages de l'entreprise et les services sociaux.
+
+![](./imgs/admin_bot_menue.png)
+![](./imgs/bot_store.png)
 
 ## Boucle de rétroaction
 
-La sortie d'un LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Il arrive parfois qu'elle ne satisfasse pas ses besoins. Pour intégrer efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Claude Chat est doté d'une fonctionnalité de retour qui permet aux utilisateurs d'analyser les raisons de l'insatisfaction. Sur la base des résultats de l'analyse, les utilisateurs peuvent ajuster les invites, les sources de données RAG et les paramètres en conséquence.
+La sortie du LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Il arrive parfois qu'elle ne satisfasse pas ses besoins. Pour intégrer efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Chat est équipé d'une fonctionnalité de feedback conçue pour permettre aux utilisateurs d'analyser les raisons de l'insatisfaction. Sur la base des résultats de l'analyse, les utilisateurs peuvent ajuster les invites, les sources de données RAG et les paramètres en conséquence.
 
 ![](./imgs/feedback_loop.png)
 
@@ -12,20 +31,11 @@ La sortie d'un LLM peut ne pas toujours répondre aux attentes de l'utilisateur.
 
 Les analystes de données peuvent accéder aux journaux de conversation via [Amazon Athena](https://aws.amazon.com/jp/athena/). S'ils souhaitent analyser les données avec [Jupyter Notebook](https://jupyter.org/), [cet exemple de notebook](../examples/notebooks/feedback_analysis_example.ipynb) peut servir de référence.
 
-## Tableau de bord administrateur
+## Tableau de bord
 
-Fournit actuellement un aperçu de base de l'utilisation des chatbots et des utilisateurs, en se concentrant sur l'agrégation des données pour chaque bot et utilisateur sur des périodes spécifiques et en triant les résultats par frais d'utilisation.
+Fournit actuellement un aperçu de base de l'utilisation du chatbot et des utilisateurs, en se concentrant sur l'agrégation des données pour chaque bot et utilisateur sur des périodes de temps spécifiées et en triant les résultats par frais d'utilisation.
 
 ![](./imgs/admin_bot_analytics.png)
-
-> [!Note]
-> Les analyses d'utilisation des utilisateurs sont à venir.
-
-### Prérequis
-
-L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui peut être configuré via la console de gestion > Pools d'utilisateurs Amazon Cognito ou l'interface de ligne de commande AWS. Notez que l'ID du pool d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Sorties > `AuthUserPoolIdxxxx`.
-
-![](./imgs/group_membership_admin.png)
 
 ## Notes
 
@@ -35,8 +45,7 @@ L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui pe
 
 - Dans les utilisations utilisateur, les utilisateurs qui n'ont pas utilisé le système du tout pendant la période spécifiée ne seront pas listés.
 
-> [!Important] > **Noms de bases de données multi-environnements**
->
+> [!Important]
 > Si vous utilisez plusieurs environnements (dev, prod, etc.), le nom de la base de données Athena inclura le préfixe d'environnement. Au lieu de `bedrockchatstack_usage_analysis`, le nom de la base de données sera :
 >
 > - Pour l'environnement par défaut : `bedrockchatstack_usage_analysis`
@@ -51,11 +60,11 @@ L'utilisateur administrateur doit être membre du groupe appelé `Admin`, qui pe
 
 ## Télécharger les données de conversation
 
-Vous pouvez interroger les journaux de conversation à l'aide d'Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'Éditeur de requêtes Athena depuis la console de gestion et exécutez SQL. Voici quelques exemples de requêtes utiles pour analyser des cas d'utilisation. Les commentaires peuvent être référencés dans l'attribut `MessageMap`.
+Vous pouvez interroger les journaux de conversation via Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'Éditeur de requêtes Athena depuis la console de gestion et exécutez une requête SQL. Voici quelques exemples de requêtes utiles pour analyser les cas d'utilisation. Les retours peuvent être référencés dans l'attribut `MessageMap`.
 
 ### Requête par ID de Bot
 
-Modifiez `bot-id` et `datehour`. `bot-id` peut être consulté sur l'écran de gestion de Bot, accessible depuis les API de publication de Bot, visible dans la barre latérale gauche. Notez la dernière partie de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Modifiez `bot-id` et `datehour`. `bot-id` peut être consulté sur l'écran de Gestion des Bots, accessible depuis les API de Publication de Bots, affiché dans la barre latérale gauche. Notez la dernière partie de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -82,7 +91,7 @@ ORDER BY
 
 ### Requête par ID Utilisateur
 
-Modifiez `user-id` et `datehour`. `user-id` peut être consulté sur l'écran de gestion de Bot.
+Modifiez `user-id` et `datehour`. `user-id` peut être consulté sur l'écran de Gestion des Bots.
 
 > [!Note]
 > Les analyses d'utilisation par utilisateur arrivent bientôt.

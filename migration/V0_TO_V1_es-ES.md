@@ -1,12 +1,12 @@
 # Guía de Migración (v0 a v1)
 
-Si ya está utilizando Bedrock Claude Chat con una versión anterior (~`0.4.x`), debe seguir los siguientes pasos para migrar.
+Si ya está utilizando Bedrock Chat con una versión anterior (~`0.4.x`), debe seguir los siguientes pasos para migrar.
 
 ## ¿Por qué necesito hacerlo?
 
 Esta actualización importante incluye actualizaciones de seguridad importantes.
 
-- El almacenamiento de la base de datos vectorial (es decir, pgvector en Aurora PostgreSQL) ahora está encriptado, lo que desencadena un reemplazo al desplegarlo. Esto significa que los elementos vectoriales existentes serán eliminados.
+- El almacenamiento de la base de datos vectorial (es decir, pgvector en Aurora PostgreSQL) ahora está encriptado, lo que provoca un reemplazo al implementarse. Esto significa que los elementos vectoriales existentes se eliminarán.
 - Hemos introducido el grupo de usuarios de Cognito `CreatingBotAllowed` para limitar a los usuarios que pueden crear bots. Los usuarios existentes actuales no están en este grupo, por lo que necesitará adjuntar el permiso manualmente si desea que tengan capacidades de creación de bots. Consulte: [Personalización de Bot](../../README.md#bot-personalization)
 
 ## Requisitos previos
@@ -15,10 +15,10 @@ Lea la [Guía de Migración de Base de Datos](./DATABASE_MIGRATION_es-ES.md) y d
 
 ## Pasos
 
-### Migración de almacén de vectores
+### Migración de almacén vectorial
 
-- Abre tu terminal y navega hasta el directorio del proyecto
-- Cambia a la rama que deseas desplegar. A continuación, cambia a la rama deseada (en este caso, `v1`) y extrae los últimos cambios:
+- Abre tu terminal y navega al directorio del proyecto
+- Cambia a la rama que deseas desplegar. A continuación, cambia a la rama deseada (en este caso, `v1`) y obtén los últimos cambios:
 
 ```sh
 git fetch
@@ -30,10 +30,10 @@ git pull origin v1
 - Elimina todas las [API publicadas](../PUBLISH_API_es-ES.md) para que CloudFormation pueda eliminar el clúster de Aurora existente.
 - Ejecuta [npx cdk deploy](../README.md#deploy-using-cdk) que desencadena el reemplazo del clúster de Aurora y ELIMINA TODOS LOS ELEMENTOS VECTORIALES.
 - Sigue la [Guía de Migración de Base de Datos](./DATABASE_MIGRATION_es-ES.md) para restaurar elementos vectoriales.
-- Verifica que el usuario pueda utilizar los bots existentes con conocimiento, es decir, bots RAG.
+- Verifica que el usuario pueda utilizar los bots existentes que tienen conocimiento, es decir, bots RAG.
 
 ### Adjuntar permiso CreatingBotAllowed
 
 - Después del despliegue, todos los usuarios no podrán crear nuevos bots.
-- Si quieres que usuarios específicos puedan crear bots, agrega esos usuarios al grupo `CreatingBotAllowed` usando la consola de administración o la CLI.
+- Si quieres que usuarios específicos puedan crear bots, agrega esos usuarios al grupo `CreatingBotAllowed` utilizando la consola de administración o la CLI.
 - Verifica si el usuario puede crear un bot. Ten en cuenta que los usuarios necesitan volver a iniciar sesión.
