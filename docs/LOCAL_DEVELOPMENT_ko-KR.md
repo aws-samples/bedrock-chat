@@ -17,9 +17,9 @@
 cd frontend && npm ci && npm run dev
 ```
 
-## (선택사항, 권장) 사전 커밋 훅 설정
+## (선택 사항, 권장) 사전 커밋 훅 설정
 
-GitHub 워크플로우에서 타입 검사 및 린팅을 도입했습니다. 이는 풀 리퀘스트가 생성될 때 실행되지만, 린팅이 완료될 때까지 기다리는 것은 좋은 개발 경험이 아닙니다. 따라서 이러한 린팅 작업은 커밋 단계에서 자동으로 수행되어야 합니다. 이를 위해 [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install)을 메커니즘으로 도입했습니다. 필수는 아니지만 효율적인 개발 경험을 위해 채택하는 것을 권장합니다. 또한 [Prettier](https://prettier.io/)로 TypeScript 포맷팅을 강제하지는 않지만, 코드 리뷰 중 불필요한 차이를 방지하기 위해 기여할 때 채택해 주시기를 바랍니다.
+GitHub 워크플로우를 통해 타입 검사 및 린팅을 도입했습니다. 이는 풀 리퀘스트가 생성될 때 실행되지만, 린팅이 완료될 때까지 기다리는 것은 좋은 개발 경험이 아닙니다. 따라서 이러한 린팅 작업은 커밋 단계에서 자동으로 수행되어야 합니다. [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install)을 이를 달성하기 위한 메커니즘으로 도입했습니다. 필수는 아니지만 효율적인 개발 경험을 위해 채택하는 것을 권장합니다. 또한 [Prettier](https://prettier.io/)로 TypeScript 포맷팅을 강제하지는 않지만, 코드 리뷰 중 불필요한 차이를 방지하기 위해 기여할 때 채택해 주시면 감사하겠습니다.
 
 ### Lefthook 설치
 
@@ -31,8 +31,8 @@ Python 코드 린팅이 `mypy`와 `black`에 의존하기 때문에 필요합니
 
 ```sh
 cd backend
-python3 -m venv .venv  # 선택사항 (poetry를 환경에 설치하고 싶지 않은 경우)
-source .venv/bin/activate  # 선택사항 (poetry를 환경에 설치하고 싶지 않은 경우)
+python3 -m venv .venv  # 선택 사항 (poetry를 환경에 설치하고 싶지 않은 경우)
+source .venv/bin/activate  # 선택 사항 (poetry를 환경에 설치하고 싶지 않은 경우)
 pip install poetry
 poetry install
 ```
