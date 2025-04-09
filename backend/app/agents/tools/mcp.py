@@ -76,7 +76,7 @@ class MCPToolBundle(AgentToolBundle):
                 self.url,
                 self.aws_sigv4a_service,
                 "tools/list",
-                {"cursor": cursor},
+                {"cursor": cursor} if cursor else {},
             )
             tools.extend(result["tools"])
             if not (cursor := result.get("next_cursor")):
@@ -147,7 +147,7 @@ def _jsonrpc(
     headers = dict(session.headers)
     headers.update(
         {
-            "Content-Type": "application/json-rpc",
+            "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",
         }
     )
