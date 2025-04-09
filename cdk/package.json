@@ -26,7 +26,7 @@
     "@aws-cdk/aws-lambda-python-alpha": "^2.155.0-alpha.0",
     "@aws-sdk/util-dynamodb": "^3.693.0",
     "@cdklabs/generative-ai-cdk-constructs": "^0.1.274",
-    "aws-cdk-lib": "^2.177.0",
+    "aws-cdk-lib": "^2.188.0",
     "cdk-aws-lambda-powertools-layer": "^3.7.0",
     "constructs": "^10.0.0",
     "deploy-time-build": "^0.3.2",
