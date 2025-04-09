@@ -71,7 +71,7 @@ The steps differ depending on whether you are using v1.2 or earlier, or v1.3.
 
 ![](../imgs/v1_to_v2_KB_s3_source.png)
 
-**Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support (Planning to support web crawler ([issue](https://github.com/aws-samples/bedrock-claude-chat/issues/557))).** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
+**Note that some features are not available on Knowledge Bases, such as web crawling and YouTube transcript support (Planning to support web crawler ([issue](https://github.com/aws-samples/bedrock-chat/issues/557))).** Also, keep in mind that using Knowledge Bases will incur charges for both Aurora and Knowledge Bases during the transition.
 
 4. **Remove published APIs**: All previously published APIs will need to be republished before deploying v2 due to VPC deletion. To do this, you will need to delete the existing APIs first. Using the [administrator's API Management feature](../ADMINISTRATOR.md) can simplify this process. Once the deletion of all `APIPublishmentStackXXXX` CloudFormation stacks is complete, the environment will be ready.
 

@@ -8,7 +8,7 @@
 
 ## 遷移步驟
 
-- 在使用 Aurora 替換執行 [npx cdk deploy](../README.md#deploy-using-cdk) 後，開啟 [migrate.py](./migrate.py) 腳本並使用適當的值更新以下變量。這些值可以在 `CloudFormation` > `BedrockChatStack` > `Outputs` 標籤中查看。
+- 在使用 Aurora 替換執行 [npx cdk deploy](../README.md#deploy-using-cdk) 後，開啟 [migrate_v0_v1.py](./migrate_v0_v1.py) 腳本並使用適當的值更新以下變量。這些值可以在 `CloudFormation` > `BedrockChatStack` > `Outputs` 標籤中查看。
 
 ```py
 # 在 AWS 管理控制台中開啟 CloudFormation 堆疊，並從 Outputs 標籤複製值。
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- 運行 `migrate.py` 腳本以啟動遷移過程。該腳本將掃描所有機器人，啟動嵌入 ECS 任務，並將資料建立到新的 Aurora 叢集。請注意：
+- 運行 `migrate_v0_v1.py` 腳本以啟動遷移過程。該腳本將掃描所有機器人，啟動嵌入 ECS 任務，並將資料建立到新的 Aurora 叢集。請注意：
   - 腳本需要 `boto3`。
   - 環境需要 IAM 許可權以存取 DynamoDB 表並調用 ECS 任務。
 

@@ -8,7 +8,7 @@ Proses migrasi melibatkan pengimbasan semua bot dan melancarkan tugas ECS pemben
 
 ## Langkah Migrasi
 
-- Selepas [npx cdk deploy](../README.md#deploy-using-cdk) dengan penggantian Aurora, buka skrip [migrate.py](./migrate.py) dan kemas kini pemboleh ubah berikut dengan nilai yang sesuai. Nilai-nilai tersebut boleh dirujuk pada tab `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Selepas [npx cdk deploy](../README.md#deploy-using-cdk) dengan penggantian Aurora, buka skrip [migrate_v0_v1.py](./migrate_v0_v1.py) dan kemas kini pemboleh ubah berikut dengan nilai yang sesuai. Nilai-nilai tersebut boleh dirujuk pada tab `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
 # Buka stack CloudFormation dalam Konsol Pengurusan AWS dan salin nilai dari tab Outputs.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Jalankan skrip `migrate.py` untuk memulakan proses migrasi. Skrip ini akan mengimbas semua bot, melancarkan tugas ECS embedding, dan membuat data ke kluster Aurora yang baru. Ambil perhatian bahawa:
+- Jalankan skrip `migrate_v0_v1.py` untuk memulakan proses migrasi. Skrip ini akan mengimbas semua bot, melancarkan tugas ECS embedding, dan membuat data ke kluster Aurora yang baru. Ambil perhatian bahawa:
   - Skrip memerlukan `boto3`.
   - Persekitaran memerlukan kebenaran IAM untuk mengakses jadual dynamodb dan melancarkan tugas ECS.
 

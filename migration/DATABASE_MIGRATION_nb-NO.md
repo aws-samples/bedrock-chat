@@ -8,7 +8,7 @@ Migrasjonsprosessen innebærer scanning av alle bots og lansering av embedding E
 
 ## Migrasjonstrinn
 
-- Etter [npx cdk deploy](../README.md#deploy-using-cdk) med Aurora-erstatning, åpne [migrate.py](./migrate.py)-skriptet og oppdater følgende variabler med de aktuelle verdiene. Verdiene kan refereres fra `CloudFormation` > `BedrockChatStack` > `Outputs`-fanen.
+- Etter [npx cdk deploy](../README.md#deploy-using-cdk) med Aurora-erstatning, åpne [migrate_v0_v1.py](./migrate_v0_v1.py)-skriptet og oppdater følgende variabler med de aktuelle verdiene. Verdiene kan refereres fra `CloudFormation` > `BedrockChatStack` > `Outputs`-fanen.
 
 ```py
 # Åpne CloudFormation-stakken i AWS Management Console og kopier verdiene fra Outputs-fanen.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Kjør `migrate.py`-skriptet for å starte migrasjonsprosessen. Dette skriptet vil søke gjennom alle bots, starte embedding ECS-oppgaver og opprette data i den nye Aurora-clusteren. Merk at:
+- Kjør `migrate_v0_v1.py`-skriptet for å starte migrasjonsprosessen. Dette skriptet vil søke gjennom alle bots, starte embedding ECS-oppgaver og opprette data i den nye Aurora-clusteren. Merk at:
   - Skriptet krever `boto3`.
   - Miljøet krever IAM-tillatelser for å få tilgang til DynamoDB-tabellen og starte ECS-oppgaver.
 

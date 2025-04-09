@@ -22,6 +22,12 @@ A financial analyst needs to forecast next quarter's revenue. The Agent gathers 
 
 To enable the Agent functionality for your customized chatbot, follow these steps:
 
+There are two ways to use the Agent feature:
+
+### Using Tool Use
+
+To enable the Agent functionality with Too Use for your customized chatbot, follow these steps:
+
 1. Navigate to the Agent section in the custom bot screen.
 
 2. In the Agent section, you will find a list of available tools that can be used by the Agent. By default, all tools are disabled.
@@ -30,17 +36,20 @@ To enable the Agent functionality for your customized chatbot, follow these step
 
 ![](./imgs/agent_tools.png)
 
-> [!Important]
-> It's important to note that enabling any tool in the Agent section will automatically treat the ["Knowledge" functionality](https://aws.amazon.com/what-is/retrieval-augmented-generation/) as a tool as well. This means that the LLM will autonomously determine whether to use the "Knowledge" to answer user queries, considering it as one of the available tools at its disposal.
-
-4. By default "Internet Search" tool is provided. This tool allows the Agent to fetch information from the internet to answer user questions.
+4. For example, "Internet Search" tool allows the Agent to fetch information from the internet to answer user questions.
 
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It's suitable for PoC or demo purpose, but if you'd like to use for production environment, we recommend to use another search API.
-
 5. You can develop and add your own custom tools to extend the capabilities of the Agent. Refer to the [How to develop your own tools](#how-to-develop-your-own-tools) section for more information on creating and integrating custom tools.
+
+### Using Bedrock Agent
+
+You can utilize an [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) created in Amazon Bedrock.
+
+First, create an Agent in Bedrock (e.g., via the Management Console). Then, specify the Agent ID in the custom bot settings screen. Once set, your chatbot will leverage the Bedrock Agent to process user queries.
+
+![](./imgs/bedrock_agent_tool.png)
 
 ## How to develop your own tools
 

@@ -1,6 +1,6 @@
 # Migration Guide (v0 to v1)
 
-If you already use Bedrock Claude Chat with a previous version (~`0.4.x`), you need to follow the steps bellow to migrate.
+If you already use Bedrock Chat with a previous version (~`0.4.x`), you need to follow the steps bellow to migrate.
 
 ## Why do I need to do it?
 
@@ -26,7 +26,7 @@ git checkout v1
 git pull origin v1
 ```
 
-- If you wish to restore items with DMS, DO NOT FORGET to disable password rotation and note the password to access the database. If restoring with the migration script([migrate.py](./migrate.py)), you don't need to note the password.
+- If you wish to restore items with DMS, DO NOT FORGET to disable password rotation and note the password to access the database. If restoring with the migration script([migrate_v0_v1.py](./migrate_v0_v1.py)), you don't need to note the password.
 - Remove all [published APIs](../PUBLISH_API.md) so that CloudFormation can remove existing Aurora cluster.
 - Run [npx cdk deploy](../README.md#deploy-using-cdk) triggers Aurora cluster replacement and DELETES ALL VECTOR ITEMS.
 - Follow [Database Migration Guide](./DATABASE_MIGRATION.md) to restore vector items.

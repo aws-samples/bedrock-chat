@@ -8,7 +8,7 @@
 
 ## ขั้นตอนการย้ายข้อมูล
 
-- หลังจากการรันคำสั่ง [npx cdk deploy](../README.md#deploy-using-cdk) พร้อมการแทนที่ Aurora เปิดสคริปต์ [migrate.py](./migrate.py) และอัปเดตตัวแปรต่อไปนี้ด้วยค่าที่เหมาะสม ค่าเหล่านี้สามารถอ้างอิงได้จากแท็บ `CloudFormation` > `BedrockChatStack` > `Outputs`
+- หลังจากการรันคำสั่ง [npx cdk deploy](../README.md#deploy-using-cdk) พร้อมการแทนที่ Aurora เปิดสคริปต์ [migrate_v0_v1.py](./migrate_v0_v1.py) และอัปเดตตัวแปรต่อไปนี้ด้วยค่าที่เหมาะสม ค่าเหล่านี้สามารถอ้างอิงได้จากแท็บ `CloudFormation` > `BedrockChatStack` > `Outputs`
 
 ```py
 # เปิดสแต็ก CloudFormation ในคอนโซล AWS Management Console และคัดลอกค่าจากแท็บ Outputs
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- รันสคริปต์ `migrate.py` เพื่อเริ่มกระบวนการย้ายข้อมูล สคริปต์นี้จะสแกนบอตทั้งหมด เรียกใช้งาน embedding ECS tasks และสร้างข้อมูลไปยัง Aurora cluster ใหม่ โปรดทราบว่า:
+- รันสคริปต์ `migrate_v0_v1.py` เพื่อเริ่มกระบวนการย้ายข้อมูล สคริปต์นี้จะสแกนบอตทั้งหมด เรียกใช้งาน embedding ECS tasks และสร้างข้อมูลไปยัง Aurora cluster ใหม่ โปรดทราบว่า:
   - สคริปต์ต้องการ `boto3`
   - สภาพแวดล้อมต้องมีสิทธิ์ IAM เพื่อเข้าถึงตาราง dynamodb และเรียกใช้งาน ECS tasks
 

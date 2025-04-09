@@ -42,4 +42,4 @@ Client needs to set `x-api-key` on the request header.
 
 ## API specification
 
-See [here](https://aws-samples.github.io/bedrock-claude-chat).
+See [here](https://aws-samples.github.io/bedrock-chat).

@@ -8,7 +8,7 @@ Quá trình di chuyển liên quan đến việc quét tất cả các bot và k
 
 ## Các Bước Di Chuyển
 
-- Sau khi [npx cdk deploy](../README.md#deploy-using-cdk) với việc thay thế Aurora, mở tập lệnh [migrate.py](./migrate.py) và cập nhật các biến sau với các giá trị phù hợp. Các giá trị có thể được tham khảo tại tab `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Sau khi [npx cdk deploy](../README.md#deploy-using-cdk) với việc thay thế Aurora, mở tập lệnh [migrate_v0_v1.py](./migrate_v0_v1.py) và cập nhật các biến sau với các giá trị phù hợp. Các giá trị có thể được tham khảo tại tab `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
 # Mở ngăn xếp CloudFormation trong Bảng điều khiển Quản lý AWS và sao chép các giá trị từ tab Outputs.
@@ -25,7 +25,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Chạy tập lệnh `migrate.py` để bắt đầu quá trình di chuyển. Tập lệnh này sẽ quét tất cả các bot, khởi chạy các tác vụ nhúng ECS và tạo dữ liệu vào cụm Aurora mới. Lưu ý rằng:
+- Chạy tập lệnh `migrate_v0_v1.py` để bắt đầu quá trình di chuyển. Tập lệnh này sẽ quét tất cả các bot, khởi chạy các tác vụ nhúng ECS và tạo dữ liệu vào cụm Aurora mới. Lưu ý rằng:
   - Tập lệnh yêu cầu `boto3`.
   - Môi trường yêu cầu quyền IAM để truy cập bảng dynamodb và khởi chạy các tác vụ ECS.
 

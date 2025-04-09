@@ -1,3 +1,7 @@
+"""Migration script.
+IMPORTANT: THIS SCRIPT FOR V0 TO V1.
+"""
+
 import json
 
 import boto3

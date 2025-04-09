@@ -1,6 +1,9 @@
 # Database Migration Guide
 
-This guide outlines the steps to migrate data when performing an update of Bedrock Claude Chat which contains an Aurora cluster replacement. The following procedure ensures a smooth transition while minimizing downtime and data loss.
+> [!Warning]
+> This guide is for v0 to v1.
+
+This guide outlines the steps to migrate data when performing an update of Bedrock Chat which contains an Aurora cluster replacement. The following procedure ensures a smooth transition while minimizing downtime and data loss.
 
 ## Overview
 
@@ -8,7 +11,7 @@ The migration process involves scanning all bots and launching embedding ECS tas
 
 ## Migration Steps
 
-- After [npx cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values. The values can be referred on `CloudFormation` > `BedrockChatStack` > `Outputs` tab.
+- After [npx cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate_v0_v1.py](./migrate_v0_v1.py) script and update the following variables with the appropriate values. The values can be referred on `CloudFormation` > `BedrockChatStack` > `Outputs` tab.
 
 ```py
 # Open the CloudFormation stack in the AWS Management Console and copy the values from the Outputs tab.
@@ -25,7 +28,7 @@ SUBNET_ID = "subnet-xxxxx"
 SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Run the `migrate.py` script to initiate the migration process. This script will scan all bots, launch embedding ECS tasks, and create the data to the new Aurora cluster. Note that:
+- Run the `migrate_v0_v1.py` script to initiate the migration process. This script will scan all bots, launch embedding ECS tasks, and create the data to the new Aurora cluster. Note that:
   - The script requires `boto3`.
   - The environment requires IAM permissions to access the dynamodb table and to invoke ECS tasks.
 

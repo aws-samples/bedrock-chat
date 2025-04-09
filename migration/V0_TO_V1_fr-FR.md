@@ -26,7 +26,7 @@ git checkout v1
 git pull origin v1
 ```
 
-- Si vous souhaitez restaurer des éléments avec DMS, N'OUBLIEZ PAS de désactiver la rotation du mot de passe et de noter le mot de passe pour accéder à la base de données. Si la restauration se fait avec le script de migration([migrate.py](./migrate.py)), vous n'avez pas besoin de noter le mot de passe.
+- Si vous souhaitez restaurer des éléments avec DMS, N'OUBLIEZ PAS de désactiver la rotation du mot de passe et de noter le mot de passe pour accéder à la base de données. Si la restauration se fait avec le script de migration([migrate_v0_v1.py](./migrate_v0_v1.py)), vous n'avez pas besoin de noter le mot de passe.
 - Supprimez toutes les [API publiées](../PUBLISH_API_fr-FR.md) afin que CloudFormation puisse supprimer le cluster Aurora existant.
 - Exécutez [npx cdk deploy](../README.md#deploy-using-cdk) qui déclenche le remplacement du cluster Aurora et SUPPRIME TOUS LES ÉLÉMENTS DE VECTEUR.
 - Suivez le [Guide de migration de base de données](./DATABASE_MIGRATION_fr-FR.md) pour restaurer les éléments de vecteur.
