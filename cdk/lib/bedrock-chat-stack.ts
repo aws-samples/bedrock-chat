@@ -24,6 +24,7 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
 import { BotStore, Language } from "./constructs/bot-store";
+import { ConversationStore } from "./constructs/conversation-store";
 import { Duration } from "aws-cdk-lib";
 
 export interface BedrockChatStackProps extends StackProps {
@@ -177,6 +178,13 @@ export class BedrockChatStack extends cdk.Stack {
       });
     }
 
+    // Conversation Store for search
+    const conversationStore = new ConversationStore(this, "ConversationStore", {
+      conversationTable: database.conversationTable,
+      useStandbyReplicas: props.useStandbyReplicas,
+      language: props.botStoreLanguage,
+    });
+
     const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
       envPrefix: props.envPrefix,
       accessLogBucket,
@@ -198,14 +206,69 @@ export class BedrockChatStack extends cdk.Stack {
         props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
       botStoreEndpoint: botStore?.openSearchEndpoint,
+      conversationStoreEndpoint: conversationStore.openSearchEndpoint,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
+    // Add permissions to API handler for BotStore
     botStore?.addDataAccessPolicy(
       "DAPolicyApiHandler",
       backendApi.handler.role!,
       ["aoss:DescribeCollectionItems"],
       ["aoss:DescribeIndex", "aoss:ReadDocument"]
     );
+    
+    // Add permissions to API handler for ConversationStore
+    conversationStore.addDataAccessPolicy(
+      "ConversationDAPolicyApiHandler",
+      backendApi.handler.role!,
+      ["aoss:DescribeCollectionItems"],
+      ["aoss:DescribeIndex", "aoss:ReadDocument"]
+    );
+    
+    // Add data access policy for developers
+    // Get IAM user/role ARN from environment variables
+    const devAccessArn = process.env.DEV_ACCESS_IAM_USER_ARN || "";
+    if (devAccessArn) {
+      // Access to BotStore
+      botStore?.addDataAccessPolicy(
+        "DAPolicyDevAccess",
+        devAccessArn,
+        [
+          "aoss:DescribeCollectionItems",
+          "aoss:CreateCollectionItems", 
+          "aoss:DeleteCollectionItems",
+          "aoss:UpdateCollectionItems"
+        ],
+        [
+          "aoss:DescribeIndex", 
+          "aoss:ReadDocument", 
+          "aoss:WriteDocument",
+          "aoss:CreateIndex",
+          "aoss:DeleteIndex",
+          "aoss:UpdateIndex"
+        ]
+      );
+      
+      // Access to ConversationStore
+      conversationStore.addDataAccessPolicy(
+        "ConversationDAPolicyDevAccess",
+        devAccessArn,
+        [
+          "aoss:DescribeCollectionItems",
+          "aoss:CreateCollectionItems", 
+          "aoss:DeleteCollectionItems",
+          "aoss:UpdateCollectionItems"
+        ],
+        [
+          "aoss:DescribeIndex", 
+          "aoss:ReadDocument", 
+          "aoss:WriteDocument",
+          "aoss:CreateIndex",
+          "aoss:DeleteIndex",
+          "aoss:UpdateIndex"
+        ]
+      );
+    }
 
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {

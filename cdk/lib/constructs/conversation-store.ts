@@ -8,7 +8,6 @@ import {
   BlockPublicAccess,
   Bucket,
   BucketEncryption,
-  HttpMethods,
   ObjectOwnership,
 } from "aws-cdk-lib/aws-s3";
 import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
@@ -25,19 +24,19 @@ import { BotStoreLanguageSchema } from "../utils/parameter-models";
 
 export type Language = z.infer<typeof BotStoreLanguageSchema>;
 
-export interface BotStoreProps {
-  readonly botTable: dynamodb.ITable;
+export interface ConversationStoreProps {
+  readonly conversationTable: dynamodb.ITable;
   readonly useStandbyReplicas: boolean;
   readonly language: Language;
 }
 
-export class BotStore extends Construct {
+export class ConversationStore extends Construct {
   readonly openSearchEndpoint: string;
   private collection: oss.CfnCollection;
-  constructor(scope: Construct, id: string, props: BotStoreProps) {
+  constructor(scope: Construct, id: string, props: ConversationStoreProps) {
     super(scope, id);
 
-    const collectionName = generatePhysicalName(this, "Collection", {
+    const collectionName = generatePhysicalName(this, "ConversationCollection", {
       maxLength: 32,
       lower: true,
     });
@@ -46,7 +45,7 @@ export class BotStore extends Construct {
       props.useStandbyReplicas === true ? "ENABLED" : "DISABLED";
 
     const networkPolicy = new oss.CfnSecurityPolicy(this, "NetworkPolicy", {
-      name: generatePhysicalName(this, "NetworkPolicy", {
+      name: generatePhysicalName(this, "ConversationNetworkPolicy", {
         maxLength: 32,
         lower: true,
       }),
@@ -72,7 +71,7 @@ export class BotStore extends Construct {
       this,
       "EncryptionPolicy",
       {
-        name: generatePhysicalName(this, "EncryptionPolicy", {
+        name: generatePhysicalName(this, "ConversationEncryptionPolicy", {
           maxLength: 32,
           lower: true,
         }),
@@ -91,7 +90,6 @@ export class BotStore extends Construct {
 
     this.collection = new oss.CfnCollection(this, "Collection", {
       name: collectionName,
-      // type: 'VECTORSEARCH',
       type: "SEARCH",
       standbyReplicas,
     });
@@ -109,7 +107,7 @@ export class BotStore extends Construct {
 
     const ingestionLogGroup = new logs.LogGroup(this, "IngensionLogGroup", {
       logGroupName:
-        `/aws/vendedlogs/OpenSearchIngestion/bot-table-osis-pipeline/${id}`.toLowerCase(),
+        `/aws/vendedlogs/OpenSearchIngestion/conversation-table-osis-pipeline/${id}`.toLowerCase(),
       removalPolicy: RemovalPolicy.DESTROY,
       retention: logs.RetentionDays.ONE_WEEK,
     });
@@ -127,13 +125,13 @@ export class BotStore extends Construct {
             "dynamodb:DescribeContinuousBackups",
             "dynamodb:ExportTableToPointInTime",
           ],
-          resources: [props.botTable.tableArn],
+          resources: [props.conversationTable.tableArn],
         }),
         new PolicyStatement({
           sid: "allowCheckExportjob",
           effect: Effect.ALLOW,
           actions: ["dynamodb:DescribeExport"],
-          resources: [`${props.botTable.tableArn}/export/*`],
+          resources: [`${props.conversationTable.tableArn}/export/*`],
         }),
         new PolicyStatement({
           sid: "allowReadFromStream",
@@ -143,7 +141,7 @@ export class BotStore extends Construct {
             "dynamodb:GetRecords",
             "dynamodb:GetShardIterator",
           ],
-          resources: [`${props.botTable.tableArn}/stream/*`],
+          resources: [`${props.conversationTable.tableArn}/stream/*`],
         }),
         new PolicyStatement({
           sid: "allowReadAndWriteToS3ForExport",
@@ -190,7 +188,7 @@ export class BotStore extends Construct {
     osisPolicy.attachToRole(osisRole);
 
     const dataAccessPolicy = new oss.CfnAccessPolicy(this, "DataAccessPolicy", {
-      name: generatePhysicalName(this, "DataAccessPolicy", {
+      name: generatePhysicalName(this, "ConversationDataAccessPolicy", {
         maxLength: 32,
         lower: true,
       }),
@@ -243,7 +241,7 @@ export class BotStore extends Construct {
             acknowledgments: true,
             tables: [
               {
-                table_arn: props.botTable.tableArn,
+                table_arn: props.conversationTable.tableArn,
                 stream: {
                   start_position: "LATEST",
                 },
@@ -263,7 +261,7 @@ export class BotStore extends Construct {
           {
             opensearch: {
               hosts: [endpoint],
-              index: "bot",
+              index: "conversation",
               ...(props.language === "en"
                 ? {} // For en, index_type, template_type, template_content are not required
                 : {
@@ -287,7 +285,7 @@ export class BotStore extends Construct {
     };
 
     new osis.CfnPipeline(this, "OsisPipeline", {
-      pipelineName: generatePhysicalName(this, "OsisPipeline", {
+      pipelineName: generatePhysicalName(this, "ConversationOsisPipeline", {
         maxLength: 25,
         lower: true,
       }),
@@ -299,11 +297,10 @@ export class BotStore extends Construct {
           logGroup: ingestionLogGroup.logGroupName,
         },
       },
-      // Ref: https://opensearch.org/docs/latest/data-prepper/pipelines/configuration/sinks/opensearch/
       pipelineConfigurationBody: JSON.stringify(osisPipelineConfig),
     });
 
-    new CfnOutput(this, "OpenSearchEndpoint", {
+    new CfnOutput(this, "ConversationOpenSearchEndpoint", {
       value: endpoint,
     });
 
@@ -333,11 +330,59 @@ export class BotStore extends Construct {
                 },
               },
             },
+            mappings: {
+              properties: {
+                title: {
+                  type: "text",
+                  analyzer: "ja_analyzer",
+                },
+                messages: {
+                  type: "nested",
+                  properties: {
+                    content: {
+                      type: "text",
+                      analyzer: "ja_analyzer",
+                    },
+                  },
+                },
+                createTime: {
+                  type: "date",
+                },
+                updateTime: {
+                  type: "date",
+                },
+              },
+            },
           },
         });
 
       default:
-        throw new Error(`Unsupported language: ${language}`);
+        // 英語用の設定
+        return JSON.stringify({
+          template: {
+            mappings: {
+              properties: {
+                title: {
+                  type: "text",
+                },
+                messages: {
+                  type: "nested",
+                  properties: {
+                    content: {
+                      type: "text",
+                    },
+                  },
+                },
+                createTime: {
+                  type: "date",
+                },
+                updateTime: {
+                  type: "date",
+                },
+              },
+            },
+          },
+        });
     }
   }
 

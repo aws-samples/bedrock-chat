@@ -1,14 +1,17 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PiCheck, PiPencilLine, PiPlus, PiTrash, PiX } from 'react-icons/pi';
+import { PiCheck, PiMagnifyingGlass, PiPencilLine, PiPlus, PiTrash, PiX } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useConversation from '../hooks/useConversation';
+import useConversationSearch from '../hooks/useConversationSearch';
 import { ConversationMeta } from '../@types/conversation';
 import ButtonIcon from '../components/ButtonIcon';
+import InputText from '../components/InputText';
 import useChat from '../hooks/useChat';
 import DialogConfirmDeleteChat from '../components/DialogConfirmDeleteChat';
 import Button from '../components/Button';
 import ListPageLayout from '../layouts/ListPageLayout';
+import ConversationSearchResults from '../components/ConversationSearchResults';
 
 const ConversationHistoryPage: React.FC = () => {
   const { t } = useTranslation();
@@ -20,6 +23,7 @@ const ConversationHistoryPage: React.FC = () => {
     string | null
   >(null);
   const [tempTitle, setTempTitle] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { setConversationId, newChat } = useChat();
@@ -29,6 +33,31 @@ const ConversationHistoryPage: React.FC = () => {
     updateTitle,
     isLoadingConversations,
   } = useConversation();
+  
+  // Search hook
+  const {
+    searchResults,
+    isSearching,
+    hasSearched,
+    displayQuery,
+    handleSearch,
+    clearSearch,
+  } = useConversationSearch();
+
+  // Input change handler
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setInputValue(value);
+      handleSearch(value);
+    },
+    [handleSearch]
+  );
+
+  // Clear search
+  const handleClearSearch = useCallback(() => {
+    setInputValue('');
+    clearSearch();
+  }, [clearSearch]);
 
   const onClickNewChat = useCallback(() => {
     newChat();
@@ -138,10 +167,39 @@ const ConversationHistoryPage: React.FC = () => {
             {t('button.newChat')}
           </Button>
         }
-        isLoading={isLoadingConversations}
-        isEmpty={conversations?.length === 0}
+        isLoading={isLoadingConversations && !hasSearched}
+        isEmpty={conversations?.length === 0 && !hasSearched}
         emptyMessage={t('conversationHistory.label.noConversations')}>
-        {conversations?.map((conversation) => (
+        
+        {/* Search input field */}
+        <div className="relative mb-4">
+          <InputText
+            icon={<PiMagnifyingGlass />}
+            placeholder={t('conversationHistory.search.placeholder', 'Search conversations...')}
+            value={inputValue}
+            onChange={handleInputChange}
+          />
+          {inputValue && (
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-dark-gray"
+              onClick={handleClearSearch}>
+              <PiX size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* Search results */}
+        <ConversationSearchResults
+          results={searchResults}
+          isSearching={isSearching}
+          hasSearched={hasSearched}
+          searchQuery={displayQuery}
+          onBackToHistory={handleClearSearch}
+          onSelectConversation={onClickConversation}
+        />
+
+        {/* Regular conversation list (hidden during search) */}
+        {!hasSearched && conversations?.map((conversation) => (
           <div
             key={conversation.id}
             className="group flex cursor-pointer items-center justify-between border-b border-gray p-2 hover:bg-light-gray"

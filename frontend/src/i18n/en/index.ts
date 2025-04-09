@@ -580,6 +580,15 @@ How would you categorize this email?`,
       label: {
         noConversations: 'No Chat History',
       },
+      search: {
+        placeholder: 'Search conversations...',
+        searching: 'Searching...',
+        resultsTitle: 'Search Results',
+        queryLabel: 'Query',
+        noResults: 'No conversations found',
+        tryDifferentKeywords: 'Try different keywords',
+        resultsCount: '{{count}} results found'
+      },
     },
     deleteDialog: {
       title: 'Delete?',
@@ -620,6 +629,7 @@ How would you categorize this email?`,
     },
     button: {
       newChat: 'New Chat',
+      backToHistory: 'Back to History',
       botConsole: 'Bot Console',
       botAnalytics: 'Shared Bot Analytics',
       apiManagement: 'API Management',

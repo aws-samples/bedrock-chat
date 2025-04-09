@@ -27,7 +27,7 @@ class TestGetModelId(unittest.TestCase):
     def test_get_model_id_with_cross_region_supported_model(self):
         model = "claude-v3.5-sonnet"
         # Prefix with "us." to enable cross-region
-        expected_model_id = "us.anthropic.claude-3-sonnet-20240229-v1:0"
+        expected_model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
             get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
             expected_model_id,
@@ -36,7 +36,7 @@ class TestGetModelId(unittest.TestCase):
     def test_get_model_id_without_cross_region(self):
         model = "claude-v3.5-sonnet"
         # No prefix to disable cross-region
-        expected_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+        expected_model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
             get_model_id(model, enable_cross_region=False, bedrock_region="us-east-1"),
             expected_model_id,
@@ -45,7 +45,7 @@ class TestGetModelId(unittest.TestCase):
     def test_get_model_id_with_unsupported_region_for_cross_region(self):
         model = "claude-v3.5-sonnet"
         # Cross region is disabled because the region is not supported
-        expected_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+        expected_model_id = "apac.anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
             get_model_id(
                 model, enable_cross_region=True, bedrock_region="ap-northeast-1"

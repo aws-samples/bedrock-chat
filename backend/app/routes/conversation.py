@@ -5,8 +5,9 @@ from app.repositories.conversation import (
     find_conversation_by_user_id,
     find_related_document_by_id,
     find_related_documents_by_conversation_id,
-    update_feedback,
+    update_feedback
 )
+from app.repositories.conversation_search import find_conversations_by_query
 from app.repositories.models.conversation import FeedbackModel
 from app.routes.schemas.conversation import (
     ChatInput,
@@ -122,10 +123,32 @@ def get_all_conversations(
 
 @router.delete("/conversations")
 def remove_all_conversations(
-    request: Request,
+    request: Request
 ):
     """Delete all conversations"""
     delete_conversation_by_user_id(request.state.current_user.id)
+
+
+@router.get("/conversations/search", response_model=list[ConversationMetaOutput])
+def search_conversations(
+    request: Request,
+    query: str
+):
+    """Search conversations by keyword"""
+    current_user: User = request.state.current_user
+
+    conversations = find_conversations_by_query(query, current_user)
+    output = [
+        ConversationMetaOutput(
+            id=conversation.id,
+            title=conversation.title,
+            create_time=conversation.create_time,
+            model=conversation.model,
+            bot_id=conversation.bot_id
+        )
+        for conversation in conversations
+    ]
+    return output
 
 
 @router.patch("/conversation/{conversation_id}/title")

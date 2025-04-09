@@ -704,6 +704,22 @@ class ConversationMeta(BaseModel):
     create_time: float
     model: str
     bot_id: str | None
+    
+    @classmethod
+    def from_opensearch_response(cls, hit: dict) -> Self:
+        """Create a ConversationMeta instance from OpenSearch response"""
+        source = hit["_source"]
+        
+        # Extract conversation ID from SK (e.g. "CONVERSATION#uuid" -> "uuid")
+        conversation_id = source.get("SK", "").replace("CONVERSATION#", "")
+        
+        return cls(
+            id=conversation_id,
+            title=source.get("title", "Untitled conversation"),
+            create_time=source.get("createTime", 0),
+            model=source.get("model", ""),
+            bot_id=source.get("botId"),
+        )
 
 
 class RelatedDocumentModel(BaseModel):

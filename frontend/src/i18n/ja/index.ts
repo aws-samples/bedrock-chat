@@ -571,6 +571,21 @@ const translation = {
         description: 'ランダムにピックアップしたボットが表示されます。',
       },
     },
+    conversationHistory: {
+      pageTitle: 'チャット履歴',
+      label: {
+        noConversations: 'チャット履歴がありません',
+      },
+      search: {
+        placeholder: '会話を検索...',
+        searching: '検索中...',
+        resultsTitle: '検索結果',
+        queryLabel: '検索キーワード',
+        noResults: '会話が見つかりませんでした',
+        tryDifferentKeywords: '別のキーワードで試してください',
+        resultsCount: '{{count}}件の検索結果'
+      },
+    },
     deleteDialog: {
       title: '削除',
       content: 'チャット「<Bold>{{title}}</Bold>」を削除しますか？',
@@ -598,13 +613,15 @@ const translation = {
           label: '要求に応えていない',
         },
         {
-          value: 'other',
+          value:
+           'other',
           label: 'その他',
         },
       ],
     },
     button: {
       newChat: '新しいチャット',
+      backToHistory: '履歴に戻る',
       botConsole: 'ボットコンソール',
       botAnalytics: 'ボット確認',
       apiManagement: 'API管理',
