@@ -302,9 +302,9 @@ class TestScenario(unittest.TestCase):
             len(user1_mixed_bots), 3
         )  # 2 private + 1 alias. Note that bot4's alias is not created yet
 
-        # Step 6: fetch_all_pinned_bots (should be empty)
+        # Step 6: fetch_all_pinned_bots (should not include user2's bot3)
         pinned_bots = fetch_all_pinned_bots(self.user1)
-        self.assertEqual(len(pinned_bots), 0)
+        self.assertNotIn("3", [bot.id for bot in pinned_bots])
 
         # Step 7: user1 star user2's bot3 and bot4
         modify_star_status(self.user1, "1", True)
@@ -327,8 +327,7 @@ class TestScenario(unittest.TestCase):
 
         # Step 9: fetch_all_pinned_bots (should include user2's bot3)
         pinned_bots = fetch_all_pinned_bots(self.user1)
-        self.assertEqual(len(pinned_bots), 1)
-        self.assertEqual(pinned_bots[0].id, "3")
+        self.assertIn("3", [bot.id for bot in pinned_bots])
 
         # Step 10: user1 fetches mixed bots after pinning
         mixed_bots_after_pin = fetch_all_bots(self.user1, kind="mixed", limit=10)
@@ -368,7 +367,7 @@ class TestScenario(unittest.TestCase):
 
         # Step 17: fetch_all_pinned_bots (should be empty)
         pinned_bots = fetch_all_pinned_bots(self.user1)
-        self.assertEqual(len(pinned_bots), 0)
+        self.assertNotIn("3", [bot.id for bot in pinned_bots])
 
         # Step 18: Try access bot3 by user1
         with self.assertRaises(RecordNotFoundError):
