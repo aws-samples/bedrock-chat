@@ -19,15 +19,15 @@ cd frontend && npm ci && npm run dev
 
 ## (Optional, empfohlen) Einrichten eines Pre-Commit-Hooks
 
-Wir haben GitHub-Workflows für Typenüberprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber darauf zu warten, dass das Linting abgeschlossen ist, bevor man fortfährt, ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch in der Commit-Phase durchgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus eingeführt, um dies zu erreichen. Es ist nicht obligatorisch, aber wir empfehlen, es für eine effiziente Entwicklungserfahrung zu übernehmen. Zusätzlich erzwingen wir keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), aber wir würden uns freuen, wenn Sie es bei Ihren Beiträgen übernehmen könnten, da es hilft, unnötige Unterschiede bei Code-Reviews zu vermeiden.
+Wir haben GitHub-Workflows für Typenprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber darauf zu warten, dass das Linting abgeschlossen ist, bevor man fortfährt, ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch in der Commit-Phase durchgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus dafür eingeführt. Es ist nicht obligatorisch, aber wir empfehlen es für eine effiziente Entwicklungserfahrung. Zusätzlich erzwingen wir keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), würden es aber begrüßen, wenn Sie es bei Ihren Beiträgen verwenden, da es hilft, unnötige Unterschiede bei Code-Reviews zu vermeiden.
 
 ### Lefthook installieren
 
-Weitere Informationen finden Sie [hier](https://github.com/evilmartians/lefthook#install). Wenn Sie Mac- und Homebrew-Benutzer sind, führen Sie einfach `brew install lefthook` aus.
+Informieren Sie sich [hier](https://github.com/evilmartians/lefthook#install). Wenn Sie Mac- und Homebrew-Benutzer sind, führen Sie einfach `brew install lefthook` aus.
 
 ### Poetry installieren
 
-Dies ist erforderlich, da das Python-Code-Linting von `mypy` und `black` abhängt.
+Dies ist erforderlich, da die Python-Code-Linting von `mypy` und `black` abhängt.
 
 ```sh
 cd backend
@@ -37,7 +37,7 @@ pip install poetry
 poetry install
 ```
 
-Weitere Details finden Sie in der [Backend-README](../backend/README_de-DE.md).
+Weitere Einzelheiten finden Sie in der [Backend-README](../backend/README_de-DE.md).
 
 ### Einen Pre-Commit-Hook erstellen
 

@@ -416,10 +416,18 @@ def fetch_bot_summary(user: User, bot_id: str) -> BotSummaryOutput:
     logger.debug(f"bot.is_accessible_by_user(user): {bot.is_accessible_by_user(user)}")
 
     if not bot.is_owned_by_user(user):
-        # Update to the latest information
-        alias = BotAliasModel.from_bot_for_initial_alias(bot)
-        store_alias(user_id=user.id, alias=alias)
-        return alias.to_summary_output(bot)
+        try:
+            existing_alias = find_alias_by_bot_id(user.id, bot_id)
+            new_alias = BotAliasModel.from_existing_bot_and_alias(
+                bot=bot, alias=existing_alias
+            )
+        except RecordNotFoundError:
+            logger.info(f"Alias {bot_id} is not found. Create alias.")
+            new_alias = BotAliasModel.from_bot_for_initial_alias(bot)
+
+        logger.info(f"Update alias with: {new_alias}")
+        store_alias(user_id=user.id, alias=new_alias)
+        return new_alias.to_summary_output(bot)
 
     return bot.to_summary_output(user)
 

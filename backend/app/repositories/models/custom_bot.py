@@ -715,6 +715,29 @@ class BotAliasModel(BaseModel):
         )
 
     @classmethod
+    def from_existing_bot_and_alias(
+        cls,
+        bot: BotModel,
+        alias: Self,
+    ) -> Self:
+        """Create a BotAliasModel instance. This is used when update alias."""
+        return cls(
+            original_bot_id=bot.id,
+            owner_user_id=bot.owner_user_id,
+            title=bot.title,  # Update Title to the latest
+            description=bot.description,  # Update Description to the latest
+            is_origin_accessible=True,
+            create_time=alias.create_time,
+            last_used_time=alias.last_used_time or alias.create_time,
+            is_starred=alias.is_starred,  # Inherit from existing alias
+            sync_status=bot.sync_status,  # Update SyncStatus to the latest
+            has_knowledge=bot.has_knowledge(),
+            has_agent=bot.is_agent_enabled(),
+            conversation_quick_starters=bot.conversation_quick_starters,
+            active_models=bot.active_models,
+        )
+
+    @classmethod
     def from_dynamo_item(cls, item: dict) -> Self:
         """Create a BotAliasModel instance from a DynamoDB item."""
         # Convert conversation quick starters from dict to model objects

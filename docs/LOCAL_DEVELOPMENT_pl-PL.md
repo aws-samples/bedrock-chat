@@ -1,10 +1,10 @@
 # Rozwój lokalny
 
-## Programowanie backendowe
+## Programowanie Backend
 
 Sprawdź [backend/README](../backend/README_pl-PL.md).
 
-## Programowanie Frontend
+## Programowanie frontendowe
 
 W tym przykładzie możesz lokalnie modyfikować i uruchamiać frontend przy użyciu zasobów AWS (`API Gateway`, `Cognito` itp.), które zostały wdrożone za pomocą `npx cdk deploy`.
 
@@ -19,15 +19,15 @@ cd frontend && npm ci && npm run dev
 
 ## (Opcjonalnie, zalecane) Konfiguracja haka pre-commit
 
-Wprowadziliśmy GitHub workflows do sprawdzania typów i lintowania. Są one wykonywane podczas tworzenia Pull Request, ale czekanie na zakończenie lintowania przed kontynuowaniem nie jest dobrym doświadczeniem deweloperskim. Dlatego te zadania lintowania powinny być wykonywane automatycznie na etapie commitowania. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm osiągnięcia tego. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie dla wydajnego doświadczenia deweloperskiego. Dodatkowo, chociaż nie wymuszamy formatowania TypeScript za pomocą [Prettier](https://prettier.io/), bylibyśmy wdzięczni, gdybyś go używał podczas współtworzenia, ponieważ pomaga to zapobiegać niepotrzebnym różnicom podczas przeglądów kodu.
+Wprowadziliśmy GitHub workflows do sprawdzania typów i lintowania. Są one wykonywane podczas tworzenia Pull Request, ale czekanie na zakończenie lintowania przed kontynuowaniem nie jest dobrym doświadczeniem programistycznym. Dlatego zadania związane z lintowaniem powinny być wykonywane automatycznie na etapie commitowania. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm osiągnięcia tego celu. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie dla efektywnego doświadczenia programistycznego. Dodatkowo, mimo że nie wymuszamy formatowania TypeScriptu za pomocą [Prettier](https://prettier.io/), bylibyśmy wdzięczni, gdybyś go przyjął podczas współpracy, ponieważ pomaga to unikać niepotrzebnych różnic podczas przeglądów kodu.
 
 ### Zainstaluj lefthook
 
-Zapoznaj się [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli używasz Maca i Homebrew, po prostu uruchom `brew install lefthook`.
+Zapoznaj się [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli używasz komputera Mac z homebrew, po prostu uruchom `brew install lefthook`.
 
 ### Zainstaluj poetry
 
-Jest to wymagane, ponieważ lintowanie kodu Python zależy od `mypy` i `black`.
+Jest to wymagane, ponieważ lintowanie kodu Python'a zależy od `mypy` i `black`.
 
 ```sh
 cd backend
@@ -37,7 +37,7 @@ pip install poetry
 poetry install
 ```
 
-Aby uzyskać więcej szczegółów, sprawdź [backend README](../backend/README_pl-PL.md).
+Aby uzyskać więcej szczegółów, sprawdź [README backend](../backend/README_pl-PL.md).
 
 ### Utwórz haka pre-commit
 

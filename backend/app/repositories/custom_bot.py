@@ -210,7 +210,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
 
     if alias.is_starred:
         # To use sparse index, set `IsStarred` attribute only when it's starred
-        item["IsStarred"] = alias.is_starred
+        item["IsStarred"] = "TRUE"
 
     response = table.put_item(Item=item)
     return response
@@ -307,7 +307,7 @@ def update_bot_star_status(user_id: str, bot_id: str, starred: bool):
 def update_alias_star_status(user_id: str, original_bot_id: str, starred: bool):
     """Update starred status for alias."""
     table = get_bot_table_client()
-    logger.info(f"Updating starred status for bot: {original_bot_id}")
+    logger.info(f"Updating starred status for alias: {original_bot_id}")
 
     key = {"PK": user_id, "SK": compose_sk(original_bot_id, "alias")}
 
@@ -327,7 +327,7 @@ def update_alias_star_status(user_id: str, original_bot_id: str, starred: bool):
             ReturnValues="ALL_NEW",
         )
 
-    logger.info(f"Updated starred status for bot: {original_bot_id} successfully")
+    logger.info(f"Updated starred status for alias: {original_bot_id} successfully")
     return response
 
 
