@@ -46,13 +46,13 @@ def find_conversations_by_query(
                     {"match": {"ParsedMessageMap": {"query": query, "boost": 4.0}}},
                     {
                         "query_string": {
-                            "query": f"\"{query}\"",
+                            "query": f'"{query}"',
                             "fields": [
                                 "ParsedMessageMap.*.*content*.body^4.0",
                                 "ParsedMessageMap.*.*content*.text^4.0",
                             ],
                             "type": "best_fields",
-                            "default_operator": "AND"
+                            "default_operator": "AND",
                         }
                     },
                 ],
