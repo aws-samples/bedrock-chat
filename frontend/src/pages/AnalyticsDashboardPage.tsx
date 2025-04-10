@@ -60,7 +60,7 @@ const QikrAnalyticsDashboard: React.FC = () => {
     error: apiError,
     clearAnalyticsEndpointErrors,
     clearAllAnalyticsCaches
-  } = useAnalytics();
+  } = useAnalytics(emailId);
   
   // Date range state (these now represent the *applied* range)
   const [searchDateFrom, setSearchDateFrom] = useState<string | null>(null);

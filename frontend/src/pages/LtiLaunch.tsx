@@ -3,6 +3,7 @@ import { useLocation, useNavigate} from 'react-router-dom';
 import { getCurrentUser} from 'aws-amplify/auth';
 import {signOut, signIn, confirmSignIn} from 'aws-amplify/auth';
 import { PiSpinner} from 'react-icons/pi';
+import { clearAllAnalyticsSessionCache } from '../hooks/useAnalytics';
 
 
 const LtiLaunch: React.FC = () => {
@@ -104,6 +105,8 @@ const LtiLaunch: React.FC = () => {
   const startSignIn = async (logoutUser: boolean) => {
     try {
       if (logoutUser === true) {
+        // Clear cache before signing out the old user
+        clearAllAnalyticsSessionCache();
         await signOut();
       }
 

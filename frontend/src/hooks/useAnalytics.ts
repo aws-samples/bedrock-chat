@@ -78,7 +78,71 @@ export interface SummaryAnalyticsData {
   daily_usage: DailyUsage[];
 }
 
-export const useAnalytics = () => {
+// Define the keys patterns/names used in sessionStorage
+const ANALYTICS_CACHE_PREFIX = 'analytics_cache_';
+const ANALYTICS_ENDPOINT_PREFIX = 'analytics_endpoint_';
+const PENDING_REQUESTS_KEY = 'pending_analytics_requests';
+
+// Standalone function to clear all analytics-related sessionStorage items
+export const clearAllAnalyticsSessionCache = () => {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (
+        key.startsWith(ANALYTICS_CACHE_PREFIX) ||
+        key.startsWith(ANALYTICS_ENDPOINT_PREFIX) ||
+        key === PENDING_REQUESTS_KEY
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => {
+      try {
+        sessionStorage.removeItem(key);
+      } catch (e) {
+         console.warn(`Failed to remove sessionStorage key ${key}:`, e);
+      }
+    });
+
+    console.debug(`Cleared ${keysToRemove.length} cached analytics items from sessionStorage`);
+  } catch (e) {
+    console.error('Error clearing analytics sessionStorage:', e);
+  }
+};
+
+// Standalone function to clear only endpoint error flags
+export const clearAnalyticsEndpointErrorCache = () => {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith(ANALYTICS_ENDPOINT_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => {
+      try {
+        sessionStorage.removeItem(key);
+      } catch (e) {
+         console.warn(`Failed to remove endpoint error cache key ${key}:`, e);
+      }
+    });
+    console.debug(`Cleared ${keysToRemove.length} cached analytics endpoint errors`);
+  } catch (e) {
+    console.error('Error clearing analytics endpoint error cache:', e);
+  }
+};
+
+export interface CachedAnalyticsItem<T> {
+  data: T;
+  timestamp: number;
+  cachedUserId: string | null;
+}
+
+export const useAnalytics = (currentUserId: string | null) => {
+  console.log('[useAnalytics] Hook initialized with userId:', currentUserId);
   useTranslation();
   const http = useHttp();
   const [error, setError] = useState<string | null>(null);
@@ -91,34 +155,14 @@ export const useAnalytics = () => {
     botAnalytics: false,
   });
 
-  // Add a function to clear analytics endpoint errors
-  // This allows retrying after backend fixes or deployments
+  // Use the standalone function internally now
   const clearAnalyticsEndpointErrors = useCallback(() => {
-    try {
-      // Get all keys from sessionStorage that are related to analytics endpoints
-      const analyticsKeys = [];
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && key.startsWith('analytics_endpoint_')) {
-          analyticsKeys.push(key);
-        }
-      }
-      
-      // Remove all analytics endpoint error entries
-      analyticsKeys.forEach(key => {
-        sessionStorage.removeItem(key);
-      });
-      
-      console.debug(`Cleared ${analyticsKeys.length} cached analytics endpoint errors`);
-      
-      // Reset error state to ensure a clean start
-      setError(null);
-    } catch (e) {
-      console.error('Error clearing analytics endpoint cache:', e);
-    }
+    clearAnalyticsEndpointErrorCache(); // Call the exported function
+    // Reset error state to ensure a clean start
+    setError(null);
   }, []);
 
-  // Clear analytics endpoint errors on component mount/initialization
+  // Clear endpoint errors on mount (initial behaviour)
   useEffect(() => {
     clearAnalyticsEndpointErrors();
   }, [clearAnalyticsEndpointErrors]);
@@ -156,6 +200,7 @@ export const useAnalytics = () => {
     const cacheKey = `analytics_cache_${endpoint}`;
     try {
       sessionStorage.removeItem(cacheKey); // Remove potentially bad cache entry on error
+      console.warn(`Removed potentially bad cache entry: ${cacheKey}`);
     } catch (e) {
       console.warn("Failed to remove cache entry on error:", e);
     }
@@ -197,6 +242,9 @@ export const useAnalytics = () => {
   const checkOrRetrieveCache = useCallback(<T,>(cacheKey: string, forceRefresh: boolean): T | null => {
     const MAX_CACHE_AGE_MS = 30 * 60 * 1000; // 30 minutes
 
+    // Log the ID being used for the check
+    console.log('[useAnalytics] checkOrRetrieveCache - Checking with currentUserId:', currentUserId);
+
     if (forceRefresh) {
       try {
         console.debug(`Force refresh: Clearing cache for ${cacheKey}`);
@@ -210,39 +258,60 @@ export const useAnalytics = () => {
         const cachedItem = sessionStorage.getItem(cacheKey);
         if (cachedItem) {
           try {
-            const parsedItem = JSON.parse(cachedItem) as { data: T; timestamp: number };
+            const parsedItem = JSON.parse(cachedItem) as CachedAnalyticsItem<T>;
             
             // Validate cached structure and timestamp
             if (parsedItem && typeof parsedItem === 'object' && 'data' in parsedItem && 'timestamp' in parsedItem && typeof parsedItem.timestamp === 'number') {
-              const cacheAge = Date.now() - parsedItem.timestamp;
-              
-              if (cacheAge < MAX_CACHE_AGE_MS) {
-                console.debug(`Returning valid cached data (age: ${Math.round(cacheAge / 1000)}s) for key ${cacheKey}`);
-                // Basic check for non-empty data object
-                if (parsedItem.data && typeof parsedItem.data === 'object' && Object.keys(parsedItem.data).length > 0) {
-                   return parsedItem.data;
-                } else if (parsedItem.data) { // Allow non-object data (e.g., arrays)
-                   return parsedItem.data;
-                } else {
-                   console.warn(`Cached data for ${cacheKey} is empty.`);
-                   // Don't clear cache here, let it expire naturally or be overwritten
-                   return null; 
-                }
+
+              // ---> USER ID CHECK using hook's currentUserId <---
+              let userIdMatch = false; // Flag to track if user check passes
+              if (currentUserId && parsedItem.cachedUserId === currentUserId) {
+                userIdMatch = true; // IDs match
+              } else if (!currentUserId && !parsedItem.cachedUserId) {
+                userIdMatch = true; // Both null/undefined, treat as match (e.g., logged out state)
               } else {
-                console.debug(`Cache expired (age: ${Math.round(cacheAge / 1000)}s) for key ${cacheKey}. Treating as miss, but keeping stale data.`);
-                // ** CHANGE: Do not remove expired cache entry here **
-                // try { sessionStorage.removeItem(cacheKey); } catch (removeError) {
-                //    console.warn(`Failed to remove expired cache for ${cacheKey}:`, removeError);
-                // }
-                return null; // Cache expired, treat as miss
+                // Mismatch or one is null/undefined
+                if (currentUserId) {
+                    console.log(`[useAnalytics] CACHE USER MISMATCH DETECTED for key ${cacheKey}`);
+                    console.debug(`   Cached User: ${parsedItem.cachedUserId ?? 'N/A'}, Current User: ${currentUserId}`);
+                } else {
+                    console.log(`[useAnalytics] CACHE INVALID: Current user unknown, but cache has user ${parsedItem.cachedUserId}`);
+                }
+                // remove this specific stale item now:
+                try { sessionStorage.removeItem(cacheKey); } catch (removeError) { console.warn('Failed to remove stale cache item:', removeError); }
+                // Don't return null yet, just mark as mismatch
               }
+              // ---> End User ID Check <---
+
+              // ---> Proceed ONLY if user ID check passed <-----
+              if (userIdMatch) {
+                  const cacheAge = Date.now() - parsedItem.timestamp;
+                  if (cacheAge < MAX_CACHE_AGE_MS) {
+                    // console.debug(`Returning valid cached data for user ${currentUserId ?? 'UNKNOWN'} (age: ${Math.round(cacheAge / 1000)}s) for key ${cacheKey}`);
+                    // Basic check for non-empty data object
+                    if (parsedItem.data && typeof parsedItem.data === 'object' && Object.keys(parsedItem.data).length > 0) {
+                       return parsedItem.data;
+                    } else if (parsedItem.data) { // Allow non-object data (e.g., arrays)
+                       return parsedItem.data;
+                    } else {
+                       console.warn(`Cached data for ${cacheKey} is empty.`);
+                       return null;
+                    }
+                  } else {
+                    console.debug(`Cache expired (age: ${Math.round(cacheAge / 1000)}s) for key ${cacheKey}.`);
+                    // Let expired data be overwritten or cleared on logout
+                    return null;
+                  }
+              } else {
+                  // User ID check failed, definitely return null
+                  return null;
+              }
+              // ---> End conditional timestamp check <-----
+
             } else {
                console.warn(`Invalid cache structure found for ${cacheKey}`);
-               // Clear corrupted cache entry
-               try { sessionStorage.removeItem(cacheKey); } catch (removeError) {
-                  console.warn(`Failed to remove corrupted cache for ${cacheKey}:`, removeError);
-               }
-               return null; // Invalid structure
+               try { sessionStorage.removeItem(cacheKey); } catch (removeError) { console.warn(`Failed to remove corrupted cache for ${cacheKey}:`, removeError); }
+               return null;
             }
             
           } catch (parseError) {
@@ -259,36 +328,7 @@ export const useAnalytics = () => {
       }
       return null; // Cache miss or error reading cache
     }
-  }, []); // Empty dependency array as it uses no external hook variables
-
-  // Add function to clear all analytics caches
-  const clearAllAnalyticsCaches = useCallback(() => {
-    try {
-      // Remove all cached data
-      const keysToRemove = [];
-      
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && (
-          key.startsWith('analytics_cache_') || 
-          key.startsWith('analytics_endpoint_') ||
-          key === 'pending_analytics_requests'
-        )) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      // Remove the keys in a separate loop to avoid indexing issues
-      keysToRemove.forEach(key => {
-        sessionStorage.removeItem(key);
-      });
-      
-      console.debug(`Cleared ${keysToRemove.length} cached analytics items`);
-      setError(null);
-    } catch (e) {
-      console.error('Error clearing analytics caches:', e);
-    }
-  }, []);
+  }, [currentUserId]);
 
   const getSummaryMetrics = useCallback(async (fromDate?: string, toDate?: string, timeoutMs: number = 60000, forceRefresh: boolean = false): Promise<SummaryAnalyticsData | null> => {
     const params = new URLSearchParams();
@@ -403,7 +443,8 @@ export const useAnalytics = () => {
       try {
         const itemToCache = {
           data: response.data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          cachedUserId: currentUserId
         };
         sessionStorage.setItem(cacheKey, JSON.stringify(itemToCache));
       } catch (e) {
@@ -434,7 +475,7 @@ export const useAnalytics = () => {
         console.warn("Failed to clean up pending request tracking:", e);
       }
     }
-  }, [http, handleError, checkOrRetrieveCache]);
+  }, [http, handleError, checkOrRetrieveCache, currentUserId]);
 
   const getTopEntities = useCallback(async (fromDate?: string, toDate?: string, limit: number = 10, timeoutMs: number = 60000, forceRefresh: boolean = false): Promise<TopEntitiesData | null> => {
     const params = new URLSearchParams();
@@ -557,7 +598,8 @@ export const useAnalytics = () => {
       try {
         const itemToCache = {
           data: response.data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          cachedUserId: currentUserId
         };
         sessionStorage.setItem(cacheKey, JSON.stringify(itemToCache));
       } catch (e) {
@@ -588,7 +630,7 @@ export const useAnalytics = () => {
         console.warn("Failed to clean up pending request tracking:", e);
       }
     }
-  }, [http, handleError, checkOrRetrieveCache]);
+  }, [http, handleError, checkOrRetrieveCache, currentUserId]);
 
   const getTopicsAnalysis = useCallback(async (fromDate?: string, toDate?: string, limit: number = 20, timeoutMs: number = 60000, forceRefresh: boolean = false): Promise<TopicsData | null> => {
     const params = new URLSearchParams();
@@ -703,7 +745,8 @@ export const useAnalytics = () => {
       try {
         const itemToCache = {
           data: response.data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          cachedUserId: currentUserId
         };
         sessionStorage.setItem(cacheKey, JSON.stringify(itemToCache));
       } catch (e) {
@@ -734,7 +777,7 @@ export const useAnalytics = () => {
         console.warn("Failed to clean up pending request tracking:", e);
       }
     }
-  }, [http, handleError, checkOrRetrieveCache]);
+  }, [http, handleError, checkOrRetrieveCache, currentUserId]);
 
   const getBotAnalytics = useCallback(async (botId: string, fromDate?: string, toDate?: string, timeoutMs: number = 60000, forceRefresh: boolean = false): Promise<BotAnalytics | null> => {
     if (!botId) {
@@ -852,7 +895,8 @@ export const useAnalytics = () => {
       try {
         const itemToCache = {
           data: response.data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          cachedUserId: currentUserId
         };
         sessionStorage.setItem(cacheKey, JSON.stringify(itemToCache));
       } catch (e) {
@@ -883,7 +927,14 @@ export const useAnalytics = () => {
         console.warn("Failed to clean up pending request tracking:", e);
       }
     }
-  }, [http, handleError, checkOrRetrieveCache]);
+  }, [http, handleError, checkOrRetrieveCache, currentUserId]);
+
+  // Use the standalone function internally now
+  const clearAllAnalyticsCaches = useCallback(() => {
+    clearAllAnalyticsSessionCache(); // Call the exported function
+     // Also reset local error state when clearing everything
+    setError(null);
+  }, []);
 
   return {
     loadingState,

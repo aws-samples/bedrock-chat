@@ -19,6 +19,7 @@ import DialogConfirmDeleteChat from './DialogConfirmDeleteChat';
 import DialogConfirmClearConversations from './DialogConfirmClearConversations';
 import DialogSelectLanguage from './DialogSelectLanguage';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { clearAllAnalyticsSessionCache } from '../hooks/useAnalytics';
 
 type Props = BaseProps & {
   signOut?: () => void;
@@ -92,6 +93,7 @@ const AppContent: React.FC<Props> = (props) => {
           await updateTitle(conversationId, title);
         }}
         onSignOut={() => {
+          clearAllAnalyticsSessionCache();
           props.signOut ? props.signOut() : null;
         }}
         onDeleteConversation={(conversation) => {

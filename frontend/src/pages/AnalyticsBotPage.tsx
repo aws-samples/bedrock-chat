@@ -14,6 +14,7 @@ import TopUsersTable from '../components/analytics/TopUsersTable';
 import TokenCountsChart from '../components/analytics/TokenCountsChart';
 import { debounce } from 'lodash';
 import Button from '../components/Button';
+import useUser from '../hooks/useUser';
 
 // Define the structure for transformed chart data
 interface BotChartDataPoint {
@@ -47,12 +48,13 @@ const AdminBotAnalyticsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { botId } = useParams<{ botId: string }>();
+  const { emailId } = useUser();
   const { 
     getBotAnalytics, 
     loadingState, 
     error,
     clearAnalyticsEndpointErrors
-  } = useAnalytics();
+  } = useAnalytics(emailId);
   const [analyticsData, setAnalyticsData] = useState<BotAnalytics | null>(null);
   const [searchDateFrom, setSearchDateFrom] = useState<string | null>(null);
   const [searchDateTo, setSearchDateTo] = useState<string | null>(null);

@@ -10,6 +10,7 @@ import { BaseProps } from '../@types/common';
 import { getCurrentUser, signInWithRedirect, signOut } from 'aws-amplify/auth';
 import { useTranslation } from 'react-i18next';
 import { PiCircleNotch } from 'react-icons/pi';
+import { clearAllAnalyticsSessionCache } from '../hooks/useAnalytics';
 
 const MISTRAL_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
@@ -44,6 +45,7 @@ const AuthCustom: React.FC<Props> = ({ children }) => {
   };
 
   const handleSignOut = () => {
+    clearAllAnalyticsSessionCache();
     signOut();
   };
 
