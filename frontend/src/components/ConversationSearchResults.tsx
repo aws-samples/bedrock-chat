@@ -8,24 +8,83 @@ import Skeleton from './Skeleton';
 type ConversationItemProps = {
   conversation: ConversationMeta;
   onClick: (id: string) => void;
+  searchQuery: string;
 };
 
-export const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onClick }) => {
+// Helper function to highlight search terms in the text
+const highlightSearchTerms = (text: string, searchQuery: string): string => {
+  if (!searchQuery.trim()) return text;
+  
+  // Escape special characters in the search query
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+  // Create a regex to match the search query (case insensitive)
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+  
+  // Replace matches with highlighted version
+  return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>');
+};
+
+export const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onClick, searchQuery }) => {
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
   };
 
+  // Function to render highlight fragments
+  const renderHighlights = () => {
+    if (!conversation.highlights || conversation.highlights.length === 0) {
+      return null;
+    }
+
+    //Highlight the messageBody field according to the response from the backend
+    const messageHighlights = conversation.highlights.filter(h => h.fieldName === 'MessageBody');
+    
+    if (messageHighlights.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div className="mt-1">
+        {messageHighlights.map((highlight, highlightIndex) => (
+          <div key={highlightIndex}>
+            {highlight.fragments.map((fragment, fragmentIndex) => (
+              <div 
+                key={fragmentIndex} 
+                className="text-sm text-gray-600 dark:text-gray-300 p-1 border-l-2 border-gray-300 mt-1 line-clamp-2"
+              >
+                <span 
+                  dangerouslySetInnerHTML={{ 
+                    __html: `...${fragment}...`
+                  }}
+                  className="[&_em]:bg-yellow-200 [&_em]:dark:bg-yellow-800"
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div
-      className="group flex cursor-pointer items-center justify-between border-b border-gray p-2 hover:bg-light-gray dark:border-dark-gray dark:hover:bg-aws-squid-ink-light"
+      className="group flex flex-col cursor-pointer border-b border-gray p-2 hover:bg-light-gray dark:border-dark-gray dark:hover:bg-aws-squid-ink-light"
       onClick={() => onClick(conversation.id)}>
-      <div className="flex flex-col">
-        <div className="text-base font-medium">{conversation.title}</div>
-        <div className="text-xs text-gray">
-          {formatDate(conversation.createTime)}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <div className="text-base font-medium">
+            <span dangerouslySetInnerHTML={{
+              __html: highlightSearchTerms(conversation.title, searchQuery)
+            }} />
+          </div>
+          <div className="text-xs text-gray">
+            {formatDate(conversation.createTime)}
+          </div>
         </div>
       </div>
+      {/* Display highlight fragments */}
+      {renderHighlights()}
     </div>
   );
 };
@@ -151,6 +210,7 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
             key={conversation.id}
             conversation={conversation}
             onClick={onSelectConversation}
+            searchQuery={searchQuery}
           />
         ))}
       </div>

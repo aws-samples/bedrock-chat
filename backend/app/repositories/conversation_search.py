@@ -41,14 +41,25 @@ def find_conversations_by_query(
         "query": {
             "bool": {
                 "should": [
-                    # Title match (high weight)
                     {"match": {"Title": {"query": query, "boost": 3.0}}},
-                    # Phrase match (high weight)
-                    {"match_phrase": {"MessageMap": {"query": query, "boost": 2.5}}},
-                    # MessageMap overall match (medium weight)
-                    {"match": {"MessageMap": {"query": query, "boost": 2.0}}},
-                    # Wildcard search
-                    {"wildcard": {"MessageMap": {"value": f"*{query.lower()}*", "boost": 1.0}}}
+                    {
+                        "match": {
+                            "ParsedMessageMap": {
+                                "query": query,
+                                "boost": 4.0
+                            }
+                        }
+                    },
+                    {
+                        "query_string": {
+                            "query": f"\"{query}\"",
+                            "fields": [
+                                "ParsedMessageMap.*.*content*.body^4.0",
+                            ],
+                            "type": "best_fields",
+                            "default_operator": "AND"
+                        }
+                    }
                 ],
                 "minimum_should_match": 1,
                 "filter": {"bool": {"must": filter_must}}
@@ -58,7 +69,25 @@ def find_conversations_by_query(
         "sort": [
             {"_score": {"order": "desc"}},  # 1. Primary sort by relevance score
             {"CreateTime": {"order": "desc"}}  # 2. Secondary sort by recency (DynamoDB field name)
-        ]
+        ],
+        "highlight": {
+            "fields": {
+                "Title": {
+                    "pre_tags": ["<em>"],
+                    "post_tags": ["</em>"],
+                    "fragment_size": 150,
+                    "number_of_fragments": 1
+                },
+                "ParsedMessageMap.*.*content*.body": {
+                    "fragment_size": 150,
+                    "number_of_fragments": 3,
+                    "pre_tags": ["<em>"],
+                    "post_tags": ["</em>"]
+                },
+            },
+            "require_field_match": False,
+            "order": "score"
+        }
     }
     
     logger.debug(f"Search body: {search_body}")

@@ -258,6 +258,16 @@ export class ConversationStore extends Construct {
             },
           },
         },
+        processor: [
+          {
+            parse_json: {
+              source: "MessageMap",
+              destination: "ParsedMessageMap",
+              overwrite_if_destination_exists: true,
+              delete_source: false
+            }
+          }
+        ],
         sink: [
           {
             opensearch: {
@@ -329,7 +339,7 @@ export class ConversationStore extends Construct {
                     ],
                   },
                 },
-              },
+              }
             },
             mappings: {
               properties: {
@@ -352,15 +362,46 @@ export class ConversationStore extends Construct {
                 updateTime: {
                   type: "date",
                 },
+                MessageMap: {
+                  type: "text",
+                  analyzer: "ja_analyzer",
+                },
+                ParsedMessageMap: {
+                  type: "object",
+                  enabled: true,
+                  properties: {
+                    "*": {
+                      properties: {
+                        role: { type: "keyword" },
+                        content: { 
+                          properties: {
+                            "*": {
+                              properties: {
+                                content_type: { type: "keyword" },
+                                body: { 
+                                  type: "text",
+                                  analyzer: "ja_analyzer" 
+                                }
+                              }
+                            }
+                          }
+                        },
+                        model: { type: "keyword" },
+                        create_time: { type: "date" }
+                      }
+                    }
+                  }
+                }
               },
             },
           },
         });
 
       default:
-        // 英語用の設定
         return JSON.stringify({
           template: {
+            settings: {
+            },
             mappings: {
               properties: {
                 title: {
@@ -380,6 +421,32 @@ export class ConversationStore extends Construct {
                 updateTime: {
                   type: "date",
                 },
+                MessageMap: {
+                  type: "text",
+                },
+                ParsedMessageMap: {
+                  type: "object",
+                  enabled: true,
+                  properties: {
+                    "*": {
+                      properties: {
+                        role: { type: "keyword" },
+                        content: { 
+                          properties: {
+                            "*": {
+                              properties: {
+                                content_type: { type: "keyword" },
+                                body: { type: "text" }
+                              }
+                            }
+                          }
+                        },
+                        model: { type: "keyword" },
+                        create_time: { type: "date" }
+                      }
+                    }
+                  }
+                }
               },
             },
           },

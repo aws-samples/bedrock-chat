@@ -211,12 +211,19 @@ class RelatedDocument(BaseSchema):
     page_number: int | None = None
 
 
+class SearchHighlight(BaseSchema):
+    """Schema representing highlight information for search results"""
+    field_name: str
+    fragments: list[str]
+
+
 class ConversationMetaOutput(BaseSchema):
     id: str
     title: str
     create_time: float
     model: str
     bot_id: str | None
+    highlights: list[SearchHighlight] | None = None
 
 
 class Conversation(BaseSchema):

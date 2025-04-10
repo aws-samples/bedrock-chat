@@ -126,13 +126,19 @@ export type PostMessageResponse = {
   message: MessageContent;
 };
 
+export type SearchHighlight = {
+  fieldName: string;  // "Title" or "MessageMap"
+  fragments: string[]; // Text fragments containing the search term
+};
+
 export type ConversationMeta = {
   id: string;
   title: string;
   createTime: number;
-  lastMessageId: string;
+  lastMessageId: string; 
   model: Model;
   botId?: string;
+  highlights?: SearchHighlight[]; // Optional highlights information
 };
 
 export type MessageMap = {
