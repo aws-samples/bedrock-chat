@@ -30,6 +30,11 @@ export interface EmbeddingProps {
 
 export class Embedding extends Construct {
   readonly removalHandler: IFunction;
+  public readonly stateMachine: sfn.StateMachine;
+  public readonly pipe: CfnPipe;
+  public readonly pipeRole: iam.Role;
+  public readonly updateSyncStatusHandler: IFunction;
+
   private _updateSyncStatusHandler: IFunction;
   private _fetchStackOutputHandler: IFunction;
   private _StoreKnowledgeBaseIdHandler: IFunction;
@@ -37,6 +42,7 @@ export class Embedding extends Construct {
   private _pipeRole: iam.Role;
   private _stateMachine: sfn.StateMachine;
   private _removalHandler: IFunction;
+  private _pipe: CfnPipe;
 
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
@@ -47,6 +53,10 @@ export class Embedding extends Construct {
       .setupRemovalHandler(props);
 
     this.removalHandler = this._removalHandler;
+    this.stateMachine = this._stateMachine;
+    this.pipe = this._pipe;
+    this.pipeRole = this._pipeRole;
+    this.updateSyncStatusHandler = this._updateSyncStatusHandler;
   }
 
   private setupStateMachineHandlers(props: EmbeddingProps): this {
@@ -480,7 +490,7 @@ export class Embedding extends Construct {
       })
     );
 
-    new CfnPipe(this, "Pipe", {
+    this._pipe = new CfnPipe(this, "Pipe", {
       source: props.database.tableStreamArn!,
       sourceParameters: {
         dynamoDbStreamParameters: {

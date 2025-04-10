@@ -19,6 +19,7 @@ import { excludeDockerImage } from "../constants/docker";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 
 import { ValidatedPythonFunction } from './validated-python-function';
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 
 export interface WebSocketProps {
   readonly database: ITable;
@@ -32,6 +33,11 @@ export interface WebSocketProps {
   readonly enableMistral: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
+  readonly botsMetadataConfigTableName: string;
+  readonly ltiDataTableName: string;
+  readonly botsMetadataTableArn: string;
+  readonly botsMetadataTable: dynamodb.ITable;
+  readonly botsMetadataConfigTable: dynamodb.ITable;
 }
 
 export class WebSocket extends Construct {
@@ -82,10 +88,23 @@ export class WebSocket extends Construct {
         resources: ["*"],
       })
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW, 
+        actions: ['cloudwatch:PutMetricData'],
+        resources: ['*'], // PutMetricData requires '*' resource
+        conditions: {
+            // Best practice: Limit to the specific namespace
+            StringEquals: { 'cloudwatch:namespace': 'BedrockChat/Usage' }
+        }
+      })
+    );
     largePayloadSupportBucket.grantRead(handlerRole);
     props.websocketSessionTable.grantReadWriteData(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
     props.documentBucket.grantRead(handlerRole);
+    props.botsMetadataTable.grantReadData(handlerRole);
+    props.botsMetadataConfigTable.grantReadData(handlerRole);
 
     const handler =  new ValidatedPythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
@@ -109,9 +128,14 @@ export class WebSocket extends Construct {
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
         WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
+        BOTS_METADATA_CONFIG_TABLE_NAME: props.botsMetadataConfigTableName,
         ENABLE_MISTRAL: props.enableMistral.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
+        LTI_DATA_TABLE_NAME: props.ltiDataTableName,
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        BOTS_METADATA_TABLE_ARN: props.botsMetadataTableArn,
+        BING_API_SECRET_ARN: `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:bing-api-key*`,
       },
       role: handlerRole,
       snapStart: props.enableLambdaSnapStart ? SnapStartConf.ON_PUBLISHED_VERSIONS : undefined,

@@ -28,6 +28,8 @@ export class UsageAnalysis extends Construct {
   public readonly botsBucket: s3.IBucket;
   public readonly botsAnalyticsTable: glue.ITable;
   public readonly sourceDatabase: Database;
+  public readonly exportHandler: python.PythonFunction;
+  public readonly scheduleRule: events.Rule;
 
   constructor(scope: Construct, id: string, props: UsageAnalysisProps) {
     super(scope, id);
@@ -309,7 +311,7 @@ export class UsageAnalysis extends Construct {
       }
     });
 
-    const exportHandler = new python.PythonFunction(this, "ExportHandler", {
+    this.exportHandler = new python.PythonFunction(this, "ExportHandler", {
       entry: path.join(__dirname, "../../../backend/s3_exporter/"),
       runtime: Runtime.PYTHON_3_12,
       environment: {
@@ -324,18 +326,18 @@ export class UsageAnalysis extends Construct {
         assetExcludes: ['.venv', '__pycache__', '*.pyc', '.pytest_cache'],
       }
     });
-    exportHandler.role?.addToPrincipalPolicy(
+    this.exportHandler.role?.addToPrincipalPolicy(
       new iam.PolicyStatement({
         actions: ["dynamodb:ExportTableToPointInTime", "dynamodb:Scan", "dynamodb:Query"],
         resources: [props.sourceDatabase.table.tableArn, props.sourceDatabase.botsMetadataTableArn, props.sourceDatabase.botsMetadataConfigTableNameArn],
       })
     );
-    ddbBucket.grantReadWrite(exportHandler);
-    botsBucket.grantReadWrite(exportHandler);
+    ddbBucket.grantReadWrite(this.exportHandler);
+    botsBucket.grantReadWrite(this.exportHandler);
 
-    new events.Rule(this, "ScheduleRule", {
+    this.scheduleRule = new events.Rule(this, "ScheduleRule", {
       schedule: events.Schedule.cron({ minute: "5" }),
-      targets: [new targets.LambdaFunction(exportHandler)],
+      targets: [new targets.LambdaFunction(this.exportHandler)],
     });
 
     new CfnOutput(this, "AnalyticsWorkgroup", {

@@ -193,6 +193,17 @@ export class Api extends Construct {
     props.largeMessageBucket.grantReadWrite(handlerRole);
     props.usageAnalysis.botsBucket.grantRead(handlerRole);
 
+    // Add permission to publish custom metrics to CloudWatch
+    handlerRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW, 
+        actions: ['cloudwatch:PutMetricData'],
+        resources: ['*'], // PutMetricData requires '*' resource
+        conditions: {
+            // Best practice: Limit to the specific namespace
+            StringEquals: { 'cloudwatch:namespace': 'BedrockChat/Usage' }
+        }
+    }));
+
     const handler = new ValidatedPythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
       index: "app/main.py",

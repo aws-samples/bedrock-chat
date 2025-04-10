@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+import boto3
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
 from app.config import BEDROCK_PRICING
@@ -42,6 +44,14 @@ ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
 
 client = get_bedrock_runtime_client()
 
+# --- CloudWatch Metrics Setup ---
+try:
+    cloudwatch_client = boto3.client('cloudwatch')
+    METRICS_NAMESPACE = 'BedrockChat/Usage'
+except Exception as e:
+    logger.error(f"Failed to create CloudWatch client: {e}")
+    cloudwatch_client = None
+# -----------------------------
 
 def _is_conversation_role(role: str) -> TypeGuard[ConversationRoleType]:
     return role in ["user", "assistant"]
@@ -229,13 +239,66 @@ def compose_args_for_converse_api(
     return args
 
 
+# --- Custom Metrics Publishing Function ---
+def publish_bedrock_usage_metrics(model_id: str, usage_info: dict):
+    """Publishes Bedrock usage metrics (input/output tokens) to CloudWatch."""
+    if not cloudwatch_client:
+        logger.warning("CloudWatch client not available. Skipping metrics publishing.")
+        return
+
+    try:
+        input_tokens = usage_info.get('inputTokens', 0)
+        output_tokens = usage_info.get('outputTokens', 0)
+
+        if input_tokens > 0 or output_tokens > 0:
+            cloudwatch_client.put_metric_data(
+                Namespace=METRICS_NAMESPACE,
+                MetricData=[
+                    {
+                        "MetricName": "InputTokens",
+                        "Dimensions": [{"Name": "ModelId", "Value": model_id}],
+                        "Value": float(input_tokens),
+                        "Unit": "Count",
+                    },
+                    {
+                        "MetricName": "OutputTokens",
+                        "Dimensions": [{"Name": "ModelId", "Value": model_id}],
+                        "Value": float(output_tokens),
+                        "Unit": "Count",
+                    },
+                ],
+            )
+            logger.info(f"Published Bedrock usage metrics for model {model_id}: Input={input_tokens}, Output={output_tokens}")
+        else:
+             logger.info(f"Skipping metric publish for model {model_id}: Zero tokens used.")
+
+    except Exception as e:
+        # Log error but don't fail the request
+        logger.error(f"Failed to publish CloudWatch metrics for model {model_id}: {e}", exc_info=True)
+# --- End Custom Metrics Publishing Function ---
+
 def call_converse_api(
     args: ConverseStreamRequestRequestTypeDef,
 ) -> ConverseResponseTypeDef:
-    client = get_bedrock_runtime_client()
+    """Calls the Bedrock Converse API (non-streaming)."""
+    logger.debug(f"args for converse: {args}")
+    try:
+        # Ensure stream parameter is not present or False for non-streaming call
+        # The type hint ConverseRequestRequestTypeDef implies non-streaming
+        response = client.converse(**args) 
+        logger.debug(f"Response from converse: {response}")
 
-    return client.converse(**args)
+        # --- Publish metrics ---
+        usage = response.get('usage', {}) 
+        # Extract model_id from the args passed to the function
+        model_id_from_args = args.get('modelId', 'unknown') 
+        publish_bedrock_usage_metrics(model_id=model_id_from_args, usage_info=usage)
+        # -----------------------
 
+        return response
+    except Exception as e:
+        logger.error(f"Error during Bedrock converse call: {e}", exc_info=True)
+        raise
 
 def calculate_price(
     model: type_model_name,

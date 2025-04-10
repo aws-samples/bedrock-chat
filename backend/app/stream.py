@@ -3,7 +3,7 @@ import logging
 from typing import Callable, TypedDict, TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool
-from app.bedrock import calculate_price, compose_args_for_converse_api
+from app.bedrock import calculate_price, compose_args_for_converse_api, publish_bedrock_usage_metrics
 from app.repositories.models.conversation import (
     SimpleMessageModel,
     ContentModel,
@@ -384,6 +384,16 @@ class ConverseApiStreamHandler:
             )
 
             price = calculate_price(self.model, input_token_count, output_token_count)
+
+            # --- Publish CloudWatch Metrics using common function ---
+            if input_token_count > 0 or output_token_count > 0: # Check if usage info was received
+                usage_metadata = {
+                    "inputTokens": input_token_count,
+                    "outputTokens": output_token_count,
+                    "price": price,
+                }
+                publish_bedrock_usage_metrics(model_id=self.model, usage_info=usage_metadata)
+            # -----------------------------------------------------------
 
             result = OnStopInput(
                 message=message,
