@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { formatDate } from '../utils/DateUtils';
 import InputText from '../components/InputText';
 import Skeleton from '../components/Skeleton';
@@ -44,7 +44,7 @@ interface BotSummaryStats {
   showTotalBots?: boolean;
 }
 
-const AdminBotAnalyticsPage: React.FC = () => {
+const QikrBotAnalyticsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { botId } = useParams<{ botId: string }>();
@@ -68,6 +68,7 @@ const AdminBotAnalyticsPage: React.FC = () => {
   
   // Ref to track the last successfully fetched date range
   const lastSuccessfulDateRangeRef = useRef<{ from: string | null; to: string | null }>({ from: null, to: null });
+  const location = useLocation();
 
   const debouncedFetch = useMemo(() => {
     return debounce((botIdParam: string, from: string, to: string, forceRefresh: boolean = false) => {
@@ -145,14 +146,33 @@ const AdminBotAnalyticsPage: React.FC = () => {
 
   // Initialize date range on component mount
   useEffect(() => {
-    const today = new Date();
-    const endDate = today.toISOString().slice(0, 10).replace(/-/g, '');
-    const startDate = new Date(new Date().setDate(today.getDate() - 29)).toISOString().slice(0, 10).replace(/-/g, '');
-    setSearchDateFrom(startDate);
-    setSearchDateTo(endDate);
-    setTempDateFrom(startDate);
-    setTempDateTo(endDate);
-  }, []);
+    const queryParams = new URLSearchParams(location.search);
+    const startDateParam = queryParams.get('startDate');
+    const endDateParam = queryParams.get('endDate');
+
+    let initialStartDate: string;
+    let initialEndDate: string;
+
+    if (startDateParam && endDateParam) {
+      // Use dates from query parameters if available
+      initialStartDate = startDateParam;
+      initialEndDate = endDateParam;
+      console.debug(`Using date range from URL params: ${initialStartDate} - ${initialEndDate}`);
+    } else {
+      // Fallback to default (last 30 days)
+      const today = new Date();
+      initialEndDate = today.toISOString().slice(0, 10).replace(/-/g, '');
+      const defaultStartDate = new Date(new Date().setDate(today.getDate() - 29));
+      initialStartDate = defaultStartDate.toISOString().slice(0, 10).replace(/-/g, '');
+       console.debug(`No date range in URL params, defaulting to last 30 days: ${initialStartDate} - ${initialEndDate}`);
+    }
+
+    setSearchDateFrom(initialStartDate);
+    setSearchDateTo(initialEndDate);
+    setTempDateFrom(initialStartDate);
+    setTempDateTo(initialEndDate);
+
+  }, [location.search]);
 
   // Effect to reset state when botId changes
   useEffect(() => {
@@ -184,12 +204,12 @@ const AdminBotAnalyticsPage: React.FC = () => {
 
       console.debug(`Data load triggered for bot ${botId}, dates: ${searchDateFrom}-${searchDateTo}`);
             
-      // Force refresh should generally be true if we're fetching due to parameter change
-      const forceRefresh = true; 
+      // Force refresh should generally be false for default fetches, true only for manual reload
       
       // Add a small delay before fetching
       const timeoutId = setTimeout(() => {
-        debouncedFetch(botId, searchDateFrom, searchDateTo, forceRefresh); 
+        // Pass false for forceRefresh here to allow caching
+        debouncedFetch(botId, searchDateFrom, searchDateTo, false); 
       }, 50); // Reduced delay, maybe 50ms is enough
       
       return () => {
@@ -455,4 +475,4 @@ const AdminBotAnalyticsPage: React.FC = () => {
   );
 };
 
-export default AdminBotAnalyticsPage; 
+export default QikrBotAnalyticsPage; 

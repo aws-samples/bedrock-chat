@@ -369,7 +369,7 @@ const QikrAnalyticsDashboard: React.FC = () => {
     console.debug("Analytics dashboard mounted - initializing date range");
     const today = new Date();
     const endDate = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-    const startDate = new Date(new Date().setDate(today.getDate() - 7)).toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD, 7 days ago
+    const startDate = new Date(new Date().setDate(today.getDate() - 6)).toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD, 7 days ago
     
     // Only set dates if they haven't been set yet to prevent reload loops
     if (!searchDateFrom) {
@@ -538,8 +538,17 @@ const QikrAnalyticsDashboard: React.FC = () => {
     if (!botId) {
       return;
     }
-    navigate(`/analytics/bots/${botId}`);
-  }, [navigate]);
+    // Construct search parameters
+    const searchParams = new URLSearchParams();
+    if (searchDateFrom) {
+      searchParams.set('startDate', searchDateFrom);
+    }
+    if (searchDateTo) {
+      searchParams.set('endDate', searchDateTo);
+    }
+    // Navigate with search parameters
+    navigate(`/analytics/bots/${botId}?${searchParams.toString()}`);
+  }, [navigate, searchDateFrom, searchDateTo]); // Added dependencies
 
 
   // Determine if we're in a loading state
