@@ -6,9 +6,9 @@ Pengguna admin mestilah merupakan ahli kumpulan yang dipanggil `Admin`, yang bol
 
 ![](./imgs/group_membership_admin.png)
 
-## Tandakan Bot Awam sebagai Penting
+## Tandai Bot Awam sebagai Penting
 
-Bot awam kini boleh ditandakan sebagai "Penting" oleh pentadbir. Bot yang ditandakan sebagai Penting akan dipaparkan dalam bahagian "Penting" di kedai bot, menjadikannya mudah diakses oleh pengguna. Ini membolehkan pentadbir menyematkan bot penting yang mereka ingin semua pengguna gunakan.
+Bot awam kini boleh ditandai sebagai "Penting" oleh pentadbir. Bot yang ditandai sebagai Penting akan dipaparkan dalam bahagian "Penting" di kedai bot, menjadikannya mudah diakses oleh pengguna. Ini membolehkan pentadbir menyematkan bot penting yang mereka ingin semua pengguna gunakan.
 
 ### Contoh
 
@@ -23,7 +23,7 @@ Bot awam kini boleh ditandakan sebagai "Penting" oleh pentadbir. Bot yang ditand
 
 ## Gelung Maklum Balas
 
-Output daripada LLM mungkin tidak sentiasa memenuhi jangkaan pengguna. Kadangkala ia gagal memuaskan keperluan pengguna. Untuk "mengintegrasikan" LLM ke dalam operasi perniagaan dan kehidupan harian dengan berkesan, melaksanakan gelung maklum balas adalah penting. Bedrock Chat dilengkapi dengan fitur maklum balas yang direka untuk membolehkan pengguna menganalisis mengapa ketidakpuasan berlaku. Berdasarkan keputusan analisis, pengguna boleh melaraskan arahan, sumber data RAG, dan parameter yang sesuai.
+Output daripada LLM mungkin tidak sentiasa memenuhi jangkaan pengguna. Kadangkala ia gagal memuaskan keperluan pengguna. Untuk mengintegrasikan LLM dengan berkesan ke dalam operasi perniagaan dan kehidupan harian, melaksanakan gelung maklum balas adalah penting. Bedrock Chat dilengkapi dengan fitur maklum balas yang direka untuk membolehkan pengguna menganalisis mengapa ketidakpuasan berlaku. Berdasarkan keputusan analisis, pengguna dapat melaraskan arahan, sumber data RAG, dan parameter dengan sewajarnya.
 
 ![](./imgs/feedback_loop.png)
 
@@ -33,7 +33,7 @@ Penganalisis data boleh mengakses log perbualan menggunakan [Amazon Athena](http
 
 ## Papan Pemuka
 
-Saat ini menyediakan gambaran umum penggunaan chatbot dan pengguna, dengan fokus pada pengumpulan data untuk setiap bot dan pengguna dalam tempoh masa yang ditetapkan dan menyusun hasilnya mengikut yuran penggunaan.
+Kini menyediakan gambaran umum asas tentang penggunaan chatbot dan pengguna, dengan fokus pada pengumpulan data untuk setiap bot dan pengguna dalam tempoh masa tertentu dan mengisih hasil mengikut yuran penggunaan.
 
 ![](./imgs/admin_bot_analytics.png)
 
@@ -41,30 +41,30 @@ Saat ini menyediakan gambaran umum penggunaan chatbot dan pengguna, dengan fokus
 
 - Seperti yang dinyatakan dalam [arsitektur](../README.md#architecture), ciri-ciri pentadbir akan merujuk kepada bucket S3 yang dieksport dari DynamoDB. Sila ambil perhatian bahawa memandangkan eksport dilakukan sekali sejam, perbualan terkini mungkin tidak segera direfleksikan.
 
-- Dalam penggunaan bot awam, bot yang tidak digunakan sama sekali dalam tempoh yang dinyatakan tidak akan disenaraikan.
+- Dalam penggunaan bot awam, bot yang tidak digunakan langsung semasa tempoh yang dinyatakan tidak akan disenaraikan.
 
-- Dalam penggunaan pengguna, pengguna yang tidak menggunakan sistem sama sekali dalam tempoh yang dinyatakan tidak akan disenaraikan.
+- Dalam penggunaan pengguna, pengguna yang tidak menggunakan sistem langsung semasa tempoh yang dinyatakan tidak akan disenaraikan.
 
 > [!Penting]
-> Jika anda menggunakan berbilang persekitaran (dev, prod, dll.), nama pangkalan data Athena akan merangkumi awalan persekitaran. Bukannya `bedrockchatstack_usage_analysis`, nama pangkalan data akan menjadi:
+> Jika anda menggunakan pelbagai persekitaran (dev, prod, dll.), nama pangkalan data Athena akan termasuk awalan persekitaran. Daripada `bedrockchatstack_usage_analysis`, nama pangkalan data akan menjadi:
 >
 > - Untuk persekitaran lalai: `bedrockchatstack_usage_analysis`
-> - Untuk persekitaran bernama: `<env-prefix>_bedrockchatstack_usage_analysis` (contohnya, `dev_bedrockchatstack_usage_analysis`)
+> - Untuk persekitaran bernama: `<awalan-env>_bedrockchatstack_usage_analysis` (contohnya, `dev_bedrockchatstack_usage_analysis`)
 >
-> Selain itu, nama jadual akan merangkumi awalan persekitaran:
+> Tambahan pula, nama jadual akan termasuk awalan persekitaran:
 >
 > - Untuk persekitaran lalai: `ddb_export`
-> - Untuk persekitaran bernama: `<env-prefix>_ddb_export` (contohnya, `dev_ddb_export`)
+> - Untuk persekitaran bernama: `<awalan-env>_ddb_export` (contohnya, `dev_ddb_export`)
 >
-> Pastikan untuk melaraskan pertanyaan anda dengan sewajarnya apabila bekerja dengan berbilang persekitaran.
+> Pastikan untuk melaraskan pertanyaan anda dengan sewajarnya apabila bekerja dengan pelbagai persekitaran.
 
-## Muat turun data perbualan
+## Muat Turun Data Perbualan
 
 Anda boleh mengambil log perbualan menggunakan Athena, dengan SQL. Untuk memuat turun log, buka Athena Query Editor dari konsol pengurusan dan jalankan SQL. Berikut adalah beberapa contoh pertanyaan yang berguna untuk menganalisis kes penggunaan. Maklum balas boleh dirujuk dalam atribut `MessageMap`.
 
 ### Pertanyaan mengikut Bot ID
 
-Edit `bot-id` dan `datehour`. `bot-id` boleh dirujuk pada skrin Pengurusan Bot, yang boleh diakses dari Bot Publish APIs, yang ditunjukkan pada sidebar sebelah kiri. Perhatikan bahagian akhir URL seperti `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edit `bot-id` dan `datehour`. `bot-id` boleh dirujuk pada skrin Pengurusan Bot, yang boleh diakses dari Bot Publish APIs, yang ditunjukkan pada sidebar kiri. Perhatikan bahagian akhir URL seperti `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -86,14 +86,14 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Note]
+> [!Nota]
 > Jika menggunakan persekitaran bernama (contohnya "dev"), gantikan `bedrockchatstack_usage_analysis.ddb_export` dengan `dev_bedrockchatstack_usage_analysis.dev_ddb_export` dalam pertanyaan di atas.
 
 ### Pertanyaan mengikut User ID
 
 Edit `user-id` dan `datehour`. `user-id` boleh dirujuk pada skrin Pengurusan Bot.
 
-> [!Note]
+> [!Nota]
 > Analitik penggunaan pengguna akan datang tidak lama lagi.
 
 ```sql
@@ -116,5 +116,5 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Note]
+> [!Nota]
 > Jika menggunakan persekitaran bernama (contohnya "dev"), gantikan `bedrockchatstack_usage_analysis.ddb_export` dengan `dev_bedrockchatstack_usage_analysis.dev_ddb_export` dalam pertanyaan di atas.
