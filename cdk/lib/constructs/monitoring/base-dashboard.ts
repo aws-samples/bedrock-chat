@@ -607,46 +607,55 @@ Key operational metrics and anomaly detection overview.`,
         let logErrorWidget: cloudwatch.IWidget; // Changed type to IWidget to allow Text or Graph
 
         if (props.apiLambdaHandler) {
-            const apiLambdaLogGroup = LogGroup.fromLogGroupName(this, 'ApiLambdaLogGroup', `/aws/lambda/${props.apiLambdaHandler.functionName}`);
+            // Use the passed-in apiLambdaLogGroup prop if available
+            const apiLambdaLogGroup = props.apiLambdaLogGroup;
 
-            let s3ExporterLogGroup: logs.ILogGroup | undefined;
-            if (props.s3ExporterLambda) {
-                s3ExporterLogGroup = LogGroup.fromLogGroupName(this, 'S3ExporterLogGroup', `/aws/lambda/${props.s3ExporterLambda.functionName}`);
+            // Use the passed-in s3ExporterLogGroup prop if available
+            const s3ExporterLogGroup = props.s3ExporterLogGroup;
+
+
+            // Use the passed-in codeBuildLogGroup prop if available
+            const codeBuildLogGroup = props.codeBuildLogGroup;
+
+            const logErrorMetrics: cloudwatch.Metric[] = [];
+
+            let wsLogErrorsMetric: cloudwatch.Metric | undefined;
+
+            // Only create API Lambda filters if the log group is provided
+            if (apiLambdaLogGroup) {
+                const authErrorFilter = new logs.MetricFilter(this, 'AuthenticationErrorFilter', {
+                    logGroup: apiLambdaLogGroup, // Use prop
+                    metricNamespace: 'QikrChat/Logs',
+                    metricName: 'AuthenticationErrors',
+                    filterPattern: logs.FilterPattern.literal('?"JWT Audience verification failed" ?"JWT Token has expired" ?"Permission action" ?"is not configured" ?"User not found in request state" ?"Invalid token"'),
+                    metricValue: '1',
+                });
+                logErrorMetrics.push(authErrorFilter.metric({ label: 'Auth Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#e41a1c' }));
+
+                const dbErrorFilter = new logs.MetricFilter(this, 'DatabaseErrorFilter', {
+                    logGroup: apiLambdaLogGroup, // Use prop
+                    metricNamespace: 'QikrChat/Logs',
+                    metricName: 'DatabaseErrors',
+                    filterPattern: logs.FilterPattern.literal('?"DynamoDB" ?"error" ?"Failed to get table resource" ?"Failed to assume role" ?"TABLE_ACCESS_ROLE_ARN is not set"'),
+                    metricValue: '1',
+                });
+                logErrorMetrics.push(dbErrorFilter.metric({ label: 'DB Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#377eb8' }));
+
+                const bedrockErrorFilter = new logs.MetricFilter(this, 'BedrockErrorFilter', {
+                    logGroup: apiLambdaLogGroup, // Use prop
+                    metricNamespace: 'QikrChat/Logs',
+                    metricName: 'BedrockErrors',
+                    filterPattern: logs.FilterPattern.literal('?"Error querying Bedrock Knowledge Base" ?"Error in content model conversion"'),
+                    metricValue: '1',
+                });
+                logErrorMetrics.push(bedrockErrorFilter.metric({ label: 'Bedrock Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#4daf4a' }));
             }
 
-            let codeBuildLogGroup: logs.ILogGroup | undefined;
-            if (props.knowledgeBaseCodeBuild) {
-                codeBuildLogGroup = LogGroup.fromLogGroupName(this, 'CodeBuildLogGroup', `/aws/codebuild/${props.knowledgeBaseCodeBuild.projectName}`);
-            }
-
-            const authErrorFilter = new logs.MetricFilter(this, 'AuthenticationErrorFilter', {
-                logGroup: apiLambdaLogGroup,
-                metricNamespace: 'BedrockChat/Logs',
-                metricName: 'AuthenticationErrors',
-                filterPattern: logs.FilterPattern.literal('?"JWT Audience verification failed" ?"JWT Token has expired" ?"Permission action" ?"is not configured" ?"User not found in request state" ?"Invalid token"'),
-                metricValue: '1',
-            });
-
-            const dbErrorFilter = new logs.MetricFilter(this, 'DatabaseErrorFilter', {
-                logGroup: apiLambdaLogGroup,
-                metricNamespace: 'BedrockChat/Logs',
-                metricName: 'DatabaseErrors',
-                filterPattern: logs.FilterPattern.literal('?"DynamoDB" ?"error" ?"Failed to get table resource" ?"Failed to assume role" ?"TABLE_ACCESS_ROLE_ARN is not set"'),
-                metricValue: '1',
-            });
-
-            const bedrockErrorFilter = new logs.MetricFilter(this, 'BedrockErrorFilter', {
-                logGroup: apiLambdaLogGroup,
-                metricNamespace: 'BedrockChat/Logs',
-                metricName: 'BedrockErrors',
-                filterPattern: logs.FilterPattern.literal('?"Error querying Bedrock Knowledge Base" ?"Error in content model conversion"'),
-                metricValue: '1',
-            });
-
-            if (s3ExporterLogGroup && props.s3ExporterLambda) {
+            // Only create S3 Exporter filter if the lambda AND log group are provided
+            if (props.s3ExporterLambda && s3ExporterLogGroup) {
                 const s3ExporterErrorFilter = new logs.MetricFilter(this, 'S3ExporterLogErrorFilter', {
-                    logGroup: s3ExporterLogGroup,
-                    metricNamespace: 'BedrockChat/Logs',
+                    logGroup: s3ExporterLogGroup, // Use prop
+                    metricNamespace: 'QikrChat/Logs',
                     metricName: 'S3ExporterLogErrors',
                     filterPattern: logs.FilterPattern.literal('"- ERROR -"'),
                     metricValue: '1',
@@ -655,14 +664,18 @@ Key operational metrics and anomaly detection overview.`,
                     label: 'S3 Exporter Log Errors',
                     statistic: 'Sum',
                     period: Duration.minutes(5),
-                    color: '#FFC0CB',
+                    color: '#FFC0CB', // Pink
                 });
+                logErrorMetrics.push(s3ExporterLogErrorsMetric);
+            } else if (props.s3ExporterLambda && !s3ExporterLogGroup) {
+                 console.warn(`s3ExporterLambda provided to BaseDashboard, but its logGroup prop was not.`);
             }
 
-            if (codeBuildLogGroup && props.knowledgeBaseCodeBuild) {
+            // Only create CodeBuild filter if the project AND log group are provided
+            if (props.knowledgeBaseCodeBuild && codeBuildLogGroup) {
                 const codeBuildErrorFilter = new logs.MetricFilter(this, 'CodeBuildLogErrorFilter', {
-                    logGroup: codeBuildLogGroup,
-                    metricNamespace: 'BedrockChat/Logs',
+                    logGroup: codeBuildLogGroup, // Use prop
+                    metricNamespace: 'QikrChat/Logs',
                     metricName: 'CodeBuildLogErrors',
                     filterPattern: logs.FilterPattern.literal('?State ?= ?FAILED ?"Phase context status code:" ?"Message:" ?FAILED ?Error ?"Command did not exit successfully"'),
                     metricValue: '1',
@@ -671,17 +684,32 @@ Key operational metrics and anomaly detection overview.`,
                     label: 'CodeBuild Log Errors',
                     statistic: 'Sum',
                     period: Duration.minutes(5),
-                    color: '#800080',
+                    color: '#800080', // Purple
                 });
+                logErrorMetrics.push(codeBuildLogErrorsMetric);
+            } else if (props.knowledgeBaseCodeBuild && !codeBuildLogGroup) {
+                 console.warn(`knowledgeBaseCodeBuild provided to BaseDashboard, but its logGroup prop was not.`);
             }
 
-            const logErrorMetrics = [
-                authErrorFilter.metric({ label: 'Auth Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#e41a1c' }),
-                dbErrorFilter.metric({ label: 'DB Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#377eb8' }),
-                bedrockErrorFilter.metric({ label: 'Bedrock Errors', statistic: 'Sum', period: Duration.minutes(5), color: '#4daf4a' }),
-                s3ExporterLogErrorsMetric,
-                codeBuildLogErrorsMetric,
-            ].filter((metric): metric is cloudwatch.Metric => metric !== undefined);
+            // Only create WebSocket filter if the handler AND log group are provided
+            if (props.webSocketHandler && props.webSocketLogGroup) {
+                const wsLogErrorFilter = new logs.MetricFilter(this, 'WebSocketLogErrorFilter', {
+                    logGroup: props.webSocketLogGroup,
+                    metricNamespace: 'QikrChat/Logs', // Use consistent namespace
+                    metricName: 'WebSocketLogErrors',
+                    filterPattern: logs.FilterPattern.literal('"- ERROR -"'), // Generic error filter
+                    metricValue: '1',
+                });
+                wsLogErrorsMetric = wsLogErrorFilter.metric({
+                    label: 'WebSocket Log Errors',
+                    statistic: 'Sum',
+                    period: Duration.minutes(5),
+                    color: '#FFA500', // Orange color for distinction
+                });
+                logErrorMetrics.push(wsLogErrorsMetric);
+            } else if (props.webSocketHandler && !props.webSocketLogGroup) {
+                console.warn(`webSocketHandler provided to BaseDashboard, but its logGroup prop was not.`);
+            }
 
             if (logErrorMetrics.length > 0) {
                  // Create the graph widget if metrics exist
@@ -909,7 +937,7 @@ Key operational metrics and anomaly detection overview.`,
         // Use search expressions to find all models dynamically
         const bedrockInputTokensExpression = new cloudwatch.MathExpression({
             // Search for all InputTokens metrics in the namespace, group by ModelId
-            expression: `SEARCH('{BedrockChat/Usage,ModelId} MetricName="InputTokens"', 'Sum', 300)`,
+            expression: `SEARCH('{QikrChat/Usage,ModelId} MetricName="InputTokens"', 'Sum', 300)`,
             usingMetrics: {}, // No specific metrics needed here for search
             label: 'Input Tokens:', // Simplified label
             period: Duration.minutes(5),
@@ -918,7 +946,7 @@ Key operational metrics and anomaly detection overview.`,
 
         const bedrockOutputTokensExpression = new cloudwatch.MathExpression({
             // Search for all OutputTokens metrics in the namespace, group by ModelId
-            expression: `SEARCH('{BedrockChat/Usage,ModelId} MetricName="OutputTokens"', 'Sum', 300)`,
+            expression: `SEARCH('{QikrChat/Usage,ModelId} MetricName="OutputTokens"', 'Sum', 300)`,
             usingMetrics: {},
             label: 'Output Tokens:', // Simplified label
             period: Duration.minutes(5),

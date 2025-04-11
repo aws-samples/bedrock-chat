@@ -3,6 +3,8 @@ import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { NagSuppressions } from "cdk-nag";
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as cdk from 'aws-cdk-lib';
 
 export interface BedrockCustomBotCodebuildProps {
   readonly sourceBucket: s3.Bucket;
@@ -10,6 +12,8 @@ export interface BedrockCustomBotCodebuildProps {
 
 export class BedrockCustomBotCodebuild extends Construct {
   public readonly project: codebuild.Project;
+  public readonly logGroup: logs.ILogGroup;
+
   constructor(
     scope: Construct,
     id: string,
@@ -18,6 +22,13 @@ export class BedrockCustomBotCodebuild extends Construct {
     super(scope, id);
 
     const sourceBucket = props.sourceBucket;
+
+    const logGroup = new logs.LogGroup(this, 'ProjectLogGroup', {
+      retention: logs.RetentionDays.ONE_MONTH,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+    this.logGroup = logGroup;
+
     const project = new codebuild.Project(this, "Project", {
       source: codebuild.Source.s3({
         bucket: sourceBucket,
@@ -59,6 +70,12 @@ export class BedrockCustomBotCodebuild extends Construct {
           },
         },
       }),
+      logging: {
+        cloudWatch: {
+          enabled: true,
+          logGroup: this.logGroup,
+        },
+      },
     });
     sourceBucket.grantRead(project.role!);
 

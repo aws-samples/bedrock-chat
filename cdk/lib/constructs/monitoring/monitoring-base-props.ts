@@ -8,6 +8,7 @@ import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import { CfnPipe } from 'aws-cdk-lib/aws-pipes';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as logs from 'aws-cdk-lib/aws-logs';
 
 /**
  * Base properties required by monitoring constructs.
@@ -48,6 +49,12 @@ export interface BaseDashboardProps extends MonitoringBaseProps {
     readonly embeddingPipeRole?: iam.IRole;
     readonly updateSyncStatusLambda?: lambda.IFunction; // Specific lambda from SF
     readonly webSocketHandler?: lambda.IFunction; // ADDED: Optional WebSocket handler
+
+    // --- Log Group References (for explicit dependency) ---
+    readonly apiLambdaLogGroup?: logs.ILogGroup; // ADDED: Pass the actual log group
+    readonly codeBuildLogGroup?: logs.ILogGroup; // ADDED: Pass the actual log group
+    readonly s3ExporterLogGroup?: logs.ILogGroup; // ADDED: Pass the actual log group
+    readonly webSocketLogGroup?: logs.ILogGroup; // ADDED: Pass the actual log group (for consistency)
 
     // --- Configuration ---
     readonly anomalyDetectionStandardDeviation?: number; // Optional: std dev for anomaly detection (defaults to 2)

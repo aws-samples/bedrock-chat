@@ -47,7 +47,7 @@ client = get_bedrock_runtime_client()
 # --- CloudWatch Metrics Setup ---
 try:
     cloudwatch_client = boto3.client('cloudwatch')
-    METRICS_NAMESPACE = 'BedrockChat/Usage'
+    METRICS_NAMESPACE = 'QikrChat/Usage'
 except Exception as e:
     logger.error(f"Failed to create CloudWatch client: {e}")
     cloudwatch_client = None

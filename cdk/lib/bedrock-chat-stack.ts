@@ -27,6 +27,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as cw_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { BaseDashboard } from './constructs/monitoring/base-dashboard';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -292,6 +293,10 @@ export class BedrockChatStack extends cdk.Stack {
       knowledgeBaseCodeBuild: bedrockCustomBotCodebuild.project,
       embeddingPipe: embedding.pipe,
       embeddingPipeRole: embedding.pipeRole,
+      apiLambdaLogGroup: (backendApi.handler as lambda.Function).logGroup,
+      webSocketLogGroup: websocket.handler ? (websocket.handler as lambda.Function).logGroup : undefined,
+      codeBuildLogGroup: bedrockCustomBotCodebuild.logGroup,
+      s3ExporterLogGroup: (usageAnalysis.exportHandler as lambda.Function).logGroup,
       // Added Props for Athena, S3
       athenaWorkgroupName: usageAnalysis.workgroupName,
       ddbExportBucket: usageAnalysis.ddbBucket,
