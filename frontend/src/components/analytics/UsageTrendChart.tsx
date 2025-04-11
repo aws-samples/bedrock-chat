@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   LineChart,
@@ -10,6 +10,26 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import {
+  formatChartDateTick,
+  formatLegendText,
+  formatTooltipLabelDate,
+  calculateChartMargins,
+  calculateXAxisInterval,
+  CHART_TICK_FONT_SIZE,
+  X_AXIS_ANGLE,
+  X_AXIS_TEXT_ANCHOR,
+  X_AXIS_HEIGHT,
+  X_AXIS_TICK_MARGIN,
+  Y_AXIS_LABEL_STYLE,
+  Y_AXIS_LABEL_PROPS,
+  TOOLTIP_STYLE,
+  LEGEND_STYLE,
+  CHART_CONTAINER_CLASSES,
+  CHART_WRAPPER_CLASSES,
+  REGULAR_DOT_STYLE,
+  ACTIVE_DOT_STYLE
+} from '../../utils/chartUtils';
 
 // Define chart data interface here to avoid circular dependencies
 interface AnalyticsDataPoint {
@@ -30,18 +50,6 @@ interface UsageTrendChartProps {
   yAxisTickFormatter?: (value: number) => string;
 }
 
-// Format legend text to be more user-friendly
-const formatLegend = (value: string): string => {
-  const legendMap: { [key: string]: string } = {
-    num_sessions: 'Sessions',
-    num_messages: 'Message Count',
-    input_tokens: 'Input Tokens',
-    output_tokens: 'Output Tokens',
-    cost: 'Cost'
-  };
-  return legendMap[value] || value;
-};
-
 const UsageTrendChart: React.FC<UsageTrendChartProps> = ({
   data,
   title,
@@ -51,109 +59,54 @@ const UsageTrendChart: React.FC<UsageTrendChartProps> = ({
   yAxisTickFormatter,
 }) => {
   useTranslation();
-  const lastYearRef = useRef<string>('');
 
-  // Format date to show year only when it changes
-  const formatXAxis = (dateStr: string) => {
-    if (!dateStr) {
-      return '';
-    }
-    
-    const parts = dateStr.split('-');
-    if (parts.length !== 3) {
-      return dateStr;
-    }
-    
-    const year = parts[0];
-    const month = parts[1];
-    const day = parts[2];
-    
-    // If this is the first date or the year has changed, show the full date
-    if (year !== lastYearRef.current) {
-      lastYearRef.current = year;
-      return `${year}-${month}-${day}`;
-    }
-    
-    // Otherwise just show month-day
-    return `${month}-${day}`;
-  };
-
-  // Determine the appropriate interval based on the date range
-  const xAxisInterval = useMemo(() => {
-    // For short date ranges (14 days or less), show all labels
-    if (data.length <= 14) {
-      return 0; // 0 means show every tick
-    }
-    // For medium ranges (15-30 days), show every other day
-    else if (data.length <= 30) {
-      return 1; // Show every other tick
-    }
-    // For longer ranges, use preserveStartEnd to just show first, last and some in between
-    else {
-      return 'preserveStartEnd';
-    }
-  }, [data.length]);
-
-  // Calculate chart margins based on data length
-  const chartMargins = useMemo(() => {
-    const isShortRange = data.length <= 14;
-    return {
-      top: 10,
-      right: isShortRange ? 30 : 20, // Increase right margin for short ranges with angled labels
-      bottom: isShortRange ? 60 : 30, // Increase bottom margin for short ranges
-      left: yAxisLabel ? 10 : 15 // Increased left margin for axis label
-    };
-  }, [data.length, yAxisLabel]);
+  // Use calculation functions from utils within useMemo
+  const chartMargins = useMemo(() => calculateChartMargins(yAxisLabel), [yAxisLabel]);
+  const xAxisInterval = useMemo(() => calculateXAxisInterval(data.length), [data.length]);
 
   return (
-    <div className="w-full h-[300px] p-4 pb-4 pl-2 pr-4 pt-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div className={`${CHART_WRAPPER_CLASSES} ${CHART_CONTAINER_CLASSES}`}>
       {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart 
-          data={data}
-          margin={chartMargins}
-        >
+        <LineChart data={data} margin={chartMargins}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={formatXAxis}
+          <XAxis
+            dataKey="date"
+            tickFormatter={formatChartDateTick}
             interval={xAxisInterval}
-            angle={data.length > 14 ? 0 : -15}
-            textAnchor={data.length > 14 ? 'middle' : 'end'}
-            height={data.length > 14 ? 30 : 50}
-            tickMargin={5} // Add some margin between ticks and axis line
-            tick={{ fontSize: 11 }} // Use smaller font size for x-axis labels
+            angle={X_AXIS_ANGLE}
+            textAnchor={X_AXIS_TEXT_ANCHOR}
+            height={X_AXIS_HEIGHT}
+            tickMargin={X_AXIS_TICK_MARGIN}
+            tick={{ fontSize: CHART_TICK_FONT_SIZE }}
           />
-          <YAxis 
+          <YAxis
             tickFormatter={yAxisTickFormatter}
-            label={{ 
-              value: yAxisLabel, 
-              angle: -90, 
-              position: 'center', 
-              offset: -5,
-              dx: -30,
-              style: { 
-                fontSize: 12,
-                fontWeight: 'bold'
-              } 
-            }} 
-            tick={{ fontSize: 11 }} // Also make y-axis tick labels smaller
+            label={{
+              value: yAxisLabel,
+              ...Y_AXIS_LABEL_PROPS,
+              dx: -40,
+              style: Y_AXIS_LABEL_STYLE,
+            }}
+            tick={{ fontSize: CHART_TICK_FONT_SIZE }}
           />
-          <Tooltip 
-            contentStyle={{ fontSize: '11px' }}
-            itemStyle={{ fontSize: '11px' }}
-            labelStyle={{ fontSize: '11px' }}
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_STYLE}
+            labelStyle={TOOLTIP_STYLE}
+            labelFormatter={formatTooltipLabelDate}
           />
-          <Legend 
-            formatter={formatLegend}
-            wrapperStyle={{ fontSize: '11px', fontWeight: 600 }}
+          <Legend
+            formatter={formatLegendText}
+            wrapperStyle={LEGEND_STYLE}
           />
           <Line
             type="monotone"
             dataKey={dataKey}
-            name={formatLegend(dataKey as string)}
+            name={formatLegendText(dataKey as string)}
             stroke={color}
-            activeDot={{ r: 8 }}
+            activeDot={ACTIVE_DOT_STYLE}
+            dot={REGULAR_DOT_STYLE}
           />
         </LineChart>
       </ResponsiveContainer>

@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { formatDate } from '../utils/DateUtils';
+import dayjs from 'dayjs';
+import { parseYYYYMMDD } from '../utils/chartUtils';
 import InputText from '../components/InputText';
 import Skeleton from '../components/Skeleton';
 import Help from '../components/Help';
@@ -12,13 +14,13 @@ import {
   SummaryAnalyticsData, 
   TopEntitiesData, 
   TopicsData,
-  DailyUsage
 } from '../hooks/useAnalytics';
 import SummaryStats from '../components/analytics/SummaryStats';
 import UsageTrendChart from '../components/analytics/UsageTrendChart';
 import TopUsersTable from '../components/analytics/TopUsersTable';
 import TokenCountsChart from '../components/analytics/TokenCountsChart';
 import Button from '../components/Button';
+import { fillMissingDatesWithZeros } from '../utils/chartUtils';
 
 // Define a separate interface for chart data
 interface DashboardChartDataPoint {
@@ -50,6 +52,7 @@ interface SummaryStatsProps {
 const QikrAnalyticsDashboard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { emailId } = useUser();
   // Use analytics hook with destructured properties for cleaner code
   const { 
@@ -224,18 +227,44 @@ const QikrAnalyticsDashboard: React.FC = () => {
             });
           }
         } else {
-          // Transform daily usage data for charts with proper type conversion
-          const transformedChartData: DashboardChartDataPoint[] = fetchedSummaryData.daily_usage.map((day: DailyUsage) => ({
-            date: day.date,
-            num_messages: Number(day.num_messages) || 0,
-            input_tokens: day.input_tokens !== null ? Number(day.input_tokens) : null,
-            output_tokens: day.output_tokens !== null ? Number(day.output_tokens) : null,
-            cost: day.cost !== null ? Number(day.cost) : null,
-            num_sessions: Number(day.num_sessions) || 0
-          }));
-          
-          console.debug('Transformed chart data:', transformedChartData);
-          setChartData(transformedChartData);
+          // Use the utility function to fill missing dates (now expects YYYYMMDD)
+          console.log('[AnalyticsDashboardPage] Calling fillMissingDatesWithZeros with dates:', searchDateFrom, searchDateTo); // Keep YYYYMMDD
+
+          const filledChartData = fillMissingDatesWithZeros<DashboardChartDataPoint>(
+            searchDateFrom || '', // Pass original YYYYMMDD
+            searchDateTo || '',   // Pass original YYYYMMDD
+            fetchedSummaryData.daily_usage || [],
+            (rawPoint) => { // mapDataPoint function
+                // Convert rawPoint.date (assume YYYY-MM-DD) to YYYYMMDD for the chart data point
+                let dateYYYYMMDD = '';
+                if (rawPoint.date && /^\d{4}-\d{2}-\d{2}$/.test(rawPoint.date)) {
+                    dateYYYYMMDD = rawPoint.date.replace(/-/g, '');
+                } else if (rawPoint.date && /^\d{8}$/.test(rawPoint.date)) {
+                    dateYYYYMMDD = rawPoint.date; // Already YYYYMMDD
+                } else {
+                     console.warn("Unrecognized date format in rawPoint for mapping:", rawPoint.date);
+                     // Fallback or skip? For now, use an empty string or a default? Let's use empty.
+                }
+
+                return {
+                    date: dateYYYYMMDD, // Ensure YYYYMMDD format
+                    num_messages: rawPoint.num_messages ?? 0,
+                    input_tokens: rawPoint.input_tokens ?? null,
+                    output_tokens: rawPoint.output_tokens ?? null,
+                    cost: rawPoint.cost ?? null,
+                    num_sessions: rawPoint.num_sessions ?? 0,
+                };
+            },
+            (dateStrYYYYMMDD) => ({ // createZeroPoint function (already receives YYYYMMDD)
+                date: dateStrYYYYMMDD, // Use the YYYYMMDD string directly
+                num_messages: 0,
+                input_tokens: 0, // Use 0 instead of null
+                output_tokens: 0, // Use 0 instead of null
+                cost: 0, // Use 0 instead of null
+                num_sessions: 0,
+            })
+          );
+          setChartData(filledChartData); // Chart data now has YYYYMMDD dates
 
           // Set summary statistics - Map backend field names to frontend component expectations
           if (fetchedSummaryData.summary) {
@@ -382,6 +411,46 @@ const QikrAnalyticsDashboard: React.FC = () => {
       setTempDateTo(endDate); // Initialize temp state as well
     }
   }, []); // Run only on mount
+
+  // --- NEW: Effect to initialize dates from URL or defaults --- 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlStartDate = params.get('startDate');
+    const urlEndDate = params.get('endDate');
+
+    // Validate URL dates (YYYYMMDD format)
+    const dateFormatRegex = /^\d{8}$/;
+    let initialFrom = null;
+    let initialTo = null;
+
+    if (urlStartDate && urlEndDate && dateFormatRegex.test(urlStartDate) && dateFormatRegex.test(urlEndDate)) {
+        // Basic validation passed, attempt to use URL dates
+        const fromDate = parseYYYYMMDD(urlStartDate); // Use imported helper
+        const toDate = parseYYYYMMDD(urlEndDate);   // Use imported helper
+        if (fromDate && toDate && fromDate <= toDate) {
+            initialFrom = urlStartDate;
+            initialTo = urlEndDate;
+            console.log('Initialized dates from URL params:', initialFrom, initialTo);
+        }
+    }
+
+    // If URL dates are invalid or not present, use default (last 7 days)
+    if (!initialFrom || !initialTo) {
+        const today = dayjs();
+        const sevenDaysAgo = today.subtract(6, 'day'); // Subtract 6 to include today (total 7 days)
+        initialFrom = sevenDaysAgo.format('YYYYMMDD');
+        initialTo = today.format('YYYYMMDD');
+        console.log('Initialized dates with default (7 days):', initialFrom, initialTo);
+    }
+
+    // Set initial state for both search dates and temporary input dates
+    setSearchDateFrom(initialFrom);
+    setSearchDateTo(initialTo);
+    setTempDateFrom(initialFrom);
+    setTempDateTo(initialTo);
+
+  }, [location.search]); // Re-run ONLY if search params change (should only be on initial load effectively)
+  // -------------------------------------------------------------
 
   /**
    * Load data when applied date range changes
@@ -802,6 +871,7 @@ const QikrAnalyticsDashboard: React.FC = () => {
                       />
                     </div>
                     
+                    {/* --- Daily Cost Chart --- */}
                     {summaryStats?.total_cost !== null && (
                       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
                         <UsageTrendChart 
@@ -809,11 +879,11 @@ const QikrAnalyticsDashboard: React.FC = () => {
                           title="Daily Cost"
                           dataKey="cost"
                           yAxisLabel="Cost ($)"
-                          color="#82ca9d"
                         />
                       </div>
                     )}
                     
+                    {/* --- Token Usage Chart --- */}
                     {summaryStats?.total_input_tokens !== null && summaryStats?.total_output_tokens !== null && (
                       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
                         <TokenCountsChart 

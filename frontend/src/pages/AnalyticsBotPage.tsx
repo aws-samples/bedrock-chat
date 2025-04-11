@@ -15,21 +15,22 @@ import TokenCountsChart from '../components/analytics/TokenCountsChart';
 import { debounce } from 'lodash';
 import Button from '../components/Button';
 import useUser from '../hooks/useUser';
+import { fillMissingDatesWithZeros } from '../utils/chartUtils';
 
 // Define the structure for transformed chart data
 interface BotChartDataPoint {
-  date: string;
-  // Map from DailyUsage properties
+  date: string; // YYYY-MM-DD
+  // Map directly from DailyUsage properties returned by API/hook
   num_messages: number;
   num_sessions: number;
   input_tokens: number;
   output_tokens: number;
   cost: number;
-  // Additional properties for the bot view
-  total_messages: number;
-  total_cost: number;
-  total_prompt_tokens: number;
-  total_completion_tokens: number;
+  // Remove additional properties not directly available daily
+  // total_messages: number;
+  // total_cost: number;
+  // total_prompt_tokens: number;
+  // total_completion_tokens: number;
 }
 
 // Define the summary stats structure to match SummaryStats component requirements
@@ -80,48 +81,56 @@ const QikrBotAnalyticsPage: React.FC = () => {
             if (data) {
               setAnalyticsData(data);
               
-              if (data.daily_usage && data.daily_usage.length > 0) {
-                // Transform the DailyUsage data to include additional properties needed for charts
-                const transformedChartData = data.daily_usage.map(day => ({
-                  date: day.date,
-                  // Use the properties from the DailyUsage interface
-                  num_messages: day.num_messages,
-                  num_sessions: day.num_sessions,
-                  input_tokens: day.input_tokens,
-                  output_tokens: day.output_tokens,
-                  cost: day.cost || 0,
-                  // Add additional computed properties needed for the UI
-                  total_messages: day.num_messages,
-                  total_cost: day.cost || 0,
-                  total_prompt_tokens: day.input_tokens,
-                  total_completion_tokens: day.output_tokens
-                }));
-                setChartData(transformedChartData);
+              // Use the utility function to fill missing dates (now expects YYYYMMDD)
+              console.log('[AnalyticsBotPage] Calling fillMissingDatesWithZeros with dates:', from, to); // Keep YYYYMMDD
 
-                const totalMessagesFromDaily = transformedChartData.reduce((sum, day) => sum + day.num_messages, 0);
-                setSummaryStats({
-                  total_bots: 1, // Set to 1 as we're viewing a single bot
-                  total_users: data.total_users,
-                  total_sessions: data.total_sessions,
-                  total_messages: totalMessagesFromDaily,
-                  total_input_tokens: data.total_input_tokens,
-                  total_output_tokens: data.total_output_tokens,
-                  total_cost: data.total_cost,
-                  showTotalBots: false,
-                });
-              } else {
-                setChartData([]);
-                setSummaryStats({
-                  total_bots: 1, // Set to 1 as we're viewing a single bot
-                  total_users: data.total_users,
-                  total_sessions: data.total_sessions,
-                  total_messages: 0,
-                  total_input_tokens: data.total_input_tokens,
-                  total_output_tokens: data.total_output_tokens,
-                  total_cost: data.total_cost,
-                  showTotalBots: false,
-                });
-              }
+              const filledChartData = fillMissingDatesWithZeros<BotChartDataPoint>(
+                from || '', // Pass original YYYYMMDD
+                to || '',   // Pass original YYYYMMDD
+                data.daily_usage || [], // Use data from the hook
+                (rawPoint) => { // mapDataPoint function
+                    // Convert rawPoint.date (assume YYYY-MM-DD) to YYYYMMDD
+                    let dateYYYYMMDD = '';
+                    if (rawPoint.date && /^\d{4}-\d{2}-\d{2}$/.test(rawPoint.date)) {
+                        dateYYYYMMDD = rawPoint.date.replace(/-/g, '');
+                    } else if (rawPoint.date && /^\d{8}$/.test(rawPoint.date)) {
+                         dateYYYYMMDD = rawPoint.date; // Already YYYYMMDD
+                    } else {
+                         console.warn("Unrecognized date format in rawPoint for mapping:", rawPoint.date);
+                    }
+
+                    return {
+                        date: dateYYYYMMDD, // Ensure YYYYMMDD format
+                        num_messages: rawPoint.num_messages ?? 0,
+                        num_sessions: rawPoint.num_sessions ?? 0,
+                        input_tokens: rawPoint.input_tokens ?? 0,
+                        output_tokens: rawPoint.output_tokens ?? 0,
+                        cost: rawPoint.cost ?? 0,
+                    };
+                },
+                (dateStrYYYYMMDD) => ({ // createZeroPoint function (receives YYYYMMDD)
+                  date: dateStrYYYYMMDD, // Use YYYYMMDD directly
+                  num_messages: 0,
+                  num_sessions: 0,
+                  input_tokens: 0,
+                  output_tokens: 0,
+                  cost: 0,
+                })
+              );
+              setChartData(filledChartData); // Chart data now has YYYYMMDD dates
+
+              // Set summary stats - ensure this uses appropriate fields from 'data'
+              setSummaryStats({
+                total_bots: 1, // Assuming single bot view
+                total_users: data.total_users ?? 0,
+                total_sessions: data.total_sessions ?? 0,
+                total_messages: data.total_messages ?? 0,
+                total_input_tokens: data.total_input_tokens ?? 0,
+                total_output_tokens: data.total_output_tokens ?? 0,
+                total_cost: data.total_cost ?? 0,
+                showTotalBots: false,
+              });
+
               // Update last successful range only *after* a successful fetch
               lastSuccessfulDateRangeRef.current = { from, to }; 
             } else {
@@ -339,7 +348,14 @@ const QikrBotAnalyticsPage: React.FC = () => {
           />
         </div>
         <button
-          onClick={() => navigate('/analytics')}
+          onClick={() => {
+            // Check if dates are set before appending
+            if (searchDateFrom && searchDateTo) {
+              navigate(`/analytics?startDate=${searchDateFrom}&endDate=${searchDateTo}`);
+            } else {
+              navigate('/analytics'); // Fallback if no dates are set
+            }
+          }}
           className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           {t('analytics.botAnalytics.button.backToDashboard', 'Back to Dashboard')}
@@ -411,32 +427,35 @@ const QikrBotAnalyticsPage: React.FC = () => {
 
             {chartData.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <UsageTrendChart
-                  data={chartData}
-                  title={t('analytics.botAnalytics.charts.dailyMessages', 'Daily Messages')}
-                  dataKey="num_messages"
-                  yAxisLabel="Messages"
-                />
+                {/* 1. Sessions */}
                 <UsageTrendChart
                   data={chartData}
                   title={t('analytics.botAnalytics.charts.dailySessions', 'Daily Sessions')}
                   dataKey="num_sessions"
                   yAxisLabel="Sessions"
                 />
-                {summaryStats?.total_input_tokens !== null && summaryStats?.total_output_tokens !== null && (
-                  <TokenCountsChart
-                    data={chartData}
-                    title={t('analytics.botAnalytics.charts.tokenCounts', 'Daily Token Counts')}
-                    yAxisLabel="Tokens"
-                  />
-                )}
+                {/* 2. Messages */}
+                <UsageTrendChart
+                  data={chartData}
+                  title={t('analytics.botAnalytics.charts.dailyMessages', 'Daily Messages')}
+                  dataKey="num_messages"
+                  yAxisLabel="Messages"
+                />
+                {/* 3. Cost */}
                 {summaryStats?.total_cost !== null && (
                   <UsageTrendChart
                     data={chartData}
                     title={t('analytics.botAnalytics.charts.dailyCost', 'Daily Cost')}
                     dataKey="cost"
                     yAxisLabel="Cost ($)"
-                    color="#82ca9d"
+                  />
+                )}
+                {/* 4. Tokens */}
+                {summaryStats?.total_input_tokens !== null && summaryStats?.total_output_tokens !== null && (
+                  <TokenCountsChart
+                    data={chartData}
+                    title={t('analytics.botAnalytics.charts.tokenUsage', 'Token Usage')}
+                    yAxisLabel="Tokens"
                   />
                 )}
               </div>
