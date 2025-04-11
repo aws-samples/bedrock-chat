@@ -44,3 +44,6 @@ CLAUDE.md
 # Backups
 repo_backup*/
 .DS_Store
+.idea/
+.vscode/settings.json
+.gitignore

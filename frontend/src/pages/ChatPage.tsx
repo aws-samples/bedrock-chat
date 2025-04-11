@@ -24,7 +24,7 @@ import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import useSnackbar from '../hooks/useSnackbar';
 import useConversation from '../hooks/useConversation';
 import useGroup from '../hooks/useGroup';
-import { ActiveModels } from '../@types/bot';
+import { ActiveModels, BotMeta } from '../@types/bot';
 
 import { toCamelCase } from '../utils/StringUtils';
 import Alert from '../components/Alert';
@@ -109,7 +109,8 @@ const ChatPage: React.FC = () => {
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [ hasNoAssistants, setHasNoAssistants] = useState(false);
+  const [hasNoAssistants, setHasNoAssistants] = useState(false);
+  const [isKnowledgebaseCreated, setIsKnowledgebaseCreated] = useState(true);
 
 
   const botId = useMemo(() => {
@@ -127,17 +128,34 @@ const ChatPage: React.FC = () => {
     isLoading: isLoadingBot,
   } = useBotSummary(botId ?? undefined);
 
-  
+  const isWithin10Minutes = (date: Date): boolean => {
+    const currentTime = new Date();
+    const diffInMilliseconds = currentTime.getTime() - new Date(date).getTime();
+    const diffInMinutes = diffInMilliseconds / (1000 * 60);
+    return diffInMinutes >= 0 && diffInMinutes <= 10;
+  }
+
+  const isCreationProcessPending = (bot: BotMeta): boolean => {
+    if (bot && isWithin10Minutes(bot.createTime) && (bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING')) {
+      return true;
+    }
+    return false;
+  }
+
 
   useEffect(() => {
     setIsLoading(true);
     setIsAvailabilityBot(false);
     setHasNoAssistants(false);
+    setIsKnowledgebaseCreated(true);
     if (bot) {
       // retrieved bot summary
       setIsAvailabilityBot(true);
       setPageTitle(bot.title);
       setDescription(bot.description || t('bot.label.noDescription'));
+      if (isCreationProcessPending(bot)) {
+        setIsKnowledgebaseCreated(false);
+      }
     } else if (botError) {
       // failure case
       if (botError.response?.status === 404) {
@@ -159,6 +177,9 @@ const ChatPage: React.FC = () => {
         setPageTitle(starredBots[0].title);
         setDescription(starredBots[0].description || t('bot.label.noDescription'));
         setFallbackBotId(starredBots[0].id);
+        if (isCreationProcessPending(starredBots[0])) {
+          setIsKnowledgebaseCreated(false);
+        }
       } else {
         // an alert message will be displayed and input chat disabled
         setPageTitle(t('bot.alert.sync.noAvailableAssistants.title'));
@@ -400,7 +421,6 @@ const ChatPage: React.FC = () => {
       Object.keys(bot?.activeModels ?? {}).length === 0;
     return isActiveModelsEmpty ? defaultActiveModels : bot.activeModels;
   }, [bot]);
-
   return (
     <div
       className="relative flex h-full flex-1 flex-col"
@@ -489,7 +509,8 @@ const ChatPage: React.FC = () => {
 
       <div
         className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 -translate-y-1/2' : ''}`}>
-        {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
+        {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && isKnowledgebaseCreated && (
+          // Knowledge Base exists but the sync status in not SUCCEEDED
           <div className="mb-8 w-1/2">
             <Alert
               severity="warning"
@@ -504,6 +525,16 @@ const ChatPage: React.FC = () => {
               severity="warning"
               title={t('bot.alert.sync.noAvailableAssistants.title')}>
               {t('bot.alert.sync.noAvailableAssistants.body')}
+            </Alert>
+          </div>
+        )}
+        {!isKnowledgebaseCreated && (
+          // Assistant was just created and the knowledgebase has not been created yet
+          <div className="mb-8 w-1/2">
+            <Alert
+              severity="warning"
+              title={"Creating your assistant"}>
+              {"Hang tight — your assistant will be ready in 2–15 minutes. Thanks for waiting!"}
             </Alert>
           </div>
         )}
@@ -530,11 +561,9 @@ const ChatPage: React.FC = () => {
           disabledSend={postingMessage || hasError}
           disabledRegenerate={postingMessage || hasError}
           disabledContinue={postingMessage || hasError}
-          disabled={disabledInput || (pageTitle == t('bot.alert.sync.noAvailableAssistants.title'))}
+          disabled={disabledInput || hasNoAssistants || !isKnowledgebaseCreated}
           placeholder={
-            disabledInput
-              ? t('bot.label.notAvailableBotInputMessage')
-              : undefined
+            disabledInput ? t('bot.label.notAvailableBotInputMessage') : undefined
           }
           canRegenerate={messages.length > 1}
           canContinue={getShouldContinue()}

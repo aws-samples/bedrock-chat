@@ -1280,7 +1280,7 @@ const BotKbEditPage: React.FC = () => {
       activeModels,
     })
       .then(() => {
-        navigate('/bot/explore');
+        navigate('/bot/explore', { state: { showBanner: true, bannerMessage: "Creating Assistant..." } });
       })
       .catch(() => {
         setIsLoading(false);
@@ -1410,7 +1410,7 @@ const BotKbEditPage: React.FC = () => {
         activeModels,
       })
         .then(() => {
-          navigate('/bot/explore');
+          navigate('/bot/explore', { state: { showBanner: true, bannerMessage: "Updating Assistant..." } });
         })
         .catch(() => {
           setIsLoading(false);

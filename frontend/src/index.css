@@ -30,9 +30,8 @@
 .create-assistant-btn {
   min-width: 400px;
   max-width: 600px;
-  width: 40%;
-  height: 60%;
   background: white;
+  border-radius: 1.5rem;
 }
 
 .create-assistant-btn-text-box {
@@ -56,9 +55,7 @@
 }
 
 .create-assistant-btn-logo {
-  width: 20%;
-  max-width: 80px;
-  padding-right: 15px;
+  width: 50px;
 }
 
 /* *************************************** */

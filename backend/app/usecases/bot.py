@@ -461,7 +461,7 @@ def modify_owned_bot(
         updated_kb = current_bot_kb
 
 
-    compiled_instruction = applyInstructionTemplateVarReplacement(creator_id, modify_input.instruction, modify_input.group_id, modify_input.assistant_config.assistant_topics, modify_input.conversation_quick_starters)
+    compiled_instruction = applyInstructionTemplateVarReplacement(user_id, modify_input.instruction, modify_input.group_id, modify_input.assistant_config.assistant_topics, modify_input.conversation_quick_starters)
 
     update_bot(
         creator_id,

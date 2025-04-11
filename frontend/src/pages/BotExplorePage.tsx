@@ -6,7 +6,7 @@ import {
   PiTrashBold,
   PiPencilBold,
 } from 'react-icons/pi';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
 import { BotListItem, BotMeta, CreatorConfig } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
@@ -18,6 +18,7 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Toggle from '../components/Toggle';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
 import { Group } from '../@types/group';
+import Banner from '../components/Banner';
 
 const BotExplorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,10 @@ const BotExplorePage: React.FC = () => {
   const { myGroups } = useGroup();
   const [assistantList, setAssistantList] = useState<BotListItem[]>([]);
   const [groupMap, setGroupMap] = useState< Record<string, Group>>();
+  const location = useLocation();
+
+  const [showBanner] = useState(location.state?.showBanner || false);
+  const [bannerMessage] = useState(location.state?.bannerMessage || "");
 
 
   const { newChat } = useChat();
@@ -47,6 +52,13 @@ const BotExplorePage: React.FC = () => {
     // set the group list
     setGroupMap(groupMap);
   }, [myBots, myGroups])
+
+  useEffect(() => {
+    if (location.state?.showBanner) {
+      // Remove the state so it doesn’t persist on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const onClickNewBot = useCallback((assistantType: string) => {
     navigate('/bot/new', { state: { assistantType: assistantType } });
@@ -154,6 +166,7 @@ const BotExplorePage: React.FC = () => {
 
   return (
     <>
+      {showBanner && <Banner message={bannerMessage} />}
       <DialogConfirmDeleteBot
         isOpen={isOpenDeleteDialog}
         target={targetDelete}
@@ -171,11 +184,10 @@ const BotExplorePage: React.FC = () => {
         }}
       />
         <div className="relative flex h-full flex-1 flex-col">
-          <div className="flex-1 overflow-hidden assistant-list-title-and-btn-container">
             <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light dark:bg-aws-paper-dark">
               <div className="flex w-full justify-between">
                 <div className="assistant-list-create-new-assistant-div">
-                  <div className="text-xl font-bold">{"Create New Assistant"}</div>
+                  <div className="text-xl font-bold">{"Assistant List"}</div>
                 </div>
               </div>
               <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
@@ -184,17 +196,16 @@ const BotExplorePage: React.FC = () => {
             </div>
             <div className="container-bot-explore">
               <Button
-                className="text-l font-bold create-assistant-btn"
+                className="text-l font-bold create-assistant-btn p-0"
                 outlined
                 onClick={() => onClickNewBot("learning_assistant")}>
-                <img src="/images/learning_assistant.svg" className="create-assistant-btn-logo"/>
+                <img src="/images/plus_add_assistant.svg" className="create-assistant-btn-logo"/>
                 <div className="create-assistant-btn-text-box">
-                  <div className="create-assistant-btn-title">Learning Assistant</div>
+                  <div className="create-assistant-btn-title">Add Assistant</div>
                   <div className="create-assistant-btn-description">Answer student questions using provided material.</div>  
                 </div>
               </Button>
             </div>
-          </div>
           <div className="assistant-list-metrics-container">
             <div className="assistant-list-metrics-item">
                 <div className="assistant-list-metrics-value">{getNumOfCourses()}</div>
@@ -210,9 +221,6 @@ const BotExplorePage: React.FC = () => {
             </div>
         </div>
           <div className="h-3/4 w-full p-2">
-            <div className="flex w-full justify-between">
-              <div className="text-xl font-bold">{"Assistant List"}</div>
-            </div>
             <div className="mt-2 border-b border-gray"></div>
             <div className="h-5/6 overflow-x-auto overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
               <table className="assistant-list-table">
