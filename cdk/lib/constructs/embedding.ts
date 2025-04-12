@@ -571,7 +571,18 @@ export class Embedding extends Construct {
         resources: ["arn:aws:logs:*:*:*"],
       })
     )
-    props.database.grantStreamRead(removeHandlerRole);
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "dynamodb:DescribeStream",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:ListStreams",
+        ],
+        resources: [props.database.tableStreamArn!],
+      })
+    );
     props.documentBucket.grantReadWrite(removeHandlerRole);
 
     this._removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
