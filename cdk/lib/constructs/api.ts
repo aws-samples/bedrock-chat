@@ -41,8 +41,7 @@ export interface ApiProps {
   readonly usageAnalysis?: UsageAnalysis;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
-  readonly botStoreEndpoint?: string;
-  readonly conversationStoreEndpoint?: string;
+  readonly openSearchEndpoint?: string;
 }
 
 export class Api extends Construct {
@@ -264,8 +263,7 @@ export class Api extends Construct {
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
-        BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT: props.botStoreEndpoint || "",
-        CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT: props.conversationStoreEndpoint || "",
+        OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
       },

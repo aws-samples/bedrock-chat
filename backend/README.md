@@ -27,8 +27,7 @@ export DOCUMENT_BUCKET=bedrockchatstack-documentbucketxxxxxxx
 export LARGE_MESSAGE_BUCKET=bedrockchatstack-largemessagebucketxxx
 export USER_POOL_ID=xxxxxxxxx
 export CLIENT_ID=xxxxxxxxx
-export BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.amazonaws.com
-export CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.amazonaws.com
+export OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.amazonaws.com
 export DEV_ACCESS_IAM_USER_ARN=arn:aws:sts::<account id>:user/<user name>
 ```
 

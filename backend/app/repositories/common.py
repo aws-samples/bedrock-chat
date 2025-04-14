@@ -13,12 +13,8 @@ ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
-BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT = os.environ.get(
-    "BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT"
-)
-
-CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT = os.environ.get(
-    "CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT"
+OPENSEARCH_DOMAIN_ENDPOINT = os.environ.get(
+    "OPENSEARCH_DOMAIN_ENDPOINT",
 )
 
 # DynamoDB batch operation limits
@@ -182,17 +178,12 @@ def get_opensearch_client(collection_type: str = "bot") -> OpenSearch:
 
     Args:
         collection_type: Type of collection to connect to ("bot" or "conversation")
+        Note: This method now uses a single shared endpoint for both bot and conversation collections
     """
-    if collection_type == "bot":
-        endpoint = BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT
-        if not endpoint:
-            raise ValueError("BOT_STORE_OPENSEARCH_DOMAIN_ENDPOINT is not set")
-    elif collection_type == "conversation":
-        endpoint = CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT
-        if not endpoint:
-            raise ValueError("CONVERSATION_STORE_OPENSEARCH_DOMAIN_ENDPOINT is not set")
-    else:
-        raise ValueError(f"Unknown collection type: {collection_type}")
+    # 統合されたエンドポイントを使用
+    endpoint = OPENSEARCH_DOMAIN_ENDPOINT
+    if not endpoint:
+        raise ValueError("OPENSEARCH_DOMAIN_ENDPOINT is not set")
 
     # Get credentials from boto3
     credentials = boto3.Session().get_credentials()

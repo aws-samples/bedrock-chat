@@ -8,7 +8,6 @@ import {
   BlockPublicAccess,
   Bucket,
   BucketEncryption,
-  HttpMethods,
   ObjectOwnership,
 } from "aws-cdk-lib/aws-s3";
 import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
@@ -28,6 +27,7 @@ export type Language = z.infer<typeof BotStoreLanguageSchema>;
 export interface BotStoreProps {
   envPrefix: string;
   readonly botTable: dynamodb.ITable;
+  readonly conversationTable: dynamodb.ITable;
   readonly useStandbyReplicas: boolean;
   readonly language: Language;
 }
@@ -118,6 +118,13 @@ export class BotStore extends Construct {
       retention: logs.RetentionDays.ONE_WEEK,
     });
 
+    let conversationIngestionLogGroup = new logs.LogGroup(this, "ConversationIngensionLogGroup", {
+      logGroupName:
+        `/aws/vendedlogs/OpenSearchIngestion/${props.envPrefix}conversation-table-osis-pipeline/${id}`.toLowerCase(),
+      removalPolicy: RemovalPolicy.DESTROY,
+      retention: logs.RetentionDays.ONE_WEEK,
+    });
+
     const osisRole = new Role(this, "OsisRole", {
       assumedBy: new ServicePrincipal("osis-pipelines.amazonaws.com"),
     });
@@ -131,13 +138,19 @@ export class BotStore extends Construct {
             "dynamodb:DescribeContinuousBackups",
             "dynamodb:ExportTableToPointInTime",
           ],
-          resources: [props.botTable.tableArn],
+          resources: [
+            props.botTable.tableArn,
+            props.conversationTable.tableArn
+          ] 
         }),
         new PolicyStatement({
           sid: "allowCheckExportjob",
           effect: Effect.ALLOW,
           actions: ["dynamodb:DescribeExport"],
-          resources: [`${props.botTable.tableArn}/export/*`],
+          resources: [
+            `${props.botTable.tableArn}/export/*`,
+            `${props.conversationTable.tableArn}/export/*`
+          ]
         }),
         new PolicyStatement({
           sid: "allowReadFromStream",
@@ -147,7 +160,10 @@ export class BotStore extends Construct {
             "dynamodb:GetRecords",
             "dynamodb:GetShardIterator",
           ],
-          resources: [`${props.botTable.tableArn}/stream/*`],
+          resources: [
+            `${props.botTable.tableArn}/stream/*`,
+            `${props.conversationTable.tableArn}/stream/*`
+          ]
         }),
         new PolicyStatement({
           sid: "allowReadAndWriteToS3ForExport",
@@ -311,6 +327,88 @@ export class BotStore extends Construct {
       pipelineConfigurationBody: JSON.stringify(osisPipelineConfig),
     });
 
+    const conversationOsisPipelineConfig = {
+      version: "2",
+      "dynamodb-pipeline": {
+        source: {
+          dynamodb: {
+            acknowledgments: true,
+            tables: [
+              {
+                table_arn: props.conversationTable.tableArn,
+                stream: {
+                  start_position: "LATEST",
+                },
+                export: {
+                  s3_bucket: bucket.bucketName,
+                  s3_region: Stack.of(this).region,
+                },
+              },
+            ],
+            aws: {
+              sts_role_arn: osisRole.roleArn,
+              region: Stack.of(this).region,
+            },
+          },
+        },
+        processor: [
+          {
+            parse_json: {
+              source: "MessageMap",
+              destination: "ParsedMessageMap",
+              overwrite_if_destination_exists: true,
+              delete_source: false
+            }
+          }
+        ],
+        sink: [
+          {
+            opensearch: {
+              hosts: [endpoint],
+              index: `${props.envPrefix}conversation`,
+              ...(props.language === "en"
+                ? {} // For en, index_type, template_type, template_content are not required
+                : {
+                    index_type: "custom",
+                    template_type: "index-template",
+                    template_content: this.genConversationTemplateContent(props.language),
+                  }),
+              document_id: '${getMetadata("primary_key")}',
+              action: '${getMetadata("opensearch_action")}',
+              document_version: '${getMetadata("document_version")}',
+              document_version_type: "external",
+              aws: {
+                sts_role_arn: osisRole.roleArn,
+                region: Stack.of(this).region,
+                serverless: true,
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    // Conversation用パイプライン
+    new osis.CfnPipeline(this, "ConversationOsisPipeline", {
+      pipelineName: generatePhysicalName(
+        this,
+        `${props.envPrefix}ConversationPipeline`,
+        {
+          maxLength: 25,
+          lower: true,
+        }
+      ),
+      minUnits: 1,
+      maxUnits: 4,
+      logPublishingOptions: {
+        isLoggingEnabled: true,
+        cloudWatchLogDestination: {
+          logGroup: conversationIngestionLogGroup.logGroupName,
+        },
+      },
+      pipelineConfigurationBody: JSON.stringify(conversationOsisPipelineConfig),
+    });
+
     new CfnOutput(this, "OpenSearchEndpoint", {
       value: endpoint,
     });
@@ -346,6 +444,143 @@ export class BotStore extends Construct {
 
       default:
         throw new Error(`Unsupported language: ${language}`);
+    }
+  }
+
+  // 会話テーブル用のテンプレートコンテンツ
+  private genConversationTemplateContent(language: Language): string {
+    switch (language) {
+      case "ja":
+        return JSON.stringify({
+          template: {
+            settings: {
+              analysis: {
+                analyzer: {
+                  ja_analyzer: {
+                    type: "custom",
+                    char_filter: ["icu_normalizer"],
+                    tokenizer: "kuromoji_tokenizer",
+                    filter: [
+                      "kuromoji_baseform",
+                      "kuromoji_part_of_speech",
+                      "ja_stop",
+                      "kuromoji_number",
+                      "kuromoji_stemmer",
+                    ],
+                  },
+                },
+              }
+            },
+            mappings: {
+              properties: {
+                title: {
+                  type: "text",
+                  analyzer: "ja_analyzer",
+                },
+                messages: {
+                  type: "nested",
+                  properties: {
+                    content: {
+                      type: "text",
+                      analyzer: "ja_analyzer",
+                    },
+                  },
+                },
+                createTime: {
+                  type: "date",
+                },
+                updateTime: {
+                  type: "date",
+                },
+                MessageMap: {
+                  type: "text",
+                  analyzer: "ja_analyzer",
+                },
+                ParsedMessageMap: {
+                  type: "object",
+                  enabled: true,
+                  properties: {
+                    "*": {
+                      properties: {
+                        role: { type: "keyword" },
+                        content: { 
+                          properties: {
+                            "*": {
+                              properties: {
+                                content_type: { type: "keyword" },
+                                body: { 
+                                  type: "text",
+                                  analyzer: "ja_analyzer" 
+                                }
+                              }
+                            }
+                          }
+                        },
+                        model: { type: "keyword" },
+                        create_time: { type: "date" }
+                      }
+                    }
+                  }
+                }
+              },
+            },
+          },
+        });
+
+      default:
+        return JSON.stringify({
+          template: {
+            settings: {
+            },
+            mappings: {
+              properties: {
+                title: {
+                  type: "text",
+                },
+                messages: {
+                  type: "nested",
+                  properties: {
+                    content: {
+                      type: "text",
+                    },
+                  },
+                },
+                createTime: {
+                  type: "date",
+                },
+                updateTime: {
+                  type: "date",
+                },
+                MessageMap: {
+                  type: "text",
+                },
+                ParsedMessageMap: {
+                  type: "object",
+                  enabled: true,
+                  properties: {
+                    "*": {
+                      properties: {
+                        role: { type: "keyword" },
+                        content: { 
+                          properties: {
+                            "*": {
+                              properties: {
+                                content_type: { type: "keyword" },
+                                body: { type: "text" }
+                              }
+                            }
+                          }
+                        },
+                        model: { type: "keyword" },
+                        create_time: { type: "date" }
+                      }
+                    }
+                  }
+                }
+              },
+            },
+          },
+        });
     }
   }
 

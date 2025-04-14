@@ -24,7 +24,6 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
 import { BotStore, Language } from "./constructs/bot-store";
-import { ConversationStore } from "./constructs/conversation-store";
 import { Duration } from "aws-cdk-lib";
 
 export interface BedrockChatStackProps extends StackProps {
@@ -174,18 +173,11 @@ export class BedrockChatStack extends cdk.Stack {
       botStore = new BotStore(this, "BotStore", {
         envPrefix: props.envPrefix,
         botTable: database.botTable,
+        conversationTable: database.conversationTable,
         useStandbyReplicas: props.useStandbyReplicas,
         language: props.botStoreLanguage,
       });
     }
-
-    // Conversation Store for search
-    const conversationStore = new ConversationStore(this, "ConversationStore", {
-      envPrefix: props.envPrefix,
-      conversationTable: database.conversationTable,
-      useStandbyReplicas: props.useStandbyReplicas,
-      language: props.botStoreLanguage,
-    });
 
     const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
       envPrefix: props.envPrefix,
@@ -207,23 +199,13 @@ export class BedrockChatStack extends cdk.Stack {
       enableBedrockCrossRegionInference:
         props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
-      botStoreEndpoint: botStore?.openSearchEndpoint,
-      conversationStoreEndpoint: conversationStore.openSearchEndpoint,
+      openSearchEndpoint: botStore?.openSearchEndpoint,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
     // Add permissions to API handler for BotStore
     botStore?.addDataAccessPolicy(
       props.envPrefix,
       "DAPolicyApiHandler",
-      backendApi.handler.role!,
-      ["aoss:DescribeCollectionItems"],
-      ["aoss:DescribeIndex", "aoss:ReadDocument"]
-    );
-    
-    // Add permissions to API handler for ConversationStore
-    conversationStore.addDataAccessPolicy(
-      props.envPrefix,
-      "ConversationDAPolicyApiHandler",
       backendApi.handler.role!,
       ["aoss:DescribeCollectionItems"],
       ["aoss:DescribeIndex", "aoss:ReadDocument"]
@@ -237,27 +219,6 @@ export class BedrockChatStack extends cdk.Stack {
       botStore?.addDataAccessPolicy(
         props.envPrefix,
         "DAPolicyDevAccess",
-        devAccessArn,
-        [
-          "aoss:DescribeCollectionItems",
-          "aoss:CreateCollectionItems", 
-          "aoss:DeleteCollectionItems",
-          "aoss:UpdateCollectionItems"
-        ],
-        [
-          "aoss:DescribeIndex", 
-          "aoss:ReadDocument", 
-          "aoss:WriteDocument",
-          "aoss:CreateIndex",
-          "aoss:DeleteIndex",
-          "aoss:UpdateIndex"
-        ]
-      );
-
-      // Access to ConversationStore
-      conversationStore.addDataAccessPolicy(
-        props.envPrefix,
-        "ConversationDAPolicyDevAccess",
         devAccessArn,
         [
           "aoss:DescribeCollectionItems",
