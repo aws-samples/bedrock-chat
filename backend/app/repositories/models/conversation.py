@@ -42,6 +42,7 @@ from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import ToolRunResult
 
+
 class TextContentModel(BaseModel):
     content_type: Literal["text"]
     body: str = Field(
