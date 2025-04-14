@@ -20,6 +20,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
@@ -219,7 +220,7 @@ export class BedrockChatStack extends cdk.Stack {
       botStore?.addDataAccessPolicy(
         props.envPrefix,
         "DAPolicyDevAccess",
-        props.devAccessIamRoleArn,
+        iam.Role.fromRoleArn(this, "DevAccessIamRoleArn", props.devAccessIamRoleArn),
         [
           "aoss:DescribeCollectionItems",
           "aoss:CreateCollectionItems", 

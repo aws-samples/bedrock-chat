@@ -343,7 +343,7 @@ export class BotStore extends Construct {
   public addDataAccessPolicy(
     envPrefix: string,
     id: string,
-    principal: IRole | string,
+    principal: IRole,
     collectionPermissions: string[],
     indexPermissions: string[]
   ): void {
@@ -374,7 +374,7 @@ export class BotStore extends Construct {
               Permission: indexPermissions,
             },
           ],
-          Principal: [typeof principal === 'string' ? principal : principal.roleArn],
+          Principal: [principal.roleArn],
         },
       ]),
     });

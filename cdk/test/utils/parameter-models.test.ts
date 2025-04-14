@@ -178,6 +178,7 @@ describe("resolveBedrockChatParameters", () => {
         enableLambdaSnapStart: false,
         alternateDomainName: "chat.example.com",
         hostedZoneId: "Z1234567890",
+        devAccessIamRoleArn: "arn:aws:iam::123456789012:role/Admin",
       };
 
       // When
@@ -205,6 +206,7 @@ describe("resolveBedrockChatParameters", () => {
       expect(result.enableLambdaSnapStart).toBe(false);
       expect(result.alternateDomainName).toBe("chat.example.com");
       expect(result.hostedZoneId).toBe("Z1234567890");
+      expect(result.devAccessIamRoleArn).toBe("arn:aws:iam::123456789012:role/Admin")
     });
 
     test("should throw ZodError when invalid parameter is specified", () => {
@@ -319,6 +321,7 @@ describe("resolveBedrockChatParameters", () => {
       enableLambdaSnapStart: true,
       alternateDomainName: "",
       hostedZoneId: "",
+      devAccessIamRoleArn: "",
     });
 
     // When
@@ -352,6 +355,7 @@ describe("resolveBedrockChatParameters", () => {
     expect(result.enableLambdaSnapStart).toBe(true);
     expect(result.alternateDomainName).toBe("");
     expect(result.hostedZoneId).toBe("");
+    expect(result.devAccessIamRoleArn).toBe("");
   });
 });
 
