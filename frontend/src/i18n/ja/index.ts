@@ -559,8 +559,8 @@ const translation: typeof en = {
       search: {
         placeholder: 'ボットを検索する',
         searching: '検索中...',
-        results: '"{{query}}"の検索結果：{{count}}件',
-        noResults: '"{{query}}"に一致する結果はありません',
+        results: '"{{query}}"にマッチするボットが{{count}}件見つかりました',
+        noResults: '"{{query}}"にマッチするボットは見つかりませんでした',
         tryDifferent: '別のキーワードで検索してください。',
         backToHome: 'ホームに戻る',
       },
@@ -593,11 +593,10 @@ const translation: typeof en = {
       search: {
         placeholder: '会話を検索...',
         searching: '検索中...',
-        resultsTitle: '検索結果',
-        queryLabel: '検索キーワード',
-        noResults: '会話が見つかりませんでした',
+        results: ' "{{query}}"にマッチしたチャットが{{count}}件見つかりました',
+        noResults: '{{query}}にマッチするチャットが見つかりませんでした',
         tryDifferentKeywords: '別のキーワードで試してください',
-        resultsCount: '{{count}}件の検索結果'
+        resultsCount: '{{count}}件の検索結果',
       },
     },
     deleteDialog: {
@@ -638,8 +637,7 @@ const translation: typeof en = {
           label: '要求に応えていない',
         },
         {
-          value:
-           'other',
+          value: 'other',
           label: 'その他',
         },
       ],

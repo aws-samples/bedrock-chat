@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react';
 import Help from '../components/Help';
 import { TooltipDirection } from '../constants';
 import Skeleton from '../components/Skeleton';
-import { twMerge } from 'tailwind-merge';
 
 type Props = {
   pageTitle: string;
@@ -20,7 +19,7 @@ const ListPageLayout: React.FC<Props> = (props) => {
     <div className="flex h-full justify-center">
       <div className="w-full max-w-screen-xl px-4 lg:w-4/5">
         <div className="size-full pt-8">
-          <div className="relative flex flex-col">
+          <div className="flex justify-between">
             <div className="flex items-center gap-2">
               <div className="text-xl font-bold">{props.pageTitle}</div>
               {props.pageTitleHelp && (
@@ -30,21 +29,11 @@ const ListPageLayout: React.FC<Props> = (props) => {
                 />
               )}
             </div>
-
-            {props.searchCondition && (
-              <div className="my-2">{props.searchCondition}</div>
-            )}
-            {props.pageTitleActions && (
-              <div
-                className={twMerge(
-                  props.searchCondition
-                    ? 'flex justify-end'
-                    : 'absolute right-0'
-                )}>
-                {props.pageTitleActions}
-              </div>
-            )}
+            {props.pageTitleActions && <div>{props.pageTitleActions}</div>}
           </div>
+          {props.searchCondition && (
+            <div className="my-2">{props.searchCondition}</div>
+          )}
           <div className="mt-2 border-b border-gray"></div>
 
           <div className="-mr-2 h-[calc(100%-3rem)] overflow-x-auto overflow-y-scroll border-gray scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">

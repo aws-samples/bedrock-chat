@@ -1,6 +1,13 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PiCheck, PiMagnifyingGlass, PiPencilLine, PiPlus, PiTrash, PiX } from 'react-icons/pi';
+import {
+  PiCheck,
+  PiMagnifyingGlass,
+  PiPencilLine,
+  PiPlus,
+  PiTrash,
+  PiX,
+} from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useConversation from '../hooks/useConversation';
 import useConversationSearch from '../hooks/useConversationSearch';
@@ -33,7 +40,7 @@ const ConversationHistoryPage: React.FC = () => {
     updateTitle,
     isLoadingConversations,
   } = useConversation();
-  
+
   // Search hook
   const {
     searchResults,
@@ -167,27 +174,29 @@ const ConversationHistoryPage: React.FC = () => {
             {t('button.newChat')}
           </Button>
         }
+        searchCondition={
+          <div className="relative mb-2">
+            <InputText
+              icon={<PiMagnifyingGlass />}
+              placeholder={t(
+                'conversationHistory.search.placeholder',
+                'Search conversations...'
+              )}
+              value={inputValue}
+              onChange={handleInputChange}
+            />
+            {inputValue && (
+              <button
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-dark-gray"
+                onClick={handleClearSearch}>
+                <PiX size={20} />
+              </button>
+            )}
+          </div>
+        }
         isLoading={isLoadingConversations && !hasSearched}
         isEmpty={conversations?.length === 0 && !hasSearched}
         emptyMessage={t('conversationHistory.label.noConversations')}>
-        
-        {/* Search input field */}
-        <div className="relative mb-4">
-          <InputText
-            icon={<PiMagnifyingGlass />}
-            placeholder={t('conversationHistory.search.placeholder', 'Search conversations...')}
-            value={inputValue}
-            onChange={handleInputChange}
-          />
-          {inputValue && (
-            <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray hover:text-dark-gray"
-              onClick={handleClearSearch}>
-              <PiX size={20} />
-            </button>
-          )}
-        </div>
-
         {/* Search results */}
         <ConversationSearchResults
           results={searchResults}
@@ -199,63 +208,64 @@ const ConversationHistoryPage: React.FC = () => {
         />
 
         {/* Regular conversation list (hidden during search) */}
-        {!hasSearched && conversations?.map((conversation) => (
-          <div
-            key={conversation.id}
-            className="group flex cursor-pointer items-center justify-between border-b border-gray p-2 hover:bg-light-gray"
-            onClick={() => onClickConversation(conversation.id)}>
-            <div className="flex flex-col">
-              {editingConversationId === conversation.id ? (
-                <div
-                  className="flex items-center"
-                  onClick={(e) => e.stopPropagation()}>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    className="w-64 bg-transparent text-base"
-                    value={tempTitle}
-                    onChange={(e) => setTempTitle(e.target.value)}
-                  />
-                  <ButtonIcon
-                    className="text-base"
-                    onClick={() => onUpdateTitle(conversation.id, tempTitle)}
-                    disabled={
-                      !tempTitle.trim() ||
-                      tempTitle.trim() === conversation.title
-                    }>
-                    <PiCheck />
-                  </ButtonIcon>
-                  <ButtonIcon
-                    className="text-base"
-                    onClick={() => setEditingConversationId(null)}>
-                    <PiX />
-                  </ButtonIcon>
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <div className="text-base font-medium">
-                    {conversation.title}
+        {!hasSearched &&
+          conversations?.map((conversation) => (
+            <div
+              key={conversation.id}
+              className="group flex cursor-pointer items-center justify-between border-b border-gray p-2 hover:bg-light-gray"
+              onClick={() => onClickConversation(conversation.id)}>
+              <div className="flex flex-col">
+                {editingConversationId === conversation.id ? (
+                  <div
+                    className="flex items-center"
+                    onClick={(e) => e.stopPropagation()}>
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      className="w-64 bg-transparent text-base"
+                      value={tempTitle}
+                      onChange={(e) => setTempTitle(e.target.value)}
+                    />
+                    <ButtonIcon
+                      className="text-base"
+                      onClick={() => onUpdateTitle(conversation.id, tempTitle)}
+                      disabled={
+                        !tempTitle.trim() ||
+                        tempTitle.trim() === conversation.title
+                      }>
+                      <PiCheck />
+                    </ButtonIcon>
+                    <ButtonIcon
+                      className="text-base"
+                      onClick={() => setEditingConversationId(null)}>
+                      <PiX />
+                    </ButtonIcon>
                   </div>
-                  <ButtonIcon
-                    className="-my-2 mr-6 opacity-0 group-hover:opacity-100"
-                    onClick={(e) => onClickEdit(e, conversation)}>
-                    <PiPencilLine />
+                ) : (
+                  <div className="flex items-center">
+                    <div className="text-base font-medium">
+                      {conversation.title}
+                    </div>
+                    <ButtonIcon
+                      className="-my-2 mr-6 opacity-0 group-hover:opacity-100"
+                      onClick={(e) => onClickEdit(e, conversation)}>
+                      <PiPencilLine />
+                    </ButtonIcon>
+                  </div>
+                )}
+                <div className="text-xs text-gray">
+                  {formatDate(conversation.createTime)}
+                </div>
+              </div>
+              {editingConversationId !== conversation.id && (
+                <div className="flex items-center opacity-0 group-hover:opacity-100">
+                  <ButtonIcon onClick={(e) => onClickDelete(e, conversation)}>
+                    <PiTrash />
                   </ButtonIcon>
                 </div>
               )}
-              <div className="text-xs text-gray">
-                {formatDate(conversation.createTime)}
-              </div>
             </div>
-            {editingConversationId !== conversation.id && (
-              <div className="flex items-center opacity-0 group-hover:opacity-100">
-                <ButtonIcon onClick={(e) => onClickDelete(e, conversation)}>
-                  <PiTrash />
-                </ButtonIcon>
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
       </ListPageLayout>
     </>
   );
