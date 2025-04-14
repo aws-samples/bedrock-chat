@@ -58,65 +58,69 @@ const AdminSharedBotAnalyticsPage: React.FC = () => {
     <ListPageLayout
       pageTitle={t('admin.botAnalytics.label.pageTitle')}
       pageTitleHelp={t('admin.botAnalytics.help.overview')}
-      pageTitleActions={
-        <Button
-          outlined
-          rightIcon={
-            <PiArrowDown
-              className={twMerge(
-                'transition',
-                isDescCost ? 'rotate-0' : 'rotate-180'
-              )}
-            />
-          }
-          onClick={() => {
-            setIsDescCost(!isDescCost);
-          }}>
-          {t('admin.botAnalytics.label.sortByCost')}
-        </Button>
-      }
       searchCondition={
-        <div className="rounded border p-2">
-          <div className="flex items-center gap-1 text-sm font-bold">
-            {t('admin.botAnalytics.label.SearchCondition.title')}
-            <Help message={t('admin.botAnalytics.help.calculationPeriod')} />
-          </div>
+        <div>
+          <div className="rounded border p-2">
+            <div className="flex items-center gap-1 text-sm font-bold">
+              {t('admin.botAnalytics.label.SearchCondition.title')}
+              <Help message={t('admin.botAnalytics.help.calculationPeriod')} />
+            </div>
 
-          <div className="flex gap-2 sm:w-full md:w-3/4">
-            <InputText
-              className="w-full"
-              type="date"
-              label={t('admin.botAnalytics.label.SearchCondition.from')}
-              value={formatDate(searchDateFrom, 'YYYY-MM-DD')}
-              onChange={(val) => {
-                if (val === '') {
-                  setSearchDateFrom(null);
-                  return;
+            <div className="flex gap-2 sm:w-full md:w-3/4">
+              <InputText
+                className="w-full"
+                type="date"
+                label={t('admin.botAnalytics.label.SearchCondition.from')}
+                value={formatDate(searchDateFrom, 'YYYY-MM-DD')}
+                onChange={(val) => {
+                  if (val === '') {
+                    setSearchDateFrom(null);
+                    return;
+                  }
+                  setSearchDateFrom(formatDate(val, DATA_FORMAT));
+                }}
+                errorMessage={
+                  searchDateFrom
+                    ? undefined
+                    : (validationErrorMessage ?? undefined)
                 }
-                setSearchDateFrom(formatDate(val, DATA_FORMAT));
-              }}
-              errorMessage={
-                searchDateFrom
-                  ? undefined
-                  : (validationErrorMessage ?? undefined)
-              }
-            />
-            <InputText
-              className="w-full"
-              type="date"
-              label={t('admin.botAnalytics.label.SearchCondition.to')}
-              value={formatDate(searchDateTo, 'YYYY-MM-DD')}
-              onChange={(val) => {
-                if (val === '') {
-                  setSearchDateTo(null);
-                  return;
+              />
+              <InputText
+                className="w-full"
+                type="date"
+                label={t('admin.botAnalytics.label.SearchCondition.to')}
+                value={formatDate(searchDateTo, 'YYYY-MM-DD')}
+                onChange={(val) => {
+                  if (val === '') {
+                    setSearchDateTo(null);
+                    return;
+                  }
+                  setSearchDateTo(formatDate(val, DATA_FORMAT));
+                }}
+                errorMessage={
+                  searchDateTo
+                    ? undefined
+                    : (validationErrorMessage ?? undefined)
                 }
-                setSearchDateTo(formatDate(val, DATA_FORMAT));
-              }}
-              errorMessage={
-                searchDateTo ? undefined : (validationErrorMessage ?? undefined)
+              />
+            </div>
+          </div>
+          <div className="mt-2 flex justify-end">
+            <Button
+              outlined
+              rightIcon={
+                <PiArrowDown
+                  className={twMerge(
+                    'transition',
+                    isDescCost ? 'rotate-0' : 'rotate-180'
+                  )}
+                />
               }
-            />
+              onClick={() => {
+                setIsDescCost(!isDescCost);
+              }}>
+              {t('admin.botAnalytics.label.sortByCost')}
+            </Button>
           </div>
         </div>
       }

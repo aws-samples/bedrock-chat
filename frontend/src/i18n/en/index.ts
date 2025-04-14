@@ -587,11 +587,10 @@ How would you categorize this email?`,
       searchConversation: {
         placeholder: 'Search conversations...',
         searching: 'Searching...',
-        resultsTitle: 'Search Results',
-        queryLabel: 'Query',
-        noResults: 'No conversations found',
+        results: 'Found {{count}} chats matching "{{query}}"',
+        noResults: 'No chats matching for "{{query}}"',
         tryDifferentKeywords: 'Try different keywords',
-        resultsCount: '{{count}} results found'
+        resultsCount: '{{count}} results found',
       },
     },
     deleteDialog: {
