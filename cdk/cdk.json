@@ -74,6 +74,7 @@
     "botStoreLanguage": "en",
     "tokenValidMinutes": 30,
     "alternateDomainName": "",
-    "hostedZoneId": ""
+    "hostedZoneId": "",
+    "devAccessIamRoleArn": ""
   }
 }

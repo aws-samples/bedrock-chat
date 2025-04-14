@@ -99,6 +99,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
 
   // ID token refresh interval
   tokenValidMinutes: z.number().default(30),
+
+  // debug parameter
+  devAccessIamRoleArn: z.string().default("")
 });
 
 /**
@@ -218,6 +221,7 @@ export function resolveBedrockChatParameters(
     enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
+    devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
 
   return BedrockChatParametersSchema.parse(contextParams);

@@ -28,7 +28,14 @@ export LARGE_MESSAGE_BUCKET=bedrockchatstack-largemessagebucketxxx
 export USER_POOL_ID=xxxxxxxxx
 export CLIENT_ID=xxxxxxxxx
 export OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.amazonaws.com
-export DEV_ACCESS_IAM_USER_ARN=arn:aws:sts::<account id>:user/<user name>
+```
+
+- Configure CDK configration.
+Local development requires OpenSearch data access permissions for the IAM role to be used.
+
+```
+[cdk/cdk.json]
+"devAccessIamRoleArn": "arn:aws:iam::123456789012:role/<role name>"
 ```
 
 ## Launch local server

@@ -1,26 +1,22 @@
 import { useState, useCallback } from 'react';
-import { ConversationMeta } from '../@types/conversation';
 import { useDebounce } from 'use-debounce';
-import useHttp from './useHttp';
+import useConversationSearchApi from './useConversationSearchApi';
 
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 300;
 
 export function useConversationSearch() {
-  const http = useHttp();
+  const conversationSearchApi = useConversationSearchApi();
   const [searchQuery, setSearchQuery] = useState('');
   const [displayQuery, setDisplayQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [debouncedQuery] = useDebounce(searchQuery, DEBOUNCE_DELAY);
 
-  // Fetch search results using SWR
   const {
     data: searchResults,
     isLoading: isSearching,
     mutate: mutateSearchResults,
-  } = http.get<ConversationMeta[]>(
-    hasSearched && debouncedQuery ? `conversations/search?query=${encodeURIComponent(debouncedQuery)}` : null
-  );
+  } = conversationSearchApi.searchConversations(hasSearched && debouncedQuery ? debouncedQuery : null);
 
   // Execute search when debouncedQuery changes
   const handleSearch = useCallback(

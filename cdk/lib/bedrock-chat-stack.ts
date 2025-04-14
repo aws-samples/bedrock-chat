@@ -48,6 +48,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly tokenValidMinutes: number;
   readonly alternateDomainName?: string;
   readonly hostedZoneId?: string;
+  readonly devAccessIamRoleArn?: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -213,13 +214,12 @@ export class BedrockChatStack extends cdk.Stack {
     
     // Add data access policy for developers
     // Get IAM user/role ARN from environment variables
-    const devAccessArn = process.env.DEV_ACCESS_IAM_USER_ARN || "";
-    if (devAccessArn) {
+    if (props.devAccessIamRoleArn) {
       // Access to BotStore
       botStore?.addDataAccessPolicy(
         props.envPrefix,
         "DAPolicyDevAccess",
-        devAccessArn,
+        props.devAccessIamRoleArn,
         [
           "aoss:DescribeCollectionItems",
           "aoss:CreateCollectionItems", 

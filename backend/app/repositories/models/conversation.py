@@ -42,9 +42,6 @@ from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import ToolRunResult
 
-DEFAULT_MODEL = "claude-v3.5-haiku"
-
-
 class TextContentModel(BaseModel):
     content_type: Literal["text"]
     body: str = Field(
@@ -720,6 +717,7 @@ class ConversationMeta(BaseModel):
     def from_opensearch_response(cls, hit: dict) -> Self:
         """Create a ConversationMeta instance from OpenSearch response"""
         source = hit["_source"]
+        default_mode = "claude-v3.5-haiku"
 
         # Extract conversation ID from SK (e.g. "{user_id}#CONV#{conversation_id}" -> "{conversation_id}")
         sk = source.get("SK", "")
@@ -731,11 +729,11 @@ class ConversationMeta(BaseModel):
             message_map_str = source.get("MessageMap", "{}")
             message_map = json.loads(message_map_str)
             system = message_map["system"]
-            system.get("model", DEFAULT_MODEL)
+            system.get("model", default_mode)
 
         except (json.JSONDecodeError, TypeError):
             # In case of any error during JSON parsing, default to empty string
-            model = DEFAULT_MODEL
+            model = default_mode
 
         # Create conversation meta instance
         conversation = cls(
