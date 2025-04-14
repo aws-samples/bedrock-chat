@@ -175,7 +175,7 @@ const ConversationHistoryPage: React.FC = () => {
         <div className="relative mb-4">
           <InputText
             icon={<PiMagnifyingGlass />}
-            placeholder={t('conversationHistory.search.placeholder', 'Search conversations...')}
+            placeholder={t('conversationHistory.searchConversation.placeholder', 'Search conversations...')}
             value={inputValue}
             onChange={handleInputChange}
           />
@@ -194,7 +194,7 @@ const ConversationHistoryPage: React.FC = () => {
           isSearching={isSearching}
           hasSearched={hasSearched}
           searchQuery={displayQuery}
-          onBackToHistory={handleClearSearch}
+          onbackToConversationHistory={handleClearSearch}
           onSelectConversation={onClickConversation}
         />
 

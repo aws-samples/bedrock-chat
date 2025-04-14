@@ -22,7 +22,7 @@ const highlightSearchTerms = (text: string, searchQuery: string): string => {
   const regex = new RegExp(`(${escapedQuery})`, 'gi');
   
   // Replace matches with highlighted version
-  return text.replace(regex, '<mark class="bg-light-yellow dark:bg-yellow">$1</mark>');
+  return text.replace(regex, '<mark class="bg-light-yellow dark:bg-light-yellow">$1</mark>');
 };
 
 export const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onClick, searchQuery }) => {
@@ -57,7 +57,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({ conversation
                   dangerouslySetInnerHTML={{ 
                     __html: `...${fragment}...`
                   }}
-                  className="[&_em]:bg-light-yellow [&_em]:dark:bg-yellow"
+                  className="[&_em]:bg-light-yellow [&_em]:dark:bg-light-yellow"
                 />
               </div>
             ))}
@@ -98,7 +98,7 @@ type ConversationSearchResultsProps = {
   isSearching: boolean;
   hasSearched: boolean;
   searchQuery: string;
-  onBackToHistory: () => void;
+  onbackToConversationHistory: () => void;
   onSelectConversation: (id: string) => void;
 };
 
@@ -107,7 +107,7 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
   isSearching,
   hasSearched,
   searchQuery,
-  onBackToHistory,
+  onbackToConversationHistory,
   onSelectConversation,
 }) => {
   const { t } = useTranslation();
@@ -122,14 +122,14 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center text-2xl font-bold">
             <PiMagnifyingGlass className="mr-2" />
-            {t('conversationHistory.search.searching', 'Searching...')}
+            {t('conversationHistory.searchConversation.searching', 'Searching...')}
           </div>
           <Button
             className="text-sm"
             outlined
             icon={<PiArrowLeft />}
-            onClick={onBackToHistory}>
-            {t('button.backToHistory', 'Back to History')}
+            onClick={onbackToConversationHistory}>
+            {t('button.backToConversationHistory', 'Back to History')}
           </Button>
         </div>
         <div className="mt-4 space-y-2">
@@ -147,31 +147,31 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center text-2xl font-bold">
             <PiMagnifyingGlass className="mr-2" />
-            {t('conversationHistory.search.resultsTitle', 'Search Results')}
+            {t('conversationHistory.searchConversation.resultsTitle', 'Search Results')}
           </div>
           <Button
             className="text-sm"
             outlined
             icon={<PiArrowLeft />}
-            onClick={onBackToHistory}>
-            {t('button.backToHistory', 'Back to History')}
+            onClick={onbackToConversationHistory}>
+            {t('button.backToConversationHistory', 'Back to History')}
           </Button>
         </div>
         
         <div className="mt-1 text-sm text-gray">
           {searchQuery && (
             <span>
-              {t('conversationHistory.search.queryLabel', 'Query')}: <strong>{searchQuery}</strong>
+              {t('conversationHistory.searchConversation.queryLabel', 'Query')}: <strong>{searchQuery}</strong>
             </span>
           )}
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-center">
           <div className="text-xl font-medium">
-            {t('conversationHistory.search.noResults', 'No conversations found')}
+            {t('conversationHistory.searchConversation.noResults', 'No conversations found')}
           </div>
           <div className="mt-2 text-gray">
-            {t('conversationHistory.search.tryDifferentKeywords', 'Try different keywords')}
+            {t('conversationHistory.searchConversation.tryDifferentKeywords', 'Try different keywords')}
           </div>
         </div>
       </div>
@@ -183,23 +183,23 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center text-2xl font-bold">
           <PiMagnifyingGlass className="mr-2" />
-          {t('conversationHistory.search.resultsTitle', 'Search Results')}
+          {t('conversationHistory.searchConversation.resultsTitle', 'Search Results')}
         </div>
         <Button
           className="text-sm"
           outlined
           icon={<PiArrowLeft />}
-          onClick={onBackToHistory}>
-          {t('button.backToHistory', 'Back to History')}
+          onClick={onbackToConversationHistory}>
+          {t('button.backToConversationHistory', 'Back to History')}
         </Button>
       </div>
       
       <div className="mt-1 text-sm text-gray">
         {searchQuery && (
           <span>
-            {t('conversationHistory.search.queryLabel', 'Query')}: <strong>{searchQuery}</strong>
+            {t('conversationHistory.searchConversation.queryLabel', 'Query')}: <strong>{searchQuery}</strong>
             {' '}
-            ({t('conversationHistory.search.resultsCount', '{{count}} results found', { count: results.length })})
+            ({t('conversationHistory.searchConversation.resultsCount', '{{count}} results found', { count: results.length })})
           </span>
         )}
       </div>

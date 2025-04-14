@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, TypeGuard
 from urllib.parse import urlparse
 
+from app.repositories.common import decompose_conv_id
 from app.repositories.models.common import Base64EncodedBytes
 from app.routes.schemas.conversation import (
     AttachmentContent,
@@ -40,6 +41,8 @@ from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import ToolRunResult
+
+DEFAULT_MODEL = "claude-v3.5-haiku"
 
 
 class TextContentModel(BaseModel):
@@ -701,8 +704,8 @@ class ConversationModel(BaseModel):
 class SearchHighlight(BaseModel):
     """Model representing highlight information for search results"""
 
-    field_name: str
-    fragments: list[str]
+    field_name: str  # "Title" or "MessageMap"
+    fragments: list[str]  # Text fragments containing the search term
 
 
 class ConversationMeta(BaseModel):
@@ -720,27 +723,19 @@ class ConversationMeta(BaseModel):
 
         # Extract conversation ID from SK (e.g. "{user_id}#CONV#{conversation_id}" -> "{conversation_id}")
         sk = source.get("SK", "")
-        conversation_id = sk.split("#CONV#")[1]
+        conversation_id = decompose_conv_id(sk)
 
         # Get model from MessageMap
         model = ""
         try:
             message_map_str = source.get("MessageMap", "{}")
             message_map = json.loads(message_map_str)
+            system = message_map["system"]
+            system.get("model", DEFAULT_MODEL)
 
-            # Try to get model from system message first
-            if "system" in message_map and "model" in message_map["system"]:
-                model = message_map["system"]["model"]
-            # If no system message or no model in system message,
-            # try the first message with a model field
-            else:
-                for msg_id, msg_data in message_map.items():
-                    if "model" in msg_data:
-                        model = msg_data["model"]
-                        break
         except (json.JSONDecodeError, TypeError):
             # In case of any error during JSON parsing, default to empty string
-            model = ""
+            model = DEFAULT_MODEL
 
         # Create conversation meta instance
         conversation = cls(
