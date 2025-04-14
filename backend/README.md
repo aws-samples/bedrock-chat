@@ -31,7 +31,7 @@ export OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.
 ```
 
 - Configure CDK configration.
-Local development requires OpenSearch data access permissions for the IAM role to be used. You can also set this parameter with `cdk/parameter.ts`.
+Local development requires OpenSearch data access permissions for the IAM role to be used. You can  set this parameter with `cdk/cdk.json` or `cdk/parameter.ts`.
 
 ```
 [cdk/cdk.json]
