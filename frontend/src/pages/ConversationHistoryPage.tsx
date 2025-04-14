@@ -203,7 +203,7 @@ const ConversationHistoryPage: React.FC = () => {
           isSearching={isSearching}
           hasSearched={hasSearched}
           searchQuery={displayQuery}
-          onBackToHistory={handleClearSearch}
+          onbackToConversationHistory={handleClearSearch}
           onSelectConversation={onClickConversation}
         />
 

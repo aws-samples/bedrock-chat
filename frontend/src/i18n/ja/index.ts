@@ -590,7 +590,7 @@ const translation: typeof en = {
       label: {
         noConversations: 'チャット履歴がありません',
       },
-      search: {
+      searchConversation: {
         placeholder: '会話を検索...',
         searching: '検索中...',
         results: ' "{{query}}"にマッチしたチャットが{{count}}件見つかりました',
@@ -644,7 +644,7 @@ const translation: typeof en = {
     },
     button: {
       newChat: '新しいチャット',
-      backToHistory: '履歴に戻る',
+      backToConversationHistory: 'チャット履歴に戻る',
       botConsole: 'ボットコンソール',
       botAnalytics: 'ボット確認',
       apiManagement: 'API管理',

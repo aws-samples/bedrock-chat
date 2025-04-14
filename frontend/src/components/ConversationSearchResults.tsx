@@ -121,7 +121,7 @@ type ConversationSearchResultsProps = {
   isSearching: boolean;
   hasSearched: boolean;
   searchQuery: string;
-  onBackToHistory: () => void;
+  onbackToConversationHistory: () => void;
   onSelectConversation: (id: string) => void;
 };
 
@@ -130,7 +130,7 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
   isSearching,
   hasSearched,
   searchQuery,
-  onBackToHistory,
+  onbackToConversationHistory,
   onSelectConversation,
 }) => {
   const { t } = useTranslation();
@@ -145,14 +145,17 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center text-2xl font-bold">
             <PiMagnifyingGlass className="mr-2" />
-            {t('conversationHistory.search.searching', 'Searching...')}
+            {t(
+              'conversationHistory.searchConversation.searching',
+              'Searching...'
+            )}
           </div>
           <Button
             className="text-sm"
             outlined
             icon={<PiArrowLeft />}
-            onClick={onBackToHistory}>
-            {t('button.backToHistory', 'Back to History')}
+            onClick={onbackToConversationHistory}>
+            {t('button.backToConversationHistory', 'Back to History')}
           </Button>
         </div>
         <div className="mt-4 space-y-2">
@@ -169,20 +172,20 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
       <div className="mt-6">
         <div className="mt-6">
           <div className="text-lg font-bold">
-            {t('conversationHistory.search.noResults', {
+            {t('conversationHistory.searchConversation.noResults', {
               query: searchQuery,
             })}
           </div>
           <div className="mt-1 text-sm text-gray">
-            {t('conversationHistory.search.tryDifferentKeywords')}
+            {t('conversationHistory.searchConversation.tryDifferentKeywords')}
           </div>
         </div>
         <Button
           className="mt-4"
           outlined
           icon={<PiArrowLeft />}
-          onClick={onBackToHistory}>
-          {t('button.backToHistory', 'Back to History')}
+          onClick={onbackToConversationHistory}>
+          {t('button.backToConversationHistory', 'Back to History')}
         </Button>
       </div>
     );
@@ -191,7 +194,7 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
   return (
     <div className="mt-4">
       <div className="text-lg font-bold">
-        {t('conversationHistory.search.results', {
+        {t('conversationHistory.searchConversation.results', {
           count: results.length,
           query: searchQuery,
         })}
@@ -211,7 +214,7 @@ const ConversationSearchResults: React.FC<ConversationSearchResultsProps> = ({
         className="mt-4"
         outlined
         icon={<PiArrowLeft />}
-        onClick={onBackToHistory}>
+        onClick={onbackToConversationHistory}>
         {t('button.backToHistory', 'Back to History')}
       </Button>
     </div>

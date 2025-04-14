@@ -7,7 +7,6 @@ from app.repositories.conversation import (
     find_related_documents_by_conversation_id,
     update_feedback,
 )
-from app.repositories.conversation_search import find_conversations_by_query
 from app.repositories.models.conversation import FeedbackModel
 from app.routes.schemas.conversation import (
     ChatInput,
@@ -19,13 +18,13 @@ from app.routes.schemas.conversation import (
     NewTitleInput,
     ProposedTitle,
     RelatedDocument,
-    SearchHighlight as SchemaSearchHighlight,
 )
 from app.usecases.chat import (
     chat,
     chat_output_from_message,
     fetch_conversation,
     propose_conversation_title,
+    search_conversations as search_conversations_usecase,
 )
 from app.user import User
 from fastapi import APIRouter, Request
@@ -132,33 +131,7 @@ def remove_all_conversations(request: Request):
 def search_conversations(request: Request, query: str):
     """Search conversations by keyword"""
     current_user: User = request.state.current_user
-
-    conversations = find_conversations_by_query(query, current_user)
-    output = []
-
-    for conversation in conversations:
-        # Convert model SearchHighlight to schema SearchHighlight
-        schema_highlights = None
-        if conversation.highlights:
-            schema_highlights = [
-                SchemaSearchHighlight(
-                    field_name=highlight.field_name, fragments=highlight.fragments
-                )
-                for highlight in conversation.highlights
-            ]
-
-        # Create ConversationMetaOutput with properly converted highlights
-        output.append(
-            ConversationMetaOutput(
-                id=conversation.id,
-                title=conversation.title,
-                create_time=conversation.create_time,
-                model=conversation.model,
-                bot_id=conversation.bot_id,
-                highlights=schema_highlights,
-            )
-        )
-
+    output = search_conversations_usecase(query, current_user)
     return output
 
 
