@@ -110,6 +110,7 @@ export class BotStore extends Construct {
       type: "SEARCH",
       standbyReplicas,
     });
+    this.collection.applyRemovalPolicy(RemovalPolicy.DESTROY)
 
     const endpoint = this.collection.getAtt("CollectionEndpoint").toString();
 
@@ -497,114 +498,93 @@ export class BotStore extends Construct {
               },
             },
             mappings: {
+              dynamic: false,
               properties: {
-                title: {
+                Title: {
                   type: "text",
                   analyzer: "ja_analyzer",
                 },
-                messages: {
-                  type: "nested",
-                  properties: {
-                    content: {
-                      type: "text",
-                      analyzer: "ja_analyzer",
-                    },
-                  },
-                },
-                createTime: {
-                  type: "date",
-                },
-                updateTime: {
-                  type: "date",
-                },
-                MessageMap: {
-                  type: "text",
-                  analyzer: "ja_analyzer",
-                },
-                ParsedMessageMap: {
-                  type: "object",
-                  enabled: true,
-                  properties: {
-                    "*": {
-                      properties: {
-                        role: { type: "keyword" },
-                        content: { 
-                          properties: {
-                            "*": {
-                              properties: {
-                                content_type: { type: "keyword" },
-                                body: { 
-                                  type: "text",
-                                  analyzer: "ja_analyzer" 
-                                }
+                "messages": { 
+                  "type": "nested",
+                  "properties": {
+                    "id": { "type": "keyword" },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "keyword" },
+                        "create_time": { "type": "double" },
+                        "parent": { "type": "keyword" },
+                        "children": { 
+                          "type": "array",
+                          "items": { "type": "keyword" }
+                        },
+                        "model": { "type": "keyword" },
+                        "content": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "content_type": { "type": "keyword" },
+                              "body": {
+                                "type": "text",
+                                "analyzer": "ja_analyzer"
                               }
                             }
                           }
-                        },
-                        model: { type: "keyword" },
-                        create_time: { type: "date" }
+                        }
                       }
                     }
                   }
                 }
-              },
-            },
-          },
+              }
+            }
+          }
         });
-
       default:
         return JSON.stringify({
           template: {
             settings: {
             },
             mappings: {
+              dynamic: false,
               properties: {
-                title: {
+                Title: {
                   type: "text",
                 },
-                messages: {
-                  type: "nested",
-                  properties: {
-                    content: {
-                      type: "text",
-                    },
-                  },
-                },
-                createTime: {
-                  type: "date",
-                },
-                updateTime: {
-                  type: "date",
-                },
-                MessageMap: {
-                  type: "text",
-                },
-                ParsedMessageMap: {
-                  type: "object",
-                  enabled: true,
-                  properties: {
-                    "*": {
-                      properties: {
-                        role: { type: "keyword" },
-                        content: { 
-                          properties: {
-                            "*": {
-                              properties: {
-                                content_type: { type: "keyword" },
-                                body: { type: "text" }
+                "messages": { 
+                  "type": "nested",
+                  "properties": {
+                    "id": { "type": "keyword" },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "keyword" },
+                        "create_time": { "type": "double" },
+                        "parent": { "type": "keyword" },
+                        "children": { 
+                          "type": "array",
+                          "items": { "type": "keyword" }
+                        },
+                        "model": { "type": "keyword" },
+                        "content": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "content_type": { "type": "keyword" },
+                              "body": {
+                                "type": "text"
                               }
                             }
                           }
-                        },
-                        model: { type: "keyword" },
-                        create_time: { type: "date" }
+                        }
                       }
                     }
                   }
                 }
-              },
-            },
-          },
+              }
+            }
+          }
         });
     }
   }
@@ -638,12 +618,42 @@ export class BotStore extends Construct {
           },
         },
         processor: [
+          // Step 1: メッセージデータをJSONとして解析
           {
             parse_json: {
               source: "MessageMap",
-              destination: "ParsedMessageMap",
-              overwrite_if_destination_exists: true,
-              delete_source: false
+              destination: "parsed_message_map"
+            }
+          },
+          // Step 3: システムメッセージを除外して会話のみの配列に変換するためのフィルター
+          {
+            add_entries: {
+              entries: [
+                {
+                  key: "messages",
+                  value: []
+                }
+              ]
+            }
+          },
+          // Step 4: 会話データを構築（システム以外の全メッセージをリスト化）
+          {
+            map_to_list: {
+              source: "parsed_message_map",
+              target: "messages",
+              exclude_keys: ["system"],
+              key_name: "id"
+            }
+          },
+          // Step 5: create_timeフィールドの型をdoubleに統一
+          {
+            convert_entry_type: {
+              keys: [
+                "messages.value.create_time",
+                "messages.*.value.create_time",
+                "create_time"
+              ],
+              type: "long"
             }
           }
         ],
@@ -656,7 +666,7 @@ export class BotStore extends Construct {
                 ? {} // For en, index_type, template_type, template_content are not required
                 : {
                     index_type: "custom",
-                    template_type: "index-template",
+                    template_type: "index-template", 
                     template_content: this._genConversationTemplateContent(props.language),
                   }),
               document_id: '${getMetadata("primary_key")}',

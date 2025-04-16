@@ -1,4 +1,5 @@
 import { Construct } from "constructs";
+import { RemovalPolicy } from "aws-cdk-lib";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -20,6 +21,7 @@ export class ApiPublishCodebuild extends Construct {
 
     const logGroup = new logs.LogGroup(this, "LogGroup", {
       retention: logs.RetentionDays.THREE_MONTHS,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
     const project = new codebuild.Project(this, "Project", {
       source: codebuild.Source.s3({
