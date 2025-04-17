@@ -221,6 +221,8 @@ export function resolveBedrockChatParameters(
     enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
+    enableBotStore: app.node.tryGetContext("enableBotStore"),
+    botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
 
