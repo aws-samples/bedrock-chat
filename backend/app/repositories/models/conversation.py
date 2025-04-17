@@ -713,6 +713,7 @@ class ConversationMeta(BaseModel):
     model: str
     bot_id: str | None
     highlights: list[SearchHighlight] | None = None
+    highlight_texts: list[str] | None = None
 
     @classmethod
     def from_opensearch_response(cls, hit: dict) -> Self:
@@ -724,17 +725,8 @@ class ConversationMeta(BaseModel):
         sk = source.get("SK", "")
         conversation_id = decompose_conv_id(sk)
 
-        # Get model from MessageMap
-        model = ""
-        try:
-            message_map_str = source.get("MessageMap", "{}")
-            message_map = json.loads(message_map_str)
-            system = message_map["system"]
-            system.get("model", DEFAULT_MODEL)
-
-        except (json.JSONDecodeError, TypeError):
-            # In case of any error during JSON parsing, default to empty string
-            model = DEFAULT_MODEL
+        # Get model directly from extractedModel field
+        model = source.get("extractedModel", DEFAULT_MODEL)
 
         # Create conversation meta instance
         conversation = cls(
@@ -749,17 +741,17 @@ class ConversationMeta(BaseModel):
         if "highlight" in hit:
             highlights = []
             for field, fragments in hit["highlight"].items():
-                if field.startswith("ParsedMessageMap.") and field.endswith(".body"):
-                    highlights.append(
-                        SearchHighlight(field_name="MessageBody", fragments=fragments)
-                    )
-                elif field.startswith("ParsedMessageMap.") and field.endswith(".text"):
+                if field == "extractedContent":
                     highlights.append(
                         SearchHighlight(field_name="MessageBody", fragments=fragments)
                     )
                 elif field == "Title":
                     highlights.append(
                         SearchHighlight(field_name=field, fragments=fragments)
+                    )
+                elif field == "messages.value.content.body":
+                    highlights.append(
+                        SearchHighlight(field_name="MessageBody", fragments=fragments)
                     )
 
             if highlights:

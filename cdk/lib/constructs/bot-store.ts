@@ -500,38 +500,107 @@ export class BotStore extends Construct {
             mappings: {
               dynamic: false,
               properties: {
+                PK: {
+                  type: "text",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  }
+                },
+                SK: {
+                  type: "text",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  }
+                },
                 Title: {
                   type: "text",
-                  analyzer: "ja_analyzer",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  },
+                  analyzer: "ja_analyzer"
                 },
-                "messages": { 
-                  "type": "nested",
-                  "properties": {
-                    "id": { "type": "keyword" },
-                    "value": {
-                      "type": "object",
-                      "properties": {
-                        "role": { "type": "keyword" },
-                        "create_time": { "type": "double" },
-                        "parent": { "type": "keyword" },
-                        "children": { 
-                          "type": "array",
-                          "items": { "type": "keyword" }
-                        },
-                        "model": { "type": "keyword" },
-                        "content": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "content_type": { "type": "keyword" },
-                              "body": {
-                                "type": "text",
-                                "analyzer": "ja_analyzer"
-                              }
+                messages: {
+                  properties: {
+                    id: {
+                      type: "text",
+                      fields: {
+                        keyword: {
+                          type: "keyword",
+                          ignore_above: 256
+                        }
+                      }
+                    },
+                    value: {
+                      properties: {
+                        role: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
                             }
                           }
-                        }
+                        },
+                        content: {
+                          properties: {
+                            content_type: {
+                              type: "text",
+                              fields: {
+                                keyword: {
+                                  type: "keyword",
+                                  ignore_above: 256
+                                }
+                              }
+                            },
+                            body: {
+                              type: "text",
+                              fields: {
+                                keyword: {
+                                  type: "keyword",
+                                  ignore_above: 256
+                                }
+                              },
+                              analyzer: "ja_analyzer"
+                            }
+                          }
+                        },
+                        model: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        children: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        parent: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        create_time: { type: "double" }
                       }
                     }
                   }
@@ -543,41 +612,108 @@ export class BotStore extends Construct {
       default:
         return JSON.stringify({
           template: {
-            settings: {
-            },
             mappings: {
               dynamic: false,
               properties: {
+                PK: {
+                  type: "text",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  }
+                },
+                SK: {
+                  type: "text",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  }
+                },
                 Title: {
                   type: "text",
+                  fields: {
+                    keyword: {
+                      type: "keyword",
+                      ignore_above: 256
+                    }
+                  }
                 },
-                "messages": { 
-                  "type": "nested",
-                  "properties": {
-                    "id": { "type": "keyword" },
-                    "value": {
-                      "type": "object",
-                      "properties": {
-                        "role": { "type": "keyword" },
-                        "create_time": { "type": "double" },
-                        "parent": { "type": "keyword" },
-                        "children": { 
-                          "type": "array",
-                          "items": { "type": "keyword" }
+                messages: {
+                  properties: {
+                    id: {
+                      type: "text",
+                      fields: {
+                        keyword: {
+                          type: "keyword",
+                          ignore_above: 256
+                        }
+                      }
+                    },
+                    value: {
+                      properties: {
+                        role: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
                         },
-                        "model": { "type": "keyword" },
-                        "content": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "content_type": { "type": "keyword" },
-                              "body": {
-                                "type": "text"
+                        content: {
+                          properties: {
+                            content_type: {
+                              type: "text",
+                              fields: {
+                                keyword: {
+                                  type: "keyword",
+                                  ignore_above: 256
+                                }
+                              }
+                            },
+                            body: {
+                              type: "text",
+                              fields: {
+                                keyword: {
+                                  type: "keyword",
+                                  ignore_above: 256
+                                }
                               }
                             }
                           }
-                        }
+                        },
+                        model: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        children: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        parent: {
+                          type: "text",
+                          fields: {
+                            keyword: {
+                              type: "keyword",
+                              ignore_above: 256
+                            }
+                          }
+                        },
+                        create_time: { type: "double" }
                       }
                     }
                   }
@@ -618,14 +754,14 @@ export class BotStore extends Construct {
           },
         },
         processor: [
-          // Step 1: メッセージデータをJSONとして解析
+          // Step 1: Parse message data as JSON
           {
             parse_json: {
               source: "MessageMap",
               destination: "parsed_message_map"
             }
           },
-          // Step 3: システムメッセージを除外して会話のみの配列に変換するためのフィルター
+          // Step 2: Initialize conversation data
           {
             add_entries: {
               entries: [
@@ -636,7 +772,7 @@ export class BotStore extends Construct {
               ]
             }
           },
-          // Step 4: 会話データを構築（システム以外の全メッセージをリスト化）
+          // Step 3: List all messages except system
           {
             map_to_list: {
               source: "parsed_message_map",
@@ -645,15 +781,18 @@ export class BotStore extends Construct {
               key_name: "id"
             }
           },
-          // Step 5: create_timeフィールドの型をdoubleに統一
+          // Step 4: Remove unnecessary data
           {
-            convert_entry_type: {
-              keys: [
-                "messages.value.create_time",
-                "messages.*.value.create_time",
-                "create_time"
-              ],
-              type: "long"
+            delete_entries: {
+              with_keys: [
+                "IsLargeMessage",
+                "CreateTime",
+                "TotalPrice",
+                "ShouldContinue",
+                "LastMessageId",
+                "MessageMap",
+                "parsed_message_map",
+              ]
             }
           }
         ],
@@ -662,13 +801,9 @@ export class BotStore extends Construct {
             opensearch: {
               hosts: [props.endpoint],
               index: `${props.envPrefix}conversation`,
-              ...(props.language === "en"
-                ? {} // For en, index_type, template_type, template_content are not required
-                : {
-                    index_type: "custom",
-                    template_type: "index-template", 
-                    template_content: this._genConversationTemplateContent(props.language),
-                  }),
+              index_type: "custom",
+              template_type: "index-template", 
+              template_content: this._genConversationTemplateContent(props.language),
               document_id: '${getMetadata("primary_key")}',
               action: '${getMetadata("opensearch_action")}',
               document_version: '${getMetadata("document_version")}',

@@ -38,17 +38,38 @@ def find_conversations_by_query(
         "query": {
             "bool": {
                 "should": [
+                    # Title search
                     {"match": {"Title": {"query": query, "boost": 3.0}}},
-                    {"match": {"ParsedMessageMap": {"query": query, "boost": 4.0}}},
+                    
+                    # Message content search (array field search)
+                    {
+                        "match": {
+                            "messages.value.content.body": {
+                                "query": query,
+                                "boost": 2.0
+                            }
+                        }
+                    },
+                    
+                    # Message content phrase search (array field search)
+                    {
+                        "match_phrase": {
+                            "messages.value.content.body": {
+                                "query": query,
+                                "boost": 5.0
+                            }
+                        }
+                    },
+                    
+                    # Exact match search
                     {
                         "query_string": {
-                            "query": f'"{query}"',
+                            "query": f'\\"{query}\\"',
                             "fields": [
-                                "ParsedMessageMap.*.*content*.body^4.0",
-                                "ParsedMessageMap.*.*content*.text^4.0",
+                                "Title^3.0"
                             ],
                             "type": "best_fields",
-                            "default_operator": "AND",
+                            "default_operator": "AND"
                         }
                     },
                 ],
@@ -60,8 +81,11 @@ def find_conversations_by_query(
         "sort": [
             {"_score": {"order": "desc"}},  # 1. Primary sort by relevance score
             {
-                "CreateTime": {"order": "desc"}
-            },  # 2. Secondary sort by recency (DynamoDB field name)
+                "messages.value.create_time": {
+                    "order": "desc",
+                    "mode": "max"  # Sort by the most recent message time
+                }
+            },  # 2. Secondary sort by message recency
         ],
         "highlight": {
             "fields": {
@@ -71,21 +95,23 @@ def find_conversations_by_query(
                     "fragment_size": 150,
                     "number_of_fragments": 1,
                 },
-                "ParsedMessageMap.*.*content*.body": {
+                "messages.value.content.body": {
                     "fragment_size": 150,
                     "number_of_fragments": 3,
                     "pre_tags": ["<em>"],
                     "post_tags": ["</em>"],
-                },
-                "ParsedMessageMap.*.*content*.text": {
-                    "fragment_size": 150,
-                    "number_of_fragments": 3,
-                    "pre_tags": ["<em>"],
-                    "post_tags": ["</em>"],
-                },
+                    "highlight_query": {
+                        "bool": {
+                            "should": [
+                                {"match": {"messages.value.content.body": query}},
+                                {"match_phrase": {"messages.value.content.body": query}}
+                            ]
+                        }
+                    }
+                }
             },
             "require_field_match": False,
-            "order": "score",
+            "order": "score"
         },
     }
 
@@ -95,10 +121,29 @@ def find_conversations_by_query(
         response = client.search(index=INDEX_NAME, body=search_body)
         logger.debug(f"Search response: {response}")
 
-        conversations = [
-            ConversationMeta.from_opensearch_response(hit)
-            for hit in response["hits"]["hits"]
-        ]
+        conversations = []
+        for hit in response["hits"]["hits"]:
+            try:
+                conversation_meta = ConversationMeta.from_opensearch_response(hit)
+                # Process highlight information
+                if "highlight" in hit:
+                    highlight_texts = []
+                    # Title highlights
+                    if "Title" in hit["highlight"]:
+                        highlight_texts.extend(hit["highlight"]["Title"])
+                    
+                    # Message content highlights
+                    if "messages.value.content.body" in hit["highlight"]:
+                        highlight_texts.extend(hit["highlight"]["messages.value.content.body"])
+                    
+                    # Set highlight texts to ConversationMeta
+                    if highlight_texts:
+                        conversation_meta.highlight_texts = highlight_texts
+                
+                conversations.append(conversation_meta)
+            except Exception as e:
+                logger.error(f"Error processing hit: {e}, hit: {hit}")
+                continue
         logger.info(f"Found {len(conversations)} conversations matching query: {query}")
         return conversations
     except Exception as e:
