@@ -40,36 +40,31 @@ def find_conversations_by_query(
                 "should": [
                     # Title search
                     {"match": {"Title": {"query": query, "boost": 3.0}}},
-                    
                     # Message content search (array field search)
                     {
                         "match": {
                             "messages.value.content.body": {
                                 "query": query,
-                                "boost": 2.0
+                                "boost": 2.0,
                             }
                         }
                     },
-                    
                     # Message content phrase search (array field search)
                     {
                         "match_phrase": {
                             "messages.value.content.body": {
                                 "query": query,
-                                "boost": 5.0
+                                "boost": 5.0,
                             }
                         }
                     },
-                    
                     # Exact match search
                     {
                         "query_string": {
                             "query": f'\\"{query}\\"',
-                            "fields": [
-                                "Title^3.0"
-                            ],
+                            "fields": ["Title^3.0"],
                             "type": "best_fields",
-                            "default_operator": "AND"
+                            "default_operator": "AND",
                         }
                     },
                 ],
@@ -83,7 +78,7 @@ def find_conversations_by_query(
             {
                 "messages.value.create_time": {
                     "order": "desc",
-                    "mode": "max"  # Sort by the most recent message time
+                    "mode": "max",  # Sort by the most recent message time
                 }
             },  # 2. Secondary sort by message recency
         ],
@@ -104,14 +99,18 @@ def find_conversations_by_query(
                         "bool": {
                             "should": [
                                 {"match": {"messages.value.content.body": query}},
-                                {"match_phrase": {"messages.value.content.body": query}}
+                                {
+                                    "match_phrase": {
+                                        "messages.value.content.body": query
+                                    }
+                                },
                             ]
                         }
-                    }
-                }
+                    },
+                },
             },
             "require_field_match": False,
-            "order": "score"
+            "order": "score",
         },
     }
 
@@ -131,15 +130,17 @@ def find_conversations_by_query(
                     # Title highlights
                     if "Title" in hit["highlight"]:
                         highlight_texts.extend(hit["highlight"]["Title"])
-                    
+
                     # Message content highlights
                     if "messages.value.content.body" in hit["highlight"]:
-                        highlight_texts.extend(hit["highlight"]["messages.value.content.body"])
-                    
+                        highlight_texts.extend(
+                            hit["highlight"]["messages.value.content.body"]
+                        )
+
                     # Set highlight texts to ConversationMeta
                     if highlight_texts:
                         conversation_meta.highlight_texts = highlight_texts
-                
+
                 conversations.append(conversation_meta)
             except Exception as e:
                 logger.error(f"Error processing hit: {e}, hit: {hit}")
