@@ -4,6 +4,7 @@ import os
 from decimal import Decimal as decimal
 
 import boto3
+from typing import Dict
 from app.repositories.common import (
     TRANSACTION_BATCH_WRITE_SIZE,
     RecordNotFoundError,
@@ -35,17 +36,34 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 s3_client = boto3.client("s3", BEDROCK_REGION)
 
 
+def get_latest_message_time(message_map: Dict[str, MessageModel]) -> float:
+    """Get the latest message creation time from the conversation"""
+    latest_time = 0.0
+    for message_id, message in message_map.items():
+        if message_id == "system":
+            continue
+        message_time = message.create_time
+        if message_time > latest_time:
+            latest_time = message_time
+
+    return latest_time or 0.0  # Return 0 if there are no messages
+
+
 def store_conversation(
     user_id: str, conversation: ConversationModel, threshold=THRESHOLD_LARGE_MESSAGE
 ):
     logger.info(f"Storing conversation: {conversation.model_dump_json()}")
     table = get_conversation_table_client(user_id)
 
+    # Calculate last_updated_time from the latest message
+    latest_message_time = get_latest_message_time(conversation.message_map)
+
     item_params = {
         "PK": user_id,
         "SK": compose_conv_id(user_id, conversation.id),
         "Title": conversation.title,
         "CreateTime": decimal(conversation.create_time),
+        "LastUpdateTime": decimal(latest_message_time),
         # Convert to decimal via str to avoid error
         # Ref: https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
         "TotalPrice": decimal(str(conversation.total_price)),
@@ -104,6 +122,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
         ConversationMeta(
             id=decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
+            last_updated_time=float(item.get("LastUpdateTime", item["CreateTime"])),
             title=item["Title"],
             # NOTE: all message has the same model
             model=json.loads(item["MessageMap"]).get("system", {}).get("model", ""),
@@ -131,6 +150,9 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
                 ConversationMeta(
                     id=decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
+                    last_updated_time=float(
+                        item.get("LastUpdateTime", item["CreateTime"])
+                    ),
                     title=item["Title"],
                     model=model,
                     bot_id=item["BotId"] if "BotId" in item else None,
@@ -168,12 +190,19 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     else:
         message_map = json.loads(item["MessageMap"])
 
+    # Calculate last_updated_time from the messages
+    message_objects = {
+        k: MessageModel.model_validate(v) for k, v in message_map.items()
+    }
+    latest_message_time = get_latest_message_time(message_objects)
+
     conv = ConversationModel(
         id=decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
+        last_updated_time=float(item.get("LastUpdateTime", latest_message_time)),
         title=item["Title"],
         total_price=item.get("TotalPrice", 0),
-        message_map={k: MessageModel.model_validate(v) for k, v in message_map.items()},
+        message_map=message_objects,
         last_message_id=item["LastMessageId"],
         bot_id=item["BotId"] if "BotId" in item else None,
         should_continue=item.get("ShouldContinue", False),

@@ -124,23 +124,6 @@ def find_conversations_by_query(
         for hit in response["hits"]["hits"]:
             try:
                 conversation_meta = ConversationMeta.from_opensearch_response(hit)
-                # Process highlight information
-                if "highlight" in hit:
-                    highlight_texts = []
-                    # Title highlights
-                    if "Title" in hit["highlight"]:
-                        highlight_texts.extend(hit["highlight"]["Title"])
-
-                    # Message content highlights
-                    if "messages.value.content.body" in hit["highlight"]:
-                        highlight_texts.extend(
-                            hit["highlight"]["messages.value.content.body"]
-                        )
-
-                    # Set highlight texts to ConversationMeta
-                    if highlight_texts:
-                        conversation_meta.highlight_texts = highlight_texts
-
                 conversations.append(conversation_meta)
             except Exception as e:
                 logger.error(f"Error processing hit: {e}, hit: {hit}")

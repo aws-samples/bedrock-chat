@@ -135,6 +135,7 @@ export type ConversationMeta = {
   id: string;
   title: string;
   createTime: number;
+  lastUpdatedTime?: number;
   lastMessageId: string; 
   model: Model;
   botId?: string;

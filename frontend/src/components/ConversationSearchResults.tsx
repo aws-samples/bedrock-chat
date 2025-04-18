@@ -102,7 +102,9 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             </span>
           </div>
           <div className="text-xs text-gray">
-            {formatDate(conversation.createTime)}
+            {conversation.lastUpdatedTime && conversation.lastUpdatedTime > 0 
+              ? `${formatDate(conversation.lastUpdatedTime)}` 
+              : formatDate(conversation.createTime)}
           </div>
         </div>
       </div>

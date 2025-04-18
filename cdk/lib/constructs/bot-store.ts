@@ -518,6 +518,8 @@ export class BotStore extends Construct {
                     }
                   }
                 },
+                CreateTime: { type: "double" },
+                LastUpdateTime: { type: "double" },
                 Title: {
                   type: "text",
                   fields: {
@@ -633,6 +635,8 @@ export class BotStore extends Construct {
                     }
                   }
                 },
+                CreateTime: { type: "double" },
+                LastUpdateTime: { type: "double" },
                 Title: {
                   type: "text",
                   fields: {
@@ -777,7 +781,7 @@ export class BotStore extends Construct {
             map_to_list: {
               source: "parsed_message_map",
               target: "messages",
-              exclude_keys: ["system"],
+              exclude_keys: [],
               key_name: "id"
             }
           },
@@ -786,7 +790,6 @@ export class BotStore extends Construct {
             delete_entries: {
               with_keys: [
                 "IsLargeMessage",
-                "CreateTime",
                 "TotalPrice",
                 "ShouldContinue",
                 "LastMessageId",

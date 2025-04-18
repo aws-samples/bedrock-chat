@@ -691,6 +691,7 @@ class MessageModel(BaseModel):
 class ConversationModel(BaseModel):
     id: str
     create_time: float
+    last_updated_time: float = 0.0
     title: str
     total_price: float
     message_map: dict[str, MessageModel]
@@ -710,6 +711,7 @@ class ConversationMeta(BaseModel):
     id: str
     title: str
     create_time: float
+    last_updated_time: float = 0.0
     model: str
     bot_id: str | None
     highlights: list[SearchHighlight] | None = None
@@ -728,11 +730,45 @@ class ConversationMeta(BaseModel):
         # Get model directly from extractedModel field
         model = source.get("extractedModel", DEFAULT_MODEL)
 
+        # Get create time from source
+        create_time = 0.0
+        if source.get("CreateTime"):
+            create_time = float(source.get("CreateTime"))
+        elif source.get("create_time"):
+            create_time = float(source.get("create_time"))
+
+        # Get last updated time from latest message's create_time
+        last_updated_time = 0.0
+
+        # 1. Try to get from the latest message's create_time
+        if source.get("messages") and isinstance(source.get("messages"), list):
+            messages = source.get("messages", [])
+            message_times = [
+                msg.get("value", {}).get("create_time", 0)
+                for msg in messages
+                if isinstance(msg.get("value"), dict)
+            ]
+            if message_times:
+                last_updated_time = float(max(message_times))
+
+        # 2. Try to get from sort value (timestamp from messages)
+        elif (
+            "sort" in hit
+            and len(hit["sort"]) > 1
+            and isinstance(hit["sort"][1], (int, float))
+        ):
+            last_updated_time = float(hit["sort"][1])
+
+        # If create_time is still 0, use last_updated_time as create_time
+        if create_time == 0.0 and last_updated_time > 0.0:
+            create_time = last_updated_time
+
         # Create conversation meta instance
         conversation = cls(
             id=conversation_id,
             title=source.get("Title", "Untitled conversation"),
-            create_time=float(source.get("CreateTime", 0)),
+            create_time=create_time,
+            last_updated_time=last_updated_time,
             model=model,
             bot_id=source.get("BotId"),
         )
@@ -740,22 +776,30 @@ class ConversationMeta(BaseModel):
         # Add highlight information if available
         if "highlight" in hit:
             highlights = []
+            highlight_texts = []
+
             for field, fragments in hit["highlight"].items():
                 if field == "extractedContent":
                     highlights.append(
                         SearchHighlight(field_name="MessageBody", fragments=fragments)
                     )
+                    highlight_texts.extend(fragments)
                 elif field == "Title":
                     highlights.append(
                         SearchHighlight(field_name=field, fragments=fragments)
                     )
+                    highlight_texts.extend(fragments)
                 elif field == "messages.value.content.body":
                     highlights.append(
                         SearchHighlight(field_name="MessageBody", fragments=fragments)
                     )
+                    highlight_texts.extend(fragments)
 
             if highlights:
                 conversation.highlights = highlights
+
+            if highlight_texts:
+                conversation.highlight_texts = highlight_texts
 
         return conversation
 
