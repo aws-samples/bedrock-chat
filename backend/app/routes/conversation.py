@@ -113,6 +113,7 @@ def get_all_conversations(
             id=conversation.id,
             title=conversation.title,
             create_time=conversation.create_time,
+            last_updated_time=conversation.last_updated_time,
             model=conversation.model,
             bot_id=conversation.bot_id,
         )

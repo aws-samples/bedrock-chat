@@ -201,6 +201,7 @@ class ChatOutput(BaseSchema):
     message: MessageOutput
     bot_id: str | None
     create_time: float
+    last_updated_time: float = 0.0
 
 
 class RelatedDocument(BaseSchema):
@@ -222,6 +223,7 @@ class ConversationMetaOutput(BaseSchema):
     id: str
     title: str
     create_time: float
+    last_updated_time: float = 0.0
     model: str
     bot_id: str | None
     highlights: list[SearchHighlight] | None = None
@@ -231,6 +233,7 @@ class Conversation(BaseSchema):
     id: str
     title: str
     create_time: float
+    last_updated_time: float = 0.0
     message_map: dict[str, MessageOutput]
     last_message_id: str
     bot_id: str | None

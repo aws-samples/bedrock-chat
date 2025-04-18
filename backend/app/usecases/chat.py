@@ -504,6 +504,7 @@ def chat_output_from_message(
     return ChatOutput(
         conversation_id=conversation.id,
         create_time=conversation.create_time,
+        last_updated_time=conversation.last_updated_time,
         message=MessageOutput(
             role=message.role,
             content=[c.to_content() for c in message.content],
@@ -646,6 +647,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         id=conversation_id,
         title=conversation.title,
         create_time=conversation.create_time,
+        last_updated_time=conversation.last_updated_time,
         last_message_id=conversation.last_message_id,
         message_map=message_map,
         bot_id=conversation.bot_id,
@@ -676,6 +678,7 @@ def search_conversations(query: str, user: User) -> list[ConversationMetaOutput]
                 id=conversation.id,
                 title=conversation.title,
                 create_time=conversation.create_time,
+                last_updated_time=conversation.last_updated_time,
                 model=conversation.model,
                 bot_id=conversation.bot_id,
                 highlights=schema_highlights,
