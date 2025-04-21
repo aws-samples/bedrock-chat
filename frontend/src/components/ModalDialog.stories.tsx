@@ -116,7 +116,6 @@ export const DeleteConversation = () => {
         id: '1',
         title: 'Conversation 1',
         createTime: new Date().getTime(),
-        lastUpdatedTime: new Date().getTime(),
         lastMessageId: '1',
         model: 'claude-v3.5-sonnet',
       }}
