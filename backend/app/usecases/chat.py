@@ -40,6 +40,7 @@ from app.routes.schemas.conversation import (
     Chunk,
     Conversation,
     ConversationMetaOutput,
+    ConversationSearchResult,
     FeedbackOutput,
     MessageOutput,
     SearchHighlight as SchemaSearchHighlight,
@@ -654,7 +655,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
     return output
 
 
-def search_conversations(query: str, user: User) -> list[ConversationMetaOutput]:
+def search_conversations(query: str, user: User) -> list[ConversationSearchResult]:
     """Search conversations by keyword"""
     conversations = find_conversations_by_query(query, user)
     output = []
@@ -670,12 +671,11 @@ def search_conversations(query: str, user: User) -> list[ConversationMetaOutput]
                 for highlight in conversation.highlights
             ]
 
-        # Create ConversationMetaOutput with properly converted highlights
+        # Create ConversationSearchResult with properly converted highlights
         output.append(
-            ConversationMetaOutput(
+            ConversationSearchResult(
                 id=conversation.id,
                 title=conversation.title,
-                create_time=conversation.create_time,
                 last_updated_time=conversation.last_updated_time,
                 model=conversation.model,
                 bot_id=conversation.bot_id,

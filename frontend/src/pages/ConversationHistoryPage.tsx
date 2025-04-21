@@ -254,7 +254,7 @@ const ConversationHistoryPage: React.FC = () => {
                   </div>
                 )}
                 <div className="text-xs text-gray">
-                  {formatDate(conversation.lastUpdatedTime)}
+                  {formatDate(conversation.createTime)}
                 </div>
               </div>
               {editingConversationId !== conversation.id && (

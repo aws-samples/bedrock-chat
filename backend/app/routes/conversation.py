@@ -13,6 +13,7 @@ from app.routes.schemas.conversation import (
     ChatOutput,
     Conversation,
     ConversationMetaOutput,
+    ConversationSearchResult,
     FeedbackInput,
     FeedbackOutput,
     NewTitleInput,
@@ -113,7 +114,6 @@ def get_all_conversations(
             id=conversation.id,
             title=conversation.title,
             create_time=conversation.create_time,
-            last_updated_time=conversation.last_updated_time,
             model=conversation.model,
             bot_id=conversation.bot_id,
         )
@@ -128,7 +128,7 @@ def remove_all_conversations(request: Request):
     delete_conversation_by_user_id(request.state.current_user.id)
 
 
-@router.get("/conversations/search", response_model=list[ConversationMetaOutput])
+@router.get("/conversations/search", response_model=list[ConversationSearchResult])
 def search_conversations(request: Request, query: str):
     """Search conversations by keyword"""
     current_user: User = request.state.current_user

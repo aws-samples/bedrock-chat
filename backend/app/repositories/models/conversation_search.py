@@ -18,12 +18,11 @@ class SearchHighlight(BaseModel):
     fragments: list[str]  # Text fragments containing the search term
 
 
-class ConversationSearchMeta(BaseModel):
+class ConversationSearchModel(BaseModel):
     """Model representing conversation metadata with search results"""
 
     id: str
     title: str
-    create_time: float
     model: str
     bot_id: str | None
     last_updated_time: float = Field(default=0.0)
@@ -32,7 +31,7 @@ class ConversationSearchMeta(BaseModel):
 
     @classmethod
     def from_opensearch_response(cls, hit: dict) -> Self:
-        """Create a ConversationSearchMeta instance from OpenSearch response"""
+        """Create a ConversationSearchModel instance from OpenSearch response"""
         DEFAULT_MODEL = "claude-v3.5-haiku"
         source = hit["_source"]
 
@@ -66,7 +65,6 @@ class ConversationSearchMeta(BaseModel):
         conversation = cls(
             id=conversation_id,
             title=source.get("Title", "Untitled conversation"),
-            create_time=create_time,
             model=model,
             bot_id=source.get("BotId"),
             last_updated_time=last_updated_time,

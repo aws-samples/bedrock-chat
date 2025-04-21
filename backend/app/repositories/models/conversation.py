@@ -695,7 +695,6 @@ class MessageModel(BaseModel):
 class ConversationModel(BaseModel):
     id: str
     create_time: float
-    last_updated_time: float = 0.0
     title: str
     total_price: float
     message_map: dict[str, MessageModel]
@@ -708,7 +707,6 @@ class ConversationMeta(BaseModel):
     id: str
     title: str
     create_time: float
-    last_updated_time: float = 0.0
     model: str
     bot_id: str | None
 
