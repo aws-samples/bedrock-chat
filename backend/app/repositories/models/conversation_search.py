@@ -42,24 +42,18 @@ class ConversationSearchModel(BaseModel):
         # Get model directly from extractedModel field
         model = source.get("extractedModel", DEFAULT_MODEL)
 
-        # Get create time from source
-        create_time = 0.0
-        if source.get("CreateTime"):
-            create_time = float(source.get("CreateTime"))
-        elif source.get("create_time"):
-            create_time = float(source.get("create_time"))
+        # Get last updated time from source with fallback logic
+        last_updated_time = 0.0
 
-        # Get last updated time from LastUpdateTime field directly
-        last_updated_time = create_time  # Initialize with create_time as fallback
-
-        # Get LastUpdateTime directly from source
+        # Try to get LastUpdateTime first
         if source.get("LastUpdateTime"):
             last_updated_time = float(source.get("LastUpdateTime"))
             logger.info(f"Found LastUpdateTime in source: {last_updated_time}")
-
-        # If create_time is still 0, use last_updated_time as create_time
-        if create_time == 0.0 and last_updated_time > 0.0:
-            create_time = last_updated_time
+        # If not found, try to get it from CreateTime or create_time as fallback
+        elif source.get("CreateTime"):
+            last_updated_time = float(source.get("CreateTime"))
+        elif source.get("create_time"):
+            last_updated_time = float(source.get("create_time"))
 
         # Create conversation meta instance
         conversation = cls(
