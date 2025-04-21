@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConversationMeta } from '../@types/conversation';
+import { ConversationSearchMeta } from '../@types/conversation';
 import { PiArrowLeft, PiMagnifyingGlass } from 'react-icons/pi';
 import Button from './Button';
 import Skeleton from './Skeleton';
 
 type ConversationItemProps = {
-  conversation: ConversationMeta;
+  conversation: ConversationSearchMeta;
   onClick: (id: string) => void;
   searchQuery: string;
 };
@@ -102,9 +102,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             </span>
           </div>
           <div className="text-xs text-gray">
-            {conversation.lastUpdatedTime && conversation.lastUpdatedTime > 0 
-              ? `${formatDate(conversation.lastUpdatedTime)}` 
-              : formatDate(conversation.createTime)}
+            {formatDate(conversation.lastUpdatedTime)}
           </div>
         </div>
       </div>
@@ -119,7 +117,7 @@ export const SkeletonConversation: React.FC = () => {
 };
 
 type ConversationSearchResultsProps = {
-  results: ConversationMeta[];
+  results: ConversationSearchMeta[];
   isSearching: boolean;
   hasSearched: boolean;
   searchQuery: string;

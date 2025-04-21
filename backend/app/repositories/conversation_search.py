@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 from app.repositories.common import get_opensearch_client
-from app.repositories.models.conversation import ConversationMeta
+from app.repositories.models.conversation_search import ConversationSearchMeta
 from app.user import User
 from opensearchpy import OpenSearch
 
@@ -11,7 +11,7 @@ env_prefix = os.environ.get("ENV_PREFIX", "")
 INDEX_NAME = f"{env_prefix}conversation"
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # More detailed logging
+logger.setLevel(logging.INFO)
 
 
 def find_conversations_by_query(
@@ -19,7 +19,7 @@ def find_conversations_by_query(
     user: User,
     limit: int = 20,
     client: OpenSearch | None = None,
-) -> list[ConversationMeta]:
+) -> list[ConversationSearchMeta]:
     """Search conversations by query string.
     This method searches through both the conversation title and message content.
     """
@@ -123,7 +123,7 @@ def find_conversations_by_query(
         conversations = []
         for hit in response["hits"]["hits"]:
             try:
-                conversation_meta = ConversationMeta.from_opensearch_response(hit)
+                conversation_meta = ConversationSearchMeta.from_opensearch_response(hit)
                 conversations.append(conversation_meta)
             except Exception as e:
                 logger.error(f"Error processing hit: {e}, hit: {hit}")

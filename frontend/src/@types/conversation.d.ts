@@ -139,7 +139,17 @@ export type ConversationMeta = {
   lastMessageId: string; 
   model: Model;
   botId?: string;
+};
+
+export type ConversationSearchMeta = {
+  id: string;
+  title: string;
+  createTime: number;
+  lastUpdatedTime: number;
+  model: Model;
+  botId?: string;
   highlights?: SearchHighlight[]; // Optional highlights information
+  highlightTexts?: string[]; // Optional highlighted text fragments
 };
 
 export type MessageMap = {
