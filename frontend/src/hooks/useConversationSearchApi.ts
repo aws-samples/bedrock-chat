@@ -1,4 +1,4 @@
-import { ConversationMeta } from '../@types/conversation';
+import { ConversationSearchMeta } from '../@types/conversation';
 import useHttp from './useHttp';
 
 const useConversationSearchApi = () => {
@@ -6,7 +6,7 @@ const useConversationSearchApi = () => {
 
   return {
     searchConversations: (query: string | null) => {
-      return http.get<ConversationMeta[]>(
+      return http.get<ConversationSearchMeta[]>(
         query ? `conversations/search?query=${encodeURIComponent(query)}` : null
       );
     }
