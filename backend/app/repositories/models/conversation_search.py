@@ -23,7 +23,6 @@ class ConversationSearchModel(BaseModel):
 
     id: str
     title: str
-    model: str
     bot_id: str | None
     last_updated_time: float = Field(default=0.0)
     highlights: list[SearchHighlight] | None = None
@@ -32,34 +31,30 @@ class ConversationSearchModel(BaseModel):
     @classmethod
     def from_opensearch_response(cls, hit: dict) -> Self:
         """Create a ConversationSearchModel instance from OpenSearch response"""
-        DEFAULT_MODEL = "claude-v3.5-haiku"
         source = hit["_source"]
 
         # Extract conversation ID from SK (e.g. "{user_id}#CONV#{conversation_id}" -> "{conversation_id}")
         sk = source.get("SK", "")
         conversation_id = decompose_conv_id(sk)
 
-        # Get model directly from extractedModel field
-        model = source.get("extractedModel", DEFAULT_MODEL)
-
         # Get last updated time from source with fallback logic
         last_updated_time = 0.0
 
-        # Try to get LastUpdateTime first
-        if source.get("LastUpdateTime"):
-            last_updated_time = float(source.get("LastUpdateTime"))
-            logger.info(f"Found LastUpdateTime in source: {last_updated_time}")
-        # If not found, try to get it from CreateTime or create_time as fallback
-        elif source.get("CreateTime"):
-            last_updated_time = float(source.get("CreateTime"))
-        elif source.get("create_time"):
-            last_updated_time = float(source.get("create_time"))
+        # 1. Try to get from the latest message's create_time
+        if source.get("messages") and isinstance(source.get("messages"), list):
+            messages = source.get("messages", [])
+            message_times = [
+                msg.get("value", {}).get("create_time", 0)
+                for msg in messages
+                if isinstance(msg.get("value"), dict)
+            ]
+            if message_times:
+                last_updated_time = float(max(message_times))
 
         # Create conversation meta instance
         conversation = cls(
             id=conversation_id,
             title=source.get("Title", "Untitled conversation"),
-            model=model,
             bot_id=source.get("BotId"),
             last_updated_time=last_updated_time,
         )

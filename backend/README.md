@@ -31,12 +31,38 @@ export OPENSEARCH_DOMAIN_ENDPOINT=https://abcdefghijklmnopqrst.aa-region-1.aoss.
 ```
 
 - Configure CDK configration.
-Local development requires OpenSearch data access permissions for the IAM role to be used. You can  set this parameter with `cdk/cdk.json` or `cdk/parameter.ts`.
+Local development requires OpenSearch data access permissions for the IAM role to be used. You can set this parameter in either `cdk/cdk.json` or `cdk/parameter.ts`.
 
-```
-[cdk/cdk.json]
-"devAccessIamRoleArn": "arn:aws:iam::123456789012:role/<role name>"
-```
+  This configuration grants the following permissions:
+
+  For the OpenSearch Collection:
+
+    ```
+    "aoss:DescribeCollectionItems",
+    "aoss:CreateCollectionItems", 
+    "aoss:DeleteCollectionItems",
+    "aoss:UpdateCollectionItems"
+    ```
+
+  For the index:
+
+    ```
+    "aoss:DescribeIndex", 
+    "aoss:ReadDocument", 
+    "aoss:WriteDocument",
+    "aoss:CreateIndex",
+    "aoss:DeleteIndex",
+    "aoss:UpdateIndex"
+    ```
+
+  Example in cdk/cdk.json:
+    ```
+    json 
+
+    {
+      "devAccessIamRoleArn": "arn:aws:iam::123456789012:role/<role name>"
+    }
+    ```
 
 ## Launch local server
 

@@ -43,7 +43,7 @@ from app.routes.schemas.conversation import (
     ConversationSearchResult,
     FeedbackOutput,
     MessageOutput,
-    SearchHighlight as SchemaSearchHighlight,
+    SearchHighlight,
     type_model_name,
 )
 from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
@@ -661,11 +661,11 @@ def search_conversations(query: str, user: User) -> list[ConversationSearchResul
     output = []
 
     for conversation in conversations:
-        # Convert model SearchHighlight to schema SearchHighlight
+        # Convert model SearchHighlightModel to schema SearchHighlight
         schema_highlights = None
         if conversation.highlights:
             schema_highlights = [
-                SchemaSearchHighlight(
+                SearchHighlight(
                     field_name=highlight.field_name, fragments=highlight.fragments
                 )
                 for highlight in conversation.highlights
@@ -677,7 +677,6 @@ def search_conversations(query: str, user: User) -> list[ConversationSearchResul
                 id=conversation.id,
                 title=conversation.title,
                 last_updated_time=conversation.last_updated_time,
-                model=conversation.model,
                 bot_id=conversation.bot_id,
                 highlights=schema_highlights,
             )

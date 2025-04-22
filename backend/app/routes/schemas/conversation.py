@@ -230,7 +230,6 @@ class ConversationSearchResult(BaseSchema):
     id: str
     title: str
     last_updated_time: float
-    model: str
     bot_id: str | None
     highlights: list[SearchHighlight] | None = None
 

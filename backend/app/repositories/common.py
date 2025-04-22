@@ -180,7 +180,6 @@ def get_opensearch_client(collection_type: str = "bot") -> OpenSearch:
         collection_type: Type of collection to connect to ("bot" or "conversation")
         Note: This method now uses a single shared endpoint for both bot and conversation collections
     """
-    # 統合されたエンドポイントを使用
     endpoint = OPENSEARCH_DOMAIN_ENDPOINT
     if not endpoint:
         raise ValueError("OPENSEARCH_DOMAIN_ENDPOINT is not set")
