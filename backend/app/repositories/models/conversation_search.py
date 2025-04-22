@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class SearchHighlight(BaseModel):
+class SearchHighlightModel(BaseModel):
     """Model representing highlight information for search results"""
 
     field_name: str  # "Title" or "MessageMap"
@@ -25,8 +25,7 @@ class ConversationSearchModel(BaseModel):
     title: str
     bot_id: str | None
     last_updated_time: float = Field(default=0.0)
-    highlights: list[SearchHighlight] | None = None
-    highlight_texts: list[str] | None = None
+    highlights: list[SearchHighlightModel] | None = None
 
     @classmethod
     def from_opensearch_response(cls, hit: dict) -> Self:
@@ -62,29 +61,26 @@ class ConversationSearchModel(BaseModel):
         # Add highlight information if available
         if "highlight" in hit:
             highlights = []
-            highlight_texts = []
 
             for field, fragments in hit["highlight"].items():
                 if field == "extractedContent":
                     highlights.append(
-                        SearchHighlight(field_name="MessageBody", fragments=fragments)
+                        SearchHighlightModel(
+                            field_name="MessageBody", fragments=fragments
+                        )
                     )
-                    highlight_texts.extend(fragments)
                 elif field == "Title":
                     highlights.append(
-                        SearchHighlight(field_name=field, fragments=fragments)
+                        SearchHighlightModel(field_name=field, fragments=fragments)
                     )
-                    highlight_texts.extend(fragments)
                 elif field == "messages.value.content.body":
                     highlights.append(
-                        SearchHighlight(field_name="MessageBody", fragments=fragments)
+                        SearchHighlightModel(
+                            field_name="MessageBody", fragments=fragments
+                        )
                     )
-                    highlight_texts.extend(fragments)
 
             if highlights:
                 conversation.highlights = highlights
-
-            if highlight_texts:
-                conversation.highlight_texts = highlight_texts
 
         return conversation

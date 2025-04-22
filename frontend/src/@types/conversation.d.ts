@@ -147,7 +147,6 @@ export type ConversationSearchMeta = {
   lastUpdatedTime: number;
   botId?: string;
   highlights?: SearchHighlightModel[]; // Optional highlights information
-  highlightTexts?: string[]; // Optional highlighted text fragments
 };
 
 export type MessageMap = {
