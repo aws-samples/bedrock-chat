@@ -26,7 +26,14 @@ const webAclArn = cdk.Fn.importValue(
 const conversationTableName = cdk.Fn.importValue(
   `${params.envPrefix}${sepHyphen}BedrockClaudeChatConversationTableName`
 );
-const botTableName = cdk.Fn.importValue("BedrockClaudeChatBotTableName");
+let botTableName: string;
+try {
+  // Try V3 export first
+  botTableName = cdk.Fn.importValue(`${params.envPrefix}${sepHyphen}BedrockClaudeChatBotTableNameV3`);
+} catch {
+  // Fallback to V2 export
+  botTableName = cdk.Fn.importValue("BedrockClaudeChatBotTableName");
+}
 const tableAccessRoleArn = cdk.Fn.importValue(
   `${params.envPrefix}${sepHyphen}BedrockClaudeChatTableAccessRoleArn`
 );
