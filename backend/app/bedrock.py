@@ -265,6 +265,10 @@ def compose_args_for_converse_api(
     enable_reasoning: bool = False,
 ) -> ConverseStreamRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
+        # Drop unsigned reasoning blocks only for DeepSeek R1
+        if is_deepseek_model(model) and c.content_type == "reasoning" and not getattr(c, "signature", None):
+            return []
+
         if c.content_type == "text":
             if (
                 role == "user"
