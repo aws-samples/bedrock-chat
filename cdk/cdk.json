@@ -75,6 +75,7 @@
     "tokenValidMinutes": 30,
     "alternateDomainName": "",
     "hostedZoneId": "",
+    "certificateArn": "",
     "devAccessIamRoleArn": ""
   }
 }

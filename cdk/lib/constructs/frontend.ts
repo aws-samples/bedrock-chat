@@ -34,6 +34,7 @@ export interface FrontendProps {
    * Required if alternateDomainName is provided
    */
   readonly hostedZoneId?: string;
+  readonly certificateArn?: string;
 }
 
 export class Frontend extends Construct {
@@ -65,12 +66,18 @@ export class Frontend extends Construct {
         zoneName: this.getDomainZoneName(props.alternateDomainName),
       });
 
-      this.certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
-        domainName: props.alternateDomainName,
-        hostedZone: this.hostedZone,
-        region: 'us-east-1',
-        validation: acm.CertificateValidation.fromDns(this.hostedZone),
-      });
+      if (props.certificateArn){
+        this.certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCertificate', props.certificateArn);
+      }
+      else{
+        this.certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
+          domainName: props.alternateDomainName,
+          hostedZone: this.hostedZone,
+          region: 'us-east-1',
+          validation: acm.CertificateValidation.fromDns(this.hostedZone),
+        });
+      }
+      // inside your stack:
     }
 
     const distribution = new Distribution(this, "Distribution", {

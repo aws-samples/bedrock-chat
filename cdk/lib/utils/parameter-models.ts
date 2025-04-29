@@ -92,6 +92,7 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Custom domain configuration
   alternateDomainName: z.string().default(""),
   hostedZoneId: z.string().default(""),
+  certificateArn: z.string().default(""),
 
   // BotStore
   enableBotStore: z.boolean().default(true),
@@ -221,6 +222,7 @@ export function resolveBedrockChatParameters(
     enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
+    certificateArn: app.node.tryGetContext("certificateArn"),
     enableBotStore: app.node.tryGetContext("enableBotStore"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
