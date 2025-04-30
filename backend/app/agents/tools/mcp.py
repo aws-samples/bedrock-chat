@@ -9,13 +9,14 @@ import botocore.session
 import requests
 from pydantic import BaseModel, ConfigDict
 
-from app.agents.tools.agent_tool import (
-    AgentTool,
-    AgentToolBundle,
-    BotModel,
-    ToolFunctionResult,
+from app.agents.tools.agent_tool import AgentTool, AgentToolBundle, ToolFunctionResult
+from app.repositories.models.conversation import (
+    ImageToolResultModel,
+    JsonToolResultModel,
+    TextToolResultModel,
     type_model_name,
 )
+from app.repositories.models.custom_bot import BotModel
 
 _logger = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class MCPTool(AgentTool):
         tool_input: AnyInput,
         bot: BotModel | None,
         model: type_model_name | None,
-    ) -> ToolFunctionResult:
+    ) -> list[ToolFunctionResult]:
         r = _jsonrpc(
             self._session,
             self.url,
@@ -136,9 +137,27 @@ class MCPTool(AgentTool):
             },
             iam_auth=self.iam_auth,
         )
-        return {
-            "content": r,
-        }
+        results: list[ToolFunctionResult] = []
+        for c in r["content"]:
+            if c.get("type") == "text":
+                results.append(
+                    TextToolResultModel(text=c["text"]),
+                )
+            elif c.get("type") == "image":
+                results.append(
+                    ImageToolResultModel(
+                        format=c["mimeType"].removeprefix("image/"),
+                        image=c["data"],
+                    )
+                )
+            else:
+                # "audio", "resource" types are not supported
+                results.append(
+                    JsonToolResultModel(
+                        json=c,
+                    )
+                )
+        return results
 
 
 def _jsonrpc(
