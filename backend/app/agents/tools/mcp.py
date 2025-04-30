@@ -108,7 +108,7 @@ class MCPTool(AgentTool):
     ):
         super().__init__(
             name=tool["name"],
-            description=tool["description"],
+            description=tool.get("description", tool["name"]),
             args_schema=AnyInput,  # use JsonSchema directly
             function=self._call_tool,
         )
