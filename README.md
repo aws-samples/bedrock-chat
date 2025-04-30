@@ -534,7 +534,7 @@ You can configure a custom domain for the CloudFront distribution by setting the
 
 - `alternateDomainName`: The custom domain name for your chat application (e.g., chat.example.com)
 - `hostedZoneId`: The ID of your Route 53 hosted zone where the domain records will be created
-- `certificateArn`: The arn of an existing certificate
+- `certificateArn`: The arn of an existing certificate to attach to a domain. 
 
 When these parameters are provided, the deployment will automatically:
 
