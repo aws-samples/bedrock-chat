@@ -1,5 +1,6 @@
 import json
 import logging
+import typing
 import uuid
 from typing import Any, Generator, Iterator
 
@@ -23,7 +24,7 @@ _logger = logging.getLogger(__name__)
 
 class SigV4AsymAuth(BaseModel):
     service: str
-    region: str = "*"
+    region: str
 
 
 class MCPToolBundle(AgentToolBundle):
@@ -57,9 +58,10 @@ class MCPToolBundle(AgentToolBundle):
 
         # initialize session
         # requires protocol version 2025-03-26 support (Streamable HTTP)
-        _ = _jsonrpc(
+        _, session_id = _jsonrpc(
             self._session,
             self.url,
+            None,
             "initialize",
             {
                 "protocolVersion": "2025-03-26",
@@ -78,9 +80,10 @@ class MCPToolBundle(AgentToolBundle):
         tools = []
         cursor = None
         while True:
-            result = _jsonrpc(
+            result, _ = _jsonrpc(
                 self._session,
                 self.url,
+                session_id,
                 "tools/list",
                 {"cursor": cursor} if cursor else {},
                 iam_auth=self.iam_auth,
@@ -90,7 +93,7 @@ class MCPToolBundle(AgentToolBundle):
                 break
         _logger.debug("MCP tools listed: tools=[%s]", ",".join([tool["name"] for tool in tools]))
 
-        return [MCPTool(tool, self._session, self.url, iam_auth=self.iam_auth) for tool in tools]
+        return [MCPTool(tool, self._session, self.url, session_id, iam_auth=self.iam_auth) for tool in tools]
 
 
 class AnyInput(BaseModel):
@@ -104,6 +107,7 @@ class MCPTool(AgentTool):
         tool: dict[str, Any],
         session: requests.Session,
         url: str,
+        session_id: str | None,
         *,
         iam_auth: SigV4AsymAuth | None = None,
     ):
@@ -116,6 +120,7 @@ class MCPTool(AgentTool):
         self.tool = tool
         self._session = session
         self.url = url
+        self.session_id = session_id
         self.iam_auth = iam_auth
 
     def _generate_input_schema(self) -> dict[str, Any]:
@@ -127,9 +132,10 @@ class MCPTool(AgentTool):
         bot: BotModel | None,
         model: type_model_name | None,
     ) -> list[ToolFunctionResult]:
-        r = _jsonrpc(
+        r, _ = _jsonrpc(
             self._session,
             self.url,
+            self.session_id,
             "tools/call",
             {
                 "name": self.tool["name"],
@@ -163,21 +169,20 @@ class MCPTool(AgentTool):
 def _jsonrpc(
     session: requests.Session,
     url: str,
+    session_id: str | None,
     method: str,
     params: dict,
     *,
     iam_auth: SigV4AsymAuth | None = None,
-) -> Any:
+) -> tuple[Any, str | None]:
     """Do JSON-RPC 2.0 request on MCP HTTP transport."""
     # set up headers
-    # MEMO: `session.headers` may have `Mcp-Session-Id`
-    headers = dict(session.headers)
-    headers.update(
-        {
-            "Content-Type": "application/json",
-            "Accept": "application/json, text/event-stream",
-        }
-    )
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json, text/event-stream",
+    }
+    if session_id:
+        headers["Mcp-Session-Id"] = session_id
 
     # set up JSON-RPC 2.0 request
     request_id = uuid.uuid4().hex
@@ -191,14 +196,12 @@ def _jsonrpc(
 
     if iam_auth:
         # handle AWS SigV4a signing
-        headers["x-amz-content-sha256"] = "UNSIGNED-PAYLOAD"
         request = botocore.awsrequest.AWSRequest(
             method="POST",
             url=url,
             data=body,
             headers=headers,
         )
-        request.context["payload_signing_enabled"] = False
 
         signer = botocore.crt.auth.CrtSigV4AsymAuth(  # type: ignore
             botocore.session.Session().get_credentials(), iam_auth.service, iam_auth.region
@@ -207,7 +210,7 @@ def _jsonrpc(
 
         prepared = request.prepare()
         url = prepared.url
-        headers = dict(prepared.headers)
+        headers = typing.cast(dict, prepared.headers)
 
     # Send HTTP request
     _logger.debug("MCP request: object=\"%s\"", str(rpc_request)[:1000])
@@ -265,10 +268,7 @@ def _jsonrpc(
         _logger.error("JSON-RPC error: code=%s message=\"%s\" data=\"%s\"", code, message, str(data)[:1000] if data is not None else "")
         raise Exception(f"JSON-RPC error: code={code} message=\"{message}\"")
 
-    if "Mcp-Session-Id" in http_response.headers:
-        session.headers["Mcp-Session-Id"] = http_response.headers["Mcp-Session-Id"]
-
-    return rpc_response["result"]
+    return rpc_response["result"], http_response.headers.get("Mcp-Session-Id")
 
 
 def _parse_sse(line_iterator: Iterator[bytes]) -> Generator[bytes, None, None]:
