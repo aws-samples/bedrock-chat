@@ -77,7 +77,6 @@ export class Frontend extends Construct {
           validation: acm.CertificateValidation.fromDns(this.hostedZone),
         });
       }
-      // inside your stack:
     }
 
     const distribution = new Distribution(this, "Distribution", {
