@@ -71,6 +71,7 @@
     "enableBedrockCrossRegionInference": true,
     "enableLambdaSnapStart": true,
     "enableBotStore": true,
+    "enableBotStoreReplicas": false,
     "botStoreLanguage": "en",
     "tokenValidMinutes": 30,
     "alternateDomainName": "",

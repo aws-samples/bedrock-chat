@@ -264,6 +264,7 @@ bedrockChatParams.set("dev", {
   bedrockRegion: "us-west-2",
   allowedIpV4AddressRanges: ["10.0.0.0/8"],
   enableRagReplicas: false, // Cost-saving for dev environment
+  enableBotStoreReplicas: false, // Cost-saving for dev environment
 });
 
 bedrockChatParams.set("prod", {
@@ -271,6 +272,7 @@ bedrockChatParams.set("prod", {
   allowedIpV4AddressRanges: ["172.16.0.0/12"],
   enableLambdaSnapStart: true,
   enableRagReplicas: true, // Enhanced availability for production
+  enableBotStoreReplicas: true, // Enhanced availability for production
 });
 ```
 
@@ -476,7 +478,7 @@ By default, newly created users will be joined to the `CreatingBotAllowed` group
 
 ### Configure RAG Replicas
 
-`enableRagReplicas` is an option in [cdk.json](./cdk/cdk.json) that controls the replica settings for the RAG database, specifically the Knowledge Bases using Amazon OpenSearch Serverless. This also affects bot store database.
+`enableRagReplicas` is an option in [cdk.json](./cdk/cdk.json) that controls the replica settings for the RAG database, specifically the Knowledge Bases using Amazon OpenSearch Serverless.
 
 - **Default**: true
 - **true**: Enhances availability by enabling additional replicas, making it suitable for production environments but increasing costs.
@@ -495,6 +497,7 @@ The bot store feature allows users to share and discover custom bots. You can co
 {
   "context": {
     "enableBotStore": true,
+    "enableBotStoreReplicas": false,
     "botStoreLanguage": "en"
   }
 }
@@ -502,7 +505,8 @@ The bot store feature allows users to share and discover custom bots. You can co
 
 - **enableBotStore**: Controls whether the bot store feature is enabled (default: `true`)
 - **botStoreLanguage**: Sets the primary language for bot search and discovery (default: `"en"`). This affects how bots are indexed and searched in the bot store, optimizing text analysis for the specified language.
-- **enableRagReplicas**: This setting (mentioned in the previous section) also applies to the bot store's OpenSearch database. Setting it to `true` improves availability but increases costs, while `false` reduces costs but may affect availability.
+- **enableBotStoreReplicas**: Controls whether standby replicas are enabled for the OpenSearch Serverless collection used by bot store (default: `false`). Setting it to `true` improves availability but increases costs, while `false` reduces costs but may affect availability.
+  > **Important**: You can't update this property after the collection is already created. If you attempt to modify this property, the collection continues to use the original value.
 
 ### Cross-region inference
 

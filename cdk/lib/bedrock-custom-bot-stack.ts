@@ -51,7 +51,7 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly ownerUserId: string;
   readonly botId: string;
   readonly bedrockClaudeChatDocumentBucketName: string;
-  readonly useStandbyReplicas?: boolean;
+  readonly enableRagReplicas?: boolean;
 
   // Knowledge base configuration
   readonly embeddingsModel: BedrockFoundationModel;
@@ -88,7 +88,7 @@ export class BedrockCustomBotStack extends Stack {
       const vectorCollection = new VectorCollection(this, "KBVectors", {
         collectionName: `kb-${props.botId.slice(0, 20).toLowerCase()}`,
         standbyReplicas:
-          props.useStandbyReplicas === true
+          props.enableRagReplicas === true
             ? VectorCollectionStandbyReplicas.ENABLED
             : VectorCollectionStandbyReplicas.DISABLED,
       });

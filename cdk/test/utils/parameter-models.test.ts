@@ -697,7 +697,7 @@ describe("resolveBedrockCustomBotParameters", () => {
         KNOWLEDGE: '{"env": "knowledge"}',
         BEDROCK_KNOWLEDGE_BASE: '{"env": "kb"}',
         BEDROCK_GUARDRAILS: '{"env": "guardrails"}',
-        USE_STAND_BY_REPLICAS: "true",
+        ENABLE_RAG_REPLICAS: "true",
       };
 
       try {
@@ -714,7 +714,7 @@ describe("resolveBedrockCustomBotParameters", () => {
         expect(result.knowledge).toBe('{"env": "knowledge"}');
         expect(result.knowledgeBase).toBe('{"env": "kb"}');
         expect(result.guardrails).toBe('{"env": "guardrails"}');
-        expect(result.useStandByReplicas).toBe(true);
+        expect(result.enableRagReplicas).toBe(true);
       } finally {
         // Restore original environment
         process.env = originalEnv;

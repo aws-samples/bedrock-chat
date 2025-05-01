@@ -95,6 +95,7 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
 
   // BotStore
   enableBotStore: z.boolean().default(true),
+  enableBotStoreReplicas: z.boolean().default(false),
   botStoreLanguage: BotStoreLanguageSchema.default("en"),
 
   // ID token refresh interval
@@ -138,7 +139,7 @@ const BedrockCustomBotParametersSchema = BaseParametersSchema.extend({
   knowledge: z.string(),
   knowledgeBase: z.string(),
   guardrails: z.string(),
-  useStandByReplicas: z
+  enableRagReplicas: z
     .string()
     .optional()
     .transform((val) => val === "true")
@@ -222,6 +223,7 @@ export function resolveBedrockChatParameters(
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
     enableBotStore: app.node.tryGetContext("enableBotStore"),
+    enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
@@ -317,7 +319,7 @@ export function resolveBedrockCustomBotParameters(): BedrockCustomBotParameters 
     knowledge: getEnvVar("KNOWLEDGE"),
     knowledgeBase: getEnvVar("BEDROCK_KNOWLEDGE_BASE"),
     guardrails: getEnvVar("BEDROCK_GUARDRAILS"),
-    useStandByReplicas: getEnvVar("USE_STAND_BY_REPLICAS"),
+    enableRagReplicas: getEnvVar("ENABLE_RAG_REPLICAS"),
   };
 
   return BedrockCustomBotParametersSchema.parse(envVars);
