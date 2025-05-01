@@ -39,8 +39,8 @@ export interface BotStoreProps {
   envPrefix: string;
   readonly botTable: dynamodb.ITable;
   readonly conversationTable: dynamodb.ITable;
-  readonly useStandbyReplicas: boolean;
   readonly language: Language;
+  readonly enableBotStoreReplicas: boolean;
 }
 
 export class BotStore extends Construct {
@@ -59,7 +59,7 @@ export class BotStore extends Construct {
     );
 
     const standbyReplicas =
-      props.useStandbyReplicas === true ? "ENABLED" : "DISABLED";
+      props.enableBotStoreReplicas === true ? "ENABLED" : "DISABLED";
 
     const networkPolicy = new oss.CfnSecurityPolicy(this, "NetworkPolicy", {
       name: generatePhysicalName(this, `${props.envPrefix}NetworkPolicy`, {

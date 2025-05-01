@@ -95,6 +95,7 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
 
   // BotStore
   enableBotStore: z.boolean().default(true),
+  enableBotStoreReplicas: z.boolean().default(false),
   botStoreLanguage: BotStoreLanguageSchema.default("en"),
 
   // ID token refresh interval
@@ -222,6 +223,7 @@ export function resolveBedrockChatParameters(
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
     enableBotStore: app.node.tryGetContext("enableBotStore"),
+    enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };

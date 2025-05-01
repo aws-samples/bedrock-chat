@@ -45,6 +45,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
   readonly enableBotStore: boolean;
+  readonly enableBotStoreReplicas: boolean;
   readonly botStoreLanguage: Language;
   readonly tokenValidMinutes: number;
   readonly alternateDomainName?: string;
@@ -176,8 +177,8 @@ export class BedrockChatStack extends cdk.Stack {
         envPrefix: props.envPrefix,
         botTable: database.botTable,
         conversationTable: database.conversationTable,
-        useStandbyReplicas: props.useStandbyReplicas,
         language: props.botStoreLanguage,
+        enableBotStoreReplicas: props.enableBotStoreReplicas,
       });
     }
 

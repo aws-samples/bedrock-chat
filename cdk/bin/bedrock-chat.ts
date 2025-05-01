@@ -91,6 +91,7 @@ const chat = new BedrockChatStack(
     alternateDomainName: params.alternateDomainName,
     hostedZoneId: params.hostedZoneId,
     enableBotStore: params.enableBotStore,
+    enableBotStoreReplicas: params.enableBotStoreReplicas,
     botStoreLanguage: params.botStoreLanguage,
     tokenValidMinutes: params.tokenValidMinutes,
     devAccessIamRoleArn: params.devAccessIamRoleArn,
