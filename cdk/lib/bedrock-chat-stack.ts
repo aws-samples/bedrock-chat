@@ -41,7 +41,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly selfSignUpEnabled: boolean;
   readonly enableIpV6: boolean;
   readonly documentBucket: Bucket;
-  readonly useStandbyReplicas: boolean;
+  readonly enableRagReplicas: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
   readonly enableBotStore: boolean;
@@ -278,7 +278,7 @@ export class BedrockChatStack extends cdk.Stack {
       database,
       documentBucket: props.documentBucket,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
-      useStandbyReplicas: props.useStandbyReplicas,
+      enableRagReplicas: props.enableRagReplicas,
     });
 
     // WebAcl for published API

@@ -139,7 +139,7 @@ const BedrockCustomBotParametersSchema = BaseParametersSchema.extend({
   knowledge: z.string(),
   knowledgeBase: z.string(),
   guardrails: z.string(),
-  useStandByReplicas: z
+  enableRagReplicas: z
     .string()
     .optional()
     .transform((val) => val === "true")
@@ -319,7 +319,7 @@ export function resolveBedrockCustomBotParameters(): BedrockCustomBotParameters 
     knowledge: getEnvVar("KNOWLEDGE"),
     knowledgeBase: getEnvVar("BEDROCK_KNOWLEDGE_BASE"),
     guardrails: getEnvVar("BEDROCK_GUARDRAILS"),
-    useStandByReplicas: getEnvVar("USE_STAND_BY_REPLICAS"),
+    enableRagReplicas: getEnvVar("ENABLE_RAG_REPLICAS"),
   };
 
   return BedrockCustomBotParametersSchema.parse(envVars);

@@ -85,7 +85,7 @@ const chat = new BedrockChatStack(
     autoJoinUserGroups: params.autoJoinUserGroups,
     selfSignUpEnabled: params.selfSignUpEnabled,
     documentBucket: bedrockRegionResources.documentBucket,
-    useStandbyReplicas: params.enableRagReplicas,
+    enableRagReplicas: params.enableRagReplicas,
     enableBedrockCrossRegionInference: params.enableBedrockCrossRegionInference,
     enableLambdaSnapStart: params.enableLambdaSnapStart,
     alternateDomainName: params.alternateDomainName,

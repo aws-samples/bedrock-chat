@@ -25,7 +25,7 @@ export interface EmbeddingProps {
   readonly bedrockRegion: string;
   readonly documentBucket: IBucket;
   readonly bedrockCustomBotProject: codebuild.IProject;
-  readonly useStandbyReplicas: boolean;
+  readonly enableRagReplicas: boolean;
 }
 
 export class Embedding extends Construct {
@@ -254,9 +254,9 @@ export class Embedding extends Construct {
               "States.JsonToString($.dynamodb.NewImage.GuardrailsParams.M)"
             ),
           },
-          USE_STAND_BY_REPLICAS: {
+          ENABLE_RAG_REPLICAS: {
             type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: props.useStandbyReplicas.toString(),
+            value: props.enableRagReplicas.toString(),
           },
         },
         resultPath: "$.Build",
