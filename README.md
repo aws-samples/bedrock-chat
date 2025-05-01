@@ -507,8 +507,6 @@ The bot store feature allows users to share and discover custom bots. You can co
 - **botStoreLanguage**: Sets the primary language for bot search and discovery (default: `"en"`). This affects how bots are indexed and searched in the bot store, optimizing text analysis for the specified language.
 - **enableBotStoreReplicas**: Controls whether standby replicas are enabled for the OpenSearch Serverless collection used by bot store (default: `false`). Setting it to `true` improves availability but increases costs, while `false` reduces costs but may affect availability.
   > **Important**: You can't update this property after the collection is already created. If you attempt to modify this property, the collection continues to use the original value.
-- **enableRagReplicas**: Controls whether standby replicas are enabled for the OpenSearch Serverless collection used by Knowledge Base(default: `true`). Setting it to `true` improves availability but increases costs, while `false` reduces costs but may affect availability.
-  > **Important**: You can't update this property after the collection is already created. If you attempt to modify this property, the collection continues to use the original value.
 
 ### Cross-region inference
 
