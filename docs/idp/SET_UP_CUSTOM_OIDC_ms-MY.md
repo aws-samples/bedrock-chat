@@ -1,8 +1,8 @@
 # Sediakan penyedia identiti luar
 
-## Langkah 1: Buat Klien OIDC
+## Langkah 1: Membuat Klien OIDC
 
-Ikuti prosedur untuk penyedia OIDC yang dituju, dan catat nilai untuk ID klien OIDC dan rahsia. Selain itu, URL pengeluar diperlukan pada langkah berikutnya. Jika URI pengalihan diperlukan untuk proses penyediaan, masukkan nilai tiruan, yang akan digantikan selepas penyebaran selesai.
+Ikuti prosedur untuk penyedia OIDC yang dituju, dan catat nilai untuk ID klien OIDC dan rahsia. URL pengeluar juga diperlukan pada langkah selanjutnya. Jika URI pengalihan diperlukan dalam proses penyediaan, masukkan nilai tiruan, yang akan diganti selepas deployment selesai.
 
 ## Langkah 2: Simpan Credentials dalam AWS Secrets Manager
 
@@ -15,8 +15,8 @@ Ikuti prosedur untuk penyedia OIDC yang dituju, dan catat nilai untuk ID klien O
    - Kunci: `clientSecret`, Nilai: <YOUR_GOOGLE_CLIENT_SECRET>
    - Kunci: `issuerUrl`, Nilai: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Ikuti petunjuk untuk memberi nama dan menjelaskan secret. Catat nama secret kerana anda akan memerlukannya dalam kod CDK anda (Digunakan dalam nama variabel Langkah 3 <YOUR_SECRET_NAME>).
-6. Semak dan simpan secret.
+5. Ikuti arahan untuk memberi nama dan menghuraikan rahsia. Catat nama rahsia kerana anda akan memerlukannya dalam kod CDK anda (Digunakan dalam nama pembolehubah Langkah 3 <YOUR_SECRET_NAME>).
+6. Semak dan simpan rahsia.
 
 ### Perhatian
 
@@ -35,11 +35,11 @@ seperti berikut:
     "identityProviders": [
       {
         "service": "oidc", // Jangan tukar
-        "serviceName": "<NAMA_PERKHIDMATAN_ANDA>", // Tetapkan apa-apa nilai yang anda suka
+        "serviceName": "<NAMA_PERKHIDMATAN_ANDA>", // Tetapkan nilai yang anda suka
         "secretName": "<NAMA_RAHSIA_ANDA>"
       }
     ],
-    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_USER_POOL_ANDA>"
+    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_KUMPULAN_PENGGUNA_ANDA>"
   }
 }
 ```
@@ -48,7 +48,7 @@ seperti berikut:
 
 #### Keunikan
 
-`userPoolDomainPrefix` mesti unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, penciptaan domain user pool akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
+`userPoolDomainPrefix` mestilah unik secara global merentas semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, penghasilan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
 
 ## Langkah 4: Deploy Stack CDK Anda
 

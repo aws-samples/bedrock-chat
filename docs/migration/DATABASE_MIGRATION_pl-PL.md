@@ -1,20 +1,20 @@
-# Przewodnik migracji bazy danych
+# Przewodnik po Migracji Bazy Danych
 
 > [!Warning]
 > Ten przewodnik dotyczy migracji z wersji 0 do wersji 1.
 
-Ten przewodnik przedstawia kroki migracji danych podczas aktualizacji Bedrock Chat, która obejmuje wymianę klastra Aurora. Poniższa procedura zapewnia płynne przejście przy minimalnym czasie przestoju i ryzyku utraty danych.
+Ten przewodnik opisuje kroki migracji danych podczas aktualizacji Bedrock Chat, która obejmuje wymianę klastra Aurora. Poniższa procedura zapewnia płynne przejście przy minimalnym czasie przestoju i ryzyku utraty danych.
 
 ## Przegląd
 
-Proces migracji polega na zeskanowaniu wszystkich botów i uruchomieniu zadań ECS osadzania dla każdego z nich. To podejście wymaga przeliczenia osadzeń, co może być czasochłonne i wiązać się z dodatkowymi kosztami ze względu na wykonywanie zadań ECS oraz opłaty za usługę Bedrock Cohere. Jeśli wolisz uniknąć tych kosztów i wymagań czasowych, zapoznaj się z [alternatywnymi opcjami migracji](#alternative-migration-options) przedstawionymi w dalszej części tego przewodnika.
+Proces migracji polega na zeskanowaniu wszystkich botów i uruchomieniu zadań ECS osadzania dla każdego z nich. To podejście wymaga przeliczenia osadzeń, co może być czasochłonne i wiązać się z dodatkowymi kosztami z powodu wykonywania zadań ECS oraz opłat za użycie Bedrock Cohere. Jeśli wolisz uniknąć tych kosztów i wymagań czasowych, zapoznaj się z [alternatywnymi opcjami migracji](#alternative-migration-options) przedstawionymi w dalszej części tego przewodnika.
 
 ## Kroki migracji
 
-- Po wykonaniu polecenia [npx cdk deploy](../README.md#deploy-using-cdk) z wymianą Aurora, otwórz skrypt [migrate_v0_v1.py](./migrate_v0_v1.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Po wykonaniu polecenia [npx cdk deploy](../README.md#deploy-using-cdk) z zastąpieniem Aurora, otwórz skrypt [migrate_v0_v1.py](./migrate_v0_v1.py) i zaktualizuj następujące zmienne odpowiednimi wartościami. Wartości można znaleźć w zakładce `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
-# Otwórz stos CloudFormation w konsoli AWS Management Console i skopiuj wartości z zakładki Outputs.
+# Otwórz stos CloudFormation w konsoli zarządzania AWS i skopiuj wartości z zakładki Outputs.
 # Klucz: DatabaseConversationTableNameXXXX
 TABLE_NAME = "BedrockChatStack-DatabaseConversationTableXXXXX"
 # Klucz: EmbeddingClusterNameXXX
@@ -34,7 +34,7 @@ SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXX
 
 ## Alternatywne opcje migracji
 
-Jeśli wolisz nie używać powyższej metody ze względu na związane z nią implikacje czasowe i kosztowe, rozważ następujące alternatywne podejścia:
+Jeśli wolisz nie korzystać z powyższej metody ze względu na związane z nią implikacje czasowe i kosztowe, rozważ następujące alternatywne podejścia:
 
 ### Przywracanie migawki i migracja DMS
 
@@ -45,4 +45,4 @@ Uwaga: Według stanu na 29 maja 2024 r. DMS nie obsługuje natywnie rozszerzenia
 
 Użyj [migracji jednorodnej DMS](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), która wykorzystuje natywną replikację logiczną. W tym przypadku zarówno źródłowa, jak i docelowa baza danych muszą być PostgreSQL. DMS może wykorzystać natywną replikację logiczną do tego celu.
 
-Rozważ specyficzne wymagania i ograniczenia Twojego projektu przy wyborze najbardziej odpowiedniego podejścia migracyjnego.
+Rozważ specyficzne wymagania i ograniczenia Twojego projektu podczas wyboru najbardziej odpowiedniego podejścia migracyjnego.

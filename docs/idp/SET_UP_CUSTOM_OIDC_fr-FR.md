@@ -2,7 +2,7 @@
 
 ## Étape 1 : Créer un Client OIDC
 
-Suivez les procédures du fournisseur OIDC cible et notez les valeurs de l'ID client OIDC et du secret. L'URL de l'émetteur est également requise dans les étapes suivantes. Si une URI de redirection est nécessaire lors du processus de configuration, entrez une valeur factice qui sera remplacée une fois le déploiement terminé.
+Suivez les procédures du fournisseur OIDC cible et notez les valeurs de l'ID client OIDC et du secret. L'URL de l'émetteur est également requise dans les étapes suivantes. Si une URI de redirection est nécessaire lors du processus de configuration, entrez une valeur factice, qui sera remplacée une fois le déploiement terminé.
 
 ## Étape 2 : Stocker les identifiants dans AWS Secrets Manager
 
@@ -24,9 +24,9 @@ Les noms de clés doivent correspondre exactement aux chaînes `clientId`, `clie
 
 ## Étape 3 : Mettre à jour cdk.json
 
-Dans votre fichier cdk.json, ajoutez le fournisseur d'identité et le nom du secret au fichier cdk.json.
+Dans votre fichier cdk.json, ajoutez le fournisseur d'identité et le nom du secret dans le fichier cdk.json.
 
-comme suit :
+comme ceci :
 
 ```json
 {
@@ -48,7 +48,7 @@ comme suit :
 
 #### Unicité
 
-Le `userPoolDomainPrefix` doit être globalement unique pour tous les utilisateurs Amazon Cognito. Si vous choisissez un préfixe déjà utilisé par un autre compte AWS, la création du domaine du user pool échouera. Il est recommandé d'inclure des identificateurs, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
+Le `userPoolDomainPrefix` doit être globalement unique parmi tous les utilisateurs Amazon Cognito. Si vous choisissez un préfixe déjà utilisé par un autre compte AWS, la création du domaine du user pool échouera. Il est recommandé d'inclure des identificateurs, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
 
 ## Étape 4 : Déployer Votre Stack CDK
 
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Étape 5 : Mettre à jour le client OIDC avec les URI de redirection Cognito
 
-Après avoir déployé la pile, `AuthApprovedRedirectURI` s'affiche dans les sorties CloudFormation. Retournez à votre configuration OIDC et mettez à jour les URI de redirection avec les URI corrects.
+Après avoir déployé la pile, `AuthApprovedRedirectURI` apparaît dans les sorties CloudFormation. Retournez à votre configuration OIDC et mettez à jour les URI de redirection corrects.

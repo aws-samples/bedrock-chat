@@ -1,51 +1,51 @@
 # Panduan Migrasi (v2 ke v3)
 
-## TL;DR
+## Ringkasan Ringkas
 
 - V3 memperkenalkan kawalan izin yang terperinci dan fungsi Bot Store, yang memerlukan perubahan skema DynamoDB
 - **Backup Jadual Perbualan DynamoDB anda sebelum migrasi**
 - Kemas kini URL repositori anda dari `bedrock-claude-chat` ke `bedrock-chat`
-- Jalankan skrip migrasi untuk menukar data anda ke skema baharu
-- Semua bot dan perbualan anda akan diselamatkan dengan model izin baharu
+- Jalankan skrip migrasi untuk menukar data anda ke skema baru
+- Semua bot dan perbualan anda akan diselamatkan dengan model izin baru
 - **PENTING: Semasa proses migrasi, aplikasi akan tidak tersedia untuk semua pengguna sehingga migrasi selesai. Proses ini biasanya mengambil masa sekitar 60 minit, bergantung kepada jumlah data dan prestasi persekitaran pembangunan anda.**
 - **PENTING: Semua API Diterbitkan mesti dipadamkan semasa proses migrasi.**
 - **AMARAN: Proses migrasi tidak dapat menjamin kejayaan 100% untuk semua bot. Sila dokumentasikan konfigurasi bot penting anda sebelum migrasi sekiranya anda perlu membuat semula secara manual**
 
 ## Pengenalan
 
-### Apa Yang Baru dalam V3
+### Apa yang Baru dalam V3
 
-V3 memperkenalkan peningkatan yang signifikan pada Bedrock Chat:
+V3 memperkenalkan peningkatan yang signifikan dalam Bedrock Chat:
 
-1. **Kawalan izin terperinci**: Kawalan akses ke bot anda dengan izin berdasarkan kumpulan pengguna
-2. **Kedai Bot**: Kongsi dan temui bot melalui pusat pasaran
-3. **Ciri-ciri pentadbiran**: Urus API, tandai bot sebagai penting, dan analisis penggunaan bot
+1. **Kawalan izin terperinci**: Kawal akses ke bot anda dengan izin berdasarkan kumpulan pengguna
+2. **Kedai Bot**: Kongsi dan temui bot melalui pusat pasaran berpusat
+3. **Fitur pentadbiran**: Urus API, tandakan bot sebagai penting, dan analisis penggunaan bot
 
-Ciri-ciri baru ini memerlukan perubahan pada skema DynamoDB, yang memerlukan proses migrasi untuk pengguna sedia ada.
+Ciri-ciri baru ini memerlukan perubahan dalam skema DynamoDB, yang memerlukan proses migrasi untuk pengguna sedia ada.
 
 ### Mengapa Migrasi Ini Diperlukan
 
-Model izin baru dan fungsi Kedai Bot memerlukan penyusunan semula cara data bot disimpan dan diakses. Proses migrasi menukar bot dan perbualan anda yang sedia ada ke skema baru sambil mengekalkan semua data anda.
+Model kebenaran baru dan fungsi Kedai Bot memerlukan penyusunan semula cara data bot disimpan dan diakses. Proses migrasi menukar bot dan perbualan anda yang sedia ada ke skema baru sambil mengekalkan semua data anda.
 
-> [!AMARAN]
+> [!WARNING]
 > Notis Gangguan Perkhidmatan: **Semasa proses migrasi, aplikasi akan tidak tersedia untuk semua pengguna.** Rancang untuk melakukan migrasi ini dalam tetingkap penyelenggaraan apabila pengguna tidak memerlukan akses ke sistem. Aplikasi hanya akan tersedia semula selepas skrip migrasi berjaya diselesaikan dan semua data ditukar dengan betul ke skema baru. Proses ini biasanya mengambil masa sekitar 60 minit, bergantung kepada jumlah data dan prestasi persekitaran pembangunan anda.
 
-> [!PENTING]
-> Sebelum meneruskan migrasi: **Proses migrasi tidak dapat menjamin kejayaan 100% untuk semua bot**, terutamanya yang dibuat dengan versi lama atau dengan konfigurasi khusus. Sila dokumentasikan konfigurasi bot penting anda (arahan, sumber pengetahuan, tetapan) sebelum memulakan proses migrasi sekiranya anda perlu membuat semula mereka secara manual.
+> [!IMPORTANT]
+> Sebelum meneruskan migrasi: **Proses migrasi tidak dapat menjamin kejayaan 100% untuk semua bot**, terutamanya yang dibuat dengan versi lama atau konfigurasi khusus. Sila dokumentasikan konfigurasi bot penting anda (arahan, sumber pengetahuan, tetapan) sebelum memulakan proses migrasi sekiranya anda perlu membuat semula secara manual.
 
 ## Proses Migrasi
 
 ### Notis Penting Tentang Keterlihatan Bot dalam V3
 
-Dalam V3, **semua bot v2 yang mempunyai perkongsian awam akan dapat dicari dalam Bot Store.** Jika anda mempunyai bot yang mengandungi maklumat sensitif yang anda tidak mahu didapati, pertimbangkan untuk menjadikannya peribadi sebelum bermigrasi ke V3.
+Dalam V3, **semua bot v2 dengan perkongsian awam akan dapat dicari dalam Bot Store.** Jika anda mempunyai bot yang mengandungi maklumat sensitif yang anda tidak mahu didapati, pertimbangkan untuk menjadikannya peribadi sebelum bermigrasi ke V3.
 
 ### Langkah 1: Kenalpasti nama persekitaran anda
 
-Dalam prosedur ini, `{YOUR_ENV_PREFIX}` ditentukan untuk mengenal pasti nama CloudFormation Stacks anda. Jika anda menggunakan fitur [Menggunakan Berbagai Persekitaran](../../README.md#deploying-multiple-environments), tukar dengan nama persekitaran yang akan dimigrasikan. Jika tidak, tukar dengan rentetan kosong.
+Dalam prosedur ini, `{YOUR_ENV_PREFIX}` ditentukan untuk mengenal pasti nama CloudFormation Stacks anda. Jika anda menggunakan fitur [Menggunakan Berbagai Persekitaran](../../README.md#deploying-multiple-environments), gantikan dengan nama persekitaran yang akan dimigrasikan. Jika tidak, gantikan dengan rentetan kosong.
 
-### Langkah 2: Kemas Kini URL Repositori (Disyorkan)
+### Langkah 2: Kemas Kini URL Repositori (Disarankan)
 
-Repositori telah dinamakan semula daripada `bedrock-claude-chat` kepada `bedrock-chat`. Kemas kini repositori tempatan anda:
+Repositori telah dinamakan semula dari `bedrock-claude-chat` kepada `bedrock-chat`. Kemas kini repositori tempatan anda:
 
 ```bash
 # Semak URL remote semasa anda
@@ -66,7 +66,7 @@ git remote -v
 Sebelum memulakan migrasi, pastikan anda menjalankan versi terkini V2 (**v2.10.0**). Ini memastikan anda mempunyai semua pembetulan dan penambahbaikan yang diperlukan sebelum naik taraf ke V3:
 
 ```bash
-# Ambil tag terkini
+# Dapatkan tag terkini
 git fetch --tags
 
 # Tukar ke versi V2 terkini
@@ -90,14 +90,14 @@ aws cloudformation describe-stacks \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 ```
 
-Pastikan menyimpan nama jadual ini di lokasi yang selamat, kerana anda akan memerlukannya untuk skrip migrasi kemudian.
+Pastikan anda menyimpan nama jadual ini di lokasi yang selamat, kerana anda akan memerlukannya untuk skrip migrasi kemudian.
 
 ### Langkah 5: Sandaran Jadual DynamoDB Anda
 
-Sebelum meneruskan, buat sandaran ConversationTable DynamoDB menggunakan nama yang baru sahaja anda rekod:
+Sebelum meneruskan, cipta sandaran ConversationTable DynamoDB menggunakan nama yang baru anda rekod:
 
 ```bash
-# Buat sandaran jadual V2 anda
+# Cipta sandaran jadual V2 anda
 aws dynamodb create-backup \
   --no-cli-pager \
   --backup-name "BedrockChatV2Backup-$(date +%Y%m%d)" \
@@ -120,7 +120,7 @@ aws dynamodb describe-backup \
 3. Semak senarai semua API yang diterbitkan
 4. Padam setiap API yang diterbitkan dengan mengklik butang padam di sebelahnya
 
-Anda boleh mencari maklumat lanjut tentang penerbitan dan pengurusan API dalam dokumentasi [PUBLISH_API.md](../PUBLISH_API_ms-MY.md), [ADMINISTRATOR.md](../ADMINISTRATOR_ms-MY.md) masing-masing.
+Anda boleh mencari maklumat lanjut tentang penerbitan API dan pengurusan dalam dokumentasi [PUBLISH_API.md](../PUBLISH_API_ms-MY.md), [ADMINISTRATOR.md](../ADMINISTRATOR_ms-MY.md) masing-masing.
 
 ### Langkah 7: Tarik V3 dan Gunakan
 
@@ -156,7 +156,7 @@ aws cloudformation describe-stacks \
 ```
 
 > [!Important]
-> Pastikan menyimpan nama jadual V3 ini bersama nama jadual V2 yang disimpan sebelum ini, kerana anda akan memerlukannya untuk skrip migrasi.
+> Pastikan anda menyimpan nama jadual V3 ini bersama nama jadual V2 yang disimpan sebelum ini, kerana anda akan memerlukannya untuk skrip migrasi.
 
 ### Langkah 9: Jalankan Skrip Migrasi
 
@@ -164,23 +164,23 @@ Skrip migrasi akan menukar data V2 anda ke skema V3. Pertama, edit skrip migrasi
 
 ```python
 # Wilayah di mana dynamodb berada
-REGION = "ap-northeast-1" # Tukar dengan wilayah anda
+REGION = "ap-northeast-1" # Ganti dengan wilayah anda
 
-V2_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableXXXX" # Tukar dengan nilai yang anda rekod dalam Langkah 4
-V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Tukar dengan nilai yang anda rekod dalam Langkah 8
-V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Tukar dengan nilai yang anda rekod dalam Langkah 8
+V2_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableXXXX" # Ganti dengan nilai yang anda rekod dalam Langkah 4
+V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Ganti dengan nilai yang anda rekod dalam Langkah 8
+V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Ganti dengan nilai yang anda rekod dalam Langkah 8
 ```
 
 Kemudian jalankan skrip menggunakan Poetry dari direktori backend:
 
 > [!NOTE]
-> Versi keperluan Python telah diubah kepada 3.13.0 atau lebih baru (Mungkin berubah dalam pembangunan masa hadapan. Lihat pyproject.toml). Jika anda mempunyai venv yang dipasang dengan versi Python yang berbeza, anda perlu membuangnya sekali.
+> Versi keperluan Python telah diubah kepada 3.13.0 atau terkini (Mungkin berubah dalam pembangunan masa hadapan. Lihat pyproject.toml). Jika anda mempunyai venv yang dipasang dengan versi Python yang berbeza, anda perlu membuangnya sekali.
 
 ```bash
 # Pergi ke direktori backend
 cd backend
 
-# Pasang dependensi jika belum dilakukan
+# Pasang dependensi jika belum
 poetry install
 
 # Jalankan percubaan kering terlebih dahulu untuk melihat apa yang akan dimigrasikan
@@ -197,7 +197,7 @@ Skrip migrasi akan menjana fail laporan dalam direktori semasa anda dengan butir
 
 #### Mengendalikan Volum Data Besar
 
-Untuk persekitaran dengan pengguna yang berat atau sejumlah besar data, pertimbangkan pendekatan ini:
+Untuk persekitaran dengan pengguna yang aktif atau sejumlah besar data, pertimbangkan pendekatan ini:
 
 1. **Migrasikan pengguna secara individu**: Untuk pengguna dengan volum data besar, migrasikan mereka seorang demi seorang:
 
@@ -205,11 +205,11 @@ Untuk persekitaran dengan pengguna yang berat atau sejumlah besar data, pertimba
    poetry run python ../docs/migration/migrate_v2_v3.py --users user-id-1 user-id-2
    ```
 
-2. **Pertimbangan memori**: Proses migrasi memuatkan data ke dalam memori. Jika anda menghadapi ralat Kehabisan Memori (OOM), cuba:
+2. **Pertimbangan memori**: Proses migrasi memuatkan data ke dalam memori. Jika anda menghadapi ralat Keluar Dari Memori (OOM), cuba:
 
    - Migrasikan seorang pengguna pada satu masa
-   - Jalankan migrasi pada mesin dengan lebih memori
-   - Pecahkan migrasi kepada kelompok pengguna yang lebih kecil
+   - Jalankan migrasi pada mesin dengan memori lebih
+   - Pecahkan migrasi kepada kumpulan pengguna yang lebih kecil
 
 3. **Pantau migrasi**: Semak fail laporan yang dijana untuk memastikan semua data dimigrasikan dengan betul, terutamanya untuk set data yang besar.
 
@@ -223,7 +223,7 @@ Selepas migrasi, buka aplikasi anda dan sahkan:
 
 ### Pembersihan (Pilihan)
 
-Selepas mengesahkan bahawa migrasi berjaya dan semua data anda boleh diakses dengan betul dalam V3, anda boleh secara pilihan memadam jadual perbualan V2 untuk menjimatkan kos:
+Selepas mengesahkan migrasi berjaya dan semua data anda boleh diakses dengan betul dalam V3, anda boleh secara pilihan memadam jadual perbualan V2 untuk menjimatkan kos:
 
 ```bash
 # Padam jadual perbualan V2 (HANYA selepas mengesahkan migrasi berjaya)
@@ -231,7 +231,7 @@ aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 ```
 
 > [!IMPORTANT]
-> Hanya padamkan jadual V2 selepas benar-benar mengesahkan bahawa semua data penting anda telah berjaya dimigrasikan ke V3. Kami mencadangkan menyimpan sandaran yang dibuat dalam Langkah 2 selama beberapa minggu selepas migrasi, walaupun anda memadam jadual asal.
+> Hanya padam jadual V2 selepas menyemak dengan teliti bahawa semua data penting anda telah dimigrasikan dengan jayanya ke V3. Kami mencadangkan anda menyimpan sandaran yang dibuat dalam Langkah 2 selama beberapa minggu selepas migrasi, walaupun anda memadam jadual asal.
 
 ## Soalan Lazim V3
 
@@ -240,7 +240,7 @@ aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 **S: Apa yang berlaku jika bot yang saya gunakan dipadam atau kebenaran akses saya dialih keluar?**
 A: Pengesahan disemak semasa perbualan, jadi anda akan kehilangan akses serta-merta.
 
-**S: Apa yang berlaku jika pengguna dipadam (contohnya, pekerja meninggalkan syarikat)?**
+**S: Apa yang berlaku jika pengguna dipadam (contohnya pekerja meninggalkan syarikat)?**
 A: Data mereka boleh dipadamkan sepenuhnya dengan memadam semua item dari DynamoDB menggunakan ID pengguna sebagai kunci partition (PK).
 
 **S: Bolehkah saya mematikan perkongsian untuk bot awam yang penting?**
@@ -255,24 +255,24 @@ A: Tidak, pentadbir mesti menandakan bot sebagai tidak penting terlebih dahulu s
 A: Tidak, memandangkan kepelbagaian corak akses. Pengesahan dilakukan semasa mengakses bot, dan risiko kebocoran metadata dianggap minimal berbanding sejarah perbualan.
 
 **S: Apakah keperluan untuk menerbitkan API?**
-A: Bot mesti bersifat awam.
+A: Bot mesti awam.
 
 **S: Adakah akan ada skrin pengurusan untuk semua bot peribadi?**
-A: Tidak dalam keluaran V3 awal. Walau bagaimanapun, item masih boleh dipadamkan dengan pertanyaan menggunakan ID pengguna mengikut keperluan.
+A: Tidak dalam keluaran V3 awal. Walau bagaimanapun, item masih boleh dipadam dengan pertanyaan menggunakan ID pengguna mengikut keperluan.
 
 **S: Adakah akan ada fungsi penandaan bot untuk pengalaman carian yang lebih baik?**
-A: Tidak dalam keluaran V3 awal, tetapi penandaan automatik berasaskan LLM mungkin ditambah dalam kemas kini masa hadapan.
+A: Tidak dalam keluaran V3 awal, tetapi penandaan automatik berasaskan LLM mungkin ditambah dalam kemas kini akan datang.
 
 ### Pentadbiran
 
 **S: Apa yang boleh dilakukan oleh pentadbir?**
 A: Pentadbir boleh:
 
-- Menguruskan bot awam (termasuk menyemak bot berkos tinggi)
-- Menguruskan API
+- Mengurus bot awam (termasuk menyemak bot berkos tinggi)
+- Mengurus API
 - Menandakan bot awam sebagai penting
 
-**S: Bolehkah saya menjadikan bot separa kongsi sebagai penting?**
+**S: Bolehkah saya menjadikan bot yang dikongsi sebahagian sebagai penting?**
 A: Tidak, hanya menyokong bot awam.
 
 **S: Bolehkah saya menetapkan keutamaan untuk bot yang dipinkan?**
@@ -283,11 +283,11 @@ A: Pada keluaran awal, tidak.
 **S: Bagaimana saya menyediakan pengesahan?**
 A:
 
-1. Buka konsol Amazon Cognito dan buat kumpulan pengguna dalam kumpulan pengguna BrChat
+1. Buka konsol Amazon Cognito dan cipta kumpulan pengguna dalam kumpulan pengguna BrChat
 2. Tambahkan pengguna ke kumpulan ini mengikut keperluan
-3. Dalam BrChat, pilih kumpulan pengguna yang anda ingin benarkan aksesnya apabila mengkonfigurasi tetapan perkongsian bot
+3. Dalam BrChat, pilih kumpulan pengguna yang anda ingin benarkan aksesnya semasa mengkonfigurasi tetapan perkongsian bot
 
-Nota: Perubahan keahlian kumpulan memerlukan log masuk semula. Perubahan dicerminkan semasa menyegarkan token, tetapi tidak semasa tempoh kesahihan token ID (30 minit secara lalai dalam V3, boleh dikonfigurasi oleh `tokenValidMinutes` dalam `cdk.json` atau `parameter.ts`).
+Nota: Perubahan keahlian kumpulan memerlukan log masuk semula. Perubahan dikemaskini semasa muat semula token, tetapi tidak dalam tempoh kesahihan token ID (lalai 30 minit dalam V3, boleh dikonfigurasi oleh `tokenValidMinutes` dalam `cdk.json` atau `parameter.ts`).
 
 **S: Adakah sistem menyemak dengan Cognito setiap kali bot diakses?**
 A: Tidak, pengesahan disemak menggunakan token JWT untuk mengelakkan operasi I/O yang tidak perlu.
@@ -295,4 +295,4 @@ A: Tidak, pengesahan disemak menggunakan token JWT untuk mengelakkan operasi I/O
 ### Fungsi Carian
 
 **S: Adakah carian bot menyokong carian semantik?**
-A: Tidak, hanya separa padanan teks disokong. Carian semantik (contohnya, "automobil" → "kereta", "EV", "kenderaan") tidak tersedia disebabkan kekangan OpenSearch Serverless semasa (Mac 2025).
+A: Tidak, hanya padanan teks separa disokong. Carian semantik (contohnya "automobil" → "kereta", "EV", "kenderaan") tidak tersedia disebabkan kekangan OpenSearch Serverless semasa (Mac 2025).

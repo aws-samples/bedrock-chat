@@ -6,7 +6,7 @@ Postępuj zgodnie z procedurami dla docelowego dostawcy OIDC i zanotuj wartości
 
 ## Krok 2: Przechowywanie poświadczeń w AWS Secrets Manager
 
-1. Przejdź do konsoli zarządzania AWS.
+1. Przejdź do konsoli AWS Management Console.
 2. Przejdź do Secrets Manager i wybierz "Store a new secret".
 3. Wybierz "Other type of secrets".
 4. Wprowadź identyfikator klienta i sekret klienta jako pary klucz-wartość.
@@ -15,18 +15,18 @@ Postępuj zgodnie z procedurami dla docelowego dostawcy OIDC i zanotuj wartości
    - Klucz: `clientSecret`, Wartość: <YOUR_GOOGLE_CLIENT_SECRET>
    - Klucz: `issuerUrl`, Wartość: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Postępuj zgodnie z monitami, aby nazwać i opisać sekret. Zanotuj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Użyta w zmiennej kroku 3 <YOUR_SECRET_NAME>).
+5. Postępuj zgodnie z instrukcjami, aby nazwać i opisać sekret. Zanotuj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Użyta w kroku 3 nazwa zmiennej <YOUR_SECRET_NAME>).
 6. Przejrzyj i zapisz sekret.
 
 ### Uwaga
 
-Nazwy kluczy muszą dokładnie odpowiadać ciągom `clientId`, `clientSecret` i `issuerUrl`.
+Nazwy kluczy muszą dokładnie odpowiadać ciągom znaków `clientId`, `clientSecret` i `issuerUrl`.
 
 ## Krok 3: Aktualizacja pliku cdk.json
 
-W pliku cdk.json dodaj dostawcę tożsamości i nazwę sekretu.
+W pliku cdk.json dodaj dostawcę tożsamości i nazwę wpisu tajnego.
 
-w następujący sposób:
+jak poniżej:
 
 ```json
 {
@@ -36,7 +36,7 @@ w następujący sposób:
       {
         "service": "oidc", // Nie zmieniaj
         "serviceName": "<TWOJA_NAZWA_USŁUGI>", // Ustaw dowolną wartość
-        "secretName": "<TWOJA_NAZWA_SEKRETU>"
+        "secretName": "<TWOJA_NAZWA_WPISU_TAJNEGO>"
       }
     ],
     "userPoolDomainPrefix": "<UNIKALNY_PREFIKS_DOMENY_DLA_TWOJEJ_PULI_UŻYTKOWNIKÓW>"
@@ -52,7 +52,7 @@ Prefiks `userPoolDomainPrefix` musi być globalnie unikalny we wszystkich użytk
 
 ## Krok 4: Wdrożenie stosu CDK
 
-Wdróż swój stos CDK w AWS:
+Wdróż swój stos CDK do AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Krok 5: Aktualizacja klienta OIDC za pomocą adresów URL przekierowania Cognito
 
-Po wdrożeniu stosu w danych wyjściowych CloudFormation pojawi się `AuthApprovedRedirectURI`. Wróć do konfiguracji OIDC i zaktualizuj ją o poprawne adresy URL przekierowania.
+Po wdrożeniu stosu, `AuthApprovedRedirectURI` pojawi się w wynikach CloudFormation. Wróć do konfiguracji OIDC i zaktualizuj ją o prawidłowe adresy URL przekierowania.
