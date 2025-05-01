@@ -59,6 +59,7 @@ describe("Bedrock Chat Stack Test", () => {
         enableBedrockCrossRegionInference: false,
         enableLambdaSnapStart: true,
         enableBotStore: true,
+        enableBotStoreReplicas: false,
         botStoreLanguage: "en",
         tokenValidMinutes: 60,
       }
@@ -134,6 +135,7 @@ describe("Bedrock Chat Stack Test", () => {
         enableBedrockCrossRegionInference: false,
         enableLambdaSnapStart: true,
         enableBotStore: true,
+        enableBotStoreReplicas: false,
         botStoreLanguage: "en",
         tokenValidMinutes: 60,
       }
@@ -199,6 +201,7 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
       enableBotStore: true,
+      enableBotStoreReplicas: false,
       botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
@@ -245,6 +248,7 @@ describe("Bedrock Chat Stack Test", () => {
       alternateDomainName: "chat.example.com",
       hostedZoneId: "Z0123456789ABCDEF",
       enableBotStore: true,
+      enableBotStoreReplicas: false,
       botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
@@ -323,6 +327,7 @@ describe("Bedrock Chat Stack Test", () => {
       alternateDomainName: "",
       hostedZoneId: "",
       enableBotStore: true,
+      enableBotStoreReplicas: false,
       botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
@@ -381,6 +386,7 @@ describe("Bedrock Chat Stack Test", () => {
       alternateDomainName: "chat.example.com",
       hostedZoneId: "Z0123456789ABCDEF",
       enableBotStore: true,
+      enableBotStoreReplicas: false,
       botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
@@ -459,6 +465,7 @@ describe("Bedrock Chat Stack Test", () => {
       alternateDomainName: "",
       hostedZoneId: "",
       enableBotStore: true,
+      enableBotStoreReplicas: false,
       botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
