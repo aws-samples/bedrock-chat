@@ -1,5 +1,6 @@
 import logging
 import traceback
+import time
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel
@@ -27,23 +28,38 @@ def search_knowledge(
     query = tool_input.query
     logger.info(f"Running AnswerWithKnowledgeTool with query: {query}")
 
-    try:
-        search_results = search_related_docs(
-            bot,
-            query=query,
-        )
+    # if Aurora is paused, retry once after 15s, then after 45s
+    delays = [15, 45]
+    last_exc: Exception | None = None
 
-        # # For testing purpose
-        # search_results = dummy_search_results
+    for delay in delays + [None]:
+        try:
+            search_results = search_related_docs(bot, query=query)
 
-        return search_results
+            # # For testing purpose
+            # search_results = dummy_search_results
+            return search_results
 
-    except Exception as e:
-        error_traceback = traceback.format_exc()
-        logger.error(
-            f"Failed to run AnswerWithKnowledgeTool: {e}\nTraceback: {error_traceback}"
-        )
-        raise e
+        except Exception as e:
+            last_exc = e
+            msg = str(e)
+            # detect the Aurora “resuming after being auto-paused” error
+            if delay is not None and "resuming after being auto-paused" in msg:
+                logger.warning(
+                    f"Aurora is paused – retrying search_related_docs in {delay}s..."
+                )
+                time.sleep(delay)
+                continue
+
+            # any other error, or no more retries
+            error_traceback = traceback.format_exc()
+            logger.error(
+                f"Failed to run AnswerWithKnowledgeTool: {e}\nTraceback: {error_traceback}"
+            )
+            raise
+
+    # if we exit loop without returning, re-raise last exception
+    raise last_exc
 
 
 def create_knowledge_tool(bot: BotModel) -> AgentTool:
