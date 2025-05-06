@@ -4,7 +4,7 @@ import os
 import boto3
 from app.user import UserGroup, UserWithoutGroups
 from botocore.exceptions import ClientError
-from retry import retry
+from reretry import retry
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

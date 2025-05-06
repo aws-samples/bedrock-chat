@@ -7,7 +7,7 @@ import boto3
 from app.repositories.common import decompose_sk
 from app.repositories.custom_bot import update_guardrails_params
 from app.routes.schemas.bot import type_sync_status
-from retry import retry
+from reretry import retry
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

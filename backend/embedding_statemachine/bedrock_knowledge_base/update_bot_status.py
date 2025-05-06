@@ -6,7 +6,7 @@ from typing import Literal
 import boto3
 from app.repositories.common import compose_sk, decompose_sk, get_bot_table_client
 from app.routes.schemas.bot import type_sync_status
-from retry import retry
+from reretry import retry
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

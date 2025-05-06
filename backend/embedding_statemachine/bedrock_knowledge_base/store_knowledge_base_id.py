@@ -5,7 +5,7 @@ from typing import List
 from app.repositories.common import decompose_sk
 from app.repositories.custom_bot import update_knowledge_base_id
 from app.routes.schemas.bot import type_sync_status
-from retry import retry
+from reretry import retry
 from typing_extensions import TypedDict
 
 logger = logging.getLogger()

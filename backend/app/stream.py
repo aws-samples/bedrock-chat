@@ -25,7 +25,7 @@ from botocore.exceptions import ClientError
 from mypy_boto3_bedrock_runtime.literals import ConversationRoleType, StopReasonType
 from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 from pydantic import JsonValue
-from retry import retry
+from reretry import retry
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
