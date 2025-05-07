@@ -36,7 +36,7 @@ export class FrontendWafStack extends Stack {
         "FrontendIpV4Set",
         {
           ipAddressVersion: "IPV4",
-          scope: "CLOUDFRONT",
+          scope: "REGIONAL",
           addresses: props.allowedIpV4AddressRanges,
         }
       );
@@ -60,7 +60,7 @@ export class FrontendWafStack extends Stack {
         "FrontendIpV6Set",
         {
           ipAddressVersion: "IPV6",
-          scope: "CLOUDFRONT",
+          scope: "REGIONAL",
           addresses: props.allowedIpV6AddressRanges,
         }
       );
@@ -86,7 +86,7 @@ export class FrontendWafStack extends Stack {
       const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
         defaultAction: { block: {} },
         name: `${props.envPrefix}${sepHyphen}FrontendWebAcl`,
-        scope: "CLOUDFRONT",
+        scope: "REGIONAL",
         visibilityConfig: {
           cloudWatchMetricsEnabled: true,
           metricName: "FrontendWebAcl",
