@@ -252,6 +252,8 @@ export class Frontend extends Construct {
       "ap-south-2",
       "ap-southeast-3",
       "ap-southeast-4",
+      "us-gov-east-1",
+      "us-gov-west-1",
       "ca-west-1",
       "eu-south-1",
       "eu-south-2",
