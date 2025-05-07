@@ -22,7 +22,7 @@ Parameters:
     Default: "[]"
   BedrockRegion:
     Type: String
-    Default: "us-east-1"
+    Default: "us-gov-east-1"
   CdkJsonOverride:
     Type: String
     Default: "{}"

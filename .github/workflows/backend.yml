@@ -46,7 +46,7 @@ jobs:
           poetry install
       - name: Run Uvicorn
         env:
-          AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-gov-east-1
         run: |
           cd backend
           timeout 10s poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &

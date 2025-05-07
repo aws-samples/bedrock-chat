@@ -68,7 +68,7 @@ export class Frontend extends Construct {
       this.certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
         domainName: props.alternateDomainName,
         hostedZone: this.hostedZone,
-        region: 'us-east-1',
+        region: 'us-gov-east-1',
         validation: acm.CertificateValidation.fromDns(this.hostedZone),
       });
     }

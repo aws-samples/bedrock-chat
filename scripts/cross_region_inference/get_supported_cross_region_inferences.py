@@ -30,6 +30,7 @@ supported_base_models = {
 regions = {
     # US
     "us-east-1": {"area": "us", "models": []},
+    "us-gov-east-1": {"area": "us", "models": []},
     "us-east-2": {"area": "us", "models": []},
     "us-west-2": {"area": "us", "models": []},
     # EU

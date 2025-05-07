@@ -13,7 +13,7 @@ from app.repositories.models.custom_bot import BotMetaWithStackInfo
 from app.repositories.models.usage_analysis import UsagePerBot, UsagePerUser
 from boto3.dynamodb.conditions import Attr, Key
 
-REGION = os.environ.get("REGION", "us-east-1")
+REGION = os.environ.get("REGION", "us-gov-east-1")
 USAGE_ANALYSIS_DATABASE = os.environ.get(
     "USAGE_ANALYSIS_DATABASE", "bedrockchatstack_usage_analysis"
 )

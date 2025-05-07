@@ -31,7 +31,7 @@ const BaseParametersSchema = z.object({
   envPrefix: z.string().default(""),
 
   // Bedrock configuration
-  bedrockRegion: z.string().default("us-east-1"),
+  bedrockRegion: z.string().default("us-gov-east-1"),
 });
 
 /**

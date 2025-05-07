@@ -82,6 +82,10 @@ BEDROCK_PRICING = {
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
     },
+     "us-gov-east-1": {
+        "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
+        "claude-v3.5-sonnet": {"input": 0.00300, "output": 0.01500}
+    },
     "us-west-2": {
         "claude-v3.7-sonnet": {"input": 0.00300, "output": 0.01500},
         "claude-v3-opus": {"input": 0.01500, "output": 0.07500},

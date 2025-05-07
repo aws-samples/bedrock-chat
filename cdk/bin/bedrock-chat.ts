@@ -37,7 +37,7 @@ const waf = new FrontendWafStack(
   {
     env: {
       // account: process.env.CDK_DEFAULT_ACCOUNT,
-      region: "us-east-1",
+      region: "us-gov-east-1",
     },
     envPrefix: params.envPrefix,
     allowedIpV4AddressRanges: params.allowedIpV4AddressRanges,

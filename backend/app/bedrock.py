@@ -589,6 +589,13 @@ def get_model_id(
                 "llama3-2-90b-instruct",
             ],
         },
+        "us-gov-east-1": {
+            "area": "us",
+            "models": [
+                "claude-v3-haiku",
+                "claude-v3.5-sonnet"
+            ],
+        },
         "us-east-2": {
             "area": "us",
             "models": [
