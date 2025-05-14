@@ -16,7 +16,7 @@ from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 from botocore.exceptions import ClientError
-from retry import retry
+from reretry import retry
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import AgentTool

@@ -7,7 +7,7 @@ import sys
 
 import boto3
 from botocore.config import Config
-from retry import retry
+from reretry import retry
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
