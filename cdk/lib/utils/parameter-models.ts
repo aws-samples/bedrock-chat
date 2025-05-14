@@ -32,6 +32,7 @@ const BaseParametersSchema = z.object({
 
   // Bedrock configuration
   bedrockRegion: z.string().default("us-east-1"),
+  enableBedrockCrossRegionInference: z.boolean().default(true),
 });
 
 /**
@@ -49,8 +50,6 @@ function getEnvVar(name: string, defaultValue?: string): string | undefined {
  * Parameters schema for the main Bedrock Chat application
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
-  // Bedrock configuration
-  enableBedrockCrossRegionInference: z.boolean().default(true),
 
   // IP address restrictions
   allowedIpV4AddressRanges: z
@@ -286,6 +285,9 @@ export function resolveApiPublishParameters(): ApiPublishParameters {
     envName: getEnvVar("ENV_NAME"),
     envPrefix: getEnvVar("ENV_PREFIX"),
     bedrockRegion: getEnvVar("BEDROCK_REGION"),
+    enableBedrockCrossRegionInference: getEnvVar(
+      "ENABLE_BEDROCK_CROSS_REGION_INFERENCE"
+    ),
     publishedApiThrottleRateLimit: getEnvVar(
       "PUBLISHED_API_THROTTLE_RATE_LIMIT"
     ),

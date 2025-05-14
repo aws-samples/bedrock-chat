@@ -15,6 +15,7 @@ import { excludeDockerImage } from "./constants/docker";
 
 interface ApiPublishmentStackProps extends StackProps {
   readonly bedrockRegion: string;
+  readonly enableBedrockCrossRegionInference: boolean;
   readonly conversationTableName: string;
   readonly botTableName: string;
   readonly tableAccessRoleArn: string;
@@ -129,6 +130,7 @@ export class ApiPublishmentStack extends Stack {
           ),
           ACCOUNT: Stack.of(this).account,
           REGION: Stack.of(this).region,
+          ENABLE_BEDROCK_CROSS_REGION_INFERENCE: props.enableBedrockCrossRegionInference.toString(),
           BEDROCK_REGION: props.bedrockRegion,
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
         },
