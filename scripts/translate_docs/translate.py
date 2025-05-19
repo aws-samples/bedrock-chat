@@ -27,6 +27,7 @@ LANGUAGES = [
     "zh-CN",  # Chinese (Simplified, China)
     "zh-TW",  # Chinese (Traditional, Taiwan)
     "pl-PL",  # Polish (Poland)
+    "pt-BR",  # Portuguese (Brazil)
 ]
 
 
