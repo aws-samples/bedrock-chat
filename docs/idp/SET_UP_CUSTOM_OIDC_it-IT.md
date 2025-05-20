@@ -2,7 +2,7 @@
 
 ## Passaggio 1: Creare un Client OIDC
 
-Segui le procedure per il provider OIDC di destinazione e annota i valori per l'ID client OIDC e il segreto. Inoltre, l'URL dell'emittente è necessario nei passaggi successivi. Se durante il processo di configurazione è richiesto un URI di reindirizzamento, inserisci un valore fittizio che verrà sostituito dopo il completamento della distribuzione.
+Seguire le procedure per il provider OIDC di destinazione e annotare i valori per l'ID client OIDC e il segreto. Inoltre, l'URL dell'emittente è necessario nei passaggi successivi. Se durante il processo di configurazione è richiesto un URI di reindirizzamento, inserire un valore fittizio che verrà sostituito dopo il completamento della distribuzione.
 
 ## Passaggio 2: Archiviare le Credenziali in AWS Secrets Manager
 
@@ -15,7 +15,7 @@ Segui le procedure per il provider OIDC di destinazione e annota i valori per l'
    - Chiave: `clientSecret`, Valore: <YOUR_GOOGLE_CLIENT_SECRET>
    - Chiave: `issuerUrl`, Valore: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Seguire le istruzioni per assegnare un nome e una descrizione al segreto. Annotare il nome del segreto poiché sarà necessario nel codice CDK (Utilizzato nel Passaggio 3 con il nome della variabile <YOUR_SECRET_NAME>).
+5. Seguire le istruzioni per denominare e descrivere il segreto. Annotare il nome del segreto poiché sarà necessario nel codice CDK (Utilizzato nel passaggio 3 nel nome della variabile <YOUR_SECRET_NAME>).
 6. Rivedere e archiviare il segreto.
 
 ### Attenzione
@@ -35,7 +35,7 @@ in questo modo:
     "identityProviders": [
       {
         "service": "oidc", // Non modificare
-        "serviceName": "<TUO_NOME_SERVIZIO>", // Imposta un valore a tuo piacimento
+        "serviceName": "<TUO_NOME_SERVIZIO>", // Imposta un valore a piacere
         "secretName": "<TUO_NOME_SEGRETO>"
       }
     ],
@@ -46,9 +46,9 @@ in questo modo:
 
 ### Attenzione
 
-#### Univocità
+#### Unicità
 
-Il `userPoolDomainPrefix` deve essere globalmente univoco tra tutti gli utenti Amazon Cognito. Se scegli un prefisso già utilizzato da un altro account AWS, la creazione del dominio del user pool non riuscirà. È una buona pratica includere identificatori, nomi di progetti o nomi di ambienti nel prefisso per garantire l'univocità.
+Il `userPoolDomainPrefix` deve essere globalmente univoco per tutti gli utenti Amazon Cognito. Se scegli un prefisso già utilizzato da un altro account AWS, la creazione del dominio del user pool non riuscirà. È una buona prassi includere identificatori, nomi di progetto o nomi di ambienti nel prefisso per garantire l'unicità.
 
 ## Passaggio 4: Distribuire lo Stack CDK
 
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Passaggio 5: Aggiornare il Client OIDC con gli URI di Reindirizzamento di Cognito
 
-Dopo aver distribuito lo stack, `AuthApprovedRedirectURI` sarà visibile negli output di CloudFormation. Torna alla configurazione OIDC e aggiorna gli URI di reindirizzamento corretti.
+Dopo aver distribuito lo stack, `AuthApprovedRedirectURI` verrà mostrato negli output di CloudFormation. Torna alla tua configurazione OIDC e aggiorna gli URI di reindirizzamento corretti.

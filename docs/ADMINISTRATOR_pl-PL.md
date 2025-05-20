@@ -8,22 +8,22 @@ Administrator musi być członkiem grupy o nazwie `Admin`, którą można skonfi
 
 ## Oznacz publiczne boty jako Niezbędne
 
-Administratorzy mogą teraz oznaczyć publiczne boty jako „Niezbędne". Boty oznaczone jako Niezbędne będą wyróżnione w sekcji „Niezbędne" sklepu z botami, dzięki czemu będą łatwo dostępne dla użytkowników. Pozwala to administratorom przypiąć ważne boty, które chcą, aby wszyscy użytkownicy używali.
+Administratorzy mogą teraz oznaczyć publiczne boty jako „Niezbędne". Boty oznaczone jako Niezbędne będą wyróżniane w sekcji „Niezbędne" sklepu z botami, dzięki czemu będą łatwo dostępne dla użytkowników. Pozwala to administratorom przypinać ważne boty, które chcą, aby wszyscy użytkownicy używali.
 
 ### Przykłady
 
 - Bot Asystent HR: Pomaga pracownikom w pytaniach i zadaniach związanych z zasobami ludzkimi.
-- Bot Wsparcia IT: Zapewnia pomoc w wewnętrznych kwestiach technicznych i zarządzaniu kontem.
-- Bot Przewodnik po Wewnętrznych Zasadach: Odpowiada na często zadawane pytania dotyczące zasad obecności, polityki bezpieczeństwa i innych przepisów wewnętrznych.
-- Bot Wdrożenia Nowych Pracowników: Prowadzi nowych pracowników przez procedury i używanie systemów w pierwszym dniu pracy.
-- Bot Informacji o Świadczeniach: Wyjaśnia programy świadczeń firmowych i usługi socjalne.
+- Bot Wsparcia IT: Zapewnia pomoc w zakresie wewnętrznych problemów technicznych i zarządzania kontami.
+- Bot Przewodnik po Wewnętrznych Regulacjach: Odpowiada na często zadawane pytania dotyczące zasad obecności, polityki bezpieczeństwa i innych przepisów wewnętrznych.
+- Bot Wprowadzenie Nowych Pracowników: Prowadzi nowych pracowników przez procedury i użycie systemów w pierwszym dniu pracy.
+- Bot Informacji o Świadczeniach: Wyjaśnia programy świadczeń pracowniczych i usługi socjalne firmy.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## Pętla informacji zwrotnej
 
-Dane wyjściowe z LLM nie zawsze spełniają oczekiwania użytkownika. Czasami nie zaspokaja on potrzeb użytkownika. Aby skutecznie "zintegrować" LLM z operacjami biznesowymi i codziennym życiem, wdrożenie pętli informacji zwrotnej jest niezbędne. Bedrock Chat jest wyposażony w funkcję opinii, która umożliwia użytkownikom analizę przyczyn niezadowolenia. Na podstawie wyników analizy użytkownicy mogą odpowiednio dostosować monity, źródła danych RAG i parametry.
+Dane wyjściowe z LLM nie zawsze mogą spełniać oczekiwania użytkownika. Czasami nie udaje się zaspokoić jego potrzeb. Aby skutecznie "zintegrować" LLM z operacjami biznesowymi i codziennym życiem, kluczowe jest wdrożenie pętli informacji zwrotnej. Bedrock Chat jest wyposażony w funkcję opinii zaprojektowaną tak, aby umożliwić użytkownikom analizę przyczyn niezadowolenia. Na podstawie wyników analizy użytkownicy mogą odpowiednio dostosować monity, źródła danych RAG oraz parametry.
 
 ![](./imgs/feedback_loop.png)
 
@@ -39,14 +39,14 @@ Aktualnie zapewnia podstawowy przegląd użycia chatbota i użytkowników, konce
 
 ## Uwagi
 
-- Zgodnie z opisem w [architekturze](../README.md#architecture), funkcje administracyjne będą odwoływać się do bucketu S3 wyeksportowanego z DynamoDB. Należy pamiętać, że ponieważ eksport jest wykonywany co godzinę, najnowsze rozmowy mogą nie być od razu odzwierciedlone.
+- Jak wspomniano w [architekturze](../README.md#architecture), funkcje administracyjne będą odwoływać się do bucketu S3 wyeksportowanego z DynamoDB. Należy pamiętać, że ponieważ eksport jest wykonywany co godzinę, najnowsze rozmowy mogą nie być odzwierciedlone natychmiast.
 
-- W publicznych użyciach bota, boty, które w ogóle nie były używane w określonym okresie, nie zostaną wymienione.
+- W publicznym użyciu botów, boty, które w ogóle nie były używane w określonym okresie, nie zostaną wymienione.
 
-- W użyciach użytkowników, użytkownicy, którzy w ogóle nie korzystali z systemu w określonym okresie, nie zostaną wymienieni.
+- W użyciach użytkowników, użytkownicy, którzy w ogóle nie używali systemu w określonym okresie, nie zostaną wymienieni.
 
 > [!Ważne]
-> Jeśli używasz wielu środowisk (dev, prod itp.), nazwa bazy danych Athena będzie zawierać prefiks środowiska. Zamiast `bedrockchatstack_usage_analysis`, nazwa bazy danych będzie następująca:
+> Jeśli używasz wielu środowisk (dev, prod itp.), nazwa bazy danych Athena będzie zawierać prefiks środowiska. Zamiast `bedrockchatstack_usage_analysis`, nazwa bazy danych będzie:
 >
 > - Dla środowiska domyślnego: `bedrockchatstack_usage_analysis`
 > - Dla nazwanych środowisk: `<prefiks-środowiska>_bedrockchatstack_usage_analysis` (np. `dev_bedrockchatstack_usage_analysis`)
@@ -56,15 +56,15 @@ Aktualnie zapewnia podstawowy przegląd użycia chatbota i użytkowników, konce
 > - Dla środowiska domyślnego: `ddb_export`
 > - Dla nazwanych środowisk: `<prefiks-środowiska>_ddb_export` (np. `dev_ddb_export`)
 >
-> Upewnij się, że odpowiednio dostosowujesz zapytania podczas pracy z wieloma środowiskami.
+> Upewnij się, że odpowiednio dostosujesz zapytania podczas pracy z wieloma środowiskami.
 
 ## Pobieranie danych z rozmów
 
-Możesz przeszukiwać dzienniki rozmów za pomocą Atheny, używając SQL. Aby pobrać dzienniki, otwórz Edytor zapytań Atheny z konsoli zarządzania i uruchom zapytanie SQL. Poniżej przedstawiono przykładowe zapytania przydatne do analizy przypadków użycia. Opinie można znaleźć w atrybucie `MessageMap`.
+Możesz przeszukiwać dzienniki rozmów za pomocą Atheny, używając SQL. Aby pobrać dzienniki, otwórz Edytor zapytań Atheny z konsoli zarządzania i uruchom zapytanie SQL. Poniżej znajdują się przykładowe zapytania przydatne do analizy przypadków użycia. Opinię można znaleźć w atrybucie `MessageMap`.
 
 ### Zapytanie według identyfikatora bota
 
-Edytuj `bot-id` i `datehour`. `bot-id` można znaleźć na ekranie zarządzania botami, do którego można uzyskać dostęp z poziomu interfejsów API publikacji bota, widocznych na lewym pasku bocznym. Zwróć uwagę na końcową część adresu URL, np. `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edytuj `bot-id` i `datehour`. `bot-id` można znaleźć na ekranie zarządzania botami, do którego można uzyskać dostęp z poziomu interfejsów API publikowania botów, wyświetlanych na lewym pasku bocznym. Zwróć uwagę na końcową część adresu URL, np. `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -87,14 +87,14 @@ ORDER BY
 ```
 
 > [!Uwaga]
-> Jeśli używasz środowiska o nazwie (np. "dev"), zamień `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
+> Jeśli używasz środowiska o nazwie (np. "dev"), zastąp `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
 
 ### Zapytanie według identyfikatora użytkownika
 
 Edytuj `user-id` i `datehour`. `user-id` można znaleźć na ekranie zarządzania botami.
 
 > [!Uwaga]
-> Analityka użycia użytkownika już wkrótce.
+> Analityka użycia użytkowników będzie dostępna wkrótce.
 
 ```sql
 SELECT
@@ -117,4 +117,4 @@ ORDER BY
 ```
 
 > [!Uwaga]
-> Jeśli używasz środowiska o nazwie (np. "dev"), zamień `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
+> Jeśli używasz środowiska o nazwie (np. "dev"), zastąp `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.

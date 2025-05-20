@@ -1,8 +1,8 @@
-# Sediakan penyedia identiti luar
+# Sediakan pembekal identiti luar
 
-## Langkah 1: Buat Klien OIDC
+## Langkah 1: Buat Pelanggan OIDC
 
-Ikuti prosedur untuk penyedia OIDC yang dituju, dan catat nilai untuk ID klien OIDC dan rahsia. Selain itu, URL pengeluar diperlukan pada langkah berikutnya. Jika URI pengalihan diperlukan untuk proses penyediaan, masukkan nilai tiruan, yang akan digantikan selepas penyebaran selesai.
+Ikuti prosedur untuk penyedia OIDC yang disasarkan, dan catat nilai untuk ID pelanggan OIDC dan rahsia. URL penerbit juga diperlukan pada langkah berikutnya. Jika URI pengalihan diperlukan untuk proses penyediaan, masukkan nilai tiruan, yang akan diganti selepas penyebaran selesai.
 
 ## Langkah 2: Simpan Credentials dalam AWS Secrets Manager
 
@@ -35,11 +35,11 @@ seperti berikut:
     "identityProviders": [
       {
         "service": "oidc", // Jangan tukar
-        "serviceName": "<NAMA_PERKHIDMATAN_ANDA>", // Tetapkan apa-apa nilai yang anda suka
+        "serviceName": "<NAMA_PERKHIDMATAN_ANDA>", // Tetapkan sebarang nilai yang anda suka
         "secretName": "<NAMA_RAHSIA_ANDA>"
       }
     ],
-    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_USER_POOL_ANDA>"
+    "userPoolDomainPrefix": "<AWALAN_DOMAIN_UNIK_UNTUK_KUMPULAN_PENGGUNA_ANDA>"
   }
 }
 ```
@@ -48,7 +48,7 @@ seperti berikut:
 
 #### Keunikan
 
-`userPoolDomainPrefix` mesti unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, penciptaan domain user pool akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
+`userPoolDomainPrefix` mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang sudah digunakan oleh akaun AWS lain, pengwujudan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
 
 ## Langkah 4: Deploy Stack CDK Anda
 

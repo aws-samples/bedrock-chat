@@ -2,7 +2,7 @@
 
 ## Backend-Entwicklung
 
-Lesen Sie [backend/README](../backend/README_de-DE.md).
+Weitere Informationen finden Sie in der [backend/README](../backend/README_de-DE.md).
 
 ## Frontend-Entwicklung
 
@@ -19,7 +19,7 @@ cd frontend && npm ci && npm run dev
 
 ## (Optional, empfohlen) Einrichten eines Pre-Commit-Hooks
 
-Wir haben GitHub-Workflows für Typenprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber darauf zu warten, dass das Linting abgeschlossen ist, bevor man fortfährt, ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch in der Commit-Phase durchgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus dafür eingeführt. Es ist nicht obligatorisch, aber wir empfehlen es für eine effiziente Entwicklungserfahrung. Zusätzlich erzwingen wir keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), würden es aber begrüßen, wenn Sie es bei Ihren Beiträgen verwenden, da es hilft, unnötige Unterschiede bei Code-Reviews zu vermeiden.
+Wir haben GitHub-Workflows für Typenprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber darauf zu warten, bis das Linting abgeschlossen ist, bevor man fortfährt, ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch in der Commit-Phase durchgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus eingeführt, um dies zu erreichen. Es ist nicht zwingend erforderlich, aber wir empfehlen, es für eine effiziente Entwicklungserfahrung zu übernehmen. Zusätzlich erzwingen wir zwar keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), würden uns aber freuen, wenn Sie es bei Ihrem Beitrag übernehmen könnten, da es hilft, unnötige Unterschiede bei Code-Reviews zu vermeiden.
 
 ### Lefthook installieren
 
@@ -31,8 +31,8 @@ Dies ist erforderlich, da die Python-Code-Linting von `mypy` und `black` abhäng
 
 ```sh
 cd backend
-python3 -m venv .venv  # Optional (Wenn Sie Poetry nicht in Ihrer Umgebung installieren möchten)
-source .venv/bin/activate  # Optional (Wenn Sie Poetry nicht in Ihrer Umgebung installieren möchten)
+python3 -m venv .venv  # Optional (Wenn Sie poetry nicht in Ihrer Umgebung installieren möchten)
+source .venv/bin/activate  # Optional (Wenn Sie poetry nicht in Ihrer Umgebung installieren möchten)
 pip install poetry
 poetry install
 ```
