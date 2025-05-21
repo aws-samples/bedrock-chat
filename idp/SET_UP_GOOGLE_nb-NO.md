@@ -4,11 +4,11 @@
 
 1. Gå til Google Developer Console.
 2. Opprett et nytt prosjekt eller velg et eksisterende.
-3. Naviger til "Credentials", klikk så på "Create Credentials" og velg "OAuth client ID".
+3. Naviger til "Credentials", klikk deretter på "Create Credentials" og velg "OAuth client ID".
 4. Konfigurer samtykkeskjermen hvis du blir bedt om det.
-5. For søknadstypen, velg "Web application".
-6. La omstillingsadressen (redirect URI) være tom for nå for å sette den senere. [Se Trinn 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. Etter opprettelsen, noter ned Client ID og Client Secret.
+5. For applikasjonstypen, velg "Web application".
+6. La omdirigerings-URI-en være tom foreløpig for å sette den senere. [Se Trinn 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+7. Etter opprettelse, noter ned klient-ID-en og klienthemmeligheten.
 
 For detaljer, besøk [Googles offisielle dokument](https://support.google.com/cloud/answer/6158849?hl=en)
 
@@ -22,7 +22,7 @@ For detaljer, besøk [Googles offisielle dokument](https://support.google.com/cl
    1. Nøkkel: clientId, Verdi: <YOUR_GOOGLE_CLIENT_ID>
    2. Nøkkel: clientSecret, Verdi: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Følg veiledningen for å navngi og beskrive hemmeligheten. Merk deg hemmelighetens navn, da du vil trenge dette i CDK-koden. For eksempel googleOAuthCredentials. (Bruk i Trinn 3 variabelnavn <YOUR_SECRET_NAME>)
+5. Følg instruksjonene for å navngi og beskrive hemmeligheten. Merk deg hemmelighetsnavnet, da du vil trenge det i CDK-koden din. For eksempel googleOAuthCredentials. (Brukes i Trinn 3 variabelnavn <YOUR_SECRET_NAME>)
 6. Gjennomgå og lagre hemmeligheten.
 
 ### Merk
@@ -31,7 +31,7 @@ Nøkkelnavnene må nøyaktig samsvare med strengene 'clientId' og 'clientSecret'
 
 ## Trinn 3: Oppdater cdk.json
 
-I cdk.json-filen legger du til ID-leverandøren og hemmelighetsnavn i cdk.json-filen.
+I din cdk.json-fil, legg til ID-leverandør og Hemmelighetsnavn i cdk.json-filen.
 
 som følger:
 
@@ -42,15 +42,15 @@ som følger:
     "identityProviders": [
       {
         "service": "google",
-        "secretName": "<DIN_HEMMELIGE_NAVN>"
+        "secretName": "<DIN_HEMMELIGHETSNAVN>"
       }
     ],
-    "userPoolDomainPrefix": "<UNIKT_DOMENE_PREFIKS_FOR_DIN_BRUKERPULJE>"
+    "userPoolDomainPrefix": "<UNIKT_DOMENEPREFIX_FOR_DIN_BRUKERPULJE>"
   }
 }
 ```
 
-### Merk
+### Oppmerksomhet
 
 #### Unike navn
 
@@ -64,6 +64,6 @@ Distribuer CDK-stakken til AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Trinn 5: Oppdater Google OAuth-klient med Cognito Redirect URIs
+## Trinn 5: Oppdater Google OAuth-klient med Cognito-omdirigerings-URIer
 
-Etter å ha distribuert stacken vil AuthApprovedRedirectURI vises i CloudFormation-resultatene. Gå tilbake til Google Developer Console og oppdater OAuth-klienten med de riktige redirect URIs.
+Etter at stakken er distribuert, vil AuthApprovedRedirectURI vises i CloudFormation-resultatene. Gå tilbake til Google Developer Console og oppdater OAuth-klienten med de riktige omdirigerings-URIene.

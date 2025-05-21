@@ -2,12 +2,12 @@
 
 ## Étape 1 : Créer un Client OIDC
 
-Suivez les procédures du fournisseur OIDC cible et notez les valeurs de l'ID client OIDC et du secret. L'URL de l'émetteur est également requise dans les étapes suivantes. Si une URI de redirection est nécessaire lors du processus de configuration, entrez une valeur factice qui sera remplacée une fois le déploiement terminé.
+Suivez les procédures du fournisseur OIDC cible, et notez les valeurs de l'identifiant client OIDC et du secret. L'URL de l'émetteur est également requise dans les étapes suivantes. Si une URI de redirection est nécessaire lors du processus de configuration, entrez une valeur factice qui sera remplacée une fois le déploiement terminé.
 
 ## Étape 2 : Stocker les identifiants dans AWS Secrets Manager
 
 1. Accédez à la Console de gestion AWS.
-2. Naviguez vers Secrets Manager et choisissez "Stocker un nouveau secret".
+2. Accédez à Secrets Manager et choisissez "Stocker un nouveau secret".
 3. Sélectionnez "Autre type de secrets".
 4. Saisissez l'ID client et le secret client sous forme de paires clé-valeur.
 
@@ -58,6 +58,6 @@ Déployez votre stack CDK sur AWS :
 npx cdk deploy --require-approval never --all
 ```
 
-## Étape 5 : Mettre à jour le client OIDC avec les URI de redirection Cognito
+## Étape 5 : Mettre à jour le client OIDC avec les URI de redirection de Cognito
 
-Après avoir déployé la pile, `AuthApprovedRedirectURI` s'affiche dans les sorties CloudFormation. Retournez à votre configuration OIDC et mettez à jour les URI de redirection avec les URI corrects.
+Après avoir déployé la pile, `AuthApprovedRedirectURI` apparaît dans les sorties de CloudFormation. Retournez à votre configuration OIDC et mettez à jour avec les URI de redirection corrects.
