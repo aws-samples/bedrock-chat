@@ -156,9 +156,15 @@ class BedrockAgent:
                     continue
 
                 # Parse JSON string
-                parsed_content = json.loads(content)
+                try:
+                    parsed_content = json.loads(content)
+                    content_list = parsed_content.get("content", []) 
+                except Exception as c:
+                    logger.info(f"Issue with parsing content, it is not valid JSON {c}")
+                    parsed_content = content
+                    content_list = []
+
                 logger.info(f"parsed_content: {parsed_content}")
-                content_list = parsed_content.get("content", [])
 
                 # Process content list
                 for model_invocation_content in content_list:
