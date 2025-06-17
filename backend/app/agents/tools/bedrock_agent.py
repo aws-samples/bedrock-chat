@@ -160,7 +160,7 @@ class BedrockAgent:
                     parsed_content = json.loads(content)
                     content_list = parsed_content.get("content", []) 
                 except Exception as c:
-                    logger.info(f"Issue with parsing content, it is not valid JSON {c}")
+                    logger.warn(f"Issue with parsing content, it is not valid JSON {c}")
                     parsed_content = content
                     content_list = []
 
