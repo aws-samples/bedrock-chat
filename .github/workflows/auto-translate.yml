@@ -49,7 +49,7 @@ jobs:
       - name: Assume Role
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.BEDROCK_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
           role-duration-seconds: ${{ env.TIMEOUT_SECONDS }}
 

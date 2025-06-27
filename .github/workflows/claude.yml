@@ -1,0 +1,49 @@
+# This workflow triggers the Claude Code Action when specific events occur
+# Ref: https://github.com/ymhiroki/bedrock-claude-code-action-reviewer
+
+name: Claude Assistant
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [opened]
+
+jobs:
+  claude-code-action:
+    if: |
+      (
+        (github.event_name == 'issue_comment'            && contains(github.event.comment.body,        '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body,        '@claude')) ||
+        (github.event_name == 'pull_request_review'      && contains(github.event.review.body,          '@claude')) ||
+        (github.event_name == 'issues'                   && contains(github.event.issue.body,          '@claude')) ||
+        (github.event_name == 'pull_request'             && contains(github.event.pull_request.body,   '@claude'))
+      )
+      && contains(fromJSON(vars.ALLOWED_ACTORS_JSON), github.actor)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-west-2
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          model: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+          use_bedrock: "true"

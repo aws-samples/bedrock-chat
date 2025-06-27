@@ -1,0 +1,183 @@
+name: Auto Tag and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Skip tag and release steps"
+        type: boolean
+        default: false
+
+jobs:
+  auto-tag-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-west-2
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="v0.1.0"
+            TAG_DATE="1970-01-01T00:00:00Z"
+          else
+            TAG_DATE=$(git log -1 --format=%aI "$LATEST_TAG")
+          fi
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          echo "tag_date=$TAG_DATE"     >> "$GITHUB_OUTPUT"
+
+      - name: Get PRs merged since latest tag
+        id: get-prs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_DATE="${{ steps.get-latest-tag.outputs.tag_date }}"
+          PR_LIST=$(gh pr list --search "merged:>$TAG_DATE" --state merged --json number,title,body,mergedAt,url -L 100)
+          PR_COUNT=$(echo "$PR_LIST" | jq '. | length')
+          if [ "$PR_COUNT" -eq 0 ]; then
+            echo "No PRs found since last tag."
+            exit 1
+          fi
+          PR_SUMMARY=$(echo "$PR_LIST" | jq -r '.[] | "PR #\(.number): \(.title)\nMerged At: \(.mergedAt)\nURL: \(.url)\nDescription: \(.body)\n---\n"')
+          {
+            echo 'PR_SUMMARY<<EOF'
+            echo "$PR_SUMMARY"
+            echo EOF
+          } >> "$GITHUB_ENV"
+
+      - name: Analyze changes with Claude
+        id: claude-analysis
+        env:
+          TMPDIR: ${{ runner.temp }}
+        run: |
+          TMPDIR=${TMPDIR:-/tmp}
+          LATEST_TAG="${{ steps.get-latest-tag.outputs.latest_tag }}"
+
+          cat > prompt.txt <<EOL
+          You are a software version analyzer. Your task is to analyze the changes in the following PRs and determine if they warrant a minor version increment or a patch version increment according to semantic versioning principles.
+
+          Current version: ${LATEST_TAG}
+
+          Semantic versioning rules:
+          - Major version (X.0.0): Breaking changes (not allowed in this repository)
+          - Minor version (0.X.0): New features added in a backward-compatible manner
+          - Patch version (0.0.X): Backward-compatible bug fixes
+
+          PRs merged since last release:
+
+          ${PR_SUMMARY}
+
+          Based solely on these PR descriptions, determine if these changes collectively warrant:
+          1. A minor version increment
+          2. A patch version increment
+
+          Your output should be exactly one word, either "minor" or "patch".
+          EOL
+
+          REQ=$(cat prompt.txt | jq -Rs '{anthropic_version:"bedrock-2023-05-31",max_tokens:50,messages:[{role:"user",content:.}]}')
+          echo "$REQ" > "$TMPDIR/request.json"
+
+          aws bedrock-runtime invoke-model \
+            --model-id us.anthropic.claude-3-7-sonnet-20250219-v1:0 \
+            --content-type application/json \
+            --accept application/json \
+            --body fileb://"$TMPDIR/request.json" \
+            "$TMPDIR/claude-response.json"
+
+          INCREMENT_TYPE=$(jq -r '.content[0].text' "$TMPDIR/claude-response.json" | tr -d ' \t\n\r')
+          if [[ "$INCREMENT_TYPE" != "minor" && "$INCREMENT_TYPE" != "patch" ]]; then
+            INCREMENT_TYPE="patch"
+          fi
+          echo "increment_type=$INCREMENT_TYPE" >> "$GITHUB_OUTPUT"
+
+      - name: Generate new version tag
+        id: generate-version
+        run: |
+          CURRENT_VERSION="${{ steps.get-latest-tag.outputs.latest_tag }}"
+          CURRENT_VERSION="${CURRENT_VERSION#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+          if [[ "${{ steps.claude-analysis.outputs.increment_type }}" == "minor" ]]; then
+            NEW_VERSION="v$MAJOR.$((MINOR + 1)).0"
+          else
+            NEW_VERSION="v$MAJOR.$MINOR.$((PATCH + 1))"
+          fi
+
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
+
+      - name: Generate release notes with Claude
+        id: release-notes
+        env:
+          TMPDIR: ${{ runner.temp }}
+        run: |
+          TMPDIR=${TMPDIR:-/tmp}
+          NEW_VERSION="${{ steps.generate-version.outputs.new_version }}"
+
+          cat > prompt.txt <<EOL
+          You are a technical writer creating release notes. Summarize the following PRs into a well-structured release note for version ${NEW_VERSION}.
+
+          PRs merged since last release:
+
+          ${PR_SUMMARY}
+
+          Group changes by type (Features, Bug Fixes, Documentation, etc.) and provide a clean, professional summary in Markdown.
+          EOL
+
+          REQ=$(cat prompt.txt | jq -Rs '{anthropic_version:"bedrock-2023-05-31",max_tokens:4000,messages:[{role:"user",content:.}]}')
+          echo "$REQ" > "$TMPDIR/request.json"
+
+          aws bedrock-runtime invoke-model \
+            --model-id us.anthropic.claude-3-7-sonnet-20250219-v1:0 \
+            --content-type application/json \
+            --accept application/json \
+            --body fileb://"$TMPDIR/request.json" \
+            "$TMPDIR/claude-response.json"
+
+          RELEASE_NOTES=$(jq -r '.content[0].text' "$TMPDIR/claude-response.json")
+
+          {
+            echo 'release_notes<<EOF'
+            echo "$RELEASE_NOTES"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        if: ${{ github.event.inputs.dry-run != 'true' }}
+        run: |
+          NEW_VERSION="${{ steps.generate-version.outputs.new_version }}"
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git tag -fa "$NEW_VERSION" -m "Release $NEW_VERSION"
+          git push -f origin "$NEW_VERSION"
+
+      - name: Create GitHub release
+        if: ${{ github.event.inputs.dry-run != 'true' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.generate-version.outputs.new_version }}
+          name: ${{ steps.generate-version.outputs.new_version }}
+          body: ${{ steps.release-notes.outputs.release_notes }}
+          draft: false
+          prerelease: false
+
+      - name: Show release notes (dry-run only)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
+        run: |
+          echo "${{ steps.release-notes.outputs.release_notes }}"
