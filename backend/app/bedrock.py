@@ -519,6 +519,8 @@ def calculate_price(
     model: type_model_name,
     input_tokens: int,
     output_tokens: int,
+    cache_read_input_tokens: int,
+    cache_write_input_tokens: int,
     region: str = BEDROCK_REGION,
 ) -> float:
     input_price = (
@@ -531,8 +533,23 @@ def calculate_price(
         .get(model, {})
         .get("output", BEDROCK_PRICING["default"][model]["output"])
     )
+    cache_read_input_price = (
+        BEDROCK_PRICING.get(region, {})
+        .get(model, {})
+        .get("cache_read_input", BEDROCK_PRICING["default"][model].get("cache_read_input", input_price))
+    )
+    cache_write_input_price = (
+        BEDROCK_PRICING.get(region, {})
+        .get(model, {})
+        .get("cache_write_input", BEDROCK_PRICING["default"][model].get("cache_write_input", input_price))
+    )
 
-    return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
+    return (
+        input_price * input_tokens / 1000.0
+        + output_price * output_tokens / 1000.0
+        + cache_read_input_price * cache_read_input_tokens / 1000.0
+        + cache_write_input_price * cache_write_input_tokens / 1000.0
+    )
 
 
 def get_model_id(

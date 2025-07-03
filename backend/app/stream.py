@@ -36,6 +36,8 @@ class OnStopInput(TypedDict):
     stop_reason: StopReasonType
     input_token_count: int
     output_token_count: int
+    cache_read_input_count: int
+    cache_write_input_count: int
     price: float
 
 
@@ -236,6 +238,8 @@ class ConverseApiStreamHandler:
             stop_reason: StopReasonType = "end_turn"
             input_token_count = 0
             output_token_count = 0
+            cache_read_input_count = 0
+            cache_write_input_count = 0
             for event in response["stream"]:
                 logger.debug(f"event: {event}")
                 if "messageStart" in event:
@@ -345,6 +349,8 @@ class ConverseApiStreamHandler:
                     usage = metadata["usage"]
                     input_token_count = usage["inputTokens"]
                     output_token_count = usage["outputTokens"]
+                    cache_read_input_count = usage.get("cacheReadInputTokens") or 0
+                    cache_write_input_count = usage.get("cacheWriteInputTokens") or 0
 
                 elif "modelStreamErrorException" in event:
                     exception = event["modelStreamErrorException"]
@@ -448,13 +454,21 @@ class ConverseApiStreamHandler:
                 thinking_log=None,
             )
 
-            price = calculate_price(self.model, input_token_count, output_token_count)
+            price = calculate_price(
+                model=self.model,
+                input_tokens=input_token_count,
+                output_tokens=output_token_count,
+                cache_read_input_tokens=cache_read_input_count,
+                cache_write_input_tokens=cache_write_input_count,
+            )
 
             result = OnStopInput(
                 message=message,
                 stop_reason=stop_reason,
                 input_token_count=input_token_count,
                 output_token_count=output_token_count,
+                cache_read_input_count=cache_read_input_count,
+                cache_write_input_count=cache_write_input_count,
                 price=price,
             )
             return result

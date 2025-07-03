@@ -37,6 +37,8 @@ def on_stop(x: OnStopInput) -> None:
     print(f"Price: {x['price']}")
     print(f"Input token count: {x['input_token_count']}")
     print(f"Output token count: {x['output_token_count']}")
+    print(f"Cache read input token count: {x['cache_read_input_count']}")
+    print(f"Cache write input token count: {x['cache_write_input_count']}")
     pprint(x["message"])
 
 
