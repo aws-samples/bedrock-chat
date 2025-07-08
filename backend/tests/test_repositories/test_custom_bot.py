@@ -84,6 +84,7 @@ class TestCustomBotRepository(unittest.TestCase):
             published_api_datetime=1627984879,
             published_api_codebuild_id="TestCodeBuildId",
             display_retrieved_chunks=True,
+            use_prompt_caching=False,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
@@ -149,6 +150,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
         self.assertEqual(bot.knowledge.filenames, ["test.txt"])
         self.assertEqual(bot.knowledge.s3_urls, ["s3://test-user/test-bot/"])
+        self.assertEqual(bot.use_prompt_caching, False)
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
         self.assertEqual(bot.sync_last_exec_id, "")
@@ -329,6 +331,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 filenames=["updated.txt"],
                 s3_urls=["s3://test-user/test-bot/"],
             ),
+            use_prompt_caching=None,
             sync_status="RUNNING",
             sync_status_reason="reason",
             display_retrieved_chunks=False,
@@ -386,6 +389,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.knowledge.source_urls, ["https://updated.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
+        self.assertIsNone(bot.use_prompt_caching)
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
         self.assertEqual(bot.display_retrieved_chunks, False)

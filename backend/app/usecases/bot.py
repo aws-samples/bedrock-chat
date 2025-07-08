@@ -246,6 +246,7 @@ def modify_owned_bot(
             filenames=filenames,
             s3_urls=s3_urls,
         ),
+        use_prompt_caching=modify_input.use_prompt_caching,
         sync_status=sync_status,
         sync_status_reason="",
         display_retrieved_chunks=modify_input.display_retrieved_chunks,
@@ -290,6 +291,7 @@ def modify_owned_bot(
             filenames=filenames,
             s3_urls=s3_urls,
         ),
+        use_prompt_caching=modify_input.use_prompt_caching,
         conversation_quick_starters=(
             []
             if modify_input.conversation_quick_starters is None

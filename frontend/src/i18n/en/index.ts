@@ -247,6 +247,7 @@ const translation = {
           example: 'Conversation Example',
         },
         citeRetrievedContexts: 'Retrieved Context Citation',
+        promptCaching: 'Prompt Caching',
         unsupported: 'Unsupported, Read-only',
       },
       titleSubmenu: {
@@ -273,6 +274,7 @@ const translation = {
           citeRetrievedContexts:
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
         },
+        usePromptCaching: 'Use prompt caching if the model supports it.\nIf enabled, it may reduce the cost and latency of repeated conversations with this bot.',
         quickStarter: {
           overview:
             'When starting a conversation, provide examples. Examples illustrate how to use the bot.',

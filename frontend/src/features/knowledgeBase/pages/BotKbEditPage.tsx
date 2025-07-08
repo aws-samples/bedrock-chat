@@ -107,6 +107,7 @@ const BotKbEditPage: React.FC = () => {
     defaultGenerationConfig.reasoningParams?.budgetTokens ??
       EDGE_GENERATION_PARAMS.budgetTokens.MIN
   );
+  const [usePromptCaching, setUsePromptCaching] = useState<boolean>();
   const [tools, setTools] = useState<AgentTool[]>([]);
   const [conversationQuickStarters, setConversationQuickStarters] = useState<
     ConversationQuickStarter[]
@@ -475,6 +476,7 @@ const BotKbEditPage: React.FC = () => {
           setBudgetTokens(bot.generationParams.reasoningParams.budgetTokens);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           setDisplayRetrievedChunks(bot.displayRetrievedChunks);
+          setUsePromptCaching(bot.usePromptCaching);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessages(
               isSyncChunkError(bot.syncStatusReason)
@@ -1262,6 +1264,7 @@ const BotKbEditPage: React.FC = () => {
         filenames: files.map((f) => f.filename),
       },
       displayRetrievedChunks,
+      usePromptCaching,
       conversationQuickStarters: conversationQuickStarters.filter(
         (qs) => qs.title !== '' && qs.example !== ''
       ),
@@ -1335,6 +1338,7 @@ const BotKbEditPage: React.FC = () => {
     s3Urls,
     files,
     displayRetrievedChunks,
+    usePromptCaching,
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
@@ -1424,6 +1428,7 @@ const BotKbEditPage: React.FC = () => {
           unchangedFilenames,
         },
         displayRetrievedChunks,
+        usePromptCaching,
         conversationQuickStarters: conversationQuickStarters.filter(
           (qs) => qs.title !== '' && qs.example !== ''
         ),
@@ -1501,6 +1506,7 @@ const BotKbEditPage: React.FC = () => {
     deletedFilenames,
     unchangedFilenames,
     displayRetrievedChunks,
+    usePromptCaching,
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
@@ -1925,6 +1931,21 @@ const BotKbEditPage: React.FC = () => {
                     />
                     <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                       {t('bot.help.knowledge.citeRetrievedContexts')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="font-semibold">
+                    {t('bot.label.promptCaching')}
+                  </div>
+                  <div className="flex">
+                    <Toggle
+                      value={usePromptCaching ?? true}
+                      onChange={setUsePromptCaching}
+                    />
+                    <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                      {t('bot.help.usePromptCaching')}
                     </div>
                   </div>
                 </div>

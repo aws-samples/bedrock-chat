@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
+from typing import TYPE_CHECKING, Any, Dict, Optional, Literal, Tuple, TypeGuard
 
 from app.config import (
     BEDROCK_PRICING,
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
         InferenceConfigurationTypeDef,
         MessageTypeDef,
         SystemContentBlockTypeDef,
+        ToolTypeDef,
     )
 
 
@@ -79,6 +80,29 @@ def is_tooluse_supported(model: type_model_name) -> bool:
         "llama3-2-3b-instruct",
         "",
     ]
+
+
+def is_prompt_caching_supported(model: type_model_name, target: Literal["system", "message", "tool"]) -> bool:
+    if target == "tool":
+        return model in [
+            "claude-v4-opus",
+            "claude-v4-sonnet",
+            "claude-v3.7-sonnet",
+            "claude-v3.5-sonnet-v2",
+            "claude-v3.5-haiku",
+        ]
+
+    else:
+        return model in [
+            "claude-v4-opus",
+            "claude-v4-sonnet",
+            "claude-v3.7-sonnet",
+            "claude-v3.5-sonnet-v2",
+            "claude-v3.5-haiku",
+            "amazon-nova-pro",
+            "amazon-nova-lite",
+            "amazon-nova-micro",
+        ]
 
 
 def _prepare_deepseek_model_params(
@@ -263,6 +287,7 @@ def compose_args_for_converse_api(
     tools: dict[str, AgentTool] | None = None,
     stream: bool = True,
     enable_reasoning: bool = False,
+    use_prompt_caching: bool = False,
 ) -> ConverseStreamRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         # Drop unsigned reasoning blocks only for DeepSeek R1
@@ -303,6 +328,12 @@ def compose_args_for_converse_api(
         for message in messages
         if _is_conversation_role(message.role)
     ]
+    tool_specs: list[ToolTypeDef] | None = [
+        {
+            "toolSpec": tool.to_converse_spec(),
+        }
+        for tool in tools.values()
+    ] if tools else None
 
     # Prepare model-specific parameters
     inference_config: InferenceConfigurationTypeDef
@@ -457,6 +488,38 @@ def compose_args_for_converse_api(
             if len(instruction) > 0
         ]
 
+    if use_prompt_caching and not (
+        tool_specs
+        and not is_prompt_caching_supported(model, target="tool")
+    ):
+        if is_prompt_caching_supported(model, "system") and len(system_prompts) > 0:
+            system_prompts.append({
+                "cachePoint": {
+                    "type": "default",
+                },
+            })
+
+        if is_prompt_caching_supported(model, target="message"):
+            for order, message in enumerate(filter(lambda m: m["role"] == "user", reversed(arg_messages))):
+                if order >= 2:
+                    break
+
+                message["content"] = [
+                    *(message["content"]),
+                    {
+                        "cachePoint": {
+                            "type": "default"
+                        },
+                    },
+                ]
+
+        if is_prompt_caching_supported(model, target="tool") and tool_specs:
+            tool_specs.append({
+                "cachePoint": {
+                    "type": "default",
+                },
+            })
+
     # Construct the base arguments
     args: ConverseStreamRequestTypeDef = {
         "inferenceConfig": inference_config,
@@ -480,14 +543,9 @@ def compose_args_for_converse_api(
             args["guardrailConfig"]["streamProcessingMode"] = "async"
 
     # NOTE: Some models doesn't support tool use. https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
-    if tools:
+    if tool_specs:
         args["toolConfig"] = {
-            "tools": [
-                {
-                    "toolSpec": tool.to_converse_spec(),
-                }
-                for tool in tools.values()
-            ],
+            "tools": tool_specs,
         }
 
     return args

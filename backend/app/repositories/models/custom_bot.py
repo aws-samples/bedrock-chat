@@ -388,6 +388,7 @@ class BotModel(BaseModel):
     generation_params: GenerationParamsModel
     agent: AgentModel
     knowledge: KnowledgeModel
+    use_prompt_caching: bool | None = None
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
@@ -467,6 +468,9 @@ class BotModel(BaseModel):
     def is_agent_enabled(self) -> bool:
         # Always consider agents active, even if they have a knowledge base
         return len(self.agent.tools) > 0 or self.has_knowledge()
+
+    def is_prompt_caching_enabled(self) -> bool:
+        return self.use_prompt_caching != False
 
     def has_bedrock_knowledge_base(self) -> bool:
         return self.bedrock_knowledge_base is not None and (
@@ -566,6 +570,7 @@ class BotModel(BaseModel):
             ),
             agent=agent,
             knowledge=knowledge,
+            use_prompt_caching=bot_input.use_prompt_caching,
             sync_status=sync_status,
             sync_status_reason="",
             sync_last_exec_id="",
@@ -623,6 +628,7 @@ class BotModel(BaseModel):
             ),
             agent=self.agent.to_agent(),
             knowledge=Knowledge.model_validate(self.knowledge.model_dump()),
+            use_prompt_caching=self.use_prompt_caching,
             sync_status=self.sync_status,
             sync_status_reason=self.sync_status_reason,
             sync_last_exec_id=self.sync_last_exec_id,

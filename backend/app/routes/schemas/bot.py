@@ -220,6 +220,7 @@ class BotInput(BaseSchema):
     agent: Optional[AgentInput] = None
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
+    use_prompt_caching: bool | None = None
     conversation_quick_starters: list[ConversationQuickStarter] | None
     bedrock_knowledge_base: BedrockKnowledgeBaseInput | None = None
     bedrock_guardrails: BedrockGuardrailsInput | None = None
@@ -255,6 +256,7 @@ class BotModifyInput(BaseSchema):
     agent: Optional[AgentInput] = None
     knowledge: KnowledgeDiffInput | None
     display_retrieved_chunks: bool
+    use_prompt_caching: bool | None = None
     conversation_quick_starters: list[ConversationQuickStarter] | None
     bedrock_knowledge_base: BedrockKnowledgeBaseInput | None = None
     bedrock_guardrails: BedrockGuardrailsInput | None = None
@@ -369,6 +371,7 @@ class BotModifyOutput(BaseSchema):
     generation_params: GenerationParams
     agent: Agent
     knowledge: Knowledge
+    use_prompt_caching: bool | None
     conversation_quick_starters: list[ConversationQuickStarter]
     bedrock_knowledge_base: BedrockKnowledgeBaseOutput | None
     bedrock_guardrails: BedrockGuardrailsOutput | None
@@ -391,6 +394,7 @@ class BotOutput(BaseSchema):
     generation_params: GenerationParams
     agent: Agent
     knowledge: Knowledge
+    use_prompt_caching: bool | None
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str

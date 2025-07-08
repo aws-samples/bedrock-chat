@@ -48,6 +48,7 @@ class TestKnowledgeTool(unittest.TestCase):
                 s3_urls=[],
             ),
             display_retrieved_chunks=True,
+            use_prompt_caching=False,
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",

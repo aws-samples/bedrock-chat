@@ -112,6 +112,7 @@ class TestBotModel(unittest.TestCase):
                     s3_urls=["s3://test-user/test-bot/"],
                 )
             ),
+            use_prompt_caching=False,
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="xxxx",
@@ -197,6 +198,7 @@ class TestBotModelFromInput(unittest.TestCase):
             knowledge=Knowledge(
                 source_urls=[], sitemap_urls=[], filenames=[], s3_urls=[]
             ),
+            use_prompt_caching=False,
             conversation_quick_starters=[],
         )
 
