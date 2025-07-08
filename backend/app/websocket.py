@@ -109,6 +109,13 @@ class NotificationSender:
                 status="STREAMING_END",
                 completion="",
                 stop_reason=arg["stop_reason"],
+                token_count=dict(
+                    input=arg["input_token_count"],
+                    output=arg["output_token_count"],
+                    cache_read_input=arg["cache_read_input_count"],
+                    cache_write_input=arg["cache_write_input_count"],
+                ),
+                price=arg["price"],
             )
         ).encode("utf-8")
 

@@ -143,6 +143,8 @@ const usePostMessageStreaming = create<{
                     type: 'goodbye',
                   });
                   reasoningDispatch({ type: 'end' });
+                  console.log(`Tokens: ${JSON.stringify(data.token_count, null, 2)}`);
+                  console.log(`Price: ${data.price}`);
 
                   ws.close();
                   break;
