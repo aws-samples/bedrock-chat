@@ -137,10 +137,13 @@ jobs:
 
           ${PR_SUMMARY}
 
+          IMPORTANT: Each PR above includes its number (e.g., "PR #123"). You MUST extract and include the PR number in parentheses format (#123) at the end of each bullet point in your response.
+
           Requirements:
           - Do NOT include any version title or heading (like "# Release Notes - v1.4.0")
           - Group changes into exactly these 4 categories only: Features, Bug Fixes, Enhancements, Documentation
           - For each item, include the PR author's GitHub username with @ prefix (e.g., "by @username")
+          - For each item, include the PR link in the format (#123) at the end of the line
           - If multiple contributors are involved in a PR, list them comma-separated (e.g., "by @user1, @user2")
           - Use bullet points for each item
           - Keep descriptions concise and professional
@@ -148,17 +151,17 @@ jobs:
 
           Format example:
           ## Features
-          - Added new feature X by @username
-          - Implemented Y functionality by @user1, @user2
+          - Added new feature X by @username (#123)
+          - Implemented Y functionality by @user1, @user2 (#124)
 
           ## Bug Fixes
-          - Fixed issue with Z by @username
+          - Fixed issue with Z by @username (#125)
 
           ## Enhancements
-          - Improved performance of A by @username
+          - Improved performance of A by @username (#126)
 
           ## Documentation
-          - Updated README by @username
+          - Updated README by @username (#127)
           EOL
 
           REQ=$(cat prompt.txt | jq -Rs '{anthropic_version:"bedrock-2023-05-31",max_tokens:4000,messages:[{role:"user",content:.}]}')
