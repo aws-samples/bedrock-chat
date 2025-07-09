@@ -1,5 +1,5 @@
 export type AgentInput = {
-  tools: string[];
+  tools: AgentTool[];
 };
 
 export type FirecrawlConfig = {

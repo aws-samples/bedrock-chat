@@ -1,3 +1,7 @@
+import {
+  Agent,
+  AgentInput,
+} from '../features/agent/types';
 import { BedrockKnowledgeBase } from '../features/knowledgeBase/types';
 import { Model } from './conversation';
 export type BotKind = 'private' | 'mixed';
@@ -130,7 +134,7 @@ export type UpdateBotRequest = {
   instruction: string;
   description?: string;
   agent: AgentInput;
-  generationParams?: BotGenerationConfig;
+  generationParams?: GenerationParams;
   knowledge?: BotKnowledgeDiff;
   displayRetrievedChunks: boolean;
   usePromptCaching?: boolean;

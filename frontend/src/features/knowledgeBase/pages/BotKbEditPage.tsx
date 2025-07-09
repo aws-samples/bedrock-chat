@@ -1207,40 +1207,7 @@ const BotKbEditPage: React.FC = () => {
     setIsLoading(true);
     registerBot({
       agent: {
-        tools: tools.map((tool) => {
-          const baseTool = {
-            tool_type: tool.toolType,
-            name: tool.name,
-            description: tool.description,
-          };
-
-          if (isInternetTool(tool)) {
-            return {
-              ...baseTool,
-              search_engine: tool.searchEngine,
-              firecrawl_config: tool.firecrawlConfig
-                ? {
-                    api_key: tool.firecrawlConfig.apiKey,
-                    max_results: tool.firecrawlConfig.maxResults,
-                  }
-                : undefined,
-            };
-          }
-
-          if (isBedrockAgentTool(tool)) {
-            return {
-              ...baseTool,
-              bedrock_agent_config: tool.bedrockAgentConfig
-                ? {
-                    agent_id: tool.bedrockAgentConfig.agentId,
-                    alias_id: tool.bedrockAgentConfig.aliasId,
-                  }
-                : undefined,
-            };
-          }
-
-          return baseTool;
-        }),
+        tools,
       },
       id: botId,
       title,
@@ -1370,40 +1337,7 @@ const BotKbEditPage: React.FC = () => {
       setIsLoading(true);
       updateBot(botId, {
         agent: {
-          tools: tools.map((tool) => {
-            const baseTool = {
-              tool_type: tool.toolType,
-              name: tool.name,
-              description: tool.description,
-            };
-
-            if (isInternetTool(tool)) {
-              return {
-                ...baseTool,
-                search_engine: tool.searchEngine,
-                firecrawl_config: tool.firecrawlConfig
-                  ? {
-                      api_key: tool.firecrawlConfig.apiKey,
-                      max_results: tool.firecrawlConfig.maxResults,
-                    }
-                  : undefined,
-              };
-            }
-
-            if (isBedrockAgentTool(tool)) {
-              return {
-                ...baseTool,
-                bedrock_agent_config: tool.bedrockAgentConfig
-                  ? {
-                      agent_id: tool.bedrockAgentConfig.agentId,
-                      alias_id: tool.bedrockAgentConfig.aliasId,
-                    }
-                  : undefined,
-              };
-            }
-
-            return baseTool;
-          }),
+          tools,
         },
         title,
         description,

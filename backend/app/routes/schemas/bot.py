@@ -157,17 +157,8 @@ class Agent(BaseSchema):
         return v
 
 
-class AgentToolInput(BaseSchema):
-    tool_type: Literal["plain", "internet", "bedrock_agent"]
-    name: str
-    description: str
-    search_engine: Literal["duckduckgo", "firecrawl"] | None = None
-    firecrawl_config: FirecrawlConfig | None = None
-    bedrock_agent_config: BedrockAgentConfig | None = None
-
-
 class AgentInput(BaseSchema):
-    tools: list[AgentToolInput] = Field(..., description="List of tools")
+    tools: list[Tool] = Field(..., description="List of tools")
 
 
 class Knowledge(BaseSchema):

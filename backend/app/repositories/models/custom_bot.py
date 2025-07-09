@@ -10,7 +10,6 @@ from app.routes.schemas.bot import (
     ActiveModelsOutput,
     Agent,
     AgentInput,
-    AgentToolInput,
     BedrockAgentConfig,
     BedrockAgentTool,
     BedrockGuardrailsOutput,
@@ -173,7 +172,7 @@ class PlainToolModel(BaseModel):
     description: str
 
     @classmethod
-    def from_tool_input(cls, tool: AgentToolInput) -> Self:
+    def from_tool_input(cls, tool: PlainTool) -> Self:
         return cls(tool_type="plain", name=tool.name, description=tool.description)
 
 
@@ -208,7 +207,7 @@ class InternetToolModel(BaseModel):
         return data
 
     @classmethod
-    def from_tool_input(cls, tool: AgentToolInput, user_id: str, bot_id: str) -> Self:
+    def from_tool_input(cls, tool: InternetTool, user_id: str, bot_id: str) -> Self:
         firecrawl_config = None
         if tool.search_engine == "firecrawl" and tool.firecrawl_config:
             firecrawl_config = FirecrawlConfigModel.from_firecrawl_config(
@@ -239,17 +238,17 @@ class BedrockAgentToolModel(BaseModel):
     bedrockAgentConfig: Optional[BedrockAgentConfigModel] | None = None
 
     @classmethod
-    def from_tool_input(cls, tool: AgentToolInput) -> Self:
+    def from_tool_input(cls, tool: BedrockAgentTool) -> Self:
         return cls(
             tool_type="bedrock_agent",
             name=tool.name,
             description=tool.description,
             bedrockAgentConfig=(
                 BedrockAgentConfigModel(
-                    agent_id=tool.bedrock_agent_config.agent_id,
-                    alias_id=tool.bedrock_agent_config.alias_id,
+                    agent_id=tool.bedrockAgentConfig.agent_id,
+                    alias_id=tool.bedrockAgentConfig.alias_id,
                 )
-                if tool.bedrock_agent_config
+                if tool.bedrockAgentConfig
                 else None
             ),
         )
