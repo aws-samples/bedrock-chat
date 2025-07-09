@@ -247,7 +247,6 @@ const translation = {
           example: 'Conversation Example',
         },
         citeRetrievedContexts: 'Retrieved Context Citation',
-        promptCaching: 'Prompt Caching',
         unsupported: 'Unsupported, Read-only',
       },
       titleSubmenu: {
@@ -274,7 +273,6 @@ const translation = {
           citeRetrievedContexts:
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
         },
-        usePromptCaching: 'Use prompt caching if the model supports it.\nIf enabled, it may reduce the cost and latency of repeated conversations with this bot.',
         quickStarter: {
           overview:
             'When starting a conversation, provide examples. Examples illustrate how to use the bot.',
@@ -493,6 +491,13 @@ How would you categorize this email?`,
       activeModels: {
         title: 'Model Activation',
         description: 'Configure which AI models can be used with this bot.',
+      },
+      promptCaching: {
+        title: 'Prompt Caching',
+        usePromptCaching: {
+          title: 'Use prompt caching if the model supports it.',
+          description: 'If enabled, it may reduce the cost and latency of repeated conversations with this bot.',
+        },
       },
     },
     admin: {

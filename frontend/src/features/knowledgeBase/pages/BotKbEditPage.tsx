@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import InputText from '../../../components/InputText';
 import Button from '../../../components/Button';
 import useBot from '../../../hooks/useBot';
@@ -1934,21 +1934,6 @@ const BotKbEditPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
-                <div className="mt-4">
-                  <div className="font-semibold">
-                    {t('bot.label.promptCaching')}
-                  </div>
-                  <div className="flex">
-                    <Toggle
-                      value={usePromptCaching ?? true}
-                      onChange={setUsePromptCaching}
-                    />
-                    <div className="whitespace-pre-wrap text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
-                      {t('bot.help.usePromptCaching')}
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="mt-3">
@@ -2672,6 +2657,25 @@ const BotKbEditPage: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </ExpandableDrawerGroup>
+
+              <ExpandableDrawerGroup
+                isDefaultShow={false}
+                label={t('bot.promptCaching.title')}
+                className="py-2"
+              >
+                <div className="flex mt-4 items-start">
+                  <Toggle
+                    value={usePromptCaching ?? true}
+                    onChange={setUsePromptCaching}
+                  />
+                  <div>
+                    <Trans t={t} i18nKey="bot.promptCaching.usePromptCaching.title" />
+                    <div className="text-sm text-dark-gray dark:text-light-gray">
+                      <Trans t={t} i18nKey="bot.promptCaching.usePromptCaching.description" />
+                    </div>
                   </div>
                 </div>
               </ExpandableDrawerGroup>

@@ -248,7 +248,6 @@ const translation: typeof en = {
           example: '会話例',
         },
         citeRetrievedContexts: '取得したコンテキストの引用',
-        promptCaching: 'プロンプトキャッシュ',
         unsupported: '非対応、読み取り専用',
       },
       titleSubmenu: {
@@ -275,7 +274,6 @@ const translation: typeof en = {
           citeRetrievedContexts:
             'ユーザーの質問に答えるために取得したコンテキストを引用情報として表示するかどうかを設定します。\n有効にすると、ユーザーは元のソースURLやファイルにアクセスできます。',
         },
-        usePromptCaching: 'モデルが対応している場合、プロンプトキャッシュを利用します。\n有効にすると、このボットと繰り返し会話した際のコストとレイテンシーを削減できます。',
         quickStarter: {
           overview:
             '会話を開始する際に、会話例を表示します。会話例を提供することで、ボットの使い方を利用者に示すことができます。',
@@ -499,6 +497,13 @@ const translation: typeof en = {
       activeModels: {
         title: '利用可能なモデル設定',
         description: 'このボットで使用可能なモデルを設定します。',
+      },
+      promptCaching: {
+        title: 'プロンプトキャッシュ',
+        usePromptCaching: {
+          title: 'モデルが対応している場合、プロンプトキャッシュを利用する。',
+          description: '有効にすると、このボットと繰り返し会話した際のコストとレイテンシーを削減できます。',
+        },
       },
     },
     admin: {
