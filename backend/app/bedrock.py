@@ -82,7 +82,9 @@ def is_tooluse_supported(model: type_model_name) -> bool:
     ]
 
 
-def is_prompt_caching_supported(model: type_model_name, target: Literal["system", "message", "tool"]) -> bool:
+def is_prompt_caching_supported(
+    model: type_model_name, target: Literal["system", "message", "tool"]
+) -> bool:
     if target == "tool":
         return model in [
             "claude-v4-opus",
@@ -328,12 +330,16 @@ def compose_args_for_converse_api(
         for message in messages
         if _is_conversation_role(message.role)
     ]
-    tool_specs: list[ToolTypeDef] | None = [
-        {
-            "toolSpec": tool.to_converse_spec(),
-        }
-        for tool in tools.values()
-    ] if tools else None
+    tool_specs: list[ToolTypeDef] | None = (
+        [
+            {
+                "toolSpec": tool.to_converse_spec(),
+            }
+            for tool in tools.values()
+        ]
+        if tools
+        else None
+    )
 
     # Prepare model-specific parameters
     inference_config: InferenceConfigurationTypeDef
@@ -489,36 +495,39 @@ def compose_args_for_converse_api(
         ]
 
     if use_prompt_caching and not (
-        tool_specs
-        and not is_prompt_caching_supported(model, target="tool")
+        tool_specs and not is_prompt_caching_supported(model, target="tool")
     ):
         if is_prompt_caching_supported(model, "system") and len(system_prompts) > 0:
-            system_prompts.append({
-                "cachePoint": {
-                    "type": "default",
-                },
-            })
+            system_prompts.append(
+                {
+                    "cachePoint": {
+                        "type": "default",
+                    },
+                }
+            )
 
         if is_prompt_caching_supported(model, target="message"):
-            for order, message in enumerate(filter(lambda m: m["role"] == "user", reversed(arg_messages))):
+            for order, message in enumerate(
+                filter(lambda m: m["role"] == "user", reversed(arg_messages))
+            ):
                 if order >= 2:
                     break
 
                 message["content"] = [
                     *(message["content"]),
                     {
-                        "cachePoint": {
-                            "type": "default"
-                        },
+                        "cachePoint": {"type": "default"},
                     },
                 ]
 
         if is_prompt_caching_supported(model, target="tool") and tool_specs:
-            tool_specs.append({
-                "cachePoint": {
-                    "type": "default",
-                },
-            })
+            tool_specs.append(
+                {
+                    "cachePoint": {
+                        "type": "default",
+                    },
+                }
+            )
 
     # Construct the base arguments
     args: ConverseStreamRequestTypeDef = {
@@ -594,12 +603,18 @@ def calculate_price(
     cache_read_input_price = (
         BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("cache_read_input", BEDROCK_PRICING["default"][model].get("cache_read_input", input_price))
+        .get(
+            "cache_read_input",
+            BEDROCK_PRICING["default"][model].get("cache_read_input", input_price),
+        )
     )
     cache_write_input_price = (
         BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("cache_write_input", BEDROCK_PRICING["default"][model].get("cache_write_input", input_price))
+        .get(
+            "cache_write_input",
+            BEDROCK_PRICING["default"][model].get("cache_write_input", input_price),
+        )
     )
 
     return (

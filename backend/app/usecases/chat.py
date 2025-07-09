@@ -352,7 +352,9 @@ def chat(
             grounding_source=grounding_source,
             message_for_continue_generate=message_for_continue_generate,
             enable_reasoning=chat_input.enable_reasoning,
-            use_prompt_caching=bot.is_prompt_caching_enabled() if bot is not None else True,
+            use_prompt_caching=(
+                bot.is_prompt_caching_enabled() if bot is not None else True
+            ),
         )
 
         message = result["message"]

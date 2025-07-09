@@ -718,7 +718,7 @@ def find_bot_by_id(bot_id: str) -> BotModel:
         knowledge=KnowledgeModel(
             **{**item["Knowledge"], "s3_urls": item["Knowledge"].get("s3_urls", [])}
         ),
-        use_prompt_caching=item.get('UsePromptCaching', None),
+        use_prompt_caching=item.get("UsePromptCaching", None),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
         sync_last_exec_id=item["LastExecId"],
