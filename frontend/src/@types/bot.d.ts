@@ -137,7 +137,7 @@ export type UpdateBotRequest = {
   generationParams?: GenerationParams;
   knowledge?: BotKnowledgeDiff;
   displayRetrievedChunks: boolean;
-  promptCachingEnabled?: boolean;
+  promptCachingEnabled: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
@@ -152,7 +152,7 @@ export type UpdateBotResponse = {
   generationParams: GenerationParams;
   knowledge?: BotKnowledge;
   displayRetrievedChunks: boolean;
-  promptCachingEnabled?: boolean;
+  promptCachingEnabled: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;

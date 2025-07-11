@@ -113,7 +113,7 @@ def update_bot(
     generation_params: GenerationParamsModel,
     agent: AgentModel,
     knowledge: KnowledgeModel,
-    prompt_caching_enabled: bool | None,
+    prompt_caching_enabled: bool,
     sync_status: type_sync_status,
     sync_status_reason: str,
     display_retrieved_chunks: bool,
@@ -134,6 +134,7 @@ def update_bot(
         "Instruction = :instruction, "
         "AgentData = :agent_data, "
         "Knowledge = :knowledge, "
+        "PromptCachingEnabled = :prompt_caching_enabled, "
         "SyncStatus = :sync_status, "
         "SyncStatusReason = :sync_status_reason, "
         "GenerationParams = :generation_params, "
@@ -148,6 +149,7 @@ def update_bot(
         ":instruction": instruction,
         ":knowledge": knowledge.model_dump(),
         ":agent_data": agent.model_dump(),
+        ":prompt_caching_enabled": prompt_caching_enabled,
         ":sync_status": sync_status,
         ":sync_status_reason": sync_status_reason,
         ":display_retrieved_chunks": display_retrieved_chunks,
@@ -168,10 +170,6 @@ def update_bot(
         expression_attribute_values[":bedrock_guardrails"] = (
             bedrock_guardrails.model_dump()
         )
-
-    if prompt_caching_enabled is not None:
-        update_expression += ", PromptCachingEnabled = :prompt_caching_enabled"
-        expression_attribute_values[":prompt_caching_enabled"] = prompt_caching_enabled
 
     try:
         response = table.update_item(
