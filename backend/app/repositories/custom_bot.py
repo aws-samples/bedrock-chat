@@ -71,6 +71,7 @@ def store_bot(custom_bot: BotModel):
         "GenerationParams": custom_bot.generation_params.model_dump(),
         "AgentData": custom_bot.agent.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
+        "PromptCachingEnabled": custom_bot.prompt_caching_enabled,
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
         "LastExecId": custom_bot.sync_last_exec_id,
@@ -97,8 +98,6 @@ def store_bot(custom_bot: BotModel):
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
     if custom_bot.bedrock_guardrails:
         item["GuardrailsParams"] = custom_bot.bedrock_guardrails.model_dump()
-    if custom_bot.use_prompt_caching is not None:
-        item["UsePromptCaching"] = custom_bot.use_prompt_caching
 
     response = table.put_item(Item=item)
     logger.info(f"Stored bot: {custom_bot.id} successfully")
@@ -114,7 +113,7 @@ def update_bot(
     generation_params: GenerationParamsModel,
     agent: AgentModel,
     knowledge: KnowledgeModel,
-    use_prompt_caching: bool | None,
+    prompt_caching_enabled: bool | None,
     sync_status: type_sync_status,
     sync_status_reason: str,
     display_retrieved_chunks: bool,
@@ -170,9 +169,9 @@ def update_bot(
             bedrock_guardrails.model_dump()
         )
 
-    if use_prompt_caching is not None:
-        update_expression += ", UsePromptCaching = :use_prompt_caching"
-        expression_attribute_values[":use_prompt_caching"] = use_prompt_caching
+    if prompt_caching_enabled is not None:
+        update_expression += ", PromptCachingEnabled = :prompt_caching_enabled"
+        expression_attribute_values[":prompt_caching_enabled"] = prompt_caching_enabled
 
     try:
         response = table.update_item(
@@ -718,7 +717,7 @@ def find_bot_by_id(bot_id: str) -> BotModel:
         knowledge=KnowledgeModel(
             **{**item["Knowledge"], "s3_urls": item["Knowledge"].get("s3_urls", [])}
         ),
-        use_prompt_caching=item.get("UsePromptCaching", None),
+        prompt_caching_enabled=item.get("PromptCachingEnabled", True),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
         sync_last_exec_id=item["LastExecId"],

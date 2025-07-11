@@ -494,7 +494,7 @@ How would you categorize this email?`,
       },
       promptCaching: {
         title: 'Prompt Caching',
-        usePromptCaching: {
+        promptCachingEnabled: {
           title: 'Use prompt caching if the model supports it.',
           description: 'If enabled, it may reduce the cost and latency of repeated conversations with this bot.',
         },

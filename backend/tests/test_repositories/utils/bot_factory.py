@@ -44,7 +44,7 @@ def _create_test_bot_model(
     sync_status="RUNNING",
     knowledge=None,
     display_retrieved_chunks=True,
-    use_prompt_caching=False,
+    prompt_caching_enabled=False,
     published_api_stack_name=None,
     published_api_datetime=None,
     published_api_codebuild_id=None,
@@ -111,7 +111,7 @@ def _create_test_bot_model(
                 )
             )
         ),
-        use_prompt_caching=use_prompt_caching,
+        prompt_caching_enabled=prompt_caching_enabled,
         sync_status=sync_status,
         sync_status_reason="reason",
         sync_last_exec_id="",

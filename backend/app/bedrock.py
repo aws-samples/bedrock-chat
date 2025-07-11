@@ -289,7 +289,7 @@ def compose_args_for_converse_api(
     tools: dict[str, AgentTool] | None = None,
     stream: bool = True,
     enable_reasoning: bool = False,
-    use_prompt_caching: bool = False,
+    prompt_caching_enabled: bool = False,
 ) -> ConverseStreamRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         # Drop unsigned reasoning blocks only for DeepSeek R1
@@ -494,7 +494,7 @@ def compose_args_for_converse_api(
             if len(instruction) > 0
         ]
 
-    if use_prompt_caching and not (
+    if prompt_caching_enabled and not (
         tool_specs and not is_prompt_caching_supported(model, target="tool")
     ):
         if is_prompt_caching_supported(model, "system") and len(system_prompts) > 0:

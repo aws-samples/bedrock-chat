@@ -196,7 +196,7 @@ class ConverseApiStreamHandler:
         grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
         message_for_continue_generate: SimpleMessageModel | None = None,
         enable_reasoning: bool = False,
-        use_prompt_caching: bool = False,
+        prompt_caching_enabled: bool = False,
     ) -> OnStopInput:
         try:
             # Create payload to invoke Bedrock
@@ -209,7 +209,7 @@ class ConverseApiStreamHandler:
                 grounding_source=grounding_source,
                 tools=self.tools,
                 enable_reasoning=enable_reasoning,
-                use_prompt_caching=use_prompt_caching,
+                prompt_caching_enabled=prompt_caching_enabled,
             )
             logger.info(f"args for converse_stream: {args}")
 

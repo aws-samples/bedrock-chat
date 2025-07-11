@@ -88,7 +88,7 @@ export type BotDetails = Omit<BotMeta, 'isStarred' | 'owned'> & {
   generationParams: GenerationParams;
   agent: Agent;
   knowledge: BotKnowledge;
-  usePromptCaching?: boolean;
+  promptCachingEnabled: boolean;
   syncStatusReason: string;
   displayRetrievedChunks: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
@@ -120,7 +120,7 @@ export type RegisterBotRequest = {
   generationParams?: GenerationParams;
   knowledge?: BotKnowledge;
   displayRetrievedChunks: boolean;
-  usePromptCaching?: boolean;
+  promptCachingEnabled: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
@@ -137,7 +137,7 @@ export type UpdateBotRequest = {
   generationParams?: GenerationParams;
   knowledge?: BotKnowledgeDiff;
   displayRetrievedChunks: boolean;
-  usePromptCaching?: boolean;
+  promptCachingEnabled?: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockGuardrails?: GuardrailsParams;
   bedrockKnowledgeBase?: BedrockKnowledgeBase;
@@ -152,7 +152,7 @@ export type UpdateBotResponse = {
   generationParams: GenerationParams;
   knowledge?: BotKnowledge;
   displayRetrievedChunks: boolean;
-  usePromptCaching?: boolean;
+  promptCachingEnabled?: boolean;
   conversationQuickStarters: ConversationQuickStarter[];
   bedrockKnowledgeBase: BedrockKnowledgeBase;
   activeModels: ActiveModels;

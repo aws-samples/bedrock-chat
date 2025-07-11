@@ -107,7 +107,7 @@ const BotKbEditPage: React.FC = () => {
     defaultGenerationConfig.reasoningParams?.budgetTokens ??
       EDGE_GENERATION_PARAMS.budgetTokens.MIN
   );
-  const [usePromptCaching, setUsePromptCaching] = useState<boolean>();
+  const [promptCachingEnabled, setPromptCachingEnabled] = useState<boolean>(false);
   const [tools, setTools] = useState<AgentTool[]>([]);
   const [conversationQuickStarters, setConversationQuickStarters] = useState<
     ConversationQuickStarter[]
@@ -476,7 +476,7 @@ const BotKbEditPage: React.FC = () => {
           setBudgetTokens(bot.generationParams.reasoningParams.budgetTokens);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           setDisplayRetrievedChunks(bot.displayRetrievedChunks);
-          setUsePromptCaching(bot.usePromptCaching);
+          setPromptCachingEnabled(bot.promptCachingEnabled);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessages(
               isSyncChunkError(bot.syncStatusReason)
@@ -1231,7 +1231,7 @@ const BotKbEditPage: React.FC = () => {
         filenames: files.map((f) => f.filename),
       },
       displayRetrievedChunks,
-      usePromptCaching,
+      promptCachingEnabled: promptCachingEnabled,
       conversationQuickStarters: conversationQuickStarters.filter(
         (qs) => qs.title !== '' && qs.example !== ''
       ),
@@ -1305,7 +1305,7 @@ const BotKbEditPage: React.FC = () => {
     s3Urls,
     files,
     displayRetrievedChunks,
-    usePromptCaching,
+    promptCachingEnabled,
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
@@ -1362,7 +1362,7 @@ const BotKbEditPage: React.FC = () => {
           unchangedFilenames,
         },
         displayRetrievedChunks,
-        usePromptCaching,
+        promptCachingEnabled: promptCachingEnabled,
         conversationQuickStarters: conversationQuickStarters.filter(
           (qs) => qs.title !== '' && qs.example !== ''
         ),
@@ -1440,7 +1440,7 @@ const BotKbEditPage: React.FC = () => {
     deletedFilenames,
     unchangedFilenames,
     displayRetrievedChunks,
-    usePromptCaching,
+    promptCachingEnabled,
     conversationQuickStarters,
     navigate,
     knowledgeBaseId,
@@ -2602,13 +2602,13 @@ const BotKbEditPage: React.FC = () => {
               >
                 <div className="flex mt-4 items-start">
                   <Toggle
-                    value={usePromptCaching ?? true}
-                    onChange={setUsePromptCaching}
+                    value={promptCachingEnabled}
+                    onChange={setPromptCachingEnabled}
                   />
                   <div>
-                    <Trans t={t} i18nKey="bot.promptCaching.usePromptCaching.title" />
+                    <Trans t={t} i18nKey="bot.promptCaching.promptCachingEnabled.title" />
                     <div className="text-sm text-dark-gray dark:text-light-gray">
-                      <Trans t={t} i18nKey="bot.promptCaching.usePromptCaching.description" />
+                      <Trans t={t} i18nKey="bot.promptCaching.promptCachingEnabled.description" />
                     </div>
                   </div>
                 </div>
