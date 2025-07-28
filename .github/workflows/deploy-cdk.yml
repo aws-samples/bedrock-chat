@@ -43,6 +43,11 @@ jobs:
       - name: Check Poetry version
         run: poetry --version
 
+      - name: Export requirements.txt for Lambda
+        run: poetry export -f requirements.txt --output backend/auth/add_user_to_groups/requirements.txt --without-hashes
+
+      - name: List Lambda asset files
+        run: ls -l backend/auth/add_user_to_groups
 
       - name: CDK diff
         uses: youyo/aws-cdk-github-actions@v2
