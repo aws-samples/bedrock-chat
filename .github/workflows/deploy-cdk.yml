@@ -19,18 +19,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          # Removed cache: 'npm' since no lock file exists
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: "us-east-2"
+          aws-region: "us-east-1"
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
 
       - name: Install Node dependencies
-        run: npm ci || npm install
-        # Added fallback to npm install in case npm ci fails without lock file
+        run: npm install
 
       - name: Optional Python dependencies
         run: |
@@ -54,4 +55,4 @@ jobs:
         run: npx cdk bootstrap
 
       - name: Deploy CDK stack
-        run: npx cdk deploy --require-approval never
+        run: npx cdk deploy --all --require-approval never
