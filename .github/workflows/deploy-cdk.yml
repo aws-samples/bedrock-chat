@@ -5,7 +5,7 @@ on:
 
 jobs:
   aws_cdk:
-    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
 
     steps:
@@ -16,6 +16,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - name: Cache CDK context and dependencies
         uses: actions/cache@v3
@@ -30,12 +35,7 @@ jobs:
         run: npm install
 
       - name: Set up Docker Buildx
-        if: always()
         uses: docker/setup-buildx-action@v3
-
-      - name: Verify Docker access
-        run: docker ps
-        continue-on-error: true
 
       - name: Install Poetry
         run: pip install poetry
@@ -43,6 +43,7 @@ jobs:
       - name: Generate requirements.txt for Lambda bundling
         working-directory: backend/auth/add_user_to_groups
         run: |
+          poetry config virtualenvs.create false
           poetry export -f requirements.txt --output requirements.txt --without-hashes
 
       - name: Debug Lambda bundling directory
@@ -74,6 +75,3 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  ```
-  
-  This ensures Poetry is installed and the `requirements.txt` is generated in the correct directory before the CDK steps.
