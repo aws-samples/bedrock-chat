@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # Removed cache: 'npm' since no lock file exists
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -29,7 +29,8 @@ jobs:
           aws-region: "us-east-2"
 
       - name: Install Node dependencies
-        run: npm ci
+        run: npm ci || npm install
+        # Added fallback to npm install in case npm ci fails without lock file
 
       - name: Optional Python dependencies
         run: |
