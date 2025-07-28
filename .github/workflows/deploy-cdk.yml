@@ -1,7 +1,7 @@
 name: Deploy CDK Project
 
 on:
-  workflow_dispatch:  # ✅ Enables manual trigger in the GitHub UI
+  workflow_dispatch:
 
 jobs:
   aws_cdk:
@@ -17,15 +17,31 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache CDK context and dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            cdk/cdk.context.json
+          key: ${{ runner.os }}-cdk-${{ hashFiles('cdk/package-lock.json') }}
+
       - name: Install CDK dependencies
         working-directory: cdk
         run: npm install
 
+      - name: Set up Docker Buildx
+        if: always()
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify Docker access
+        run: docker ps
+        continue-on-error: true
+
       - name: Debug Lambda bundling directory
         run: |
           echo "::group::Contents of Lambda source directory"
-          ls -lah backend/auth/add_user_to_groups
-          cat backend/auth/add_user_to_groups/requirements.txt || echo "Missing requirements.txt"
+          ls -lah backend/auth/add_user_to_groups || echo "Directory not found"
+          cat backend/auth/add_user_to_groups/requirements.txt || echo "requirements.txt missing"
           echo "::endgroup::"
 
       - name: CDK diff
