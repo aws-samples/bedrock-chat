@@ -1,0 +1,57 @@
+name: Destroy
+
+on:
+  workflow_dispatch:  # Enables manual trigger from GitHub UI
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm stack deletion'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  destroy:
+    name: Destroy
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'destroy'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+
+      - name: Find package.json
+        id: find-package
+        run: |
+          PACKAGE_JSON_PATH=$(find . -name "package.json" -not -path "*/node_modules/*" | head -n 1)
+          if [ -z "$PACKAGE_JSON_PATH" ]; then
+            echo "No package.json found in the repository"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$PACKAGE_JSON_PATH")
+          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          echo "Found package.json in $PROJECT_DIR"
+
+      - name: Install Node dependencies
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
+        run: npm install
+
+      - name: Destroy CDK stack
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
+        run: npx cdk destroy --all --force
