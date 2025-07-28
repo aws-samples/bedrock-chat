@@ -37,6 +37,14 @@ jobs:
         run: docker ps
         continue-on-error: true
 
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Generate requirements.txt for Lambda bundling
+        working-directory: backend/auth/add_user_to_groups
+        run: |
+          poetry export -f requirements.txt --output requirements.txt --without-hashes
+
       - name: Debug Lambda bundling directory
         run: |
           echo "::group::Contents of Lambda source directory"
@@ -66,3 +74,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  ```
+  
+  This ensures Poetry is installed and the `requirements.txt` is generated in the correct directory before the CDK steps.
