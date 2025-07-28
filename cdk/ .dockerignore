@@ -1,0 +1,8 @@
+# Avoid large or irrelevant files
+node_modules
+cdk.out
+.cdk.staging
+cdk.context.json
+
+# But DO NOT ignore .txt files!
+# (Let requirements.txt in Lambda bundles be included)
