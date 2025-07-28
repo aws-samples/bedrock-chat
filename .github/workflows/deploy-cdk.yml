@@ -30,10 +30,24 @@ jobs:
       - name: Verify AWS credentials
         run: aws sts get-caller-identity
 
+      - name: Find package.json
+        id: find-package
+        run: |
+          PACKAGE_JSON_PATH=$(find . -name "package.json" -not -path "*/node_modules/*" | head -n 1)
+          if [ -z "$PACKAGE_JSON_PATH" ]; then
+            echo "No package.json found in the repository"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$PACKAGE_JSON_PATH")
+          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          echo "Found package.json in $PROJECT_DIR"
+
       - name: Install Node dependencies
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: npm install
 
       - name: Optional Python dependencies
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: |
           if [ -f requirements.txt ]; then
             echo "Installing Python dependencies..."
@@ -43,6 +57,7 @@ jobs:
           fi
 
       - name: Optional TypeScript build
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: |
           if [ -f tsconfig.json ]; then
             echo "Compiling TypeScript..."
@@ -52,7 +67,9 @@ jobs:
           fi
 
       - name: CDK Bootstrap
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: npx cdk bootstrap
 
       - name: Deploy CDK stack
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: npx cdk deploy --all --require-approval never
