@@ -1,23 +1,16 @@
 name: Deploy CDK Project
 
 on:
-  push:
-    branches:
-      - develop
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
+  workflow_dispatch:  # ✅ Enables manual trigger in the GitHub UI
 
 jobs:
   aws_cdk:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: cdk  # 👈 this sets the working dir for all `run` steps
+        working-directory: cdk
 
     steps:
       - name: Checkout repo
@@ -35,7 +28,7 @@ jobs:
         uses: youyo/aws-cdk-github-actions@v2
         with:
           cdk_subcommand: 'diff'
-          working_dir: './cdk'  # 👈 required for this action
+          working_dir: './cdk'
           actions_comment: true
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -48,7 +41,7 @@ jobs:
           cdk_subcommand: 'deploy'
           cdk_stack: '*'
           cdk_args: '--require-approval never'
-          working_dir: './cdk'  # 👈 again, needed for subdirectory
+          working_dir: './cdk'
           actions_comment: false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
