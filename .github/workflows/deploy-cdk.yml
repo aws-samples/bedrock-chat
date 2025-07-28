@@ -1,5 +1,4 @@
-name: Deploy / Update SAR Monitoring
-
+name: Deploy
 on:
   workflow_dispatch:  # Enables manual trigger from GitHub UI
 
@@ -25,7 +24,19 @@ jobs:
       - name: Install CDK and Node dependencies
         run: |
           npm install -g aws-cdk
-          npm ci  # safer & faster than npm install if you have a package-lock.json
+          npm ci
+
+      - name: Optional Python deps
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Optional TypeScript build
+        run: |
+          if [ -f tsconfig.json ]; then
+            npx tsc
+          fi
 
       - name: Deploy CDK stack
         run: cdk deploy --require-approval never
