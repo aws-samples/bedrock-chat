@@ -1,48 +1,31 @@
-name: Deploy CDK
+name: Deploy / Update SAR Monitoring
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Enables manual trigger from GitHub UI
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
+    name: Deploy CDK Monitoring Stack
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies (Node.js)
-        run: npm ci
-
-      - name: Install dependencies (Python)
-        if: hashFiles('requirements.txt')
-        run: pip install -r requirements.txt
-
-      - name: Build CDK (if TypeScript)
-        if: hashFiles('tsconfig.json')
-        run: npm run build
-
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change to your desired region
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: CDK Bootstrap
-        run: npx cdk bootstrap
+      - name: Install CDK and Node dependencies
+        run: |
+          npm install -g aws-cdk
+          npm ci  # safer & faster than npm install if you have a package-lock.json
 
-      - name: Deploy CDK
-        run: npx cdk deploy --all --require-approval never
+      - name: Deploy CDK stack
+        run: cdk deploy --require-approval never
