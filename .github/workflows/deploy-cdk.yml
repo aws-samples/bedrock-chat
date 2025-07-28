@@ -70,4 +70,6 @@ jobs:
           actions_comment: false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}- name: Export requirements.txt for Lambda
+            working-directory: backend/auth/add_user_to_groups
+            run: poetry export -f requirements.txt --output requirements.txt --without-hashes
