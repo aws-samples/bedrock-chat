@@ -37,8 +37,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Install Poetry
-        run: pip install poetry
+      - name: Install Poetry with export support
+        run: pip install poetry==1.7.1
+
+      - name: Check Poetry version
+        run: poetry --version
 
       - name: Generate requirements.txt for Lambda bundling
         working-directory: backend/auth/add_user_to_groups
