@@ -66,18 +66,39 @@ jobs:
             echo "No tsconfig.json found, skipping TypeScript build."
           fi
 
-      - name: Check for DELETE_FAILED stacks
+      - name: Clean up DELETE_FAILED stacks
         working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: |
           STACKS=$(aws cloudformation list-stacks --stack-status-filter DELETE_FAILED --query 'StackSummaries[*].StackName' --output text)
           if [[ -n "$STACKS" ]]; then
             echo "Found stacks in DELETE_FAILED state: $STACKS"
             for STACK in $STACKS; do
-              echo "Removing resources from $STACK stack"
-              aws cloudformation delete-stack --stack-name $STACK
-              aws cloudformation wait stack-delete-complete --stack-name $STACK || true
-              echo "Removing stack from CloudFormation"
-              aws cloudformation continue-update-rollback --stack-name $STACK --resources-to-skip $(aws cloudformation list-stack-resources --stack-name $STACK --query 'StackResourceSummaries[?ResourceStatus==`DELETE_FAILED`].LogicalResourceId' --output text) || true
+              echo "Processing $STACK stack..."
+
+              # Get resources in DELETE_FAILED state
+              FAILED_RESOURCES=$(aws cloudformation list-stack-resources --stack-name $STACK --query 'StackResourceSummaries[?ResourceStatus==`DELETE_FAILED`].LogicalResourceId' --output text)
+
+              if [[ -n "$FAILED_RESOURCES" ]]; then
+                echo "Found resources in DELETE_FAILED state: $FAILED_RESOURCES"
+
+                # Try to skip those resources during deletion
+                echo "Attempting to clean up stack with retain option..."
+                aws cloudformation delete-stack --stack-name $STACK --retain-resources $FAILED_RESOURCES
+                aws cloudformation wait stack-delete-complete --stack-name $STACK || true
+              else
+                # Try normal deletion if no specific resources are in DELETE_FAILED state
+                echo "No specific resources found in DELETE_FAILED state, attempting normal deletion..."
+                aws cloudformation delete-stack --stack-name $STACK
+                aws cloudformation wait stack-delete-complete --stack-name $STACK || true
+              fi
+
+              # If stack still exists, try to remove it from CloudFormation's tracking
+              if aws cloudformation describe-stacks --stack-name $STACK 2>/dev/null; then
+                echo "Stack still exists, attempting to remove from CloudFormation tracking..."
+                aws cloudformation continue-update-rollback --stack-name $STACK --skip-resources-not-in-stack || true
+              else
+                echo "Stack $STACK successfully removed."
+              fi
             done
           else
             echo "No stacks in DELETE_FAILED state found"
