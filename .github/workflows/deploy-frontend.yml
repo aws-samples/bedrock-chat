@@ -52,35 +52,22 @@ jobs:
       - name: Deploy to S3
         working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
         run: |
-          # Get bucket name from CloudFormation
-          BUCKET_NAME=$(aws cloudformation describe-stacks --query "Stacks[?contains(StackName, 'frontend')].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
-
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "Could not find frontend bucket, trying alternative method..."
-            BUCKET_NAME=$(aws cloudformation list-exports --query "Exports[?Name=='FrontendBucketName'].Value" --output text)
-          fi
-
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "Error: Could not determine frontend bucket name"
-            exit 1
-          fi
+          # Use the specific bucket name
+          BUCKET_NAME="bedrockchatstack-frontendassetbucket3fa96e62-70whidyfufzg"
 
           echo "Deploying to bucket: $BUCKET_NAME"
           aws s3 sync ./build/ s3://$BUCKET_NAME/ --delete
 
       - name: Invalidate CloudFront cache
         run: |
-          # Get distribution ID from CloudFormation
-          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --query "Stacks[?contains(StackName, 'frontend')].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          # Find CloudFront distribution associated with the bucket
+          DISTRIBUTIONS=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Origins.Items[0].DomainName, 'bedrockchatstack-frontendassetbucket3fa96e62-70whidyfufzg')].Id" --output text)
 
-          if [ -z "$DISTRIBUTION_ID" ]; then
-            echo "Could not find CloudFront distribution, trying alternative method..."
-            DISTRIBUTION_ID=$(aws cloudformation list-exports --query "Exports[?Name=='FrontendDistributionId'].Value" --output text)
-          fi
-
-          if [ -n "$DISTRIBUTION_ID" ]; then
+          if [ -n "$DISTRIBUTIONS" ]; then
+            DISTRIBUTION_ID=$(echo $DISTRIBUTIONS | awk '{print $1}')
+            echo "Found CloudFront distribution: $DISTRIBUTION_ID"
             echo "Invalidating CloudFront distribution: $DISTRIBUTION_ID"
-            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+            aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
           else
-            echo "No CloudFront distribution found, skipping invalidation"
+            echo "No CloudFront distribution found for the bucket, skipping invalidation"
           fi
