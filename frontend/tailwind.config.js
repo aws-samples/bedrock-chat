@@ -16,18 +16,18 @@ export default {
       },
       colors: {
         'aws-squid-ink': {
-          light: '#1270e5',
+          light: '#4caf0a',
           dark: '#171717',
         },
         'aws-sea-blue': {
-          light: '#0cabf1',
+          light: '#4caf0a',
           dark: '#757575',
         },
         'aws-sea-blue-hover': {
-          light: '#089eea',
+          light: '#4caf0a',
           dark: '#5b5b5b',
         },
-        'aws-aqua': '#007faa',
+        'aws-aqua': '#4caf0a',
         'aws-lab': '#38ef7d',
         'aws-mist': '#9ffcea',
         'aws-font-color': {
