@@ -7,10 +7,12 @@ type Props = {
   label: string;
   children: ReactNode;
   isDefaultShow?: boolean;
+  icon?: ReactNode;
 };
 
 const ExpandableDrawerGroup: React.FC<Props> = ({
   isDefaultShow = true,
+  icon,
   ...props
 }) => {
   const [isShow, setIsShow] = useState(isDefaultShow);
@@ -23,7 +25,7 @@ const ExpandableDrawerGroup: React.FC<Props> = ({
           setIsShow(!isShow);
         }}>
         <PiCaretDown className={`mx-1 text-sm ${isShow ? '' : 'rotate-180'}`} />
-
+        {icon && <span className="mr-1">{icon}</span>}
         <div className="italic">{props.label}</div>
       </div>
       <div className="">

@@ -10,7 +10,7 @@ const translation = {
       inputMessage: 'How can I Help You?',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
-      conversationHistory: 'Recent Chats',
+      conversationHistory: 'My History',
       chatWaitingSymbol: '▍',
       adminConsoles: 'Admin Panel',
       backChat: 'Back to Chat',

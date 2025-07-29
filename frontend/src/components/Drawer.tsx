@@ -17,14 +17,18 @@ import {
   PiChatCenteredDotsDuotone,
   PiCheck,
   PiCompass,
+  PiDot,  
   PiListBullets,
   PiNotePencil,
   PiPencilLine,
   PiPlugs,
+  PiLightning,
   PiPresentationChart,
   PiRobot,
   PiTrash,
   PiX,
+  PiGear,
+  PiPackage,
 } from 'react-icons/pi';
 import LazyOutputText from './LazyOutputText';
 import { ConversationMeta } from '../@types/conversation';
@@ -311,6 +315,18 @@ const Drawer: React.FC<Props> = (props) => {
               />
 
               <ExpandableDrawerGroup
+                label="Compliant"
+                className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiLightning />}
+                  to="/workflows"
+                  labelComponent="Compliant"
+                  onClick={closeSmallDrawer}
+                />
+              </ExpandableDrawerGroup>
+
+              <ExpandableDrawerGroup
                 label={t('app.starredBots')}
                 className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
                 {starredBots === undefined && (
@@ -401,6 +417,47 @@ const Drawer: React.FC<Props> = (props) => {
               </ExpandableDrawerGroup>
 
               <ExpandableDrawerGroup
+                label="Tools Library"
+                icon={<PiGear />}
+                className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot />}
+                  to="/document_summarize"
+                  labelComponent="Summarize a Document"
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot />}
+                  to="/memo_draft"
+                  labelComponent="Draft a Decision Memo"
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot />}
+                  to="/compliance_reviewer"
+                  labelComponent="Automated Compliance Reviewer"
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot/>}
+                  to="/data_analyst"
+                  labelComponent="Natural Language Data Analyst"
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot />}
+                  to="/insights"
+                  labelComponent="Thematic Insights Discovery"
+                  onClick={closeSmallDrawer}
+                />
+              </ExpandableDrawerGroup>
+
+              <ExpandableDrawerGroup
                 label={t('app.conversationHistory')}
                 className={twMerge(
                   'border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark',
@@ -442,6 +499,19 @@ const Drawer: React.FC<Props> = (props) => {
                     {t('bot.button.viewAll')}
                   </Button>
                 )}
+              </ExpandableDrawerGroup>
+
+              <ExpandableDrawerGroup
+                label="Resources"
+                icon={<PiPackage />}
+                className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiDot />}
+                  to="/resources"
+                  labelComponent="---"
+                  onClick={closeSmallDrawer}
+                />
               </ExpandableDrawerGroup>
             </>
           )}
