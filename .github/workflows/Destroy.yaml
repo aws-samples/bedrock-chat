@@ -1,7 +1,7 @@
 name: Destroy
 
 on:
-  workflow_dispatch:  # Enables manual trigger from GitHub UI
+  workflow_dispatch:
     inputs:
       confirm:
         description: 'Type "destroy" to confirm stack deletion'
@@ -60,13 +60,10 @@ jobs:
         run: |
           echo "Checking for CloudFront distributions..."
           CF_DISTRIBUTIONS=$(aws cloudfront list-distributions --query "DistributionList.Items[*].Id" --output text)
-          
           if [ -n "$CF_DISTRIBUTIONS" ]; then
             for DIST_ID in $CF_DISTRIBUTIONS; do
               echo "Checking invalidations for distribution $DIST_ID"
-              # List in-progress invalidations
               INVALIDATIONS=$(aws cloudfront list-invalidations --distribution-id $DIST_ID --query "InvalidationList.Items[?Status=='InProgress'].Id" --output text)
-          
               if [ -n "$INVALIDATIONS" ]; then
                 echo "Found in-progress invalidations for $DIST_ID, will continue anyway"
               fi
@@ -85,35 +82,51 @@ jobs:
         if: steps.cdk-destroy.outcome == 'failure' && github.event.inputs.force == true
         run: |
           echo "CDK destroy failed, attempting manual cleanup of resources..."
-          
-          # Get stack name from CDK
-          STACK_NAME=$(aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE --query "StackSummaries[?contains(StackName, 'BedrockChat')].StackName" --output text)
-          
-          if [ -n "$STACK_NAME" ]; then
-            echo "Found stack: $STACK_NAME"
-          
-            # Get S3 buckets to empty
-            BUCKETS=$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType=='AWS::S3::Bucket'].PhysicalResourceId" --output text)
-          
-            if [ -n "$BUCKETS" ]; then
-              for BUCKET in $BUCKETS; do
-                echo "Emptying bucket: $BUCKET"
-                aws s3 rm s3://$BUCKET --recursive || true
-              done
-            fi
-          
-            # Find and terminate any custom resources that might be stuck
-            CUSTOM_RESOURCES=$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType=='Custom::CDKBucketDeployment'].LogicalResourceId" --output text)
-          
-            if [ -n "$CUSTOM_RESOURCES" ]; then
-              echo "Found custom resources: $CUSTOM_RESOURCES"
-          
-              # Try to delete stack with retention policy
-              echo "Attempting to delete stack with retain option for problematic resources..."
-              aws cloudformation delete-stack --stack-name $STACK_NAME || true
-            else
-              echo "No custom resources found"
-            fi
-          else
+
+          # Get stack name
+          STACK_NAME=$(aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE ROLLBACK_COMPLETE DELETE_FAILED --query "StackSummaries[?contains(StackName, 'BedrockChat')].StackName" --output text)
+
+          if [ -z "$STACK_NAME" ]; then
             echo "No BedrockChat stack found"
+            exit 0
           fi
+
+          echo "Found stack: $STACK_NAME"
+
+          # Disable termination protection
+          echo "Disabling termination protection if enabled..."
+          aws cloudformation update-termination-protection --stack-name "$STACK_NAME" --no-enable-termination-protection || true
+
+          # Clean OSIS pipelines
+          echo "Checking for OSIS pipelines..."
+          OSIS_PIPELINES=$(aws osis list-pipelines --query "Pipelines[*].PipelineName" --output text)
+          if [ -n "$OSIS_PIPELINES" ]; then
+            for PIPELINE in $OSIS_PIPELINES; do
+              echo "Deleting OSIS pipeline: $PIPELINE"
+              aws osis delete-pipeline --pipeline-name "$PIPELINE" || true
+            done
+          else
+            echo "No OSIS pipelines found"
+          fi
+
+          # Clean S3 buckets
+          BUCKETS=$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType=='AWS::S3::Bucket'].PhysicalResourceId" --output text)
+          if [ -n "$BUCKETS" ]; then
+            for BUCKET in $BUCKETS; do
+              echo "Emptying bucket: $BUCKET"
+              aws s3 rm s3://$BUCKET --recursive || true
+            done
+          fi
+
+          # Clean CloudWatch log groups
+          LOG_GROUPS=$(aws logs describe-log-groups --query "logGroups[?starts_with(logGroupName, '/aws/lambda/BedrockChat')].logGroupName" --output text)
+          if [ -n "$LOG_GROUPS" ]; then
+            for LOG in $LOG_GROUPS; do
+              echo "Deleting log group: $LOG"
+              aws logs delete-log-group --log-group-name "$LOG" || true
+            done
+          fi
+
+          # Attempt final stack delete
+          echo "Attempting to delete stack..."
+          aws cloudformation delete-stack --stack-name "$STACK_NAME" || true
