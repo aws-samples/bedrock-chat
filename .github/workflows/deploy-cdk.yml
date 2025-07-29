@@ -66,6 +66,23 @@ jobs:
             echo "No tsconfig.json found, skipping TypeScript build."
           fi
 
+      - name: Check for DELETE_FAILED stacks
+        working-directory: ${{ steps.find-package.outputs.project_dir }}
+        run: |
+          STACKS=$(aws cloudformation list-stacks --stack-status-filter DELETE_FAILED --query 'StackSummaries[*].StackName' --output text)
+          if [[ -n "$STACKS" ]]; then
+            echo "Found stacks in DELETE_FAILED state: $STACKS"
+            for STACK in $STACKS; do
+              echo "Removing resources from $STACK stack"
+              aws cloudformation delete-stack --stack-name $STACK
+              aws cloudformation wait stack-delete-complete --stack-name $STACK || true
+              echo "Removing stack from CloudFormation"
+              aws cloudformation continue-update-rollback --stack-name $STACK --resources-to-skip $(aws cloudformation list-stack-resources --stack-name $STACK --query 'StackResourceSummaries[?ResourceStatus==`DELETE_FAILED`].LogicalResourceId' --output text) || true
+            done
+          else
+            echo "No stacks in DELETE_FAILED state found"
+          fi
+
       - name: CDK Bootstrap
         working-directory: ${{ steps.find-package.outputs.project_dir }}
         run: npx cdk bootstrap
