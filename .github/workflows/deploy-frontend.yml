@@ -1,24 +1,21 @@
-name: Deploy Frontend Only
+name: Deploy Frontend
 
 on:
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch:  # Manual trigger
 
 permissions:
   contents: read
 
 jobs:
   deploy-frontend:
-    name: Deploy Frontend
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "20.x"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -27,46 +24,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "us-east-1"
 
-      - name: Verify AWS credentials
-        run: aws sts get-caller-identity
-
-      - name: Find frontend directory
-        id: find-frontend
+      - name: Install dependencies
         run: |
-          FRONTEND_DIR=$(find . -type d -name "frontend" | head -n 1)
-          if [ -z "$FRONTEND_DIR" ]; then
-            echo "No frontend directory found in the repository"
-            exit 1
-          fi
-          echo "frontend_dir=$FRONTEND_DIR" >> $GITHUB_OUTPUT
-          echo "Found frontend in $FRONTEND_DIR"
-
-      - name: Install frontend dependencies
-        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
-        run: npm install
+          cd frontend
+          npm ci
 
       - name: Build frontend
-        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
-        run: npm run build
+        run: |
+          cd frontend
+          npm run build
 
       - name: Deploy to S3
-        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
         run: |
-          # Use the specific bucket name
           BUCKET_NAME="bedrockchatstack-frontendassetbucket3fa96e62-70whidyfufzg"
-
           echo "Deploying to bucket: $BUCKET_NAME"
-          aws s3 sync ./build/ s3://$BUCKET_NAME/ --delete
+          cd frontend
+          aws s3 sync ./dist/ s3://$BUCKET_NAME/ --delete
 
       - name: Invalidate CloudFront cache
         run: |
-          # Find CloudFront distribution associated with the bucket
           DISTRIBUTIONS=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Origins.Items[0].DomainName, 'bedrockchatstack-frontendassetbucket3fa96e62-70whidyfufzg')].Id" --output text)
-
+          
           if [ -n "$DISTRIBUTIONS" ]; then
             DISTRIBUTION_ID=$(echo $DISTRIBUTIONS | awk '{print $1}')
             echo "Found CloudFront distribution: $DISTRIBUTION_ID"
-            echo "Invalidating CloudFront distribution: $DISTRIBUTION_ID"
             aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
           else
             echo "No CloudFront distribution found for the bucket, skipping invalidation"
