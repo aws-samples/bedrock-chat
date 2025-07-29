@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy & Update CDK Stacks
 
 on:
   workflow_dispatch:  # Enables manual trigger from GitHub UI
