@@ -16,22 +16,22 @@ export default {
       },
       colors: {
         'aws-squid-ink': {
-          light: '#232F3E',
+          light: '#1270e5',
           dark: '#171717',
         },
         'aws-sea-blue': {
-          light: '#005276',
+          light: '#0cabf1',
           dark: '#757575',
         },
         'aws-sea-blue-hover': {
-          light: '#003550',
+          light: '#089eea',
           dark: '#5b5b5b',
         },
         'aws-aqua': '#007faa',
         'aws-lab': '#38ef7d',
         'aws-mist': '#9ffcea',
         'aws-font-color': {
-          light: '#232F3E',
+          light: '#186fdc',
           dark: '#cacaca',
           gray: '#909193',
           blue: '#276cc6',

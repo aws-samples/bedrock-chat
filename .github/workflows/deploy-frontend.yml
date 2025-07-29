@@ -1,0 +1,86 @@
+name: Deploy Frontend Only
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+
+      - name: Find frontend directory
+        id: find-frontend
+        run: |
+          FRONTEND_DIR=$(find . -type d -name "frontend" | head -n 1)
+          if [ -z "$FRONTEND_DIR" ]; then
+            echo "No frontend directory found in the repository"
+            exit 1
+          fi
+          echo "frontend_dir=$FRONTEND_DIR" >> $GITHUB_OUTPUT
+          echo "Found frontend in $FRONTEND_DIR"
+
+      - name: Install frontend dependencies
+        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
+        run: npm run build
+
+      - name: Deploy to S3
+        working-directory: ${{ steps.find-frontend.outputs.frontend_dir }}
+        run: |
+          # Get bucket name from CloudFormation
+          BUCKET_NAME=$(aws cloudformation describe-stacks --query "Stacks[?contains(StackName, 'frontend')].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
+
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "Could not find frontend bucket, trying alternative method..."
+            BUCKET_NAME=$(aws cloudformation list-exports --query "Exports[?Name=='FrontendBucketName'].Value" --output text)
+          fi
+
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "Error: Could not determine frontend bucket name"
+            exit 1
+          fi
+
+          echo "Deploying to bucket: $BUCKET_NAME"
+          aws s3 sync ./build/ s3://$BUCKET_NAME/ --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          # Get distribution ID from CloudFormation
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --query "Stacks[?contains(StackName, 'frontend')].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+
+          if [ -z "$DISTRIBUTION_ID" ]; then
+            echo "Could not find CloudFront distribution, trying alternative method..."
+            DISTRIBUTION_ID=$(aws cloudformation list-exports --query "Exports[?Name=='FrontendDistributionId'].Value" --output text)
+          fi
+
+          if [ -n "$DISTRIBUTION_ID" ]; then
+            echo "Invalidating CloudFront distribution: $DISTRIBUTION_ID"
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          else
+            echo "No CloudFront distribution found, skipping invalidation"
+          fi
