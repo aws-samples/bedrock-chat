@@ -292,14 +292,16 @@ const Drawer: React.FC<Props> = (props) => {
           } text-sm  text-white transition-width`}>
           {!isAdminPanel && (
             <>
-              <DrawerItem
+              <img src="/images/Logo.png" alt="Aderas Logo" className="w-10 h-10 rounded-full object-cover m-4"/>
+              
+              {/* <DrawerItem
                 isActive={false}
                 icon={<PiNotePencil />}
                 to="/"
                 onClick={onClickNewChat}
                 labelComponent={t('button.newChat')}
-              />
-              <DrawerItem
+              /> */}
+              {/* <DrawerItem
                 isActive={false}
                 icon={<PiListBullets />}
                 to="/bot/my"
@@ -312,7 +314,7 @@ const Drawer: React.FC<Props> = (props) => {
                 to="/bot/discover"
                 labelComponent={getPageLabel('/bot/discover')}
                 onClick={closeSmallDrawer}
-              />
+              /> */}
 
               <ExpandableDrawerGroup
                 label="Compliant"
@@ -326,7 +328,7 @@ const Drawer: React.FC<Props> = (props) => {
                 />
               </ExpandableDrawerGroup>
 
-              <ExpandableDrawerGroup
+              {/* <ExpandableDrawerGroup
                 label={t('app.starredBots')}
                 className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
                 {starredBots === undefined && (
@@ -369,9 +371,9 @@ const Drawer: React.FC<Props> = (props) => {
                     {t('bot.button.viewAll')}
                   </Button>
                 )}
-              </ExpandableDrawerGroup>
+              </ExpandableDrawerGroup> */}
 
-              <ExpandableDrawerGroup
+              {/* <ExpandableDrawerGroup
                 label={t('app.recentlyUsedBots')}
                 className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark ">
                 {recentlyUsedUnstarredBots === undefined && (
@@ -414,7 +416,7 @@ const Drawer: React.FC<Props> = (props) => {
                     {t('bot.button.viewAll')}
                   </Button>
                 )}
-              </ExpandableDrawerGroup>
+              </ExpandableDrawerGroup> */}
 
               <ExpandableDrawerGroup
                 label="Tools Library"

@@ -19,6 +19,12 @@ import BotDiscoverPage from './features/discover/pages/BotDiscoverPage.tsx';
 import BotRecentlyUsedPage from './pages/BotRecentlyUsedPage.tsx';
 import BotStarredPage from './pages/BotStarredPage.tsx';
 import ConversationHistoryPage from './pages/ConversationHistoryPage.tsx';
+import SummarizeDocumentsPage from './pages/SummarizeDocumentsPage.tsx';
+import DraftMemoPage from './pages/DraftMemoPage.tsx';
+import ComplianceReviewerPage from './pages/ComplianceReviewerPage.tsx';
+import DataAnalystPage from './pages/DataAnalystPage.tsx';
+import InsightsPage from './pages/InsightsPage.tsx';
+import DocDiffPage from './pages/DocDiffPage.tsx';
 
 const rootChildren = [
   {
@@ -76,6 +82,30 @@ const rootChildren = [
   {
     path: '/:conversationId',
     element: <ChatPage />,
+  },
+  {
+    path: '/document_summarize',
+    element: <SummarizeDocumentsPage />,
+  },
+  {
+    path: '/memo_draft',
+    element: <DraftMemoPage />,
+  },
+  {
+    path: '/doc_diff',
+    element: <DocDiffPage />,
+  },
+  {
+    path: '/compliance_reviewer',
+    element: <ComplianceReviewerPage />,
+  },
+  {
+    path: '/data_analyst',
+    element: <DataAnalystPage />,
+  },
+  {
+    path: '/insights',
+    element: <InsightsPage />,
   },
   {
     path: '*',
