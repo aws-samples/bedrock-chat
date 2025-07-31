@@ -264,6 +264,7 @@ export class Api extends Construct {
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
+        USE_STRANDS: "true",
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
       },

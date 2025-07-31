@@ -217,6 +217,55 @@ def chat(
     on_tool_result: Callable[[ToolRunResult], None] | None = None,
     on_reasoning: Callable[[str], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
+    """
+    Main chat function that routes to Strands or legacy implementation based on USE_STRANDS environment variable.
+    """
+    import os
+    
+    use_strands = os.environ.get("USE_STRANDS", "false").lower() == "true"
+    
+    if use_strands:
+        from app.strands_integration.chat_strands import chat_with_strands
+        return chat_with_strands(
+            user,
+            chat_input,
+            on_stream,
+            on_stop,
+            on_thinking,
+            on_tool_result,
+            on_reasoning,
+        )
+    else:
+        return chat_legacy(
+            user,
+            chat_input,
+            on_stream,
+            on_stop,
+            on_thinking,
+            on_tool_result,
+            on_reasoning,
+        )
+
+
+def chat_legacy(
+    user: User,
+    chat_input: ChatInput,
+    on_stream: Callable[[str], None] | None = None,
+    on_stop: Callable[[OnStopInput], None] | None = None,
+    on_thinking: Callable[[OnThinking], None] | None = None,
+    on_tool_result: Callable[[ToolRunResult], None] | None = None,
+    on_reasoning: Callable[[str], None] | None = None,
+) -> tuple[ConversationModel, MessageModel]:
+    """
+    Legacy chat implementation.
+    
+    WARNING: This implementation is deprecated and will be removed in a future version.
+    Please migrate to the Strands-based implementation by setting USE_STRANDS=true.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning("Using deprecated chat_legacy implementation. Please migrate to Strands by setting USE_STRANDS=true.")
+    
     user_msg_id, conversation, bot = prepare_conversation(user, chat_input)
 
     # # Set tools only when tooluse is supported

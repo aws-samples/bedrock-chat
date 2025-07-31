@@ -128,6 +128,7 @@ export class WebSocket extends Construct {
         WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
+        USE_STRANDS: "true",
       },
       role: handlerRole,
       snapStart: props.enableLambdaSnapStart

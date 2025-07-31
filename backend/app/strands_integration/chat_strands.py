@@ -27,56 +27,6 @@ def chat_with_strands(
     on_reasoning: Callable[[str], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
     """
-    Strands-based chat implementation that maintains compatibility with existing chat API.
-
-    Args:
-        user: User making the request
-        chat_input: Chat input containing message and configuration
-        on_stream: Callback for streaming text chunks
-        on_stop: Callback when chat completes
-        on_thinking: Callback for tool thinking events
-        on_tool_result: Callback for tool execution results
-        on_reasoning: Callback for reasoning text
-
-    Returns:
-        Tuple of (ConversationModel, MessageModel) compatible with existing API
-    """
-    try:
-        return _chat_with_strands_impl(
-            user,
-            chat_input,
-            on_stream,
-            on_stop,
-            on_thinking,
-            on_tool_result,
-            on_reasoning,
-        )
-    except Exception as e:
-        logger.error(f"Strands chat error: {e}")
-        # フォールバック: 既存実装を使用
-        from app.usecases.chat import chat
-
-        return chat(
-            user,
-            chat_input,
-            on_stream,
-            on_stop,
-            on_thinking,
-            on_tool_result,
-            on_reasoning,
-        )
-
-
-def _chat_with_strands_impl(
-    user: User,
-    chat_input: ChatInput,
-    on_stream: Callable[[str], None] | None = None,
-    on_stop: Callable[[OnStopInput], None] | None = None,
-    on_thinking: Callable[[OnThinking], None] | None = None,
-    on_tool_result: Callable[[ToolRunResult], None] | None = None,
-    on_reasoning: Callable[[str], None] | None = None,
-) -> tuple[ConversationModel, MessageModel]:
-    """
     Strands implementation core logic.
     """
     from app.repositories.conversation import store_conversation

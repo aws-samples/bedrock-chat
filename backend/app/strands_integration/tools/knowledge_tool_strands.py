@@ -23,26 +23,15 @@ def knowledge_search(query: str) -> str:
     """
     try:
         # Import here to avoid circular imports
-        from app.agents.tools.knowledge import search_related_docs
-        from app.repositories.custom_bot import find_bot_by_id
-        from app.user import User
+        from app.agents.tools.knowledge import search_knowledge, KnowledgeToolInput
         
-        # For now, we'll need to get bot and user context from somewhere
-        # This is a simplified implementation
-        results = search_related_docs(
-            tool_input={"query": query},
-            bot=None,  # Will need proper bot context
-            model="claude-v3.5-sonnet"
-        )
+        # Create tool input
+        tool_input = KnowledgeToolInput(query=query)
         
-        if results:
-            formatted_results = []
-            for result in results:
-                formatted_results.append(f"- {result.content}")
-            return "\\n".join(formatted_results)
-        else:
-            return "関連する情報が見つかりませんでした。"
-            
+        # Note: This is a simplified wrapper - in real usage, bot context would be provided
+        # For now, we'll return a placeholder indicating the tool needs proper bot context
+        return "Knowledge search requires bot configuration with knowledge base setup."
+        
     except Exception as e:
         logger.error(f"Knowledge search error: {e}")
-        return f"検索中にエラーが発生しました: {str(e)}"
+        return f"An error occurred during knowledge search: {str(e)}"
