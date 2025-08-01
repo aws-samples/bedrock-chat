@@ -12,9 +12,10 @@ from strands import Agent
 from strands.models import BedrockModel
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def create_strands_agent(bot: Optional[BotModel], user: User, model_name: str = "claude-v3.5-sonnet") -> Agent:
+def create_strands_agent(bot: Optional[BotModel], user: User, model_name: str = "claude-v3.5-sonnet", enable_reasoning: bool = False) -> Agent:
     """
     Create a Strands agent from bot configuration.
     
@@ -22,31 +23,41 @@ def create_strands_agent(bot: Optional[BotModel], user: User, model_name: str = 
         bot: Optional bot configuration
         user: User making the request
         model_name: Model name to use
+        enable_reasoning: Whether to enable reasoning functionality
         
     Returns:
         Configured Strands agent
     """
+    logger.debug(f"[AGENT_FACTORY] Creating Strands agent - user: {user.id}, model: {model_name}, reasoning: {enable_reasoning}")
+    logger.debug(f"[AGENT_FACTORY] Bot: {bot.id if bot else None}")
     # Bedrock model configuration
-    model_config = _get_bedrock_model_config(bot, model_name)
+    logger.debug(f"[AGENT_FACTORY] Getting Bedrock model configuration...")
+    model_config = _get_bedrock_model_config(bot, model_name, enable_reasoning)
+    logger.debug(f"[AGENT_FACTORY] Model config: {model_config}")
     model = BedrockModel(**model_config)
     
     # Get tools for bot before creating agent
+    logger.debug(f"[AGENT_FACTORY] Getting tools for bot...")
     tools = _get_tools_for_bot(bot)
+    logger.debug(f"[AGENT_FACTORY] Tools configured: {len(tools)}")
     
     # Get system prompt
     system_prompt = bot.instruction if bot and bot.instruction else None
+    logger.debug(f"[AGENT_FACTORY] System prompt: {len(system_prompt) if system_prompt else 0} chars")
     
     # Create agent with tools and system prompt
+    logger.debug(f"[AGENT_FACTORY] Creating Agent instance...")
     agent = Agent(
         model=model,
         tools=tools,
         system_prompt=system_prompt
     )
     
+    logger.debug(f"[AGENT_FACTORY] Agent created successfully")
     return agent
 
 
-def _get_bedrock_model_config(bot: Optional[BotModel], model_name: str = "claude-v3.5-sonnet") -> dict:
+def _get_bedrock_model_config(bot: Optional[BotModel], model_name: str = "claude-v3.5-sonnet", enable_reasoning: bool = False) -> dict:
     """Get Bedrock model configuration."""
     from app.bedrock import get_model_id
     
@@ -75,6 +86,27 @@ def _get_bedrock_model_config(bot: Optional[BotModel], model_name: str = "claude
             config["top_p"] = bot.generation_params.top_p
         if bot.generation_params.max_tokens is not None:
             config["max_tokens"] = bot.generation_params.max_tokens
+    
+    # Add Guardrails configuration (Strands way)
+    if bot and bot.bedrock_guardrails:
+        guardrails = bot.bedrock_guardrails
+        config["guardrail_id"] = guardrails.guardrail_arn
+        config["guardrail_version"] = guardrails.guardrail_version
+        config["guardrail_trace"] = "enabled"  # Enable trace for debugging
+        logger.info(f"Enabled Guardrails: {guardrails.guardrail_arn}")
+    
+    # Add reasoning functionality if explicitly enabled
+    additional_request_fields = {}
+    if enable_reasoning and bot and bot.generation_params and bot.generation_params.reasoning_params:
+        additional_request_fields["thinking"] = {
+            "type": "enabled",
+            "budget_tokens": bot.generation_params.reasoning_params.budget_tokens
+        }
+        # When thinking is enabled, temperature must be 1
+        config["temperature"] = 1.0
+    
+    if additional_request_fields:
+        config["additional_request_fields"] = additional_request_fields
     
     return config
 

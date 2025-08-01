@@ -19,6 +19,7 @@ from app.utils import get_current_time
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def strands_result_to_message_model(result: Any, parent_message_id: str, bot: Any = None) -> MessageModel:
@@ -33,22 +34,36 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
     Returns:
         MessageModel compatible with existing system
     """
+    logger.debug(f"[MESSAGE_CONVERTER] Starting conversion - result type: {type(result)}")
+    logger.debug(f"[MESSAGE_CONVERTER] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}")
+    
     message_id = str(ULID())
     
     # Extract text content from AgentResult
     # According to Strands docs, AgentResult has a message attribute with content array
+    logger.debug(f"[MESSAGE_CONVERTER] Extracting text content...")
     text_content = _extract_text_content_from_agent_result(result)
+    logger.debug(f"[MESSAGE_CONVERTER] Text content extracted: {len(text_content)} chars")
     content = [TextContentModel(content_type="text", body=text_content)]
     
     # Extract reasoning content if available
+    logger.debug(f"[MESSAGE_CONVERTER] Extracting reasoning content...")
     reasoning_content = _extract_reasoning_content_from_agent_result(result)
     if reasoning_content:
+        logger.debug(f"[MESSAGE_CONVERTER] Reasoning content found: {len(reasoning_content.text)} chars")
         content.append(reasoning_content)
+    else:
+        logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found")
     
     # Create thinking log from tool usage in the message
+    logger.debug(f"[MESSAGE_CONVERTER] Creating thinking log...")
     thinking_log = _create_thinking_log_from_agent_result(result, bot)
+    if thinking_log:
+        logger.debug(f"[MESSAGE_CONVERTER] Thinking log created with {len(thinking_log)} entries")
+    else:
+        logger.debug(f"[MESSAGE_CONVERTER] No thinking log created")
     
-    return MessageModel(
+    final_message = MessageModel(
         role="assistant",
         content=content,
         model=_get_model_name_from_agent_result(result),
@@ -59,6 +74,9 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
         used_chunks=None,
         feedback=None,
     )
+    
+    logger.debug(f"[MESSAGE_CONVERTER] Conversion completed - content items: {len(final_message.content)}, thinking_log: {len(thinking_log) if thinking_log else 0}")
+    return final_message
 
 
 def _extract_text_content_from_agent_result(result: Any) -> str:
