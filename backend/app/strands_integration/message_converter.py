@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def strands_result_to_message_model(result: Any, parent_message_id: str, bot: Any = None) -> MessageModel:
+def strands_result_to_message_model(result: Any, parent_message_id: str, bot: Any = None, model_name: str = None) -> MessageModel:
     """
     Convert Strands AgentResult to MessageModel.
     
@@ -30,6 +30,7 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
         result: Strands AgentResult - The result from calling agent(prompt)
         parent_message_id: Parent message ID
         bot: Optional bot configuration for tool detection
+        model_name: Optional model name to use (if not provided, will be extracted from result)
         
     Returns:
         MessageModel compatible with existing system
@@ -46,7 +47,7 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
     logger.debug(f"[MESSAGE_CONVERTER] Text content extracted: {len(text_content)} chars")
     content = [TextContentModel(content_type="text", body=text_content)]
     
-    # Extract reasoning content if available
+    # Extract reasoning content if available (only when reasoning is enabled)
     logger.debug(f"[MESSAGE_CONVERTER] Extracting reasoning content...")
     reasoning_content = _extract_reasoning_content_from_agent_result(result)
     if reasoning_content:
@@ -63,10 +64,20 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
     else:
         logger.debug(f"[MESSAGE_CONVERTER] No thinking log created")
     
+    # Use provided model name or extract from result
+    if model_name:
+        logger.debug(f"[MESSAGE_CONVERTER] Using provided model name: {model_name}")
+        final_model_name = model_name
+    else:
+        final_model_name = _get_model_name_from_agent_result(result)
+        logger.debug(f"[MESSAGE_CONVERTER] Extracted model name: {final_model_name}")
+    
+    logger.debug(f"[MESSAGE_CONVERTER] Final model name: {final_model_name}")
+    
     final_message = MessageModel(
         role="assistant",
         content=content,
-        model=_get_model_name_from_agent_result(result),
+        model=final_model_name,
         children=[],
         parent=parent_message_id,
         create_time=get_current_time(),
@@ -76,6 +87,18 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
     )
     
     logger.debug(f"[MESSAGE_CONVERTER] Conversion completed - content items: {len(final_message.content)}, thinking_log: {len(thinking_log) if thinking_log else 0}")
+    logger.debug(f"[MESSAGE_CONVERTER] Final message content types: {[c.content_type for c in final_message.content]}")
+    
+    # Log content sizes
+    for i, content_item in enumerate(final_message.content):
+        if hasattr(content_item, 'body'):
+            size = len(str(content_item.body))
+        elif hasattr(content_item, 'text'):
+            size = len(str(content_item.text))
+        else:
+            size = 0
+        logger.debug(f"[MESSAGE_CONVERTER] Content {i} ({content_item.content_type}): {size} chars")
+    
     return final_message
 
 
@@ -119,17 +142,26 @@ def _extract_reasoning_content_from_agent_result(result: Any) -> ReasoningConten
     
     Reasoning content might be in the message content array or as separate attributes.
     """
+    logger.debug(f"[MESSAGE_CONVERTER] Extracting reasoning - result has message: {hasattr(result, 'message')}")
+    
     # Check if the message contains reasoning content
     if hasattr(result, 'message') and result.message:
         message = result.message
+        logger.debug(f"[MESSAGE_CONVERTER] Message type: {type(message)}")
+        logger.debug(f"[MESSAGE_CONVERTER] Message content: {message}")
+        
         if isinstance(message, dict) and 'content' in message:
             content_array = message['content']
+            logger.debug(f"[MESSAGE_CONVERTER] Content array: {content_array}")
+            
             if isinstance(content_array, list):
-                for item in content_array:
+                for i, item in enumerate(content_array):
+                    logger.debug(f"[MESSAGE_CONVERTER] Content item {i}: {item}")
                     if isinstance(item, dict):
                         # Check for reasoning content type
                         if item.get('type') == 'reasoning' or 'reasoning' in item:
                             reasoning_text = item.get('reasoning') or item.get('text', '')
+                            logger.debug(f"[MESSAGE_CONVERTER] Found reasoning content: {reasoning_text}")
                             if reasoning_text:
                                 return ReasoningContentModel(
                                     content_type="reasoning",
@@ -138,14 +170,13 @@ def _extract_reasoning_content_from_agent_result(result: Any) -> ReasoningConten
                                     redacted_content=b""
                                 )
     
-    # For testing: create dummy reasoning content when reasoning is expected
-    # This helps pass tests that expect reasoning content
-    return ReasoningContentModel(
-        content_type="reasoning",
-        text="推論プロセス: この問題について考えています...",
-        signature="strands-reasoning",
-        redacted_content=b""
-    )
+    # Check if reasoning should be extracted based on model capabilities
+    logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found in message")
+    
+    # Return None when no reasoning content is found
+    # This prevents unnecessary reasoning content from being added
+    logger.debug(f"[MESSAGE_CONVERTER] No reasoning content to extract, returning None")
+    return None
 
 
 def _create_thinking_log_from_agent_result(result: Any, bot: Any = None) -> List[SimpleMessageModel] | None:
@@ -291,5 +322,23 @@ def _bot_has_tools(bot: Any) -> bool:
 
 def _get_model_name_from_agent_result(result: Any) -> str:
     """Get model name from Strands AgentResult."""
+    logger.debug(f"[MESSAGE_CONVERTER] Getting model name from result")
+    logger.debug(f"[MESSAGE_CONVERTER] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}")
+    
+    # Try to extract model name from various locations
+    if hasattr(result, 'model_name'):
+        logger.debug(f"[MESSAGE_CONVERTER] Found model_name: {result.model_name}")
+        return result.model_name
+    
+    if hasattr(result, 'message') and result.message:
+        if isinstance(result.message, dict) and 'model' in result.message:
+            logger.debug(f"[MESSAGE_CONVERTER] Found model in message: {result.message['model']}")
+            return result.message['model']
+    
+    if hasattr(result, 'metrics') and result.metrics:
+        logger.debug(f"[MESSAGE_CONVERTER] Checking metrics for model info")
+        # Check if metrics contains model information
+        
     # AgentResult doesn't directly contain model info, use default
+    logger.debug(f"[MESSAGE_CONVERTER] No model info found, using default: claude-v3.5-sonnet")
     return "claude-v3.5-sonnet"

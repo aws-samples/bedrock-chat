@@ -53,145 +53,143 @@ def chat_with_strands(
     logger.debug(f"[STRANDS_CHAT] Step 2: Creating Strands agent...")
     agent_start = time.time()
     from app.strands_integration.agent_factory import create_strands_agent
-    from app.strands_integration.context import set_current_context, clear_current_context
-    
-    # Set context for tools to access bot and user information
-    logger.debug(f"[STRANDS_CHAT] Setting context - bot: {bot.id if bot else None}, user: {user.id}")
-    set_current_context(bot, user)
+    from app.strands_integration.context import strands_context
     
     # Get model name from chat_input
     model_name = chat_input.message.model if chat_input.message.model else "claude-v3.5-sonnet"
     logger.debug(f"[STRANDS_CHAT] Using model: {model_name}, reasoning: {chat_input.enable_reasoning}")
-    agent = create_strands_agent(bot, user, model_name, enable_reasoning=chat_input.enable_reasoning)
-    agent_time = time.time() - agent_start
-    logger.debug(f"[STRANDS_CHAT] Step 2 completed in {agent_time:.3f}s - agent created")
     
-    # Log reasoning functionality status
-    if chat_input.enable_reasoning:
-        logger.info("Reasoning functionality enabled in agent creation")
-    else:
-        logger.info("Reasoning functionality disabled")
-
-    # 3. Setup callback handlers
-    logger.debug(f"[STRANDS_CHAT] Step 3: Setting up callback handlers...")
-    callback_start = time.time()
-    if any([on_stream, on_thinking, on_tool_result, on_reasoning]):
-        logger.debug(f"[STRANDS_CHAT] Callbacks enabled - stream: {on_stream is not None}, thinking: {on_thinking is not None}, tool: {on_tool_result is not None}, reasoning: {on_reasoning is not None}")
-        agent.callback_handler = _create_callback_handler(
-            on_stream, on_thinking, on_tool_result, on_reasoning
-        )
-    else:
-        logger.debug(f"[STRANDS_CHAT] No callbacks provided")
-    callback_time = time.time() - callback_start
-    logger.debug(f"[STRANDS_CHAT] Step 3 completed in {callback_time:.3f}s")
-
-    # 4. Get user message content
-    logger.debug(f"[STRANDS_CHAT] Step 4: Getting user message content...")
-    msg_start = time.time()
-    user_message = _get_user_message_content(chat_input, conversation, user_msg_id)
-    msg_time = time.time() - msg_start
-    logger.debug(f"[STRANDS_CHAT] Step 4 completed in {msg_time:.3f}s - message type: {type(user_message)}, length: {len(str(user_message))}")
-
-    # 5. Execute chat with Strands
-    logger.debug(f"[STRANDS_CHAT] Step 5: Executing chat with Strands agent...")
-    exec_start = time.time()
-    result = agent(user_message)
-    exec_time = time.time() - exec_start
-    logger.debug(f"[STRANDS_CHAT] Step 5 completed in {exec_time:.3f}s - result type: {type(result)}")
-    logger.debug(f"[STRANDS_CHAT] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}")
-    
-    # Log detailed result information
-    if hasattr(result, 'message'):
-        logger.debug(f"[STRANDS_CHAT] Result message: {result.message}")
-    if hasattr(result, 'metrics'):
-        logger.debug(f"[STRANDS_CHAT] Result metrics: {result.metrics}")
-        if hasattr(result.metrics, 'accumulated_usage'):
-            logger.debug(f"[STRANDS_CHAT] Accumulated usage: {result.metrics.accumulated_usage}")
-    if hasattr(result, 'stop_reason'):
-        logger.debug(f"[STRANDS_CHAT] Stop reason: {result.stop_reason}")
-    if hasattr(result, 'state'):
-        logger.debug(f"[STRANDS_CHAT] State: {result.state}")
-
-    # 6. Convert result to existing format (refactored version)
-    logger.debug(f"[STRANDS_CHAT] Step 6: Converting result to message model...")
-    convert_start = time.time()
-    from app.strands_integration.message_converter import strands_result_to_message_model
-    
-    # Pass the actual model name used
-    assistant_message = strands_result_to_message_model(result, user_msg_id, bot, model_name=model_name)
-    convert_time = time.time() - convert_start
-    logger.debug(f"[STRANDS_CHAT] Step 6 completed in {convert_time:.3f}s - message role: {assistant_message.role}, content count: {len(assistant_message.content)}")
-
-    # 7. Update and save conversation
-    logger.debug(f"[STRANDS_CHAT] Step 7: Updating conversation and saving to DynamoDB...")
-    update_start = time.time()
-    _update_conversation_with_strands_result(
-        conversation, user_msg_id, assistant_message, result
-    )
-    update_time = time.time() - update_start
-    logger.debug(f"[STRANDS_CHAT] Step 7a (update) completed in {update_time:.3f}s")
-    
-    save_start = time.time()
-    
-    # Log conversation size before saving
-    import json
-    conversation_json = conversation.model_dump()
-    conversation_size = len(json.dumps(conversation_json))
-    logger.debug(f"[STRANDS_CHAT] Conversation size before save: {conversation_size} bytes")
-    logger.debug(f"[STRANDS_CHAT] Message map size: {len(conversation.message_map)} messages")
-    
-    # Log assistant message details
-    assistant_msg = conversation.message_map[conversation.last_message_id]
-    logger.debug(f"[STRANDS_CHAT] Assistant message content count: {len(assistant_msg.content)}")
-    for i, content in enumerate(assistant_msg.content):
-        logger.debug(f"[STRANDS_CHAT] Content {i}: type={content.content_type}, size={len(str(content.body)) if hasattr(content, 'body') else len(str(content.text)) if hasattr(content, 'text') else 0}")
-    
-    store_conversation(user.id, conversation)
-    save_time = time.time() - save_start
-    logger.debug(f"[STRANDS_CHAT] Step 7b (save) completed in {save_time:.3f}s")
-    
-    total_time = time.time() - start_time
-    logger.debug(f"[STRANDS_CHAT] Total chat_with_strands completed in {total_time:.3f}s")
-    
-    # 8. Call on_stop callback to signal completion to WebSocket
-    if on_stop:
-        logger.debug(f"[STRANDS_CHAT] Step 8: Calling on_stop callback...")
-        # Create OnStopInput compatible with existing WebSocket handler
-        usage_info = result.metrics.accumulated_usage if hasattr(result, 'metrics') and result.metrics and hasattr(result.metrics, 'accumulated_usage') else {}
+    # Use context manager for automatic context management
+    with strands_context(bot, user):
+        agent = create_strands_agent(bot, user, model_name, enable_reasoning=chat_input.enable_reasoning)
+        agent_time = time.time() - agent_start
+        logger.debug(f"[STRANDS_CHAT] Step 2 completed in {agent_time:.3f}s - agent created")
         
-        # Extract token counts
-        input_tokens = usage_info.get('inputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'inputTokens', 0)
-        output_tokens = usage_info.get('outputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'outputTokens', 0)
-        
-        # Calculate price for this message only
-        message_price = 0.001  # Fallback
-        try:
-            from app.bedrock import calculate_price
-            message_price = calculate_price(
-                model=model_name,
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                cache_read_input_tokens=0,
-                cache_write_input_tokens=0
+        # Log reasoning functionality status
+        if chat_input.enable_reasoning:
+            logger.info("Reasoning functionality enabled in agent creation")
+        else:
+            logger.info("Reasoning functionality disabled")
+
+        # 3. Setup callback handlers
+        logger.debug(f"[STRANDS_CHAT] Step 3: Setting up callback handlers...")
+        callback_start = time.time()
+        if any([on_stream, on_thinking, on_tool_result, on_reasoning]):
+            logger.debug(f"[STRANDS_CHAT] Callbacks enabled - stream: {on_stream is not None}, thinking: {on_thinking is not None}, tool: {on_tool_result is not None}, reasoning: {on_reasoning is not None}")
+            agent.callback_handler = _create_callback_handler(
+                on_stream, on_thinking, on_tool_result, on_reasoning
             )
-        except Exception as e:
-            logger.warning(f"Could not calculate message price for on_stop: {e}")
+        else:
+            logger.debug(f"[STRANDS_CHAT] No callbacks provided")
+        callback_time = time.time() - callback_start
+        logger.debug(f"[STRANDS_CHAT] Step 3 completed in {callback_time:.3f}s")
+
+        # 4. Get user message content
+        logger.debug(f"[STRANDS_CHAT] Step 4: Getting user message content...")
+        msg_start = time.time()
+        user_message = _get_user_message_content(chat_input, conversation, user_msg_id)
+        msg_time = time.time() - msg_start
+        logger.debug(f"[STRANDS_CHAT] Step 4 completed in {msg_time:.3f}s - message type: {type(user_message)}, length: {len(str(user_message))}")
+
+        # 5. Execute chat with Strands
+        logger.debug(f"[STRANDS_CHAT] Step 5: Executing chat with Strands agent...")
+        exec_start = time.time()
+        result = agent(user_message)
+        exec_time = time.time() - exec_start
+        logger.debug(f"[STRANDS_CHAT] Step 5 completed in {exec_time:.3f}s - result type: {type(result)}")
+        logger.debug(f"[STRANDS_CHAT] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}")
         
-        stop_input = {
-            "stop_reason": getattr(result, 'stop_reason', 'end_turn'),
-            "input_token_count": input_tokens,
-            "output_token_count": output_tokens,
-            "cache_read_input_count": 0,  # Strands doesn't provide this info
-            "cache_write_input_count": 0,  # Strands doesn't provide this info
-            "price": message_price
-        }
+        # Log detailed result information
+        if hasattr(result, 'message'):
+            logger.debug(f"[STRANDS_CHAT] Result message: {result.message}")
+        if hasattr(result, 'metrics'):
+            logger.debug(f"[STRANDS_CHAT] Result metrics: {result.metrics}")
+            if hasattr(result.metrics, 'accumulated_usage'):
+                logger.debug(f"[STRANDS_CHAT] Accumulated usage: {result.metrics.accumulated_usage}")
+        if hasattr(result, 'stop_reason'):
+            logger.debug(f"[STRANDS_CHAT] Stop reason: {result.stop_reason}")
+        if hasattr(result, 'state'):
+            logger.debug(f"[STRANDS_CHAT] State: {result.state}")
+
+        # 6. Convert result to existing format (refactored version)
+        logger.debug(f"[STRANDS_CHAT] Step 6: Converting result to message model...")
+        convert_start = time.time()
+        from app.strands_integration.message_converter import strands_result_to_message_model
         
-        logger.debug(f"[STRANDS_CHAT] Calling on_stop with: {stop_input}")
-        on_stop(stop_input)
-        logger.debug(f"[STRANDS_CHAT] Step 8 completed - on_stop callback called")
+        # Pass model_name from chat_input to ensure consistency with chat_legacy
+        assistant_message = strands_result_to_message_model(result, user_msg_id, bot, model_name=model_name)
+        convert_time = time.time() - convert_start
+        logger.debug(f"[STRANDS_CHAT] Step 6 completed in {convert_time:.3f}s - message role: {assistant_message.role}, content count: {len(assistant_message.content)}")
+
+        # 7. Update and save conversation
+        logger.debug(f"[STRANDS_CHAT] Step 7: Updating conversation and saving to DynamoDB...")
+        update_start = time.time()
+        _update_conversation_with_strands_result(
+            conversation, user_msg_id, assistant_message, result
+        )
+        update_time = time.time() - update_start
+        logger.debug(f"[STRANDS_CHAT] Step 7a (update) completed in {update_time:.3f}s")
+        
+        save_start = time.time()
+        
+        # Log conversation size before saving
+        import json
+        conversation_json = conversation.model_dump()
+        conversation_size = len(json.dumps(conversation_json))
+        logger.debug(f"[STRANDS_CHAT] Conversation size before save: {conversation_size} bytes")
+        logger.debug(f"[STRANDS_CHAT] Message map size: {len(conversation.message_map)} messages")
+        
+        # Log assistant message details
+        assistant_msg = conversation.message_map[conversation.last_message_id]
+        logger.debug(f"[STRANDS_CHAT] Assistant message content count: {len(assistant_msg.content)}")
+        for i, content in enumerate(assistant_msg.content):
+            logger.debug(f"[STRANDS_CHAT] Content {i}: type={content.content_type}, size={len(str(content.body)) if hasattr(content, 'body') else len(str(content.text)) if hasattr(content, 'text') else 0}")
+        
+        store_conversation(user.id, conversation)
+        save_time = time.time() - save_start
+        logger.debug(f"[STRANDS_CHAT] Step 7b (save) completed in {save_time:.3f}s")
+        
+        total_time = time.time() - start_time
+        logger.debug(f"[STRANDS_CHAT] Total chat_with_strands completed in {total_time:.3f}s")
+        
+        # 8. Call on_stop callback to signal completion to WebSocket
+        if on_stop:
+            logger.debug(f"[STRANDS_CHAT] Step 8: Calling on_stop callback...")
+            # Create OnStopInput compatible with existing WebSocket handler
+            usage_info = result.metrics.accumulated_usage if hasattr(result, 'metrics') and result.metrics and hasattr(result.metrics, 'accumulated_usage') else {}
+            
+            # Extract token counts
+            input_tokens = usage_info.get('inputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'inputTokens', 0)
+            output_tokens = usage_info.get('outputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'outputTokens', 0)
+            
+            # Calculate price for this message only
+            message_price = 0.001  # Fallback
+            try:
+                from app.bedrock import calculate_price
+                message_price = calculate_price(
+                    model=model_name,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cache_read_input_tokens=0,
+                    cache_write_input_tokens=0
+                )
+            except Exception as e:
+                logger.warning(f"Could not calculate message price for on_stop: {e}")
+            
+            stop_input = {
+                "stop_reason": getattr(result, 'stop_reason', 'end_turn'),
+                "input_token_count": input_tokens,
+                "output_token_count": output_tokens,
+                "cache_read_input_count": 0,  # Strands doesn't provide this info
+                "cache_write_input_count": 0,  # Strands doesn't provide this info
+                "price": message_price
+            }
+            
+            logger.debug(f"[STRANDS_CHAT] Calling on_stop with: {stop_input}")
+            on_stop(stop_input)
+            logger.debug(f"[STRANDS_CHAT] Step 8 completed - on_stop callback called")
     
-    # Clear context after completion
-    clear_current_context()
+    # Context is automatically cleared by the context manager
 
     return conversation, assistant_message
 
@@ -236,6 +234,48 @@ def _create_callback_handler(on_stream, on_thinking, on_tool_result, on_reasonin
             reasoning_text = kwargs.get("reasoningText", "")
             logger.debug(f"[STRANDS_CALLBACK] Reasoning received: {len(reasoning_text)} chars")
             on_reasoning(reasoning_text)
+        elif "thinking" in kwargs and on_reasoning:
+            # Handle Strands thinking events (reasoning content)
+            thinking_text = kwargs.get("thinking", "")
+            logger.debug(f"[STRANDS_CALLBACK] Thinking/Reasoning received: {len(thinking_text)} chars")
+            on_reasoning(thinking_text)
+        elif "event" in kwargs:
+            # Check if the event contains thinking/reasoning content
+            event = kwargs["event"]
+            if isinstance(event, dict):
+                # Log all event types for debugging
+                event_type = list(event.keys())[0] if event else "unknown"
+                logger.debug(f"[STRANDS_CALLBACK] Processing event type: {event_type}")
+                
+                # Look for thinking content in various event structures
+                if "thinking" in event:
+                    thinking_text = event["thinking"]
+                    logger.debug(f"[STRANDS_CALLBACK] Event thinking received: {len(str(thinking_text))} chars")
+                    if on_reasoning:
+                        on_reasoning(str(thinking_text))
+                elif "contentBlockDelta" in event and "delta" in event["contentBlockDelta"]:
+                    delta = event["contentBlockDelta"]["delta"]
+                    if "thinking" in delta:
+                        thinking_text = delta["thinking"]
+                        logger.debug(f"[STRANDS_CALLBACK] Delta thinking received: {len(str(thinking_text))} chars")
+                        if on_reasoning:
+                            on_reasoning(str(thinking_text))
+                elif "thinkingBlockDelta" in event:
+                    # Handle thinking block delta events
+                    thinking_delta = event["thinkingBlockDelta"]
+                    if "delta" in thinking_delta and "text" in thinking_delta["delta"]:
+                        thinking_text = thinking_delta["delta"]["text"]
+                        logger.debug(f"[STRANDS_CALLBACK] Thinking block delta received: {len(thinking_text)} chars")
+                        if on_reasoning:
+                            on_reasoning(thinking_text)
+                elif "messageStart" in event and event["messageStart"].get("role") == "assistant":
+                    logger.debug(f"[STRANDS_CALLBACK] Assistant message started")
+                elif "messageStop" in event:
+                    logger.debug(f"[STRANDS_CALLBACK] Message stopped: {event['messageStop']}")
+                else:
+                    logger.debug(f"[STRANDS_CALLBACK] Unhandled event type: {event_type}")
+            else:
+                logger.debug(f"[STRANDS_CALLBACK] Non-dict event: {event}")
         else:
             logger.debug(f"[STRANDS_CALLBACK] Unhandled callback: {kwargs}")
 

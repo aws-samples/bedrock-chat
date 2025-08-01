@@ -97,13 +97,24 @@ def _get_bedrock_model_config(bot: Optional[BotModel], model_name: str = "claude
     
     # Add reasoning functionality if explicitly enabled
     additional_request_fields = {}
-    if enable_reasoning and bot and bot.generation_params and bot.generation_params.reasoning_params:
+    if enable_reasoning:
+        # Import config for default values
+        from app.config import DEFAULT_GENERATION_CONFIG
+        
+        # Enable thinking/reasoning functionality
+        budget_tokens = DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # Use config default (1024)
+        
+        # Use bot's reasoning params if available
+        if bot and bot.generation_params and bot.generation_params.reasoning_params:
+            budget_tokens = bot.generation_params.reasoning_params.budget_tokens
+        
         additional_request_fields["thinking"] = {
             "type": "enabled",
-            "budget_tokens": bot.generation_params.reasoning_params.budget_tokens
+            "budget_tokens": budget_tokens
         }
         # When thinking is enabled, temperature must be 1
         config["temperature"] = 1.0
+        logger.debug(f"[AGENT_FACTORY] Reasoning enabled with budget_tokens: {budget_tokens}")
     
     if additional_request_fields:
         config["additional_request_fields"] = additional_request_fields
