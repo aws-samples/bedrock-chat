@@ -50,15 +50,43 @@ def strands_result_to_message_model(result: Any, parent_message_id: str, bot: An
     # Extract reasoning content if available (only when reasoning is enabled)
     logger.debug(f"[MESSAGE_CONVERTER] Extracting reasoning content...")
     reasoning_content = _extract_reasoning_content_from_agent_result(result)
-    if reasoning_content:
-        logger.debug(f"[MESSAGE_CONVERTER] Reasoning content found: {len(reasoning_content.text)} chars")
-        content.append(reasoning_content)
-    else:
-        logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found")
     
     # Create thinking log from tool usage in the message
     logger.debug(f"[MESSAGE_CONVERTER] Creating thinking log...")
     thinking_log = _create_thinking_log_from_agent_result(result, bot)
+    
+    # Apply chat_legacy logic: if reasoning found in thinking_log, add to message content
+    if thinking_log:
+        reasoning_log = next(
+            (
+                log
+                for log in thinking_log
+                if any(
+                    isinstance(content_item, ReasoningContentModel)
+                    for content_item in log.content
+                )
+            ),
+            None,
+        )
+        if reasoning_log:
+            reasoning_content_from_log = next(
+                content_item
+                for content_item in reasoning_log.content
+                if isinstance(content_item, ReasoningContentModel)
+            )
+            content.insert(0, reasoning_content_from_log)  # Insert at beginning like chat_legacy
+            logger.debug(f"[MESSAGE_CONVERTER] Reasoning content from thinking_log added: {len(reasoning_content_from_log.text)} chars")
+        else:
+            logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found in thinking_log")
+    
+    # Fallback: if direct reasoning extraction found something, add it
+    elif reasoning_content:
+        logger.debug(f"[MESSAGE_CONVERTER] Direct reasoning content found: {len(reasoning_content.text)} chars")
+        content.insert(0, reasoning_content)  # Insert at beginning like chat_legacy
+    else:
+        logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found")
+    
+    # thinking_log is already created above, so remove duplicate creation
     if thinking_log:
         logger.debug(f"[MESSAGE_CONVERTER] Thinking log created with {len(thinking_log)} entries")
     else:
@@ -158,17 +186,24 @@ def _extract_reasoning_content_from_agent_result(result: Any) -> ReasoningConten
                 for i, item in enumerate(content_array):
                     logger.debug(f"[MESSAGE_CONVERTER] Content item {i}: {item}")
                     if isinstance(item, dict):
-                        # Check for reasoning content type
-                        if item.get('type') == 'reasoning' or 'reasoning' in item:
-                            reasoning_text = item.get('reasoning') or item.get('text', '')
-                            logger.debug(f"[MESSAGE_CONVERTER] Found reasoning content: {reasoning_text}")
-                            if reasoning_text:
-                                return ReasoningContentModel(
-                                    content_type="reasoning",
-                                    text=str(reasoning_text),
-                                    signature="strands-reasoning",
-                                    redacted_content=b""
-                                )
+                        # Check for Strands reasoning content structure
+                        if 'reasoningContent' in item:
+                            reasoning_data = item['reasoningContent']
+                            if 'reasoningText' in reasoning_data:
+                                reasoning_text_data = reasoning_data['reasoningText']
+                                reasoning_text = reasoning_text_data.get('text', '')
+                                signature = reasoning_text_data.get('signature', 'strands-reasoning')
+                                
+                                logger.debug(f"[MESSAGE_CONVERTER] Found Strands reasoning content: {len(reasoning_text)} chars")
+                                if reasoning_text:
+                                    # Convert signature to bytes if it's a string
+                                    signature_bytes = signature.encode('utf-8') if isinstance(signature, str) else signature
+                                    return ReasoningContentModel(
+                                        content_type="reasoning",
+                                        text=str(reasoning_text),
+                                        signature=signature,
+                                        redacted_content=signature_bytes
+                                    )
     
     # Check if reasoning should be extracted based on model capabilities
     logger.debug(f"[MESSAGE_CONVERTER] No reasoning content found in message")
@@ -187,6 +222,15 @@ def _create_thinking_log_from_agent_result(result: Any, bot: Any = None) -> List
     According to Strands docs, tool usage is recorded in the agent's message history.
     """
     thinking_log = []
+    
+    # First, check if there's reasoning content to add to thinking_log
+    reasoning_content = _extract_reasoning_content_from_agent_result(result)
+    if reasoning_content:
+        logger.debug(f"[MESSAGE_CONVERTER] Adding reasoning to thinking_log: {len(reasoning_content.text)} chars")
+        thinking_log.append(SimpleMessageModel(
+            role="assistant",
+            content=[reasoning_content]
+        ))
     
     # Check if the final message contains tool usage
     if hasattr(result, 'message') and result.message:
