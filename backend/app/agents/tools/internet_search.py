@@ -6,7 +6,7 @@ from app.repositories.models.custom_bot import BotModel, InternetToolModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 from duckduckgo_search import DDGS
-from firecrawl.firecrawl import FirecrawlApp
+from firecrawl import FirecrawlApp
 from pydantic import BaseModel, Field, root_validator
 
 logger = logging.getLogger(__name__)
