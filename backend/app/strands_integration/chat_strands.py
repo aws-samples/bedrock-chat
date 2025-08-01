@@ -53,6 +53,11 @@ def chat_with_strands(
     logger.debug(f"[STRANDS_CHAT] Step 2: Creating Strands agent...")
     agent_start = time.time()
     from app.strands_integration.agent_factory import create_strands_agent
+    from app.strands_integration.context import set_current_context, clear_current_context
+    
+    # Set context for tools to access bot and user information
+    logger.debug(f"[STRANDS_CHAT] Setting context - bot: {bot.id if bot else None}, user: {user.id}")
+    set_current_context(bot, user)
     
     # Get model name from chat_input
     model_name = chat_input.message.model if chat_input.message.model else "claude-v3.5-sonnet"
@@ -94,13 +99,26 @@ def chat_with_strands(
     exec_time = time.time() - exec_start
     logger.debug(f"[STRANDS_CHAT] Step 5 completed in {exec_time:.3f}s - result type: {type(result)}")
     logger.debug(f"[STRANDS_CHAT] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}")
+    
+    # Log detailed result information
+    if hasattr(result, 'message'):
+        logger.debug(f"[STRANDS_CHAT] Result message: {result.message}")
+    if hasattr(result, 'metrics'):
+        logger.debug(f"[STRANDS_CHAT] Result metrics: {result.metrics}")
+        if hasattr(result.metrics, 'accumulated_usage'):
+            logger.debug(f"[STRANDS_CHAT] Accumulated usage: {result.metrics.accumulated_usage}")
+    if hasattr(result, 'stop_reason'):
+        logger.debug(f"[STRANDS_CHAT] Stop reason: {result.stop_reason}")
+    if hasattr(result, 'state'):
+        logger.debug(f"[STRANDS_CHAT] State: {result.state}")
 
     # 6. Convert result to existing format (refactored version)
     logger.debug(f"[STRANDS_CHAT] Step 6: Converting result to message model...")
     convert_start = time.time()
     from app.strands_integration.message_converter import strands_result_to_message_model
     
-    assistant_message = strands_result_to_message_model(result, user_msg_id, bot)
+    # Pass the actual model name used
+    assistant_message = strands_result_to_message_model(result, user_msg_id, bot, model_name=model_name)
     convert_time = time.time() - convert_start
     logger.debug(f"[STRANDS_CHAT] Step 6 completed in {convert_time:.3f}s - message role: {assistant_message.role}, content count: {len(assistant_message.content)}")
 
@@ -114,12 +132,66 @@ def chat_with_strands(
     logger.debug(f"[STRANDS_CHAT] Step 7a (update) completed in {update_time:.3f}s")
     
     save_start = time.time()
+    
+    # Log conversation size before saving
+    import json
+    conversation_json = conversation.model_dump()
+    conversation_size = len(json.dumps(conversation_json))
+    logger.debug(f"[STRANDS_CHAT] Conversation size before save: {conversation_size} bytes")
+    logger.debug(f"[STRANDS_CHAT] Message map size: {len(conversation.message_map)} messages")
+    
+    # Log assistant message details
+    assistant_msg = conversation.message_map[conversation.last_message_id]
+    logger.debug(f"[STRANDS_CHAT] Assistant message content count: {len(assistant_msg.content)}")
+    for i, content in enumerate(assistant_msg.content):
+        logger.debug(f"[STRANDS_CHAT] Content {i}: type={content.content_type}, size={len(str(content.body)) if hasattr(content, 'body') else len(str(content.text)) if hasattr(content, 'text') else 0}")
+    
     store_conversation(user.id, conversation)
     save_time = time.time() - save_start
     logger.debug(f"[STRANDS_CHAT] Step 7b (save) completed in {save_time:.3f}s")
     
     total_time = time.time() - start_time
     logger.debug(f"[STRANDS_CHAT] Total chat_with_strands completed in {total_time:.3f}s")
+    
+    # 8. Call on_stop callback to signal completion to WebSocket
+    if on_stop:
+        logger.debug(f"[STRANDS_CHAT] Step 8: Calling on_stop callback...")
+        # Create OnStopInput compatible with existing WebSocket handler
+        usage_info = result.metrics.accumulated_usage if hasattr(result, 'metrics') and result.metrics and hasattr(result.metrics, 'accumulated_usage') else {}
+        
+        # Extract token counts
+        input_tokens = usage_info.get('inputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'inputTokens', 0)
+        output_tokens = usage_info.get('outputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'outputTokens', 0)
+        
+        # Calculate price for this message only
+        message_price = 0.001  # Fallback
+        try:
+            from app.bedrock import calculate_price
+            message_price = calculate_price(
+                model=model_name,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cache_read_input_tokens=0,
+                cache_write_input_tokens=0
+            )
+        except Exception as e:
+            logger.warning(f"Could not calculate message price for on_stop: {e}")
+        
+        stop_input = {
+            "stop_reason": getattr(result, 'stop_reason', 'end_turn'),
+            "input_token_count": input_tokens,
+            "output_token_count": output_tokens,
+            "cache_read_input_count": 0,  # Strands doesn't provide this info
+            "cache_write_input_count": 0,  # Strands doesn't provide this info
+            "price": message_price
+        }
+        
+        logger.debug(f"[STRANDS_CHAT] Calling on_stop with: {stop_input}")
+        on_stop(stop_input)
+        logger.debug(f"[STRANDS_CHAT] Step 8 completed - on_stop callback called")
+    
+    # Clear context after completion
+    clear_current_context()
 
     return conversation, assistant_message
 
@@ -250,26 +322,56 @@ def _update_conversation_with_strands_result(
     logger.debug(f"[STRANDS_UPDATE] Updated conversation map and last_message_id")
 
     # Update price (from Strands result)
+    logger.debug(f"[STRANDS_UPDATE] Checking usage info - hasattr(result, 'usage'): {hasattr(result, 'usage')}")
+    if hasattr(result, 'usage'):
+        logger.debug(f"[STRANDS_UPDATE] result.usage: {result.usage}")
+        logger.debug(f"[STRANDS_UPDATE] result.usage type: {type(result.usage)}")
+    
+    # Check for usage in metrics
+    if hasattr(result, 'metrics') and result.metrics:
+        logger.debug(f"[STRANDS_UPDATE] result.metrics: {result.metrics}")
+        logger.debug(f"[STRANDS_UPDATE] result.metrics type: {type(result.metrics)}")
+        if hasattr(result.metrics, 'accumulated_usage'):
+            logger.debug(f"[STRANDS_UPDATE] accumulated_usage: {result.metrics.accumulated_usage}")
+    
+    # Try to extract usage from different locations
+    usage_info = None
     if hasattr(result, 'usage') and result.usage:
+        usage_info = result.usage
+        logger.debug(f"[STRANDS_UPDATE] Found usage in result.usage")
+    elif hasattr(result, 'metrics') and result.metrics and hasattr(result.metrics, 'accumulated_usage'):
+        usage_info = result.metrics.accumulated_usage
+        logger.debug(f"[STRANDS_UPDATE] Found usage in result.metrics.accumulated_usage")
+    
+    if usage_info:
         # Calculate price from Strands usage information
         from app.bedrock import calculate_price
         try:
             # Get model name from assistant message
             model_name = assistant_message.model
             logger.debug(f"[STRANDS_UPDATE] Calculating price for model: {model_name}")
+            
+            # Extract token counts
+            input_tokens = usage_info.get('inputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'inputTokens', 0)
+            output_tokens = usage_info.get('outputTokens', 0) if isinstance(usage_info, dict) else getattr(usage_info, 'outputTokens', 0)
+            
+            logger.debug(f"[STRANDS_UPDATE] Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+            
             price = calculate_price(
-                model_name=model_name,
-                input_tokens=getattr(result.usage, 'input_tokens', 0),
-                output_tokens=getattr(result.usage, 'output_tokens', 0)
+                model=model_name,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cache_read_input_tokens=0,
+                cache_write_input_tokens=0
             )
             conversation.total_price += price
-            logger.debug(f"[STRANDS_UPDATE] Price calculated: {price}, total: {conversation.total_price}")
+            logger.debug(f"[STRANDS_UPDATE] Price calculated successfully: {price}, total: {conversation.total_price}")
         except Exception as e:
             logger.warning(f"Could not calculate price: {e}")
             conversation.total_price += 0.001  # Fallback
             logger.debug(f"[STRANDS_UPDATE] Using fallback price, total: {conversation.total_price}")
     else:
         conversation.total_price += 0.001  # Fallback
-        logger.debug(f"[STRANDS_UPDATE] No usage info, using fallback price, total: {conversation.total_price}")
+        logger.debug(f"[STRANDS_UPDATE] No usage info found, using fallback price, total: {conversation.total_price}")
     
     logger.debug(f"[STRANDS_UPDATE] Conversation update completed")
