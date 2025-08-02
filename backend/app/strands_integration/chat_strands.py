@@ -194,6 +194,7 @@ def chat_with_strands(
     return conversation, assistant_message
 
 
+
 def _get_bedrock_model_id(model_name: str) -> str:
     """Convert model name to Bedrock model ID"""
     import os
@@ -229,7 +230,18 @@ def _create_callback_handler(on_stream, on_thinking, on_tool_result, on_reasonin
                 logger.debug(f"[STRANDS_CALLBACK] Duplicate stream data ignored")
         elif "current_tool_use" in kwargs and on_thinking:
             logger.debug(f"[STRANDS_CALLBACK] Thinking event received")
-            on_thinking(kwargs["current_tool_use"])
+            strands_tool_use = kwargs["current_tool_use"]
+            
+            # Convert Strands format to expected WebSocket format
+            # Strands uses "toolUseId" but WebSocket expects "tool_use_id"
+            converted_tool_use = {
+                "tool_use_id": strands_tool_use.get("toolUseId", "unknown"),
+                "name": strands_tool_use.get("name", "unknown_tool"),
+                "input": strands_tool_use.get("input", {})
+            }
+            
+            logger.debug(f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}")
+            on_thinking(converted_tool_use)
         elif "reasoning" in kwargs and on_reasoning:
             reasoning_text = kwargs.get("reasoningText", "")
             logger.debug(f"[STRANDS_CALLBACK] Reasoning received: {len(reasoning_text)} chars")
