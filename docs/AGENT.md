@@ -26,7 +26,7 @@ There are two ways to use the Agent feature:
 
 ### Using Tool Use
 
-To enable the Agent functionality with Too Use for your customized chatbot, follow these steps:
+To enable the Agent functionality with Tool Use for your customized chatbot, follow these steps:
 
 1. Navigate to the Agent section in the custom bot screen.
 
@@ -45,7 +45,7 @@ To enable the Agent functionality with Too Use for your customized chatbot, foll
 
 ### Using Bedrock Agent
 
-You can utilize an [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) created in Amazon Bedrock.
+You can utilize a [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) created in Amazon Bedrock.
 
 First, create an Agent in Bedrock (e.g., via the Management Console). Then, specify the Agent ID in the custom bot settings screen. Once set, your chatbot will leverage the Bedrock Agent to process user queries.
 
