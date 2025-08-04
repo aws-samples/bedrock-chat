@@ -234,10 +234,22 @@ def _create_callback_handler(on_stream, on_thinking, on_tool_result, on_reasonin
             
             # Convert Strands format to expected WebSocket format
             # Strands uses "toolUseId" but WebSocket expects "tool_use_id"
+            input_data = strands_tool_use.get("input", {})
+            
+            # Handle case where input might be a JSON string
+            if isinstance(input_data, str):
+                try:
+                    import json
+                    input_data = json.loads(input_data)
+                    logger.debug(f"[STRANDS_CALLBACK] Parsed JSON input: {input_data}")
+                except json.JSONDecodeError as e:
+                    logger.warning(f"[STRANDS_CALLBACK] Failed to parse input JSON: {e}")
+                    input_data = {}
+            
             converted_tool_use = {
                 "tool_use_id": strands_tool_use.get("toolUseId", "unknown"),
                 "name": strands_tool_use.get("name", "unknown_tool"),
-                "input": strands_tool_use.get("input", {})
+                "input": input_data
             }
             
             logger.debug(f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}")
