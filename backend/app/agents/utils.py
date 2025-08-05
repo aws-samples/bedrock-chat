@@ -1,11 +1,12 @@
+import logging
 from typing import Dict
 
 from app.agents.tools.agent_tool import AgentTool
+from app.agents.tools.bedrock_agent import BedrockAgent, bedrock_agent_tool
+from app.agents.tools.calculator import calculator_tool
 from app.agents.tools.internet_search import internet_search_tool
-from app.agents.tools.bedrock_agent import bedrock_agent_tool, BedrockAgent
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.repositories.models.custom_bot import BotModel
-import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,6 +16,7 @@ def get_available_tools() -> list[AgentTool]:
     tools: list[AgentTool] = []
     tools.append(internet_search_tool)
     tools.append(bedrock_agent_tool)
+    tools.append(calculator_tool)
     return tools
 
 
@@ -66,9 +68,7 @@ def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
                         f"Updated bedrock_agent tool description to: {description}"
                     )
                 except Exception as e:
-                    logger.error(
-                        f"Failed to update bedrock_agent tool description: {e}"
-                    )
+                    logger.error(f"Failed to update bedrock_agent tool description: {e}")
         except Exception as e:
             logger.error(f"Error processing tool {tool_config.name}: {e}")
 

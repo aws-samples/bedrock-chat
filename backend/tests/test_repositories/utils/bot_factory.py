@@ -50,17 +50,14 @@ def _create_test_bot_model(
     published_api_codebuild_id=None,
     bedrock_knowledge_base=None,
     include_internet_tool=False,
+    include_calculator_tool=False,
     set_dummy_knowledge=False,
     usage_count=0,
     **kwargs
 ):
     tools: list[ToolModel] = [
-        PlainToolModel(
-            tool_type="plain", name="tool1", description="tool1 description"
-        ),
-        PlainToolModel(
-            tool_type="plain", name="tool2", description="tool2 description"
-        ),
+        PlainToolModel(tool_type="plain", name="tool1", description="tool1 description"),
+        PlainToolModel(tool_type="plain", name="tool2", description="tool2 description"),
     ]
     if include_internet_tool:
         tools.append(
@@ -69,6 +66,14 @@ def _create_test_bot_model(
                 name=internet_search_tool.name,
                 description=internet_search_tool.description,
                 search_engine="duckduckgo",
+            )
+        )
+    if include_calculator_tool:
+        tools.append(
+            PlainToolModel(
+                tool_type="plain",
+                name="calculator",
+                description="Perform mathematical calculations like addition, subtraction, multiplication, and division",
             )
         )
     return BotModel(
@@ -147,7 +152,12 @@ def _create_test_bot_model(
 
 
 def create_test_private_bot(
-    id, is_starred, owner_user_id, include_internet_tool=False, **kwargs
+    id,
+    is_starred,
+    owner_user_id,
+    include_internet_tool=False,
+    include_calculator_tool=False,
+    **kwargs
 ):
     return _create_test_bot_model(
         id=id,
@@ -158,6 +168,7 @@ def create_test_private_bot(
         is_starred=is_starred,
         owner_user_id=owner_user_id,
         include_internet_tool=include_internet_tool,
+        include_calculator_tool=include_calculator_tool,
         **kwargs,
     )
 
