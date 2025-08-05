@@ -102,19 +102,21 @@ def chat_with_strands(
         callback_time = time.time() - callback_start
         logger.debug(f"[STRANDS_CHAT] Step 3 completed in {callback_time:.3f}s")
 
-        # 4. Get user message content
-        logger.debug(f"[STRANDS_CHAT] Step 4: Getting user message content...")
+        # 4. Get current user message with context
+        logger.debug(f"[STRANDS_CHAT] Step 4: Getting user message with context...")
         msg_start = time.time()
-        user_message = _get_user_message_content(chat_input, conversation, user_msg_id)
+        user_message_with_context = _get_user_message_with_context(
+            chat_input, conversation, user_msg_id
+        )
         msg_time = time.time() - msg_start
         logger.debug(
-            f"[STRANDS_CHAT] Step 4 completed in {msg_time:.3f}s - message type: {type(user_message)}, length: {len(str(user_message))}"
+            f"[STRANDS_CHAT] Step 4 completed in {msg_time:.3f}s - message length: {len(str(user_message_with_context))}"
         )
 
         # 5. Execute chat with Strands
         logger.debug(f"[STRANDS_CHAT] Step 5: Executing chat with Strands agent...")
         exec_start = time.time()
-        result = agent(user_message)
+        result = agent(user_message_with_context)
         exec_time = time.time() - exec_start
         logger.debug(
             f"[STRANDS_CHAT] Step 5 completed in {exec_time:.3f}s - result type: {type(result)}"
@@ -512,16 +514,71 @@ def _create_callback_handler(
     return callback_handler
 
 
-def _get_user_message_content(
+def _get_user_message_with_context(
     chat_input: ChatInput, conversation: ConversationModel, user_msg_id: str
 ):
-    """Get user message content (multimodal support)"""
-    user_message = conversation.message_map[user_msg_id]
+    """Get user message with conversation context as a string"""
+    from app.usecases.chat import trace_to_root
 
-    # Process multimodal content with Strands
+    # Get the parent message ID to trace from
+    parent_id = chat_input.message.parent_message_id
+    if parent_id is None:
+        parent_id = conversation.last_message_id
+
+    # Build context from conversation history
+    context_parts = []
+
+    # Trace conversation history from parent to root
+    if parent_id and parent_id in conversation.message_map:
+        history_messages = trace_to_root(parent_id, conversation.message_map)
+        logger.debug(
+            f"[STRANDS_CHAT] Found {len(history_messages)} messages in conversation history"
+        )
+
+        # Build context string from history
+        for msg in history_messages:
+            if msg.role == "system":
+                continue  # Skip system messages
+
+            # Extract text content
+            text_content = ""
+            for content in msg.content:
+                if hasattr(content, "content_type") and content.content_type == "text":
+                    text_content += content.body
+
+            if text_content.strip():
+                if msg.role == "user":
+                    context_parts.append(f"Previous user message: {text_content}")
+                elif msg.role == "assistant":
+                    context_parts.append(f"Previous assistant response: {text_content}")
+    else:
+        logger.debug(f"[STRANDS_CHAT] No conversation history found")
+
+    # Get current user message
+    current_user_message = conversation.message_map[user_msg_id]
+    current_text = ""
+    for content in current_user_message.content:
+        if hasattr(content, "content_type") and content.content_type == "text":
+            current_text += content.body
+
+    # Combine context and current message
+    if context_parts:
+        context_str = "\n".join(context_parts)
+        full_message = f"Context from previous conversation:\n{context_str}\n\nCurrent user message: {current_text}"
+    else:
+        full_message = current_text
+
+    logger.debug(
+        f"[STRANDS_CHAT] Built message with context: {len(full_message)} characters"
+    )
+    return full_message
+
+
+def _convert_message_content_to_strands(content_list):
+    """Convert message content to Strands format (multimodal support)"""
     content_parts = []
 
-    for content in user_message.content:
+    for content in content_list:
         if hasattr(content, "content_type"):
             if content.content_type == "text":
                 content_parts.append({"text": content.body})
@@ -582,12 +639,8 @@ def _get_user_message_content(
                         {"text": f"[Image attachment - processing error: {e}]"}
                     )
 
-    # Return as string for single text content
-    if len(content_parts) == 1 and "text" in content_parts[0]:
-        return content_parts[0]["text"]
-
     # Return as list for multimodal content
-    return content_parts if content_parts else "Hello"
+    return content_parts if content_parts else [{"text": "Hello"}]
 
 
 def _update_conversation_with_strands_result(
