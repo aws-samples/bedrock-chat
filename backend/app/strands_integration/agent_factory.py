@@ -71,7 +71,6 @@ def _get_bedrock_model_config(
     from app.bedrock import get_model_id
 
     # Use provided model name (BotModel doesn't have a direct model attribute)
-
     # Get proper Bedrock model ID
     bedrock_region = os.environ.get("BEDROCK_REGION", "us-east-1")
     enable_cross_region = (
@@ -136,51 +135,7 @@ def _get_bedrock_model_config(
 
 
 def _get_tools_for_bot(bot: Optional[BotModel]) -> list:
-    """Get tools list for bot configuration."""
-    tools = []
+    """Get tools list for bot configuration using dynamic registry."""
+    from app.strands_integration.tool_registry import get_tools_for_bot
 
-    # Check if bot has agent tools configured
-    if not (bot and bot.agent and bot.agent.tools):
-        return tools
-
-    # Knowledge search tool
-    if bot.knowledge and bot.knowledge.source_urls:
-        try:
-            from app.strands_integration.tools.knowledge_tool_strands import (
-                knowledge_search,
-            )
-
-            tools.append(knowledge_search)
-            logger.info("Added knowledge search tool")
-        except ImportError:
-            logger.warning("Knowledge search tool not available")
-
-    # Internet search tool - check if internet search is enabled in agent tools
-    for tool in bot.agent.tools:
-        if hasattr(tool, "name") and "internet" in tool.name.lower():
-            try:
-                from app.strands_integration.tools.internet_search_tool_strands import (
-                    create_internet_search_tool,
-                )
-
-                internet_search_tool = create_internet_search_tool(bot)
-                tools.append(internet_search_tool)
-                logger.info("Added internet search tool with bot context")
-                break
-            except ImportError:
-                logger.warning("Internet search tool not available")
-
-    # Bedrock agent tool
-    if hasattr(bot, "bedrock_agent_id") and bot.bedrock_agent_id:
-        try:
-            from app.strands_integration.tools.bedrock_agent_tool_strands import (
-                bedrock_agent_invoke,
-            )
-
-            tools.append(bedrock_agent_invoke)
-            logger.info("Added bedrock agent tool")
-        except ImportError:
-            logger.warning("Bedrock agent tool not available")
-
-    logger.info(f"Total tools configured: {len(tools)}")
-    return tools
+    return get_tools_for_bot(bot)
