@@ -29,6 +29,7 @@ def strands_result_to_message_model(
     bot: Any = None,
     model_name: str = None,
     collected_tool_usage: list = None,
+    collected_reasoning: list = None,
 ) -> MessageModel:
     """
     Convert Strands AgentResult to MessageModel.
@@ -63,7 +64,7 @@ def strands_result_to_message_model(
     # Create thinking log from tool usage in the message
     logger.debug(f"[MESSAGE_CONVERTER] Creating thinking log...")
     thinking_log = _create_thinking_log_from_agent_result(
-        result, bot, collected_tool_usage
+        result, bot, collected_tool_usage, collected_reasoning
     )
 
     # Apply chat_legacy logic: if reasoning found in thinking_log, add to message content
@@ -268,7 +269,10 @@ def _extract_reasoning_content_from_agent_result(
 
 
 def _create_thinking_log_from_agent_result(
-    result: Any, bot: Any = None, collected_tool_usage: list = None
+    result: Any,
+    bot: Any = None,
+    collected_tool_usage: list = None,
+    collected_reasoning: list = None,
 ) -> List[SimpleMessageModel] | None:
     """
     Create thinking log from Strands AgentResult.
@@ -278,15 +282,35 @@ def _create_thinking_log_from_agent_result(
     """
     thinking_log = []
 
-    # First, check if there's reasoning content to add to thinking_log
-    reasoning_content = _extract_reasoning_content_from_agent_result(result)
-    if reasoning_content:
+    # First, check if there's collected reasoning from callbacks to add to thinking_log
+    if collected_reasoning and len(collected_reasoning) > 0:
+        # Join all reasoning chunks into a single text
+        full_reasoning_text = "".join(collected_reasoning)
         logger.debug(
-            f"[MESSAGE_CONVERTER] Adding reasoning to thinking_log: {len(reasoning_content.text)} chars"
+            f"[MESSAGE_CONVERTER] Adding collected reasoning to thinking_log: {len(full_reasoning_text)} chars from {len(collected_reasoning)} chunks"
         )
+
+        # Create reasoning content model
+        reasoning_content = ReasoningContentModel(
+            content_type="reasoning",
+            text=full_reasoning_text,
+            signature="strands-collected-reasoning",
+            redacted_content=b"",  # Empty for collected reasoning
+        )
+
         thinking_log.append(
             SimpleMessageModel(role="assistant", content=[reasoning_content])
         )
+    else:
+        # Fallback: check if there's reasoning content in the result itself
+        reasoning_content = _extract_reasoning_content_from_agent_result(result)
+        if reasoning_content:
+            logger.debug(
+                f"[MESSAGE_CONVERTER] Adding extracted reasoning to thinking_log: {len(reasoning_content.text)} chars"
+            )
+            thinking_log.append(
+                SimpleMessageModel(role="assistant", content=[reasoning_content])
+            )
 
     # Check if the final message contains tool usage
     tool_usage_found = False

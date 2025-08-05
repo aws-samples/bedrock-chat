@@ -148,12 +148,24 @@ def chat_with_strands(
         logger.debug(
             f"[STRANDS_CHAT] Passing collected_tool_usage to message_converter: {len(collected_tool_usage)} items"
         )
+
+        # Get collected reasoning from callback handler if available
+        collected_reasoning = []
+        if hasattr(agent, "callback_handler") and hasattr(
+            agent.callback_handler, "collected_reasoning"
+        ):
+            collected_reasoning = agent.callback_handler.collected_reasoning
+            logger.debug(
+                f"[STRANDS_CHAT] Passing collected_reasoning to message_converter: {len(collected_reasoning)} chunks"
+            )
+
         assistant_message = strands_result_to_message_model(
             result,
             user_msg_id,
             bot,
             model_name=model_name,
             collected_tool_usage=collected_tool_usage,
+            collected_reasoning=collected_reasoning,
         )
         convert_time = time.time() - convert_start
         logger.debug(
@@ -285,6 +297,9 @@ def _create_callback_handler(
     # Track streamed content to avoid duplicates
     streamed_content = set()
 
+    # Track reasoning content for persistence
+    collected_reasoning = []
+
     # Initialize collected_tool_usage if not provided
     if collected_tool_usage is None:
         collected_tool_usage = []
@@ -406,12 +421,22 @@ def _create_callback_handler(
             logger.debug(
                 f"[STRANDS_CALLBACK] Reasoning received: {len(reasoning_text)} chars"
             )
+            # Collect reasoning for persistence
+            collected_reasoning.append(reasoning_text)
+            logger.debug(
+                f"[STRANDS_CALLBACK] Collected reasoning chunk: {len(reasoning_text)} chars, total chunks: {len(collected_reasoning)}"
+            )
             on_reasoning(reasoning_text)
         elif "thinking" in kwargs and on_reasoning:
             # Handle Strands thinking events (reasoning content)
             thinking_text = kwargs.get("thinking", "")
             logger.debug(
                 f"[STRANDS_CALLBACK] Thinking/Reasoning received: {len(thinking_text)} chars"
+            )
+            # Collect reasoning for persistence
+            collected_reasoning.append(thinking_text)
+            logger.debug(
+                f"[STRANDS_CALLBACK] Collected thinking chunk: {len(thinking_text)} chars, total chunks: {len(collected_reasoning)}"
             )
             on_reasoning(thinking_text)
         elif "event" in kwargs:
@@ -429,6 +454,11 @@ def _create_callback_handler(
                         f"[STRANDS_CALLBACK] Event thinking received: {len(str(thinking_text))} chars"
                     )
                     if on_reasoning:
+                        # Collect reasoning for persistence
+                        collected_reasoning.append(str(thinking_text))
+                        logger.debug(
+                            f"[STRANDS_CALLBACK] Collected event thinking chunk: {len(str(thinking_text))} chars, total chunks: {len(collected_reasoning)}"
+                        )
                         on_reasoning(str(thinking_text))
                 elif (
                     "contentBlockDelta" in event and "delta" in event["contentBlockDelta"]
@@ -440,6 +470,11 @@ def _create_callback_handler(
                             f"[STRANDS_CALLBACK] Delta thinking received: {len(str(thinking_text))} chars"
                         )
                         if on_reasoning:
+                            # Collect reasoning for persistence
+                            collected_reasoning.append(str(thinking_text))
+                            logger.debug(
+                                f"[STRANDS_CALLBACK] Collected delta thinking chunk: {len(str(thinking_text))} chars, total chunks: {len(collected_reasoning)}"
+                            )
                             on_reasoning(str(thinking_text))
                 elif "thinkingBlockDelta" in event:
                     # Handle thinking block delta events
@@ -450,6 +485,11 @@ def _create_callback_handler(
                             f"[STRANDS_CALLBACK] Thinking block delta received: {len(thinking_text)} chars"
                         )
                         if on_reasoning:
+                            # Collect reasoning for persistence
+                            collected_reasoning.append(thinking_text)
+                            logger.debug(
+                                f"[STRANDS_CALLBACK] Collected thinking block delta chunk: {len(thinking_text)} chars, total chunks: {len(collected_reasoning)}"
+                            )
                             on_reasoning(thinking_text)
                 elif (
                     "messageStart" in event
@@ -467,6 +507,8 @@ def _create_callback_handler(
         else:
             logger.debug(f"[STRANDS_CALLBACK] Unhandled callback: {kwargs}")
 
+    # Attach collected reasoning to the callback handler for access by message converter
+    callback_handler.collected_reasoning = collected_reasoning
     return callback_handler
 
 
