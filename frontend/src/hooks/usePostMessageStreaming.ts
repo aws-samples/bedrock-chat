@@ -43,6 +43,7 @@ const usePostMessageStreaming = create<{
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
+          console.log('[FRONTEND_WS] WebSocket connection opened');
           ws.send(
             JSON.stringify({
               step: PostStreamingStatus.START,
@@ -53,6 +54,7 @@ const usePostMessageStreaming = create<{
 
         ws.onmessage = (message) => {
           try {
+            console.log('[FRONTEND_WS] Received message:', message.data);
             if (
               message.data === '' ||
               message.data === 'Message sent.' ||
@@ -87,8 +89,10 @@ const usePostMessageStreaming = create<{
             }
 
             const data = JSON.parse(message.data);
+            console.log('[FRONTEND_WS] Parsed data:', data);
 
             if (data.status) {
+              console.log('[FRONTEND_WS] Processing status:', data.status);
               switch (data.status) {
                 case PostStreamingStatus.AGENT_THINKING:
                   if (completion.length > 0) {
@@ -139,12 +143,36 @@ const usePostMessageStreaming = create<{
                   }
                   break;
                 case PostStreamingStatus.STREAMING_END:
-                  thinkingDispatch({
-                    type: 'goodbye',
-                  });
-                  reasoningDispatch({ type: 'end' });
+                  console.log(
+                    '[FRONTEND_WS] Received STREAMING_END, ending thinking state'
+                  );
+                  try {
+                    console.log(
+                      '[FRONTEND_WS] Calling thinkingDispatch goodbye'
+                    );
+                    thinkingDispatch({
+                      type: 'goodbye',
+                    });
+                    console.log(
+                      '[FRONTEND_WS] thinkingDispatch goodbye completed'
+                    );
 
-                  ws.close();
+                    console.log('[FRONTEND_WS] Calling reasoningDispatch end');
+                    reasoningDispatch({ type: 'end' });
+                    console.log(
+                      '[FRONTEND_WS] reasoningDispatch end completed'
+                    );
+
+                    console.log('[FRONTEND_WS] Closing WebSocket');
+                    ws.close();
+                    console.log('[FRONTEND_WS] WebSocket closed successfully');
+                  } catch (error) {
+                    console.error(
+                      '[FRONTEND_WS] Error in STREAMING_END handling:',
+                      error
+                    );
+                    ws.close();
+                  }
                   break;
                 case PostStreamingStatus.ERROR:
                   ws.close();
@@ -166,17 +194,26 @@ const usePostMessageStreaming = create<{
               throw new Error(i18next.t('error.predict.invalidResponse'));
             }
           } catch (e) {
-            console.error(e);
+            console.error('[FRONTEND_WS] Error in onmessage handler:', e);
+            console.error(
+              '[FRONTEND_WS] Message data that caused error:',
+              message.data
+            );
             reject(i18next.t('error.predict.general'));
           }
         };
 
         ws.onerror = (e) => {
+          console.error('[FRONTEND_WS] WebSocket error:', e);
           ws.close();
-          console.error(e);
           reject(i18next.t('error.predict.general'));
         };
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          console.log(
+            '[FRONTEND_WS] WebSocket closed:',
+            event.code,
+            event.reason
+          );
           resolve(completion);
         };
       });
