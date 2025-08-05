@@ -28,6 +28,7 @@ strands-agents = "^1.0.0"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
 black = "^24.8.0"
+pytest = "^8.4.1"
 
 [build-system]
 requires = ["poetry-core"]
