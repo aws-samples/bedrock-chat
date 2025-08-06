@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, Optional, Literal, Tuple, TypeGuard
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, TypeGuard
 
 from app.config import (
     BEDROCK_PRICING,
@@ -88,6 +88,7 @@ def is_prompt_caching_supported(
     if target == "tool":
         return model in [
             "claude-v4-opus",
+            "claude-v4.1-opus",
             "claude-v4-sonnet",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
@@ -97,6 +98,7 @@ def is_prompt_caching_supported(
     else:
         return model in [
             "claude-v4-opus",
+            "claude-v4.1-opus",
             "claude-v4-sonnet",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
@@ -309,11 +311,7 @@ def compose_args_for_converse_api(
             ):
                 return [
                     {"guardContent": grounding_source},
-                    {
-                        "guardContent": {
-                            "text": {"text": c.body, "qualifiers": ["query"]}
-                        }
-                    },
+                    {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
                 ]
 
         return c.to_contents_for_converse()
@@ -393,8 +391,8 @@ def compose_args_for_converse_api(
 
     elif is_mistral(model):
         # Special handling for Mistral models
-        inference_config, additional_model_request_fields = (
-            _prepare_mistral_model_params(model, generation_params)
+        inference_config, additional_model_request_fields = _prepare_mistral_model_params(
+            model, generation_params
         )
         system_prompts = (
             [
@@ -576,9 +574,7 @@ def call_converse_api(
         return client.converse(**args)
     except ClientError as e:
         if e.response["Error"]["Code"] == "ThrottlingException":
-            raise BedrockThrottlingException(
-                "Bedrock API is throttling requests"
-            ) from e
+            raise BedrockThrottlingException("Bedrock API is throttling requests") from e
         raise
 
 
@@ -633,6 +629,7 @@ def get_model_id(
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     base_model_ids = {
         "claude-v4-opus": "anthropic.claude-opus-4-20250514-v1:0",
+        "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
         "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
         "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
         "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
@@ -668,6 +665,7 @@ def get_model_id(
                 "amazon-nova-micro",
                 "amazon-nova-pro",
                 "claude-v4-opus",
+                "claude-v4.1-opus",
                 "claude-v4-sonnet",
                 "claude-v3-haiku",
                 "claude-v3-opus",
@@ -690,6 +688,7 @@ def get_model_id(
                 "amazon-nova-micro",
                 "amazon-nova-pro",
                 "claude-v4-opus",
+                "claude-v4.1-opus",
                 "claude-v4-sonnet",
                 "claude-v3-haiku",
                 "claude-v3.5-haiku",
@@ -711,6 +710,7 @@ def get_model_id(
                 "amazon-nova-micro",
                 "amazon-nova-pro",
                 "claude-v4-opus",
+                "claude-v4.1-opus",
                 "claude-v4-sonnet",
                 "claude-v3-haiku",
                 "claude-v3-opus",

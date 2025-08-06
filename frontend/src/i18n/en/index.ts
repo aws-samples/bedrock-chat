@@ -20,7 +20,12 @@ const translation = {
       'claude-v4-opus': {
         label: 'Claude 4 (Opus)',
         description:
-          'Most powerful hybrid reasoning model for complex tasks, coding, and AI agents with 200K token context window.',
+          'Powerful hybrid reasoning model for complex tasks, coding, and AI agents with 200K token context window.',
+      },
+      'claude-v4.1-opus': {
+        label: 'Claude 4.1 (Opus)',
+        description:
+          'Latest version of the most powerful Claude model with enhanced reasoning capabilities.',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
