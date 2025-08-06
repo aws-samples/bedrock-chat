@@ -11,6 +11,9 @@ from app.user import User
 from strands import Agent
 from strands.models import BedrockModel
 
+from .citation_prompt import get_citation_system_prompt
+from .tool_registry import get_tools_for_bot as _get_tools_for_bot
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -20,6 +23,7 @@ def create_strands_agent(
     user: User,
     model_name: str = "claude-v3.5-sonnet",
     enable_reasoning: bool = False,
+    display_citation: bool = False,
 ) -> Agent:
     """
     Create a Strands agent from bot configuration.
@@ -29,12 +33,13 @@ def create_strands_agent(
         user: User making the request
         model_name: Model name to use
         enable_reasoning: Whether to enable reasoning functionality
+        display_citation: Whether to enable citation support for tools
 
     Returns:
         Configured Strands agent
     """
     logger.debug(
-        f"[AGENT_FACTORY] Creating Strands agent - user: {user.id}, model: {model_name}, reasoning: {enable_reasoning}"
+        f"[AGENT_FACTORY] Creating Strands agent - user: {user.id}, model: {model_name}, reasoning: {enable_reasoning}, citation: {display_citation}"
     )
     logger.debug(f"[AGENT_FACTORY] Bot: {bot.id if bot else None}")
     # Bedrock model configuration
@@ -45,11 +50,48 @@ def create_strands_agent(
 
     # Get tools for bot before creating agent
     logger.debug(f"[AGENT_FACTORY] Getting tools for bot...")
-    tools = _get_tools_for_bot(bot)
+    tools = _get_tools_for_bot(bot, display_citation)
     logger.debug(f"[AGENT_FACTORY] Tools configured: {len(tools)}")
+    
+    # Debug: Log detailed tool information before passing to Strands
+    logger.debug(f"[AGENT_FACTORY] About to pass tools to Strands Agent:")
+    for i, tool in enumerate(tools):
+        logger.debug(f"[AGENT_FACTORY] Tool {i}: type={type(tool)}")
+        logger.debug(f"[AGENT_FACTORY] Tool {i}: repr={repr(tool)}")
+        if hasattr(tool, '__name__'):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: __name__={tool.__name__}")
+        if hasattr(tool, 'tool_name'):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: tool_name={tool.tool_name}")
+        if callable(tool):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: is callable")
+        else:
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: is NOT callable")
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: value={tool}")
+    
+    # Debug: Log detailed tool information
+    for i, tool in enumerate(tools):
+        logger.debug(f"[AGENT_FACTORY] Tool {i}: type={type(tool)}")
+        if hasattr(tool, 'name'):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: name={tool.name}")
+        if hasattr(tool, '__name__'):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: __name__={tool.__name__}")
+        if callable(tool):
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: is callable")
+        else:
+            logger.debug(f"[AGENT_FACTORY] Tool {i}: is NOT callable")
 
-    # Get system prompt
-    system_prompt = bot.instruction if bot and bot.instruction else None
+    # Create system prompt with optional citation instructions
+    base_system_prompt = bot.instruction if bot and bot.instruction else ""
+    
+    if display_citation and tools:
+        # Add citation instructions when citation is enabled and tools are available
+        citation_prompt = get_citation_system_prompt(model_name)
+        system_prompt = f"{base_system_prompt}\n\n{citation_prompt}".strip()
+        logger.debug(f"[AGENT_FACTORY] Citation prompt added to system prompt")
+    else:
+        system_prompt = base_system_prompt if base_system_prompt else None
+        logger.debug(f"[AGENT_FACTORY] Using base system prompt only")
+    
     logger.debug(
         f"[AGENT_FACTORY] System prompt: {len(system_prompt) if system_prompt else 0} chars"
     )
@@ -132,10 +174,3 @@ def _get_bedrock_model_config(
         config["additional_request_fields"] = additional_request_fields
 
     return config
-
-
-def _get_tools_for_bot(bot: Optional[BotModel]) -> list:
-    """Get tools list for bot configuration using dynamic registry."""
-    from app.strands_integration.tool_registry import get_tools_for_bot
-
-    return get_tools_for_bot(bot)

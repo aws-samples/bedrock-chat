@@ -71,10 +71,16 @@ def chat_with_strands(
         f"[STRANDS_CHAT] Using model: {model_name}, reasoning: {chat_input.enable_reasoning}"
     )
 
+    # Determine citation settings
+    display_citation = bot is not None and bot.display_retrieved_chunks
+    logger.debug(f"[STRANDS_CHAT] Citation enabled: {display_citation}")
+
     # Use context manager for automatic context management
     with strands_context(bot, user):
         agent = create_strands_agent(
-            bot, user, model_name, enable_reasoning=chat_input.enable_reasoning
+            bot, user, model_name, 
+            enable_reasoning=chat_input.enable_reasoning,
+            display_citation=display_citation
         )
         agent_time = time.time() - agent_start
         logger.debug(
@@ -161,17 +167,18 @@ def chat_with_strands(
                 f"[STRANDS_CHAT] Passing collected_reasoning to message_converter: {len(collected_reasoning)} chunks"
             )
 
-        assistant_message = strands_result_to_message_model(
+        assistant_message, related_documents = strands_result_to_message_model(
             result,
             user_msg_id,
             bot,
             model_name=model_name,
             collected_tool_usage=collected_tool_usage,
             collected_reasoning=collected_reasoning,
+            display_citation=display_citation,
         )
         convert_time = time.time() - convert_start
         logger.debug(
-            f"[STRANDS_CHAT] Step 6 completed in {convert_time:.3f}s - message role: {assistant_message.role}, content count: {len(assistant_message.content)}"
+            f"[STRANDS_CHAT] Step 6 completed in {convert_time:.3f}s - message role: {assistant_message.role}, content count: {len(assistant_message.content)}, related_docs: {len(related_documents)}"
         )
 
         # 7. Update and save conversation
@@ -210,6 +217,18 @@ def chat_with_strands(
             )
 
         store_conversation(user.id, conversation)
+        
+        # Store related documents for citation if available
+        if related_documents:
+            logger.debug(f"[STRANDS_CHAT] Storing {len(related_documents)} related documents for citation")
+            from app.repositories.conversation import store_related_documents
+            store_related_documents(
+                user_id=user.id,
+                conversation_id=conversation.id,
+                related_documents=related_documents,
+            )
+            logger.debug(f"[STRANDS_CHAT] Related documents stored successfully")
+        
         save_time = time.time() - save_start
         logger.debug(f"[STRANDS_CHAT] Step 7b (save) completed in {save_time:.3f}s")
 

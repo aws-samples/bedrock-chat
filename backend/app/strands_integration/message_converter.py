@@ -30,18 +30,22 @@ def strands_result_to_message_model(
     model_name: str = None,
     collected_tool_usage: list = None,
     collected_reasoning: list = None,
-) -> MessageModel:
+    display_citation: bool = False,
+) -> tuple[MessageModel, list]:
     """
-    Convert Strands AgentResult to MessageModel.
+    Convert Strands AgentResult to MessageModel with citation support.
 
     Args:
         result: Strands AgentResult - The result from calling agent(prompt)
         parent_message_id: Parent message ID
         bot: Optional bot configuration for tool detection
         model_name: Optional model name to use (if not provided, will be extracted from result)
+        collected_tool_usage: Pre-collected tool usage data
+        collected_reasoning: Pre-collected reasoning data
+        display_citation: Whether to extract related documents for citation
 
     Returns:
-        MessageModel compatible with existing system
+        Tuple of (MessageModel, list of RelatedDocumentModel)
     """
     logger.debug(f"[MESSAGE_CONVERTER] Starting conversion - result type: {type(result)}")
     logger.debug(
@@ -124,6 +128,17 @@ def strands_result_to_message_model(
 
     logger.debug(f"[MESSAGE_CONVERTER] Final model name: {final_model_name}")
 
+    # Extract related documents for citation if enabled
+    related_documents = []
+    if display_citation:
+        logger.debug(f"[MESSAGE_CONVERTER] Extracting related documents for citation...")
+        related_documents = _extract_related_documents_from_collected_tool_usage(
+            collected_tool_usage
+        )
+        logger.debug(
+            f"[MESSAGE_CONVERTER] Extracted {len(related_documents)} related documents"
+        )
+
     final_message = MessageModel(
         role="assistant",
         content=content,
@@ -137,7 +152,7 @@ def strands_result_to_message_model(
     )
 
     logger.debug(
-        f"[MESSAGE_CONVERTER] Conversion completed - content items: {len(final_message.content)}, thinking_log: {len(thinking_log) if thinking_log else 0}"
+        f"[MESSAGE_CONVERTER] Conversion completed - content items: {len(final_message.content)}, thinking_log: {len(thinking_log) if thinking_log else 0}, related_docs: {len(related_documents)}"
     )
     logger.debug(
         f"[MESSAGE_CONVERTER] Final message content types: {[c.content_type for c in final_message.content]}"
@@ -155,7 +170,144 @@ def strands_result_to_message_model(
             f"[MESSAGE_CONVERTER] Content {i} ({content_item.content_type}): {size} chars"
         )
 
+    return final_message, related_documents
+
     return final_message
+
+
+def _extract_related_documents_from_collected_tool_usage(
+    collected_tool_usage: list,
+) -> list:
+    """
+    Extract RelatedDocumentModel instances from collected tool usage for citation.
+
+    This function processes the collected_tool_usage data from Strands callbacks
+    to create RelatedDocumentModel instances for citation display.
+
+    Args:
+        collected_tool_usage: List of tool usage data collected from Strands callbacks
+
+    Returns:
+        List of RelatedDocumentModel instances
+    """
+    from app.repositories.models.conversation import (
+        RelatedDocumentModel,
+        TextToolResultModel,
+    )
+
+    logger.debug(
+        f"[MESSAGE_CONVERTER] Extracting related documents from collected tool usage"
+    )
+    related_documents = []
+
+    if not collected_tool_usage:
+        logger.debug(f"[MESSAGE_CONVERTER] No collected tool usage provided")
+        return related_documents
+
+    try:
+        logger.debug(
+            f"[MESSAGE_CONVERTER] Processing {len(collected_tool_usage)} collected tool usage items"
+        )
+
+        # Group tool usage by toolUseId to match tool results with their usage
+        tool_usage_by_id = {}
+        for item in collected_tool_usage:
+            item_type = item.get("type")
+            data = item.get("data", {})
+            tool_use_id = data.get("toolUseId", "unknown")
+
+            if tool_use_id not in tool_usage_by_id:
+                tool_usage_by_id[tool_use_id] = {"toolUse": None, "toolResult": None}
+
+            if item_type == "toolUse":
+                tool_usage_by_id[tool_use_id]["toolUse"] = data
+            elif item_type == "toolResult":
+                tool_usage_by_id[tool_use_id]["toolResult"] = data
+
+        logger.debug(
+            f"[MESSAGE_CONVERTER] Grouped into {len(tool_usage_by_id)} tool usage pairs"
+        )
+
+        # Process each tool usage pair
+        for tool_use_id, tool_data in tool_usage_by_id.items():
+            tool_use = tool_data.get("toolUse")
+            tool_result = tool_data.get("toolResult")
+
+            if not tool_result:
+                logger.debug(
+                    f"[MESSAGE_CONVERTER] No tool result for {tool_use_id}, skipping"
+                )
+                continue
+
+            tool_name = (
+                tool_use.get("name", "unknown_tool") if tool_use else "unknown_tool"
+            )
+            logger.debug(
+                f"[MESSAGE_CONVERTER] Processing tool result for {tool_name} ({tool_use_id})"
+            )
+
+            # Extract content from tool result
+            tool_content = tool_result.get("content", [])
+            if isinstance(tool_content, list):
+                for i, content_item in enumerate(tool_content):
+                    if isinstance(content_item, dict):
+                        # Extract text content
+                        content_text = content_item.get("text", "")
+
+                        # Look for source_id in the content text (format: "[source_id: xxx]")
+                        source_id = None
+                        if "[source_id:" in content_text:
+                            import re
+
+                            match = re.search(r"\[source_id:\s*([^\]]+)\]", content_text)
+                            if match:
+                                source_id = match.group(1).strip()
+                                # Remove the source_id from display text
+                                content_text = re.sub(
+                                    r"\s*\[source_id:[^\]]+\]", "", content_text
+                                )
+
+                        if not source_id:
+                            source_id = f"{tool_use_id}@{i}"
+
+                        logger.debug(
+                            f"[MESSAGE_CONVERTER] Creating related document: {source_id}"
+                        )
+
+                        # Create RelatedDocumentModel
+                        related_doc = RelatedDocumentModel(
+                            content=TextToolResultModel(text=str(content_text)),
+                            source_id=source_id,
+                            source_name=content_item.get("source_name", tool_name),
+                            source_link=content_item.get("source_link"),
+                            page_number=content_item.get("page_number"),
+                        )
+                        related_documents.append(related_doc)
+                        logger.debug(
+                            f"[MESSAGE_CONVERTER] Added related document: {source_id} ({len(content_text)} chars)"
+                        )
+            else:
+                logger.debug(
+                    f"[MESSAGE_CONVERTER] Tool result content is not a list: {type(tool_content)}"
+                )
+
+        logger.debug(
+            f"[MESSAGE_CONVERTER] Extracted {len(related_documents)} related documents from collected tool usage"
+        )
+
+    except Exception as e:
+        logger.error(
+            f"[MESSAGE_CONVERTER] Error extracting related documents from collected tool usage: {e}"
+        )
+        logger.error(
+            f"[MESSAGE_CONVERTER] collected_tool_usage type: {type(collected_tool_usage)}"
+        )
+        if collected_tool_usage:
+            logger.error(
+                f"[MESSAGE_CONVERTER] First item: {collected_tool_usage[0] if collected_tool_usage else 'None'}"
+            )
+
+    return related_documents
 
 
 def _extract_text_content_from_agent_result(result: Any) -> str:
