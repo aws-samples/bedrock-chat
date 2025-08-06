@@ -1,6 +1,6 @@
 """
 Dynamic tool registry for Strands integration.
-Automatically discovers and registers tools without manual maintenance.
+Simplified design using tool_type discriminator pattern.
 """
 
 import importlib
@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from app.repositories.models.custom_bot import BotModel
+from app.repositories.models.custom_bot import BotModel, InternetToolModel, PlainToolModel, BedrockAgentToolModel
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,86 @@ class StrandsToolRegistry:
             self._tool_modules[tool_name] = module_path
             logger.debug(f"Discovered tool: {tool_name} -> {module_path}")
 
+    def get_tools_for_bot(self, bot: Optional[BotModel]) -> List[Any]:
+        """Get tools for a bot configuration using simplified discriminator-based approach."""
+        tools = []
+
+        if not (bot and bot.agent and bot.agent.tools):
+            return tools
+
+        # Add knowledge search tool if available
+        if bot.knowledge and bot.knowledge.source_urls:
+            knowledge_tool = self._load_tool("knowledge")
+            if knowledge_tool:
+                tools.append(knowledge_tool)
+                logger.info("Added knowledge search tool")
+
+        # Process each tool using discriminator pattern
+        for tool_config in bot.agent.tools:
+            tool = self._create_tool_from_config(tool_config, bot)
+            if tool:
+                tools.append(tool)
+                logger.info(f"Added {tool_config.tool_type} tool: {tool_config.name}")
+            else:
+                logger.warning(f"Tool not available: {tool_config.tool_type}:{tool_config.name}")
+
+        # Add Bedrock agent tool if configured
+        if hasattr(bot, "bedrock_agent_id") and bot.bedrock_agent_id:
+            bedrock_tool = self._load_tool("bedrock_agent")
+            if bedrock_tool:
+                tools.append(bedrock_tool)
+                logger.info("Added bedrock agent tool")
+
+        logger.info(f"Total tools configured: {len(tools)}")
+        return tools
+
+    def _create_tool_from_config(self, tool_config, bot: BotModel) -> Optional[Any]:
+        """Create tool instance from configuration using discriminator pattern."""
+        try:
+            if isinstance(tool_config, InternetToolModel):
+                return self._create_internet_tool(tool_config, bot)
+            elif isinstance(tool_config, PlainToolModel):
+                return self._create_plain_tool(tool_config)
+            elif isinstance(tool_config, BedrockAgentToolModel):
+                return self._create_bedrock_agent_tool(tool_config)
+            else:
+                logger.warning(f"Unknown tool type: {type(tool_config)}")
+                return None
+        except Exception as e:
+            logger.error(f"Error creating tool from config {tool_config}: {e}")
+            return None
+
+    def _create_internet_tool(self, tool_config: InternetToolModel, bot: BotModel) -> Optional[Any]:
+        """Create internet search tool with bot context."""
+        try:
+            module = importlib.import_module(
+                "app.strands_integration.tools.internet_search_tool_strands"
+            )
+            if hasattr(module, "create_internet_search_tool"):
+                tool_instance = module.create_internet_search_tool(bot)
+                logger.debug(f"Created internet search tool instance: {tool_instance}")
+                return tool_instance
+        except ImportError as e:
+            logger.warning(f"Internet search tool not available: {e}")
+        except Exception as e:
+            logger.error(f"Error creating internet search tool: {e}")
+        return None
+
+    def _create_plain_tool(self, tool_config: PlainToolModel) -> Optional[Any]:
+        """Create plain tool (calculator, etc.)."""
+        # Map common plain tool names
+        tool_name_mapping = {
+            "calculator": "calculator",
+            # Add other plain tools as needed
+        }
+        
+        tool_name = tool_name_mapping.get(tool_config.name, tool_config.name)
+        return self._load_tool(tool_name)
+
+    def _create_bedrock_agent_tool(self, tool_config: BedrockAgentToolModel) -> Optional[Any]:
+        """Create Bedrock agent tool."""
+        return self._load_tool("bedrock_agent")
+
     def _load_tool(self, tool_name: str) -> Optional[Any]:
         """Load a tool by name."""
         if tool_name in self._tool_cache:
@@ -53,7 +133,6 @@ class StrandsToolRegistry:
             tool_exports = [
                 tool_name,  # e.g., "calculator"
                 f"{tool_name}_tool",  # e.g., "calculator_tool"
-                f"create_{tool_name}_tool",  # e.g., "create_internet_search_tool"
             ]
 
             tool = None
@@ -76,79 +155,6 @@ class StrandsToolRegistry:
         except Exception as e:
             logger.error(f"Error loading tool {tool_name}: {e}")
             return None
-
-    def get_tools_for_bot(self, bot: Optional[BotModel]) -> List[Any]:
-        """Get tools for a bot configuration."""
-        tools = []
-
-        if not (bot and bot.agent and bot.agent.tools):
-            return tools
-
-        # Add knowledge search tool if available
-        if bot.knowledge and bot.knowledge.source_urls:
-            knowledge_tool = self._load_tool("knowledge")
-            if knowledge_tool:
-                tools.append(knowledge_tool)
-                logger.info("Added knowledge search tool")
-
-        # Process each tool in bot configuration
-        for tool_config in bot.agent.tools:
-            tool_name = None
-
-            # Determine tool name from configuration
-            if hasattr(tool_config, "name") and tool_config.name:
-                tool_name = tool_config.name
-            elif hasattr(tool_config, "tool_type") and tool_config.tool_type:
-                # Map tool_type to tool_name for backward compatibility
-                tool_name = self._map_tool_type_to_name(tool_config.tool_type)
-
-            if not tool_name:
-                logger.warning(f"Could not determine tool name for: {tool_config}")
-                continue
-
-            # Handle special cases that need bot context
-            if tool_name == "internet":
-                tool = self._load_internet_search_tool(bot)
-            else:
-                tool = self._load_tool(tool_name)
-
-            if tool:
-                tools.append(tool)
-                logger.info(f"Added {tool_name} tool")
-            else:
-                logger.warning(f"Tool not available: {tool_name}")
-
-        # Add Bedrock agent tool if configured
-        if hasattr(bot, "bedrock_agent_id") and bot.bedrock_agent_id:
-            bedrock_tool = self._load_tool("bedrock_agent")
-            if bedrock_tool:
-                tools.append(bedrock_tool)
-                logger.info("Added bedrock agent tool")
-
-        logger.info(f"Total tools configured: {len(tools)}")
-        return tools
-
-    def _map_tool_type_to_name(self, tool_type: str) -> str:
-        """Map tool_type to tool_name for backward compatibility."""
-        mapping = {
-            "plain": "calculator",  # Default plain tools are calculator
-            "internet": "internet",
-            "bedrock_agent": "bedrock_agent",
-            "calculator": "calculator",
-        }
-        return mapping.get(tool_type, tool_type)
-
-    def _load_internet_search_tool(self, bot: BotModel) -> Optional[Any]:
-        """Load internet search tool with bot context."""
-        try:
-            module = importlib.import_module(
-                "app.strands_integration.tools.internet_search_tool_strands"
-            )
-            if hasattr(module, "create_internet_search_tool"):
-                return module.create_internet_search_tool(bot)
-        except ImportError as e:
-            logger.warning(f"Internet search tool not available: {e}")
-        return None
 
     def list_available_tools(self) -> List[str]:
         """List all available tool names."""
