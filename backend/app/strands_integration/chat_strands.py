@@ -306,6 +306,9 @@ def _create_callback_handler(
     if collected_tool_usage is None:
         collected_tool_usage = []
 
+    # Track incomplete tool use data during streaming
+    incomplete_tool_use = {}
+
     def callback_handler(**kwargs):
         logger.debug(
             f"[STRANDS_CALLBACK] Callback triggered with keys: {list(kwargs.keys())}"
@@ -323,6 +326,10 @@ def _create_callback_handler(
         elif "current_tool_use" in kwargs and on_thinking:
             logger.debug(f"[STRANDS_CALLBACK] Thinking event received")
             strands_tool_use = kwargs["current_tool_use"]
+            tool_use_id = strands_tool_use.get("toolUseId", "unknown")
+            
+            # Store incomplete tool use data for later completion
+            incomplete_tool_use[tool_use_id] = strands_tool_use
 
             # Convert Strands format to expected WebSocket format
             # Strands uses "toolUseId" but WebSocket expects "tool_use_id"
@@ -330,46 +337,36 @@ def _create_callback_handler(
 
             # Handle case where input might be a JSON string
             if isinstance(input_data, str):
-                try:
-                    import json
-
-                    input_data = json.loads(input_data)
-                    logger.debug(f"[STRANDS_CALLBACK] Parsed JSON input: {input_data}")
-                except json.JSONDecodeError as e:
-                    logger.warning(f"[STRANDS_CALLBACK] Failed to parse input JSON: {e}")
-                    input_data = {}
-
-            converted_tool_use = {
-                "tool_use_id": strands_tool_use.get("toolUseId", "unknown"),
-                "name": strands_tool_use.get("name", "unknown_tool"),
-                "input": input_data,
-            }
-
-            logger.debug(f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}")
-
-            # Collect tool usage for thinking_log (only if input_data is not empty)
-            if input_data:  # Only collect if we have actual input data
-                tool_usage_item = {
-                    "type": "toolUse",
-                    "data": {
-                        "toolUseId": strands_tool_use.get("toolUseId", "unknown"),
-                        "name": strands_tool_use.get("name", "unknown_tool"),
-                        "input": input_data,
-                    },
-                }
-                collected_tool_usage.append(tool_usage_item)
-                logger.debug(
-                    f"[STRANDS_CALLBACK] Collected tool usage item: {tool_usage_item}"
-                )
-                logger.debug(
-                    f"[STRANDS_CALLBACK] Total collected tool usage: {len(collected_tool_usage)} items"
-                )
+                # Store for processing when contentBlockStop occurs
+                logger.debug(f"[STRANDS_CALLBACK] Tool {tool_use_id} input stored for contentBlockStop processing")
             else:
-                logger.debug(
-                    f"[STRANDS_CALLBACK] Skipping empty tool usage data for {strands_tool_use.get('name', 'unknown_tool')}"
-                )
+                # input_data is already a dict - process immediately
+                converted_tool_use = {
+                    "tool_use_id": tool_use_id,
+                    "name": strands_tool_use.get("name", "unknown_tool"),
+                    "input": input_data,
+                }
 
-            on_thinking(converted_tool_use)
+                logger.debug(f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}")
+
+                if input_data:  # Only collect if we have actual input data
+                    tool_usage_item = {
+                        "type": "toolUse",
+                        "data": {
+                            "toolUseId": tool_use_id,
+                            "name": strands_tool_use.get("name", "unknown_tool"),
+                            "input": input_data,
+                        },
+                    }
+                    collected_tool_usage.append(tool_usage_item)
+                    logger.debug(
+                        f"[STRANDS_CALLBACK] Collected tool usage item: {tool_usage_item}"
+                    )
+                    logger.debug(
+                        f"[STRANDS_CALLBACK] Total collected tool usage: {len(collected_tool_usage)} items"
+                    )
+
+                on_thinking(converted_tool_use)
         elif "message" in kwargs:
             # Handle tool results from message content
             message = kwargs["message"]
@@ -502,6 +499,71 @@ def _create_callback_handler(
                     logger.debug(
                         f"[STRANDS_CALLBACK] Message stopped: {event['messageStop']}"
                     )
+                elif "contentBlockStop" in event:
+                    logger.debug(f"[STRANDS_CALLBACK] Content block stopped")
+                    # Process any incomplete tool use data when block stops
+                    if incomplete_tool_use:
+                        for tool_use_id, strands_tool_use in incomplete_tool_use.items():
+                            input_data = strands_tool_use.get("input", {})
+                            
+                            if isinstance(input_data, str):
+                                try:
+                                    import json
+                                    parsed_input = json.loads(input_data)
+                                    logger.debug(f"[STRANDS_CALLBACK] Final parsed JSON for {tool_use_id}: {parsed_input}")
+                                    
+                                    # Add default parameters if missing
+                                    if "time_limit" not in parsed_input:
+                                        parsed_input["time_limit"] = "d"  # default to day
+                                        logger.debug(f"[STRANDS_CALLBACK] Added default time_limit: d")
+                                    
+                                    if "country" not in parsed_input:
+                                        parsed_input["country"] = "jp-jp"  # default country
+                                        logger.debug(f"[STRANDS_CALLBACK] Added default country: jp-jp")
+                                    
+                                    # Create final tool use
+                                    converted_tool_use = {
+                                        "tool_use_id": tool_use_id,
+                                        "name": strands_tool_use.get("name", "unknown_tool"),
+                                        "input": parsed_input,
+                                    }
+
+                                    logger.debug(f"[STRANDS_CALLBACK] Final converted tool use: {converted_tool_use}")
+
+                                    # Collect tool usage for thinking_log
+                                    tool_usage_item = {
+                                        "type": "toolUse",
+                                        "data": {
+                                            "toolUseId": tool_use_id,
+                                            "name": strands_tool_use.get("name", "unknown_tool"),
+                                            "input": parsed_input,
+                                        },
+                                    }
+                                    collected_tool_usage.append(tool_usage_item)
+                                    logger.debug(
+                                        f"[STRANDS_CALLBACK] Collected final tool usage item: {tool_usage_item}"
+                                    )
+                                    logger.debug(
+                                        f"[STRANDS_CALLBACK] Total collected tool usage: {len(collected_tool_usage)} items"
+                                    )
+
+                                    # Notify WebSocket
+                                    if on_thinking:
+                                        on_thinking(converted_tool_use)
+                                        
+                                except json.JSONDecodeError as e:
+                                    logger.warning(f"[STRANDS_CALLBACK] Failed to parse final JSON for {tool_use_id}: {e}")
+                                    # Still create tool use with empty input as fallback
+                                    converted_tool_use = {
+                                        "tool_use_id": tool_use_id,
+                                        "name": strands_tool_use.get("name", "unknown_tool"),
+                                        "input": {},
+                                    }
+                                    logger.debug(f"[STRANDS_CALLBACK] Fallback tool use: {converted_tool_use}")
+                        
+                        # Clear incomplete tool use data
+                        incomplete_tool_use.clear()
+                        logger.debug(f"[STRANDS_CALLBACK] Cleared incomplete tool use data")
                 else:
                     logger.debug(f"[STRANDS_CALLBACK] Unhandled event type: {event_type}")
             else:
