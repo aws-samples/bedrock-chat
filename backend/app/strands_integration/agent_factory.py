@@ -24,7 +24,7 @@ def create_strands_agent(
     model_name: str = "claude-v3.5-sonnet",
     enable_reasoning: bool = False,
     display_citation: bool = False,
-) -> Agent:
+) -> tuple[Agent, list]:
     """
     Create a Strands agent from bot configuration.
 
@@ -36,7 +36,7 @@ def create_strands_agent(
         display_citation: Whether to enable citation support for tools
 
     Returns:
-        Configured Strands agent
+        Tuple of (configured Strands agent, list of tools)
     """
     logger.debug(
         f"[AGENT_FACTORY] Creating Strands agent - user: {user.id}, model: {model_name}, reasoning: {enable_reasoning}, citation: {display_citation}"
@@ -101,7 +101,7 @@ def create_strands_agent(
     agent = Agent(model=model, tools=tools, system_prompt=system_prompt)
 
     logger.debug(f"[AGENT_FACTORY] Agent created successfully")
-    return agent
+    return agent, tools
 
 
 def _get_bedrock_model_config(

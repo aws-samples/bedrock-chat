@@ -77,7 +77,7 @@ def chat_with_strands(
 
     # Use context manager for automatic context management
     with strands_context(bot, user):
-        agent = create_strands_agent(
+        agent, tools = create_strands_agent(
             bot, user, model_name, 
             enable_reasoning=chat_input.enable_reasoning,
             display_citation=display_citation
@@ -101,7 +101,7 @@ def chat_with_strands(
                 f"[STRANDS_CHAT] Callbacks enabled - stream: {on_stream is not None}, thinking: {on_thinking is not None}, tool: {on_tool_result is not None}, reasoning: {on_reasoning is not None}"
             )
             agent.callback_handler = _create_callback_handler(
-                on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage
+                on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage, tools
             )
         else:
             logger.debug(f"[STRANDS_CHAT] No callbacks provided")
@@ -311,7 +311,7 @@ def _get_bedrock_model_id(model_name: str) -> str:
 
 
 def _create_callback_handler(
-    on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage=None
+    on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage=None, tools=None
 ):
     """Create callback handler"""
 
@@ -324,6 +324,16 @@ def _create_callback_handler(
     # Initialize collected_tool_usage if not provided
     if collected_tool_usage is None:
         collected_tool_usage = []
+
+    # Create tool name to function mapping for parameter conversion
+    tool_name_to_func = {}
+    if tools:
+        for tool in tools:
+            if hasattr(tool, '__name__'):
+                tool_name_to_func[tool.__name__] = tool
+            elif hasattr(tool, 'tool_name'):
+                tool_name_to_func[tool.tool_name] = tool
+        logger.debug(f"[STRANDS_CALLBACK] Tool mapping created: {list(tool_name_to_func.keys())}")
 
     # Track incomplete tool use data during streaming
     incomplete_tool_use = {}
@@ -531,14 +541,20 @@ def _create_callback_handler(
                                     parsed_input = json.loads(input_data)
                                     logger.debug(f"[STRANDS_CALLBACK] Final parsed JSON for {tool_use_id}: {parsed_input}")
                                     
-                                    # Add default parameters if missing
-                                    if "time_limit" not in parsed_input:
-                                        parsed_input["time_limit"] = "d"  # default to day
-                                        logger.debug(f"[STRANDS_CALLBACK] Added default time_limit: d")
-                                    
-                                    if "country" not in parsed_input:
-                                        parsed_input["country"] = "jp-jp"  # default country
-                                        logger.debug(f"[STRANDS_CALLBACK] Added default country: jp-jp")
+                                    # Convert Strands args/kwargs format to proper tool parameters
+                                    tool_name = strands_tool_use.get("name", "unknown_tool")
+                                    if tool_name in tool_name_to_func:
+                                        tool_func = tool_name_to_func[tool_name]
+                                        
+                                        # Import the conversion function
+                                        from app.strands_integration.tool_registry import convert_strands_args_kwargs_to_tool_params
+                                        
+                                        # Convert using the same logic as citation wrapper
+                                        converted_input = convert_strands_args_kwargs_to_tool_params(tool_func, parsed_input)
+                                        logger.debug(f"[STRANDS_CALLBACK] Converted tool input: {converted_input}")
+                                        parsed_input = converted_input
+                                    else:
+                                        logger.warning(f"[STRANDS_CALLBACK] Tool function not found for {tool_name}, using original input")
                                     
                                     # Create final tool use
                                     converted_tool_use = {

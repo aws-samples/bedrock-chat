@@ -5,6 +5,8 @@ Tool registry for Strands integration with citation support.
 import logging
 import time
 import random
+import json
+import inspect
 from typing import Optional
 
 from strands import tool
@@ -18,6 +20,69 @@ from app.repositories.models.custom_bot import BotModel
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+def convert_strands_args_kwargs_to_tool_params(tool_func, strands_input: dict) -> dict:
+    """
+    Convert Strands args/kwargs format to proper tool parameters.
+    
+    This function provides the same conversion logic used in citation wrapper
+    but can be reused in other contexts like callback handlers.
+    
+    Args:
+        tool_func: The tool function to get signature from
+        strands_input: Input dict with 'args' and 'kwargs' keys
+        
+    Returns:
+        Dict with converted parameters suitable for the tool
+    """
+    logger.debug(f"[TOOL_REGISTRY] Converting Strands input: {strands_input}")
+    
+    # Check if this is Strands args/kwargs format
+    if 'args' not in strands_input or 'kwargs' not in strands_input:
+        # Not Strands format, return as-is
+        return strands_input
+    
+    # Extract the main argument from 'args'
+    main_arg_value = strands_input['args']
+    
+    # Parse the 'kwargs' JSON string
+    strands_kwargs_str = strands_input['kwargs']
+    try:
+        strands_kwargs = json.loads(strands_kwargs_str)
+        logger.debug(f"[TOOL_REGISTRY] Parsed Strands kwargs: {strands_kwargs}")
+    except json.JSONDecodeError as e:
+        logger.error(f"[TOOL_REGISTRY] Failed to parse Strands kwargs JSON: {e}")
+        strands_kwargs = {}
+    
+    # Merge with other parameters (excluding args/kwargs)
+    merged_kwargs = {k: v for k, v in strands_input.items() if k not in ['args', 'kwargs']}
+    merged_kwargs.update(strands_kwargs)
+    
+    # Dynamically determine the main parameter name from tool signature
+    # If tool has _original_func (citation wrapper), use that for signature inspection
+    func_for_signature = getattr(tool_func, '_original_func', tool_func)
+    sig = inspect.signature(func_for_signature)
+    param_names = list(sig.parameters.keys())
+    
+    if param_names:
+        # Use the first parameter as the main argument
+        main_param_name = param_names[0]
+        merged_kwargs[main_param_name] = main_arg_value
+        logger.debug(f"[TOOL_REGISTRY] Mapped args to '{main_param_name}': {main_arg_value}")
+    else:
+        logger.warning(f"[TOOL_REGISTRY] Tool has no parameters, cannot map args")
+    
+    # Filter kwargs to only include parameters that the tool accepts
+    valid_param_names = set(param_names)
+    filtered_kwargs = {k: v for k, v in merged_kwargs.items() if k in valid_param_names}
+    
+    if len(filtered_kwargs) != len(merged_kwargs):
+        ignored_params = set(merged_kwargs.keys()) - valid_param_names
+        logger.debug(f"[TOOL_REGISTRY] Ignored unsupported parameters: {ignored_params}")
+    
+    logger.debug(f"[TOOL_REGISTRY] Converted parameters: {filtered_kwargs}")
+    return filtered_kwargs
 
 
 def get_tools_for_bot(bot: Optional[BotModel], display_citation: bool = False) -> list:
@@ -125,47 +190,11 @@ def _add_citation_support(strands_tool, tool_name: str):
             if 'args' in kwargs and 'kwargs' in kwargs:
                 logger.debug(f"[TOOL_REGISTRY] Converting Strands args/kwargs format")
                 
-                # Extract the main argument from 'args'
-                main_arg_value = kwargs.pop('args')
+                # Use the common conversion function
+                converted_kwargs = convert_strands_args_kwargs_to_tool_params(original_func, kwargs)
                 
-                # Parse the 'kwargs' JSON string
-                import json
-                strands_kwargs_str = kwargs.pop('kwargs')
-                try:
-                    strands_kwargs = json.loads(strands_kwargs_str)
-                    logger.debug(f"[TOOL_REGISTRY] Parsed Strands kwargs: {strands_kwargs}")
-                except json.JSONDecodeError as e:
-                    logger.error(f"[TOOL_REGISTRY] Failed to parse Strands kwargs JSON: {e}")
-                    strands_kwargs = {}
-                
-                # Merge with existing kwargs, giving priority to existing ones
-                merged_kwargs = {**strands_kwargs, **kwargs}
-                
-                # Dynamically determine the main parameter name from tool signature
-                import inspect
-                sig = inspect.signature(original_func)
-                param_names = list(sig.parameters.keys())
-                
-                if param_names:
-                    # Use the first parameter as the main argument
-                    main_param_name = param_names[0]
-                    merged_kwargs[main_param_name] = main_arg_value
-                    logger.debug(f"[TOOL_REGISTRY] Mapped args to '{main_param_name}': {main_arg_value}")
-                else:
-                    logger.warning(f"[TOOL_REGISTRY] Tool {tool_name} has no parameters, cannot map args")
-                
-                # Filter kwargs to only include parameters that the tool accepts
-                valid_param_names = set(param_names)
-                filtered_kwargs = {k: v for k, v in merged_kwargs.items() if k in valid_param_names}
-                
-                if len(filtered_kwargs) != len(merged_kwargs):
-                    ignored_params = set(merged_kwargs.keys()) - valid_param_names
-                    logger.debug(f"[TOOL_REGISTRY] Ignored unsupported parameters: {ignored_params}")
-                
-                logger.debug(f"[TOOL_REGISTRY] Final parameters: {filtered_kwargs}")
-                
-                # Execute with filtered parameters
-                result = original_func(**filtered_kwargs)
+                # Execute with converted parameters
+                result = original_func(**converted_kwargs)
             else:
                 # Normal execution path
                 result = original_func(*args, **kwargs)
@@ -198,6 +227,9 @@ def _add_citation_support(strands_tool, tool_name: str):
     
     # Apply Strands @tool decorator to create new DecoratedFunctionTool
     enhanced_tool = tool(citation_wrapper)
+    
+    # Store reference to original function for signature inspection
+    enhanced_tool._original_func = original_func
     
     logger.debug(f"[TOOL_REGISTRY] Created citation-enhanced tool: {tool_name}")
     return enhanced_tool
