@@ -55,19 +55,12 @@ def create_internet_search_tool(bot):
                 model="claude-v3.7-sonnet",
             )
 
-            # Format results
+            # Return results as list for citation support
             if results:
                 logger.debug(
                     f"[INTERNET_SEARCH_TOOL] Search returned {len(results)} results"
                 )
-                formatted_results = []
-                for result in results:
-                    formatted_results.append(
-                        f"**{result['source_name']}**\n"
-                        f"URL: {result['source_link']}\n"
-                        f"Content: {result['content']}\n\n"
-                    )
-                return "".join(formatted_results)
+                return results  # Return list for proper citation support
             else:
                 logger.debug("[INTERNET_SEARCH_TOOL] No results returned")
                 return "No information found in internet search."

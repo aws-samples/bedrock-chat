@@ -16,6 +16,7 @@ from app.strands_integration.tools.calculator_tool_strands import calculator
 from app.strands_integration.tools.internet_search_tool_strands import create_internet_search_tool
 from app.strands_integration.tools.bedrock_agent_tool_strands import bedrock_agent_invoke
 from app.strands_integration.tools.knowledge_tool_strands import knowledge_search
+from app.strands_integration.citation_decorator import _enhance_result_with_citation
 from app.repositories.models.custom_bot import BotModel
 
 logger = logging.getLogger(__name__)
@@ -164,7 +165,8 @@ def _add_citation_support(strands_tool, tool_name: str):
     Add citation support to an existing Strands tool.
     
     This function wraps a Strands tool to add source_id information
-    to its results for citation purposes.
+    to its results for citation purposes using the proper citation
+    enhancement logic from citation_decorator.
     
     Args:
         strands_tool: Existing Strands DecoratedFunctionTool
@@ -204,17 +206,10 @@ def _add_citation_support(strands_tool, tool_name: str):
             # Generate unique source_id
             source_id = f"{tool_name}_{int(time.time())}_{random.randint(1000, 9999)}"
             
-            # Embed source_id in result
-            if isinstance(result, str):
-                enhanced_result = f"{result} [source_id: {source_id}]"
-            elif isinstance(result, dict):
-                enhanced_result = result.copy()
-                enhanced_result['source_id'] = source_id
-                enhanced_result = str(enhanced_result)
-            else:
-                enhanced_result = f"{str(result)} [source_id: {source_id}]"
+            # Use proper citation enhancement logic from citation_decorator
+            enhanced_result = _enhance_result_with_citation(result, source_id)
             
-            logger.debug(f"[TOOL_REGISTRY] Added citation source_id: {source_id}")
+            logger.debug(f"[TOOL_REGISTRY] Enhanced result with citation: {type(enhanced_result)}")
             return enhanced_result
             
         except Exception as e:

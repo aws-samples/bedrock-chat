@@ -254,6 +254,53 @@ def _extract_related_documents_from_collected_tool_usage(
                         # Extract text content
                         content_text = content_item.get("text", "")
 
+                        # Check if the text content is a JSON string representing a list
+                        # This handles the case where tools return lists that get serialized
+                        try:
+                            import json
+                            import ast
+                            
+                            # First try JSON parsing
+                            try:
+                                parsed_content = json.loads(content_text)
+                            except json.JSONDecodeError:
+                                # If JSON fails, try ast.literal_eval for Python literal strings
+                                parsed_content = ast.literal_eval(content_text)
+                            
+                            if isinstance(parsed_content, list):
+                                logger.debug(
+                                    f"[MESSAGE_CONVERTER] Tool result contains list with {len(parsed_content)} items, splitting into individual documents"
+                                )
+                                # Split list into individual RelatedDocuments
+                                for rank, item in enumerate(parsed_content):
+                                    if isinstance(item, dict):
+                                        # Extract content from the item (use 'content' field, not 'text')
+                                        item_text = item.get("content", str(item))
+                                        source_id = f"{tool_use_id}@{rank}"
+                                        
+                                        logger.debug(
+                                            f"[MESSAGE_CONVERTER] Creating related document from list item: {source_id}"
+                                        )
+
+                                        # Create RelatedDocumentModel for each list item
+                                        related_doc = RelatedDocumentModel(
+                                            content=TextToolResultModel(text=str(item_text)),
+                                            source_id=source_id,
+                                            source_name=item.get("source_name", tool_name),
+                                            source_link=item.get("source_link"),
+                                            page_number=item.get("page_number"),
+                                        )
+                                        related_documents.append(related_doc)
+                                        logger.debug(
+                                            f"[MESSAGE_CONVERTER] Added related document from list: {source_id} ({len(item_text)} chars)"
+                                        )
+                                continue  # Skip the regular processing for this content_item
+                        except (json.JSONDecodeError, TypeError, ValueError, SyntaxError) as e:
+                            # Not a JSON list or Python literal, continue with regular processing
+                            logger.debug(f"[MESSAGE_CONVERTER] Content is not a parseable list: {e}")
+                            pass
+
+                        # Regular processing for non-list content
                         # Look for source_id in the content text (format: "[source_id: xxx]")
                         source_id = None
                         if "[source_id:" in content_text:
