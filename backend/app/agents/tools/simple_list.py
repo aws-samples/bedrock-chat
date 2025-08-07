@@ -67,6 +67,8 @@ def generate_simple_list(topic: str, count: int = 5) -> str:
             "name": item,
             "description": f"This is {item}, item #{i+1} in the {topic} category",
             "source": f"Simple List Tool - {topic} category",
+            "source_name": f"Simple List Source - {item}",
+            "source_link": f"https://example.com/{topic_lower}/{item.lower().replace(' ', '-')}",
             "index": i + 1
         })
 

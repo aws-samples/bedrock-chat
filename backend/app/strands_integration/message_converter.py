@@ -418,7 +418,9 @@ def _extract_related_documents_from_collected_tool_usage(
 
                         # Check if content contains multiple source_id markers (citation-enhanced text)
                         import re
-                        source_id_pattern = r'(.*?)\s*\[source_id:\s*([^\]]+)\]'
+                        
+                        # Updated pattern to handle multiple markers on the same line
+                        source_id_pattern = r'(.*?)\s*\[source_id:\s*([^\]]+)\](?:\s*\[source_name:\s*([^\]]+)\])?\s*(?:\s*\[source_link:\s*([^\]]+)\])?'
                         source_id_matches = re.findall(source_id_pattern, content_text, re.MULTILINE)
                         
                         if len(source_id_matches) > 1:
@@ -427,9 +429,11 @@ def _extract_related_documents_from_collected_tool_usage(
                                 f"[MESSAGE_CONVERTER] Found {len(source_id_matches)} source_id markers, splitting into individual documents"
                             )
                             
-                            for segment_content, segment_source_id in source_id_matches:
-                                segment_content = segment_content.strip()
-                                segment_source_id = segment_source_id.strip()
+                            for match in source_id_matches:
+                                segment_content = match[0].strip() if match[0] else ""
+                                segment_source_id = match[1].strip() if match[1] else ""
+                                source_name = match[2].strip() if len(match) > 2 and match[2] else None
+                                source_link = match[3].strip() if len(match) > 3 and match[3] else None
                                 
                                 if segment_content:  # Only create document if content is not empty
                                     logger.debug(
@@ -439,13 +443,13 @@ def _extract_related_documents_from_collected_tool_usage(
                                     related_doc = RelatedDocumentModel(
                                         content=TextToolResultModel(text=segment_content),
                                         source_id=segment_source_id,
-                                        source_name=tool_name,
-                                        source_link=None,
+                                        source_name=source_name or tool_name,
+                                        source_link=source_link,
                                         page_number=None,
                                     )
                                     related_documents.append(related_doc)
                                     logger.debug(
-                                        f"[MESSAGE_CONVERTER] Added related document from text segment: {segment_source_id} ({len(segment_content)} chars)"
+                                        f"[MESSAGE_CONVERTER] Added related document from text segment: {segment_source_id} ({len(segment_content)} chars, source_name: {source_name}, source_link: {source_link})"
                                     )
                             continue  # Skip the regular processing for this content_item
 

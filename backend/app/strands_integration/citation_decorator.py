@@ -112,11 +112,21 @@ def _enhance_result_with_citation(result: Any, tool_use_id: str) -> Any:
                                 item.get("name") or 
                                 str(item)
                             )
+                            
+                            # Extract metadata
+                            source_name = item.get("source_name", "")
+                            source_link = item.get("source_link", "")
+                            
+                            # Create enhanced item with embedded metadata
                             enhanced_item = f"{content} [source_id: {item_source_id}]"
+                            if source_name:
+                                enhanced_item += f" [source_name: {source_name}]"
+                            if source_link:
+                                enhanced_item += f" [source_link: {source_link}]"
                         else:
                             enhanced_item = f"{str(item)} [source_id: {item_source_id}]"
                         enhanced_items.append(enhanced_item)
-                        logger.debug(f"[CITATION_DECORATOR] Enhanced item {i} with source_id: {item_source_id}")
+                        logger.debug(f"[CITATION_DECORATOR] Enhanced item {i} with metadata: {item_source_id}")
                     
                     # Join all items with newlines
                     enhanced_content = "\n".join(enhanced_items)
