@@ -12,33 +12,46 @@ from app.agents.tools.agent_tool import (
 )
 from app.bedrock import is_tooluse_supported
 from app.prompt import get_prompt_to_cite_tool_results
+from app.repositories.conversation import store_conversation, store_related_documents
 from app.repositories.models.conversation import (
     AttachmentContentModel,
+    ContentModel,
     ConversationModel,
     ImageContentModel,
+    JsonToolResultModel,
     MessageModel,
     ReasoningContentModel,
+    RelatedDocumentModel,
     SimpleMessageModel,
     TextContentModel,
+    TextToolResultModel,
     ToolResultContentModel,
+    ToolResultContentModelBody,
     ToolUseContentModel,
+    ToolUseContentModelBody,
     type_model_name,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import ChatInput
 from app.stream import OnStopInput, OnThinking
+from app.usecases.bot import modify_bot_last_used_time, modify_bot_stats
 from app.usecases.chat import prepare_conversation, trace_to_root
 from app.user import User
+from app.utils import get_current_time
 from strands import Agent
+from strands.agent import AgentResult
 from strands.experimental.hooks import AfterToolInvocationEvent, BeforeToolInvocationEvent
 from strands.hooks import (  # AfterInvocationEvent,; BeforeInvocationEvent,
     HookProvider,
     HookRegistry,
 )
 from strands.models import BedrockModel
+from strands.telemetry.metrics import EventLoopMetrics
 from strands.types.content import ContentBlock, Message, Messages, Role
 from strands.types.media import DocumentFormat, ImageFormat
-from strands.types.tools import AgentTool, ToolResult, ToolResultContent
+from strands.types.tools import AgentTool as StrandsAgentTool
+from strands.types.tools import ToolResult, ToolResultContent
+from ulid import ULID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -352,6 +365,7 @@ class ToolResultCapture(HookProvider):
         self.on_thinking = on_thinking
         self.on_tool_result = on_tool_result
         self.captured_tool_results: dict[str, ToolRunResult] = {}
+        self.captured_tool_uses: dict[str, dict] = {}  # Store tool use info
 
     def register_hooks(self, registry: HookRegistry, **kwargs) -> None:
         registry.add_callback(BeforeToolInvocationEvent, self.before_tool_execution)
@@ -361,9 +375,15 @@ class ToolResultCapture(HookProvider):
         """Handler called before a tool is executed."""
         logger.debug("Before tool execution: %r", event)
 
+        # Store tool use information
+        tool_use = event.tool_use
+        self.captured_tool_uses[tool_use["toolUseId"]] = {
+            "name": tool_use["name"],
+            "input": tool_use["input"],
+        }
+
         if self.on_thinking:
             # Convert BeforeToolInvocationEvent to OnThinking format
-            tool_use = event.tool_use
             thinking_data: OnThinking = {
                 "tool_use_id": tool_use["toolUseId"],
                 "name": tool_use["name"],
@@ -393,14 +413,17 @@ class ToolResultCapture(HookProvider):
 
 def get_strands_tools(
     bot: BotModel | None, model_name: type_model_name
-) -> list[AgentTool]:
+) -> list[StrandsAgentTool]:
     if not is_tooluse_supported(model_name):
         logger.warning(
             f"Tool use is not supported for model {model_name}. Returning empty tool list."
         )
         return []
 
-    # TODO. refer: backend/app/agents/utils.py
+    # TODO: Implement tool conversion from legacy tools to Strands tools
+    # For now, return empty list as placeholder
+    # This should convert tools from backend/app/agents/utils.py to Strands format
+    return []
 
 
 # def get_prompt_to_cite_tool_results(model: type_model_name) -> str:
@@ -413,7 +436,7 @@ def create_strands_agent(
     instructions: list[str],
     model_name: type_model_name,
     enable_reasoning: bool = False,
-    on_tool_result: Callable[[ToolRunResult], None] | None = None,
+    hooks: list[HookProvider] | None = None,
 ) -> Agent:
     model_config = _get_bedrock_model_config(bot, model_name, enable_reasoning)
     logger.debug(f"[AGENT_FACTORY] Model config: {model_config}")
@@ -425,7 +448,7 @@ def create_strands_agent(
     agent = Agent(
         model=model,
         tools=get_strands_tools(bot, model_name),
-        hooks=[ToolResultCapture(on_tool_result)],
+        hooks=hooks or [],
         system_prompt=system_prompt,
     )
     return agent
@@ -544,6 +567,298 @@ def _create_callback_handler(
     return CallbackHandler(on_stream, on_thinking, on_tool_result, on_reasoning)
 
 
+def _convert_strands_message_to_message_model(
+    message: Message, model_name: type_model_name, create_time: float
+) -> MessageModel:
+    """Convert Strands Message to MessageModel."""
+    content_models: list[ContentModel] = []
+
+    for content_block in message["content"]:
+        content_model: ContentModel
+        if "text" in content_block:
+            content_model = TextContentModel(
+                content_type="text", body=content_block["text"]
+            )
+            content_models.append(content_model)
+        elif "reasoningContent" in content_block:
+            reasoning_content = content_block["reasoningContent"]
+            if "reasoningText" in reasoning_content:
+                reasoning_text = reasoning_content["reasoningText"]
+                content_model = ReasoningContentModel(
+                    content_type="reasoning",
+                    text=reasoning_text.get("text", ""),
+                    signature=reasoning_text.get("signature", ""),
+                    redacted_content=b"",  # Default empty
+                )
+                content_models.append(content_model)
+        elif "toolUse" in content_block:
+            tool_use = content_block["toolUse"]
+            content_model = ToolUseContentModel(
+                content_type="toolUse",
+                body=ToolUseContentModelBody(
+                    tool_use_id=tool_use["toolUseId"],
+                    name=tool_use["name"],
+                    input=tool_use["input"],
+                ),
+            )
+            content_models.append(content_model)
+        elif "toolResult" in content_block:
+            tool_result = content_block["toolResult"]
+            # Convert ToolResultContent to ToolResultModel
+            from app.repositories.models.conversation import ToolResultModel
+
+            result_models: list[ToolResultModel] = []
+            for content_item in tool_result["content"]:
+                if "text" in content_item:
+                    result_models.append(TextToolResultModel(text=content_item["text"]))
+                elif "json" in content_item:
+                    result_models.append(JsonToolResultModel(json=content_item["json"]))
+                # Add other content types as needed
+
+            content_model = ToolResultContentModel(
+                content_type="toolResult",
+                body=ToolResultContentModelBody(
+                    tool_use_id=tool_result["toolUseId"],
+                    content=result_models,
+                    status=tool_result.get("status", "success"),
+                ),
+            )
+            content_models.append(content_model)
+
+    return MessageModel(
+        role=message["role"],
+        content=content_models,
+        model=model_name,
+        children=[],
+        parent=None,  # Will be set later
+        create_time=create_time,
+        feedback=None,
+        used_chunks=None,
+        thinking_log=None,
+    )
+
+
+def _extract_related_documents_from_tool_capture(
+    tool_capture: ToolResultCapture, assistant_msg_id: str
+) -> list[RelatedDocumentModel]:
+    """Extract related documents from ToolResultCapture."""
+    related_documents = []
+
+    for tool_use_id, tool_result in tool_capture.captured_tool_results.items():
+        for related_doc in tool_result["related_documents"]:
+            # Update source_id to be based on assistant_msg_id for citation
+            updated_doc = RelatedDocumentModel(
+                content=related_doc.content,
+                source_id=f"{assistant_msg_id}@{related_doc.source_id}",
+                source_name=related_doc.source_name,
+                source_link=related_doc.source_link,
+                page_number=related_doc.page_number,
+            )
+            related_documents.append(updated_doc)
+
+    return related_documents
+
+
+def _calculate_conversation_cost(
+    metrics: EventLoopMetrics, model_name: type_model_name
+) -> float:
+    """Calculate conversation cost from AgentResult metrics."""
+    from app.bedrock import calculate_price
+
+    # Extract token usage from metrics
+    input_tokens = metrics.accumulated_usage.get("inputTokens", 0)
+    output_tokens = metrics.accumulated_usage.get("outputTokens", 0)
+    # Strands doesn't provide cache token info, so default to 0
+    cache_read_input_tokens = 0
+    cache_write_input_tokens = 0
+
+    # Calculate price using the same function as chat_legacy
+    price = calculate_price(
+        model=model_name,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cache_read_input_tokens=cache_read_input_tokens,
+        cache_write_input_tokens=cache_write_input_tokens,
+    )
+
+    logger.info(
+        f"Strands token usage: input={input_tokens}, output={output_tokens}, price={price}"
+    )
+
+    return price
+
+
+def _build_thinking_log_from_tool_capture(
+    tool_capture: ToolResultCapture,
+) -> list[SimpleMessageModel] | None:
+    """Build thinking_log from ToolResultCapture for tool use/result pairs."""
+    if not tool_capture.captured_tool_results:
+        return None
+
+    thinking_log = []
+
+    for tool_use_id, tool_result in tool_capture.captured_tool_results.items():
+        # Get tool use info from captured data
+        tool_use_info = tool_capture.captured_tool_uses.get(tool_use_id, {})
+
+        # Create tool use message
+        tool_use_content = ToolUseContentModel(
+            content_type="toolUse",
+            body=ToolUseContentModelBody(
+                tool_use_id=tool_use_id,
+                name=tool_use_info.get("name", "unknown"),
+                input=tool_use_info.get("input", {}),
+            ),
+        )
+
+        tool_use_message = SimpleMessageModel(
+            role="assistant", content=[tool_use_content]
+        )
+        thinking_log.append(tool_use_message)
+
+        # Create tool result message
+        from app.repositories.models.conversation import ToolResultModel
+
+        result_models: list[ToolResultModel] = []
+        for related_doc in tool_result["related_documents"]:
+            result_models.append(related_doc.content)
+
+        tool_result_content = ToolResultContentModel(
+            content_type="toolResult",
+            body=ToolResultContentModelBody(
+                tool_use_id=tool_use_id,
+                content=result_models,
+                status=tool_result["status"],
+            ),
+        )
+
+        tool_result_message = SimpleMessageModel(
+            role="user", content=[tool_result_content]
+        )
+        thinking_log.append(tool_result_message)
+
+    return thinking_log if thinking_log else None
+
+
+def _extract_reasoning_from_message(message: Message) -> ReasoningContentModel | None:
+    """Extract reasoning content from Strands Message."""
+    for content_block in message["content"]:
+        if "reasoningContent" in content_block:
+            reasoning_content = content_block["reasoningContent"]
+            if "reasoningText" in reasoning_content:
+                reasoning_text = reasoning_content["reasoningText"]
+                return ReasoningContentModel(
+                    content_type="reasoning",
+                    text=reasoning_text.get("text", ""),
+                    signature=reasoning_text.get("signature", "")
+                    or "",  # Ensure not None
+                    redacted_content=b"",  # Default empty
+                )
+    return None
+
+
+def _create_on_stop_input(
+    result: AgentResult, message: MessageModel, price: float
+) -> OnStopInput:
+    """Create OnStopInput from AgentResult."""
+    return {
+        "message": message,
+        "stop_reason": result.stop_reason,
+        "price": price,
+        "input_token_count": result.metrics.accumulated_usage.get("inputTokens", 0),
+        "output_token_count": result.metrics.accumulated_usage.get("outputTokens", 0),
+        "cache_read_input_count": 0,  # Strands doesn't provide cache token info
+        "cache_write_input_count": 0,  # Strands doesn't provide cache token info
+    }
+
+
+def _post_process_strands_result(
+    result: AgentResult,
+    conversation: ConversationModel,
+    user_msg_id: str,
+    bot: BotModel | None,
+    user: User,
+    model_name: type_model_name,
+    continue_generate: bool,
+    tool_capture: ToolResultCapture,
+    on_stop: Callable[[OnStopInput], None] | None = None,
+) -> tuple[ConversationModel, MessageModel]:
+    """Post-process Strands AgentResult and update conversation."""
+    current_time = get_current_time()
+
+    # 1. Convert Strands Message to MessageModel
+    message = _convert_strands_message_to_message_model(
+        result.message, model_name, current_time
+    )
+
+    # 2. Calculate cost and update conversation
+    price = _calculate_conversation_cost(result.metrics, model_name)
+    conversation.total_price += price
+    conversation.should_continue = result.stop_reason == "max_tokens"
+
+    # 3. Extract reasoning content and add to message content if present
+    reasoning_content = _extract_reasoning_from_message(result.message)
+    if reasoning_content:
+        message.content.insert(0, reasoning_content)
+
+    # 4. Build thinking_log from tool capture
+    thinking_log = _build_thinking_log_from_tool_capture(tool_capture)
+    if thinking_log:
+        message.thinking_log = thinking_log
+
+    # 5. Set message parent and generate assistant message ID
+    message.parent = user_msg_id
+
+    if continue_generate:
+        # For continue generate
+        if not thinking_log:
+            assistant_msg_id = conversation.last_message_id
+            conversation.message_map[assistant_msg_id] = message
+        else:
+            # Remove old assistant message and create new one
+            old_assistant_msg_id = conversation.last_message_id
+            conversation.message_map[user_msg_id].children.remove(old_assistant_msg_id)
+            del conversation.message_map[old_assistant_msg_id]
+
+            assistant_msg_id = str(ULID())
+            conversation.message_map[assistant_msg_id] = message
+            conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+            conversation.last_message_id = assistant_msg_id
+    else:
+        # Normal case: create new assistant message
+        assistant_msg_id = str(ULID())
+        conversation.message_map[assistant_msg_id] = message
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
+
+    # 6. Extract related documents from tool capture
+    related_documents = _extract_related_documents_from_tool_capture(
+        tool_capture, assistant_msg_id
+    )
+
+    # 7. Store conversation and related documents
+    store_conversation(user.id, conversation)
+    if related_documents:
+        store_related_documents(
+            user_id=user.id,
+            conversation_id=conversation.id,
+            related_documents=related_documents,
+        )
+
+    # 8. Call on_stop callback
+    if on_stop:
+        on_stop_input = _create_on_stop_input(result, message, price)
+        on_stop(on_stop_input)
+
+    # 9. Update bot statistics
+    if bot:
+        logger.info("Bot is provided. Updating bot last used time.")
+        modify_bot_last_used_time(user, bot)
+        modify_bot_stats(user, bot, increment=1)
+
+    return conversation, message
+
+
 def chat_with_strands(
     user: User,
     chat_input: ChatInput,
@@ -597,13 +912,20 @@ def chat_with_strands(
 
     continue_generate = chat_input.continue_generate
 
+    # Create ToolResultCapture to capture tool execution data
+    tool_capture = ToolResultCapture(
+        on_thinking=on_thinking,
+        on_tool_result=on_tool_result,
+    )
+
     agent = create_strands_agent(
         bot=bot,
         instructions=instructions,
         model_name=chat_input.message.model,
         enable_reasoning=chat_input.enable_reasoning,
-        on_tool_result=on_tool_result,
+        hooks=[tool_capture],
     )
+
     agent.callback_handler = _create_callback_handler(
         on_stream=on_stream,
         on_thinking=on_thinking,
@@ -635,8 +957,15 @@ def chat_with_strands(
 
     result = agent(content_blocks_for_agent)
 
-    # TODO: Post handling
-    # - Save conversation / related documents
-    # - Update bot last used time
-
-    collected_reasoning = agent.callback_handler.collected_reasoning
+    # Post handling: process the result and update conversation
+    return _post_process_strands_result(
+        result=result,
+        conversation=conversation,
+        user_msg_id=user_msg_id,
+        bot=bot,
+        user=user,
+        model_name=chat_input.message.model,
+        continue_generate=continue_generate,
+        tool_capture=tool_capture,
+        on_stop=on_stop,
+    )
