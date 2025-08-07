@@ -8,19 +8,19 @@ from app.bedrock import get_model_id
 def get_citation_system_prompt(model_name: str) -> str:
     """
     Generate system prompt for citation support.
-    
+
     This prompt instructs the AI to include citations when using tool results.
-    
+
     Args:
         model_name: Model name to determine prompt format
-        
+
     Returns:
         Citation instruction prompt
     """
     # Check if it's a Nova model (requires different prompt format)
     model_id = get_model_id(model_name)
     is_nova_model = "nova" in model_id.lower()
-    
+
     base_prompt = """To answer the user's question, you are given a set of tools. Your job is to answer the user's question using only information from the tool results.
 
 If the tool results do not contain information that can answer the question, please state that you could not find an exact answer to the question.
@@ -32,7 +32,7 @@ If you reference information from a tool result within your answer, you must inc
 The source_id is embedded in the tool result in the format [source_id: xxx]. You should cite it using the format [^xxx] in your answer.
 
 Followings are examples of how to reference source_id in your answer:"""
-    
+
     if is_nova_model:
         # For Amazon Nova, provides only good examples
         examples = """
@@ -79,5 +79,5 @@ Your answer: "The result is 0.0008 [^calculator_001].
 </BAD-example>
 </examples>
 """
-    
+
     return base_prompt + examples

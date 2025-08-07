@@ -47,7 +47,9 @@ def strands_result_to_message_model(
     Returns:
         Tuple of (MessageModel, list of RelatedDocumentModel)
     """
-    logger.debug(f"[MESSAGE_CONVERTER] Starting conversion - result type: {type(result)}")
+    logger.debug(
+        f"[MESSAGE_CONVERTER] Starting conversion - result type: {type(result)}"
+    )
     logger.debug(
         f"[MESSAGE_CONVERTER] Result attributes: {[attr for attr in dir(result) if not attr.startswith('_')]}"
     )
@@ -58,7 +60,9 @@ def strands_result_to_message_model(
     # According to Strands docs, AgentResult has a message attribute with content array
     logger.debug(f"[MESSAGE_CONVERTER] Extracting text content...")
     text_content = _extract_text_content_from_agent_result(result)
-    logger.debug(f"[MESSAGE_CONVERTER] Text content extracted: {len(text_content)} chars")
+    logger.debug(
+        f"[MESSAGE_CONVERTER] Text content extracted: {len(text_content)} chars"
+    )
     content = [TextContentModel(content_type="text", body=text_content)]
 
     # Extract reasoning content if available (only when reasoning is enabled)
@@ -131,7 +135,9 @@ def strands_result_to_message_model(
     # Extract related documents for citation if enabled
     related_documents = []
     if display_citation:
-        logger.debug(f"[MESSAGE_CONVERTER] Extracting related documents for citation...")
+        logger.debug(
+            f"[MESSAGE_CONVERTER] Extracting related documents for citation..."
+        )
         related_documents = _extract_related_documents_from_collected_tool_usage(
             collected_tool_usage
         )
@@ -259,39 +265,51 @@ def _extract_related_documents_from_collected_tool_usage(
                         try:
                             import json
                             import ast
-                            
+
                             # First try JSON parsing
                             try:
                                 parsed_content = json.loads(content_text)
                             except json.JSONDecodeError:
                                 # If JSON fails, try ast.literal_eval for Python literal strings
                                 parsed_content = ast.literal_eval(content_text)
-                            
+
                             # Handle citation-enhanced results (dict with 'content' and 'source_id')
-                            if isinstance(parsed_content, dict) and 'content' in parsed_content and 'source_id' in parsed_content:
+                            if (
+                                isinstance(parsed_content, dict)
+                                and "content" in parsed_content
+                                and "source_id" in parsed_content
+                            ):
                                 logger.debug(
                                     f"[MESSAGE_CONVERTER] Found citation-enhanced result with source_id: {parsed_content['source_id']}"
                                 )
                                 # Extract the actual content and try to parse it
-                                actual_content = parsed_content['content']
-                                citation_source_id = parsed_content['source_id']
-                                
+                                actual_content = parsed_content["content"]
+                                citation_source_id = parsed_content["source_id"]
+
                                 try:
                                     # Try to parse the actual content as JSON
                                     actual_parsed = json.loads(actual_content)
-                                    
+
                                     # Check if it's a dict with list (like simple_list_tool)
                                     if isinstance(actual_parsed, dict):
-                                        list_keys = ["items", "results", "data", "list", "entries"]
+                                        list_keys = [
+                                            "items",
+                                            "results",
+                                            "data",
+                                            "list",
+                                            "entries",
+                                        ]
                                         found_list = None
                                         found_key = None
-                                        
+
                                         for key in list_keys:
-                                            if key in actual_parsed and isinstance(actual_parsed[key], list):
+                                            if key in actual_parsed and isinstance(
+                                                actual_parsed[key], list
+                                            ):
                                                 found_list = actual_parsed[key]
                                                 found_key = key
                                                 break
-                                        
+
                                         if found_list:
                                             logger.debug(
                                                 f"[MESSAGE_CONVERTER] Citation-enhanced result contains dict with list in '{found_key}' key with {len(found_list)} items, splitting into individual documents"
@@ -301,28 +319,42 @@ def _extract_related_documents_from_collected_tool_usage(
                                                 if isinstance(item, dict):
                                                     # Extract content from the item
                                                     item_text = (
-                                                        item.get("content") or 
-                                                        item.get("description") or 
-                                                        item.get("text") or 
-                                                        item.get("name") or 
-                                                        str(item)
+                                                        item.get("content")
+                                                        or item.get("description")
+                                                        or item.get("text")
+                                                        or item.get("name")
+                                                        or str(item)
                                                     )
                                                     # Use citation source_id with rank suffix
-                                                    source_id = f"{citation_source_id}@{rank}"
-                                                    
+                                                    source_id = (
+                                                        f"{citation_source_id}@{rank}"
+                                                    )
+
                                                     logger.debug(
                                                         f"[MESSAGE_CONVERTER] Creating related document from citation-enhanced list item: {source_id}"
                                                     )
 
                                                     # Create RelatedDocumentModel for each list item
                                                     related_doc = RelatedDocumentModel(
-                                                        content=TextToolResultModel(text=str(item_text)),
+                                                        content=TextToolResultModel(
+                                                            text=str(item_text)
+                                                        ),
                                                         source_id=source_id,
-                                                        source_name=item.get("source_name") or item.get("name") or tool_name,
-                                                        source_link=item.get("source_link"),
-                                                        page_number=item.get("page_number"),
+                                                        source_name=item.get(
+                                                            "source_name"
+                                                        )
+                                                        or item.get("name")
+                                                        or tool_name,
+                                                        source_link=item.get(
+                                                            "source_link"
+                                                        ),
+                                                        page_number=item.get(
+                                                            "page_number"
+                                                        ),
                                                     )
-                                                    related_documents.append(related_doc)
+                                                    related_documents.append(
+                                                        related_doc
+                                                    )
                                                     logger.debug(
                                                         f"[MESSAGE_CONVERTER] Added related document from citation-enhanced list: {source_id} ({len(str(item_text))} chars)"
                                                     )
@@ -333,7 +365,9 @@ def _extract_related_documents_from_collected_tool_usage(
                                                 f"[MESSAGE_CONVERTER] Citation-enhanced single item, using source_id: {citation_source_id}"
                                             )
                                             related_doc = RelatedDocumentModel(
-                                                content=TextToolResultModel(text=str(actual_content)),
+                                                content=TextToolResultModel(
+                                                    text=str(actual_content)
+                                                ),
                                                 source_id=citation_source_id,
                                                 source_name=tool_name,
                                                 source_link=None,
@@ -351,13 +385,21 @@ def _extract_related_documents_from_collected_tool_usage(
                                         )
                                         for rank, item in enumerate(actual_parsed):
                                             if isinstance(item, dict):
-                                                item_text = item.get("content", str(item))
-                                                source_id = f"{citation_source_id}@{rank}"
-                                                
+                                                item_text = item.get(
+                                                    "content", str(item)
+                                                )
+                                                source_id = (
+                                                    f"{citation_source_id}@{rank}"
+                                                )
+
                                                 related_doc = RelatedDocumentModel(
-                                                    content=TextToolResultModel(text=str(item_text)),
+                                                    content=TextToolResultModel(
+                                                        text=str(item_text)
+                                                    ),
                                                     source_id=source_id,
-                                                    source_name=item.get("source_name", tool_name),
+                                                    source_name=item.get(
+                                                        "source_name", tool_name
+                                                    ),
                                                     source_link=item.get("source_link"),
                                                     page_number=item.get("page_number"),
                                                 )
@@ -366,11 +408,19 @@ def _extract_related_documents_from_collected_tool_usage(
                                                     f"[MESSAGE_CONVERTER] Added related document from citation-enhanced direct list: {source_id}"
                                                 )
                                         continue
-                                except (json.JSONDecodeError, TypeError, ValueError) as e:
+                                except (
+                                    json.JSONDecodeError,
+                                    TypeError,
+                                    ValueError,
+                                ) as e:
                                     # Actual content is not JSON, treat as single item
-                                    logger.debug(f"[MESSAGE_CONVERTER] Citation-enhanced content is not JSON: {e}")
+                                    logger.debug(
+                                        f"[MESSAGE_CONVERTER] Citation-enhanced content is not JSON: {e}"
+                                    )
                                     related_doc = RelatedDocumentModel(
-                                        content=TextToolResultModel(text=str(actual_content)),
+                                        content=TextToolResultModel(
+                                            text=str(actual_content)
+                                        ),
                                         source_id=citation_source_id,
                                         source_name=tool_name,
                                         source_link=None,
@@ -381,7 +431,7 @@ def _extract_related_documents_from_collected_tool_usage(
                                         f"[MESSAGE_CONVERTER] Added citation-enhanced non-JSON document: {citation_source_id}"
                                     )
                                     continue
-                            
+
                             # Handle regular list case (for backward compatibility)
                             elif isinstance(parsed_content, list):
                                 logger.debug(
@@ -393,16 +443,20 @@ def _extract_related_documents_from_collected_tool_usage(
                                         # Extract content from the item (use 'content' field, not 'text')
                                         item_text = item.get("content", str(item))
                                         source_id = f"{tool_use_id}@{rank}"
-                                        
+
                                         logger.debug(
                                             f"[MESSAGE_CONVERTER] Creating related document from list item: {source_id}"
                                         )
 
                                         # Create RelatedDocumentModel for each list item
                                         related_doc = RelatedDocumentModel(
-                                            content=TextToolResultModel(text=str(item_text)),
+                                            content=TextToolResultModel(
+                                                text=str(item_text)
+                                            ),
                                             source_id=source_id,
-                                            source_name=item.get("source_name", tool_name),
+                                            source_name=item.get(
+                                                "source_name", tool_name
+                                            ),
                                             source_link=item.get("source_link"),
                                             page_number=item.get("page_number"),
                                         )
@@ -411,37 +465,58 @@ def _extract_related_documents_from_collected_tool_usage(
                                             f"[MESSAGE_CONVERTER] Added related document from list: {source_id} ({len(item_text)} chars)"
                                         )
                                 continue  # Skip the regular processing for this content_item
-                        except (json.JSONDecodeError, TypeError, ValueError, SyntaxError) as e:
+                        except (
+                            json.JSONDecodeError,
+                            TypeError,
+                            ValueError,
+                            SyntaxError,
+                        ) as e:
                             # Not a JSON list or Python literal, continue with regular processing
-                            logger.debug(f"[MESSAGE_CONVERTER] Content is not a parseable list: {e}")
+                            logger.debug(
+                                f"[MESSAGE_CONVERTER] Content is not a parseable list: {e}"
+                            )
                             pass
 
                         # Check if content contains multiple source_id markers (citation-enhanced text)
                         import re
-                        
+
                         # Updated pattern to handle multiple markers on the same line
-                        source_id_pattern = r'(.*?)\s*\[source_id:\s*([^\]]+)\](?:\s*\[source_name:\s*([^\]]+)\])?\s*(?:\s*\[source_link:\s*([^\]]+)\])?'
-                        source_id_matches = re.findall(source_id_pattern, content_text, re.MULTILINE)
-                        
+                        source_id_pattern = r"(.*?)\s*\[source_id:\s*([^\]]+)\](?:\s*\[source_name:\s*([^\]]+)\])?\s*(?:\s*\[source_link:\s*([^\]]+)\])?"
+                        source_id_matches = re.findall(
+                            source_id_pattern, content_text, re.MULTILINE
+                        )
+
                         if len(source_id_matches) > 1:
                             # Multiple source_ids found - split into individual RelatedDocuments
                             logger.debug(
                                 f"[MESSAGE_CONVERTER] Found {len(source_id_matches)} source_id markers, splitting into individual documents"
                             )
-                            
+
                             for match in source_id_matches:
                                 segment_content = match[0].strip() if match[0] else ""
                                 segment_source_id = match[1].strip() if match[1] else ""
-                                source_name = match[2].strip() if len(match) > 2 and match[2] else None
-                                source_link = match[3].strip() if len(match) > 3 and match[3] else None
-                                
-                                if segment_content:  # Only create document if content is not empty
+                                source_name = (
+                                    match[2].strip()
+                                    if len(match) > 2 and match[2]
+                                    else None
+                                )
+                                source_link = (
+                                    match[3].strip()
+                                    if len(match) > 3 and match[3]
+                                    else None
+                                )
+
+                                if (
+                                    segment_content
+                                ):  # Only create document if content is not empty
                                     logger.debug(
                                         f"[MESSAGE_CONVERTER] Creating related document from text segment: {segment_source_id}"
                                     )
-                                    
+
                                     related_doc = RelatedDocumentModel(
-                                        content=TextToolResultModel(text=segment_content),
+                                        content=TextToolResultModel(
+                                            text=segment_content
+                                        ),
                                         source_id=segment_source_id,
                                         source_name=source_name or tool_name,
                                         source_link=source_link,
@@ -457,7 +532,9 @@ def _extract_related_documents_from_collected_tool_usage(
                         # Look for source_id in the content text (format: "[source_id: xxx]")
                         source_id = None
                         if "[source_id:" in content_text:
-                            match = re.search(r"\[source_id:\s*([^\]]+)\]", content_text)
+                            match = re.search(
+                                r"\[source_id:\s*([^\]]+)\]", content_text
+                            )
                             if match:
                                 source_id = match.group(1).strip()
                                 # Remove the source_id from display text
@@ -674,7 +751,9 @@ def _create_thinking_log_from_agent_result(
                         # Check for tool use content
                         if "toolUse" in item:
                             tool_use = item["toolUse"]
-                            _add_strands_tool_use_to_thinking_log(thinking_log, tool_use)
+                            _add_strands_tool_use_to_thinking_log(
+                                thinking_log, tool_use
+                            )
                             tool_usage_found = True
                         # Check for tool result content
                         elif "toolResult" in item:
@@ -710,7 +789,9 @@ def _create_thinking_log_from_agent_result(
         for tool_use_id, tool_data in tool_usage_by_id.items():
             # Add tool use first
             if tool_data["toolUse"]:
-                _add_strands_tool_use_to_thinking_log(thinking_log, tool_data["toolUse"])
+                _add_strands_tool_use_to_thinking_log(
+                    thinking_log, tool_data["toolUse"]
+                )
                 tool_usage_found = True
                 logger.debug(
                     f"[MESSAGE_CONVERTER] Added tool use to thinking_log: {tool_data['toolUse'].get('name')}"
@@ -748,7 +829,9 @@ def _add_strands_tool_use_to_thinking_log(
             input=tool_use.get("input", {}),
         ),
     )
-    thinking_log.append(SimpleMessageModel(role="assistant", content=[tool_use_content]))
+    thinking_log.append(
+        SimpleMessageModel(role="assistant", content=[tool_use_content])
+    )
 
 
 def _add_strands_tool_result_to_thinking_log(

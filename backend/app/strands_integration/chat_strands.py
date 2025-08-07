@@ -78,9 +78,11 @@ def chat_with_strands(
     # Use context manager for automatic context management
     with strands_context(bot, user):
         agent, tools = create_strands_agent(
-            bot, user, model_name, 
+            bot,
+            user,
+            model_name,
             enable_reasoning=chat_input.enable_reasoning,
-            display_citation=display_citation
+            display_citation=display_citation,
         )
         agent_time = time.time() - agent_start
         logger.debug(
@@ -101,7 +103,12 @@ def chat_with_strands(
                 f"[STRANDS_CHAT] Callbacks enabled - stream: {on_stream is not None}, thinking: {on_thinking is not None}, tool: {on_tool_result is not None}, reasoning: {on_reasoning is not None}"
             )
             agent.callback_handler = _create_callback_handler(
-                on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage, tools
+                on_stream,
+                on_thinking,
+                on_tool_result,
+                on_reasoning,
+                collected_tool_usage,
+                tools,
             )
         else:
             logger.debug(f"[STRANDS_CHAT] No callbacks provided")
@@ -217,18 +224,21 @@ def chat_with_strands(
             )
 
         store_conversation(user.id, conversation)
-        
+
         # Store related documents for citation if available
         if related_documents:
-            logger.debug(f"[STRANDS_CHAT] Storing {len(related_documents)} related documents for citation")
+            logger.debug(
+                f"[STRANDS_CHAT] Storing {len(related_documents)} related documents for citation"
+            )
             from app.repositories.conversation import store_related_documents
+
             store_related_documents(
                 user_id=user.id,
                 conversation_id=conversation.id,
                 related_documents=related_documents,
             )
             logger.debug(f"[STRANDS_CHAT] Related documents stored successfully")
-        
+
         save_time = time.time() - save_start
         logger.debug(f"[STRANDS_CHAT] Step 7b (save) completed in {save_time:.3f}s")
 
@@ -302,16 +312,24 @@ def _get_bedrock_model_id(model_name: str) -> str:
 
     bedrock_region = os.environ.get("BEDROCK_REGION", "us-east-1")
     enable_cross_region = (
-        os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false").lower() == "true"
+        os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false").lower()
+        == "true"
     )
 
     return get_model_id(
-        model_name, bedrock_region=bedrock_region, enable_cross_region=enable_cross_region
+        model_name,
+        bedrock_region=bedrock_region,
+        enable_cross_region=enable_cross_region,
     )
 
 
 def _create_callback_handler(
-    on_stream, on_thinking, on_tool_result, on_reasoning, collected_tool_usage=None, tools=None
+    on_stream,
+    on_thinking,
+    on_tool_result,
+    on_reasoning,
+    collected_tool_usage=None,
+    tools=None,
 ):
     """Create callback handler"""
 
@@ -329,11 +347,13 @@ def _create_callback_handler(
     tool_name_to_func = {}
     if tools:
         for tool in tools:
-            if hasattr(tool, '__name__'):
+            if hasattr(tool, "__name__"):
                 tool_name_to_func[tool.__name__] = tool
-            elif hasattr(tool, 'tool_name'):
+            elif hasattr(tool, "tool_name"):
                 tool_name_to_func[tool.tool_name] = tool
-        logger.debug(f"[STRANDS_CALLBACK] Tool mapping created: {list(tool_name_to_func.keys())}")
+        logger.debug(
+            f"[STRANDS_CALLBACK] Tool mapping created: {list(tool_name_to_func.keys())}"
+        )
 
     # Track incomplete tool use data during streaming
     incomplete_tool_use = {}
@@ -356,7 +376,7 @@ def _create_callback_handler(
             logger.debug(f"[STRANDS_CALLBACK] Thinking event received")
             strands_tool_use = kwargs["current_tool_use"]
             tool_use_id = strands_tool_use.get("toolUseId", "unknown")
-            
+
             # Store incomplete tool use data for later completion
             incomplete_tool_use[tool_use_id] = strands_tool_use
 
@@ -367,7 +387,9 @@ def _create_callback_handler(
             # Handle case where input might be a JSON string
             if isinstance(input_data, str):
                 # Store for processing when contentBlockStop occurs
-                logger.debug(f"[STRANDS_CALLBACK] Tool {tool_use_id} input stored for contentBlockStop processing")
+                logger.debug(
+                    f"[STRANDS_CALLBACK] Tool {tool_use_id} input stored for contentBlockStop processing"
+                )
             else:
                 # input_data is already a dict - process immediately
                 converted_tool_use = {
@@ -376,7 +398,9 @@ def _create_callback_handler(
                     "input": input_data,
                 }
 
-                logger.debug(f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}")
+                logger.debug(
+                    f"[STRANDS_CALLBACK] Converted tool use: {converted_tool_use}"
+                )
 
                 if input_data:  # Only collect if we have actual input data
                     tool_usage_item = {
@@ -413,7 +437,9 @@ def _create_callback_handler(
                             tool_result_item = {
                                 "type": "toolResult",
                                 "data": {
-                                    "toolUseId": tool_result.get("toolUseId", "unknown"),
+                                    "toolUseId": tool_result.get(
+                                        "toolUseId", "unknown"
+                                    ),
                                     "status": tool_result.get("status", "success"),
                                     "content": tool_result.get("content", []),
                                 },
@@ -489,7 +515,8 @@ def _create_callback_handler(
                         )
                         on_reasoning(str(thinking_text))
                 elif (
-                    "contentBlockDelta" in event and "delta" in event["contentBlockDelta"]
+                    "contentBlockDelta" in event
+                    and "delta" in event["contentBlockDelta"]
                 ):
                     delta = event["contentBlockDelta"]["delta"]
                     if "thinking" in delta:
@@ -532,45 +559,69 @@ def _create_callback_handler(
                     logger.debug(f"[STRANDS_CALLBACK] Content block stopped")
                     # Process any incomplete tool use data when block stops
                     if incomplete_tool_use:
-                        for tool_use_id, strands_tool_use in incomplete_tool_use.items():
+                        for (
+                            tool_use_id,
+                            strands_tool_use,
+                        ) in incomplete_tool_use.items():
                             input_data = strands_tool_use.get("input", {})
-                            
+
                             if isinstance(input_data, str):
                                 try:
                                     import json
+
                                     parsed_input = json.loads(input_data)
-                                    logger.debug(f"[STRANDS_CALLBACK] Final parsed JSON for {tool_use_id}: {parsed_input}")
-                                    
+                                    logger.debug(
+                                        f"[STRANDS_CALLBACK] Final parsed JSON for {tool_use_id}: {parsed_input}"
+                                    )
+
                                     # Convert Strands args/kwargs format to proper tool parameters
-                                    tool_name = strands_tool_use.get("name", "unknown_tool")
+                                    tool_name = strands_tool_use.get(
+                                        "name", "unknown_tool"
+                                    )
                                     if tool_name in tool_name_to_func:
                                         tool_func = tool_name_to_func[tool_name]
-                                        
+
                                         # Import the conversion function
-                                        from app.strands_integration.tool_registry import convert_strands_args_kwargs_to_tool_params
-                                        
+                                        from app.strands_integration.tool_registry import (
+                                            convert_strands_args_kwargs_to_tool_params,
+                                        )
+
                                         # Convert using the same logic as citation wrapper
-                                        converted_input = convert_strands_args_kwargs_to_tool_params(tool_func, parsed_input)
-                                        logger.debug(f"[STRANDS_CALLBACK] Converted tool input: {converted_input}")
+                                        converted_input = (
+                                            convert_strands_args_kwargs_to_tool_params(
+                                                tool_func, parsed_input
+                                            )
+                                        )
+                                        logger.debug(
+                                            f"[STRANDS_CALLBACK] Converted tool input: {converted_input}"
+                                        )
                                         parsed_input = converted_input
                                     else:
-                                        logger.warning(f"[STRANDS_CALLBACK] Tool function not found for {tool_name}, using original input")
-                                    
+                                        logger.warning(
+                                            f"[STRANDS_CALLBACK] Tool function not found for {tool_name}, using original input"
+                                        )
+
                                     # Create final tool use
                                     converted_tool_use = {
                                         "tool_use_id": tool_use_id,
-                                        "name": strands_tool_use.get("name", "unknown_tool"),
+                                        "name": strands_tool_use.get(
+                                            "name", "unknown_tool"
+                                        ),
                                         "input": parsed_input,
                                     }
 
-                                    logger.debug(f"[STRANDS_CALLBACK] Final converted tool use: {converted_tool_use}")
+                                    logger.debug(
+                                        f"[STRANDS_CALLBACK] Final converted tool use: {converted_tool_use}"
+                                    )
 
                                     # Collect tool usage for thinking_log
                                     tool_usage_item = {
                                         "type": "toolUse",
                                         "data": {
                                             "toolUseId": tool_use_id,
-                                            "name": strands_tool_use.get("name", "unknown_tool"),
+                                            "name": strands_tool_use.get(
+                                                "name", "unknown_tool"
+                                            ),
                                             "input": parsed_input,
                                         },
                                     }
@@ -585,22 +636,32 @@ def _create_callback_handler(
                                     # Notify WebSocket
                                     if on_thinking:
                                         on_thinking(converted_tool_use)
-                                        
+
                                 except json.JSONDecodeError as e:
-                                    logger.warning(f"[STRANDS_CALLBACK] Failed to parse final JSON for {tool_use_id}: {e}")
+                                    logger.warning(
+                                        f"[STRANDS_CALLBACK] Failed to parse final JSON for {tool_use_id}: {e}"
+                                    )
                                     # Still create tool use with empty input as fallback
                                     converted_tool_use = {
                                         "tool_use_id": tool_use_id,
-                                        "name": strands_tool_use.get("name", "unknown_tool"),
+                                        "name": strands_tool_use.get(
+                                            "name", "unknown_tool"
+                                        ),
                                         "input": {},
                                     }
-                                    logger.debug(f"[STRANDS_CALLBACK] Fallback tool use: {converted_tool_use}")
-                        
+                                    logger.debug(
+                                        f"[STRANDS_CALLBACK] Fallback tool use: {converted_tool_use}"
+                                    )
+
                         # Clear incomplete tool use data
                         incomplete_tool_use.clear()
-                        logger.debug(f"[STRANDS_CALLBACK] Cleared incomplete tool use data")
+                        logger.debug(
+                            f"[STRANDS_CALLBACK] Cleared incomplete tool use data"
+                        )
                 else:
-                    logger.debug(f"[STRANDS_CALLBACK] Unhandled event type: {event_type}")
+                    logger.debug(
+                        f"[STRANDS_CALLBACK] Unhandled event type: {event_type}"
+                    )
             else:
                 logger.debug(f"[STRANDS_CALLBACK] Non-dict event: {event}")
         else:
@@ -688,14 +749,18 @@ def _convert_message_content_to_strands(content_list):
                         "utf-8", errors="ignore"
                     )
                     content_parts.append(
-                        {"text": f"[Attachment: {content.file_name}]\n{decoded_content}"}
+                        {
+                            "text": f"[Attachment: {content.file_name}]\n{decoded_content}"
+                        }
                     )
                 except Exception as e:
                     logger.warning(
                         f"Could not process attachment {content.file_name}: {e}"
                     )
                     content_parts.append(
-                        {"text": f"[Attachment: {content.file_name} - processing error]"}
+                        {
+                            "text": f"[Attachment: {content.file_name} - processing error]"
+                        }
                     )
             elif content.content_type == "image":
                 # Process image content - convert to Strands image format
@@ -789,7 +854,9 @@ def _update_conversation_with_strands_result(
         and hasattr(result.metrics, "accumulated_usage")
     ):
         usage_info = result.metrics.accumulated_usage
-        logger.debug(f"[STRANDS_UPDATE] Found usage in result.metrics.accumulated_usage")
+        logger.debug(
+            f"[STRANDS_UPDATE] Found usage in result.metrics.accumulated_usage"
+        )
 
     if usage_info:
         # Calculate price from Strands usage information

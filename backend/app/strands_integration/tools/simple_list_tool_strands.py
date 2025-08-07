@@ -25,10 +25,14 @@ def simple_list(topic: str, count: int = 5) -> str:
     Returns:
         str: JSON string containing list of items
     """
-    logger.debug(f"[STRANDS_SIMPLE_LIST_TOOL] Delegating to core simple_list: topic={topic}, count={count}")
+    logger.debug(
+        f"[STRANDS_SIMPLE_LIST_TOOL] Delegating to core simple_list: topic={topic}, count={count}"
+    )
 
     # Delegate to the core simple_list implementation
     result = generate_simple_list(topic, count)
 
-    logger.debug(f"[STRANDS_SIMPLE_LIST_TOOL] Core simple_list result: {len(result)} chars")
+    logger.debug(
+        f"[STRANDS_SIMPLE_LIST_TOOL] Core simple_list result: {len(result)} chars"
+    )
     return result

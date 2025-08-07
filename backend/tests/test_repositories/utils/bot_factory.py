@@ -56,8 +56,12 @@ def _create_test_bot_model(
     **kwargs
 ):
     tools: list[ToolModel] = [
-        PlainToolModel(tool_type="plain", name="tool1", description="tool1 description"),
-        PlainToolModel(tool_type="plain", name="tool2", description="tool2 description"),
+        PlainToolModel(
+            tool_type="plain", name="tool1", description="tool1 description"
+        ),
+        PlainToolModel(
+            tool_type="plain", name="tool2", description="tool2 description"
+        ),
     ]
     if include_internet_tool:
         tools.append(

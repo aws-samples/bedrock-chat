@@ -22,7 +22,7 @@ class SimpleListInput(BaseModel):
     )
     count: int = Field(
         default=5,
-        description="Number of items to return in the list (default: 5, max: 10)"
+        description="Number of items to return in the list (default: 5, max: 10)",
     )
 
 
@@ -37,19 +37,85 @@ def generate_simple_list(topic: str, count: int = 5) -> str:
     Returns:
         str: JSON string containing list of items
     """
-    logger.info(f"[SIMPLE_LIST_TOOL] Generating list for topic: {topic}, count: {count}")
+    logger.info(
+        f"[SIMPLE_LIST_TOOL] Generating list for topic: {topic}, count: {count}"
+    )
 
     # Limit count to reasonable range
     count = max(1, min(count, 10))
 
     # Predefined lists for different topics
     topic_data = {
-        "colors": ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White"],
-        "fruits": ["Apple", "Banana", "Orange", "Grape", "Strawberry", "Pineapple", "Mango", "Kiwi", "Peach", "Cherry"],
-        "countries": ["Japan", "United States", "Germany", "France", "Brazil", "Australia", "Canada", "India", "China", "United Kingdom"],
-        "animals": ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Bear", "Rabbit", "Horse", "Cow", "Sheep"],
-        "programming": ["Python", "JavaScript", "Java", "C++", "Go", "Rust", "TypeScript", "Swift", "Kotlin", "Ruby"],
-        "planets": ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"],
+        "colors": [
+            "Red",
+            "Blue",
+            "Green",
+            "Yellow",
+            "Purple",
+            "Orange",
+            "Pink",
+            "Brown",
+            "Black",
+            "White",
+        ],
+        "fruits": [
+            "Apple",
+            "Banana",
+            "Orange",
+            "Grape",
+            "Strawberry",
+            "Pineapple",
+            "Mango",
+            "Kiwi",
+            "Peach",
+            "Cherry",
+        ],
+        "countries": [
+            "Japan",
+            "United States",
+            "Germany",
+            "France",
+            "Brazil",
+            "Australia",
+            "Canada",
+            "India",
+            "China",
+            "United Kingdom",
+        ],
+        "animals": [
+            "Dog",
+            "Cat",
+            "Elephant",
+            "Lion",
+            "Tiger",
+            "Bear",
+            "Rabbit",
+            "Horse",
+            "Cow",
+            "Sheep",
+        ],
+        "programming": [
+            "Python",
+            "JavaScript",
+            "Java",
+            "C++",
+            "Go",
+            "Rust",
+            "TypeScript",
+            "Swift",
+            "Kotlin",
+            "Ruby",
+        ],
+        "planets": [
+            "Mercury",
+            "Venus",
+            "Earth",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uranus",
+            "Neptune",
+        ],
     }
 
     # Get items for the topic (case insensitive)
@@ -62,23 +128,23 @@ def generate_simple_list(topic: str, count: int = 5) -> str:
     # Create result as list of dictionaries with metadata
     result_items = []
     for i, item in enumerate(selected_items):
-        result_items.append({
-            "id": f"{topic_lower}_{i+1}",
-            "name": item,
-            "description": f"This is {item}, item #{i+1} in the {topic} category",
-            "source": f"Simple List Tool - {topic} category",
-            "source_name": f"Simple List Source - {item}",
-            "source_link": f"https://example.com/{topic_lower}/{item.lower().replace(' ', '-')}",
-            "index": i + 1
-        })
+        result_items.append(
+            {
+                "id": f"{topic_lower}_{i+1}",
+                "name": item,
+                "description": f"This is {item}, item #{i+1} in the {topic} category",
+                "source": f"Simple List Tool - {topic} category",
+                "source_name": f"Simple List Source - {item}",
+                "source_link": f"https://example.com/{topic_lower}/{item.lower().replace(' ', '-')}",
+                "index": i + 1,
+            }
+        )
 
-    result = {
-        "topic": topic,
-        "count": len(result_items),
-        "items": result_items
-    }
+    result = {"topic": topic, "count": len(result_items), "items": result_items}
 
-    logger.info(f"[SIMPLE_LIST_TOOL] Generated {len(result_items)} items for topic: {topic}")
+    logger.info(
+        f"[SIMPLE_LIST_TOOL] Generated {len(result_items)} items for topic: {topic}"
+    )
     return json.dumps(result, ensure_ascii=False, indent=2)
 
 

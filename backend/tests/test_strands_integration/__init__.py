@@ -1,1 +1,0 @@
-# Strands integration tests

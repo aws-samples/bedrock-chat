@@ -52,28 +52,28 @@ def create_strands_agent(
     logger.debug(f"[AGENT_FACTORY] Getting tools for bot...")
     tools = _get_tools_for_bot(bot, display_citation)
     logger.debug(f"[AGENT_FACTORY] Tools configured: {len(tools)}")
-    
+
     # Debug: Log detailed tool information before passing to Strands
     logger.debug(f"[AGENT_FACTORY] About to pass tools to Strands Agent:")
     for i, tool in enumerate(tools):
         logger.debug(f"[AGENT_FACTORY] Tool {i}: type={type(tool)}")
         logger.debug(f"[AGENT_FACTORY] Tool {i}: repr={repr(tool)}")
-        if hasattr(tool, '__name__'):
+        if hasattr(tool, "__name__"):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: __name__={tool.__name__}")
-        if hasattr(tool, 'tool_name'):
+        if hasattr(tool, "tool_name"):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: tool_name={tool.tool_name}")
         if callable(tool):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: is callable")
         else:
             logger.debug(f"[AGENT_FACTORY] Tool {i}: is NOT callable")
             logger.debug(f"[AGENT_FACTORY] Tool {i}: value={tool}")
-    
+
     # Debug: Log detailed tool information
     for i, tool in enumerate(tools):
         logger.debug(f"[AGENT_FACTORY] Tool {i}: type={type(tool)}")
-        if hasattr(tool, 'name'):
+        if hasattr(tool, "name"):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: name={tool.name}")
-        if hasattr(tool, '__name__'):
+        if hasattr(tool, "__name__"):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: __name__={tool.__name__}")
         if callable(tool):
             logger.debug(f"[AGENT_FACTORY] Tool {i}: is callable")
@@ -82,7 +82,7 @@ def create_strands_agent(
 
     # Create system prompt with optional citation instructions
     base_system_prompt = bot.instruction if bot and bot.instruction else ""
-    
+
     if display_citation and tools:
         # Add citation instructions when citation is enabled and tools are available
         citation_prompt = get_citation_system_prompt(model_name)
@@ -91,7 +91,7 @@ def create_strands_agent(
     else:
         system_prompt = base_system_prompt if base_system_prompt else None
         logger.debug(f"[AGENT_FACTORY] Using base system prompt only")
-    
+
     logger.debug(
         f"[AGENT_FACTORY] System prompt: {len(system_prompt) if system_prompt else 0} chars"
     )
@@ -116,11 +116,14 @@ def _get_bedrock_model_config(
     # Get proper Bedrock model ID
     bedrock_region = os.environ.get("BEDROCK_REGION", "us-east-1")
     enable_cross_region = (
-        os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false").lower() == "true"
+        os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false").lower()
+        == "true"
     )
 
     model_id = get_model_id(
-        model_name, bedrock_region=bedrock_region, enable_cross_region=enable_cross_region
+        model_name,
+        bedrock_region=bedrock_region,
+        enable_cross_region=enable_cross_region,
     )
 
     config = {

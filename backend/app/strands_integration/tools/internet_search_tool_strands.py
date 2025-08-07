@@ -15,7 +15,9 @@ def create_internet_search_tool(bot):
     """Create an internet search tool with bot context."""
 
     @tool
-    def internet_search(query: str, country: str = "jp-jp", time_limit: str = "d") -> str:
+    def internet_search(
+        query: str, country: str = "jp-jp", time_limit: str = "d"
+    ) -> str:
         """
         Search the internet for information.
 

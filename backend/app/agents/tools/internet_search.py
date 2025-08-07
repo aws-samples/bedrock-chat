@@ -295,7 +295,9 @@ def _internet_search(
             return results
 
         except Exception as e:
-            logger.error(f"Error with Firecrawl search: {e}, falling back to DuckDuckGo")
+            logger.error(
+                f"Error with Firecrawl search: {e}, falling back to DuckDuckGo"
+            )
             return _search_with_duckduckgo(query, time_limit, country)
 
     # Fallback to DuckDuckGo for any unexpected cases

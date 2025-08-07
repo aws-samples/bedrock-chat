@@ -24,7 +24,9 @@ def calculator(expression: str) -> str:
     Returns:
         str: Result of the calculation
     """
-    logger.debug(f"[STRANDS_CALCULATOR_TOOL] Delegating to core calculator: {expression}")
+    logger.debug(
+        f"[STRANDS_CALCULATOR_TOOL] Delegating to core calculator: {expression}"
+    )
 
     # Delegate to the core calculator implementation
     result = calculate_expression(expression)
