@@ -30,14 +30,10 @@ def create_knowledge_search_tool(bot):
             # Import here to avoid circular imports
             from app.agents.tools.knowledge import KnowledgeToolInput, search_knowledge
 
-            # Create tool input
-            tool_input = KnowledgeToolInput(query=query)
-            logger.debug(f"[KNOWLEDGE_TOOL] Created tool input")
-
-            # Use bot from closure
+            # Use the bot passed during tool creation
             current_bot = bot
             logger.debug(
-                f"[KNOWLEDGE_TOOL] Using bot from closure: {current_bot.id if current_bot else None}"
+                f"[KNOWLEDGE_TOOL] Using bot from tool creation: {current_bot.id if current_bot else None}"
             )
 
             if not current_bot:
@@ -47,15 +43,15 @@ def create_knowledge_search_tool(bot):
             # Check if bot has knowledge configuration
             if not (current_bot.knowledge and current_bot.knowledge.source_urls):
                 logger.warning("[KNOWLEDGE_TOOL] Bot has no knowledge base configured")
-                return (
-                    f"Bot does not have a knowledge base configured. Query was: {query}"
-                )
+                return f"Bot does not have a knowledge base configured. Query was: {query}"
+
+            # Create tool input
+            tool_input = KnowledgeToolInput(query=query)
+            logger.debug(f"[KNOWLEDGE_TOOL] Created tool input")
 
             try:
                 # Execute knowledge search with proper bot context
-                logger.debug(
-                    f"[KNOWLEDGE_TOOL] Executing search with bot: {current_bot.id}"
-                )
+                logger.debug(f"[KNOWLEDGE_TOOL] Executing search with bot: {current_bot.id}")
                 result = search_knowledge(
                     tool_input, bot=current_bot, model="claude-v3.5-sonnet"
                 )
