@@ -3,6 +3,7 @@ Citation decorator for Strands integration.
 This decorator enhances tool results with source_id information for citation support.
 """
 
+import json
 import logging
 from functools import wraps
 from typing import Any, Callable, TypeVar, Union
@@ -64,60 +65,123 @@ def _enhance_result_with_citation(result: Any, tool_use_id: str) -> Any:
     """
     Enhance tool result with citation information.
     
-    This function follows the same logic as agent_tool.py's _function_result_to_related_document
-    for source_id generation:
-    - str -> dict with source_id
-    - dict -> add source_id if not present
-    - list -> add source_id with @rank suffix to each item
-    - ToolResultModel -> return as-is (already processed)
+    This function embeds source_id information directly in the text content
+    so that LLMs can see and reference them according to the citation prompt.
+    
+    For complex results like simple_list_tool, it tries to embed individual
+    source_ids for each item when possible.
     
     Args:
         result: Original tool result
         tool_use_id: Tool use ID for source_id generation
         
     Returns:
-        Enhanced result with source_id information
+        Enhanced result with source_id information embedded in text
     """
     logger.debug(f"[CITATION_DECORATOR] Enhancing result type: {type(result)}")
     
     if isinstance(result, str):
-        # Convert string to dict with source_id
-        enhanced = {
-            "content": result,
-            "source_id": tool_use_id,
-        }
-        logger.debug(f"[CITATION_DECORATOR] Enhanced string result with source_id: {tool_use_id}")
-        return enhanced
+        # Try to parse as JSON to see if it contains a list structure
+        try:
+            parsed = json.loads(result)
+            
+            # Check if it's a dict with a list (like simple_list_tool)
+            if isinstance(parsed, dict):
+                list_keys = ["items", "results", "data", "list", "entries"]
+                found_list = None
+                found_key = None
+                
+                for key in list_keys:
+                    if key in parsed and isinstance(parsed[key], list):
+                        found_list = parsed[key]
+                        found_key = key
+                        break
+                
+                if found_list:
+                    logger.debug(f"[CITATION_DECORATOR] Found list in '{found_key}' with {len(found_list)} items")
+                    
+                    # Create individual source_ids for each item
+                    enhanced_items = []
+                    for i, item in enumerate(found_list):
+                        item_source_id = f"{tool_use_id}@{i}"
+                        if isinstance(item, dict):
+                            # Extract meaningful content from the item
+                            content = (
+                                item.get("description") or 
+                                item.get("content") or 
+                                item.get("name") or 
+                                str(item)
+                            )
+                            enhanced_item = f"{content} [source_id: {item_source_id}]"
+                        else:
+                            enhanced_item = f"{str(item)} [source_id: {item_source_id}]"
+                        enhanced_items.append(enhanced_item)
+                        logger.debug(f"[CITATION_DECORATOR] Enhanced item {i} with source_id: {item_source_id}")
+                    
+                    # Join all items with newlines
+                    enhanced_content = "\n".join(enhanced_items)
+                    logger.debug(f"[CITATION_DECORATOR] Enhanced JSON with list: {len(enhanced_items)} items")
+                    return enhanced_content
+                else:
+                    # Single dict item
+                    enhanced_content = f"{result} [source_id: {tool_use_id}]"
+                    logger.debug(f"[CITATION_DECORATOR] Enhanced JSON dict with single source_id: {tool_use_id}")
+                    return enhanced_content
+            
+            elif isinstance(parsed, list):
+                # Direct list
+                enhanced_items = []
+                for i, item in enumerate(parsed):
+                    item_source_id = f"{tool_use_id}@{i}"
+                    if isinstance(item, dict):
+                        item_str = json.dumps(item, ensure_ascii=False)
+                        enhanced_item = f"{item_str} [source_id: {item_source_id}]"
+                    else:
+                        enhanced_item = f"{str(item)} [source_id: {item_source_id}]"
+                    enhanced_items.append(enhanced_item)
+                    logger.debug(f"[CITATION_DECORATOR] Enhanced list item {i} with source_id: {item_source_id}")
+                
+                enhanced_content = "\n".join(enhanced_items)
+                logger.debug(f"[CITATION_DECORATOR] Enhanced direct list: {len(enhanced_items)} items")
+                return enhanced_content
+            else:
+                # Other JSON types
+                enhanced_content = f"{result} [source_id: {tool_use_id}]"
+                logger.debug(f"[CITATION_DECORATOR] Enhanced JSON with single source_id: {tool_use_id}")
+                return enhanced_content
+                
+        except (json.JSONDecodeError, TypeError):
+            # Not JSON, treat as plain string
+            enhanced_content = f"{result} [source_id: {tool_use_id}]"
+            logger.debug(f"[CITATION_DECORATOR] Enhanced plain string with source_id: {tool_use_id}")
+            return enhanced_content
         
     elif isinstance(result, dict):
-        # Add source_id if not already present
-        if "source_id" not in result:
-            result["source_id"] = tool_use_id
-            logger.debug(f"[CITATION_DECORATOR] Added source_id to dict: {tool_use_id}")
-        else:
-            logger.debug(f"[CITATION_DECORATOR] Dict already has source_id: {result['source_id']}")
-        return result
+        # Convert dict to string with embedded source_id
+        result_str = json.dumps(result, ensure_ascii=False, indent=2)
+        enhanced_content = f"{result_str} [source_id: {tool_use_id}]"
+        logger.debug(f"[CITATION_DECORATOR] Enhanced dict result with embedded source_id: {tool_use_id}")
+        return enhanced_content
         
     elif isinstance(result, list):
-        # Add source_id with @rank suffix to each item
-        enhanced_list = []
+        # Convert each list item to string with embedded source_id
+        enhanced_items = []
         for i, item in enumerate(result):
+            item_source_id = f"{tool_use_id}@{i}"
             if isinstance(item, dict):
-                if "source_id" not in item:
-                    item["source_id"] = f"{tool_use_id}@{i}"
-                    logger.debug(f"[CITATION_DECORATOR] Added source_id to list item {i}: {tool_use_id}@{i}")
-                enhanced_list.append(item)
+                item_str = json.dumps(item, ensure_ascii=False)
+                enhanced_item = f"{item_str} [source_id: {item_source_id}]"
             elif isinstance(item, str):
-                enhanced_item = {
-                    "content": item,
-                    "source_id": f"{tool_use_id}@{i}",
-                }
-                logger.debug(f"[CITATION_DECORATOR] Enhanced list string item {i} with source_id: {tool_use_id}@{i}")
-                enhanced_list.append(enhanced_item)
+                enhanced_item = f"{item} [source_id: {item_source_id}]"
             else:
-                # For other types (like ToolResultModel), keep as-is
-                enhanced_list.append(item)
-        return enhanced_list
+                enhanced_item = f"{str(item)} [source_id: {item_source_id}]"
+            enhanced_items.append(enhanced_item)
+            logger.debug(f"[CITATION_DECORATOR] Enhanced list item {i} with embedded source_id: {item_source_id}")
+        
+        # Join all items with newlines
+        enhanced_content = "\n".join(enhanced_items)
+        logger.debug(f"[CITATION_DECORATOR] Enhanced list result with {len(enhanced_items)} items")
+        return enhanced_content
         
     else:
         # For ToolResultModel and other types, return as-is

@@ -16,6 +16,7 @@ from app.strands_integration.tools.calculator_tool_strands import calculator
 from app.strands_integration.tools.internet_search_tool_strands import create_internet_search_tool
 from app.strands_integration.tools.bedrock_agent_tool_strands import bedrock_agent_invoke
 from app.strands_integration.tools.knowledge_tool_strands import knowledge_search
+from app.strands_integration.tools.simple_list_tool_strands import simple_list
 from app.strands_integration.citation_decorator import _enhance_result_with_citation
 from app.repositories.models.custom_bot import BotModel
 
@@ -47,6 +48,18 @@ def convert_strands_args_kwargs_to_tool_params(tool_func, strands_input: dict) -
     # Extract the main argument from 'args'
     main_arg_value = strands_input['args']
     
+    # Handle case where args is a JSON string containing an array
+    if isinstance(main_arg_value, str):
+        try:
+            parsed_args = json.loads(main_arg_value)
+            if isinstance(parsed_args, list) and len(parsed_args) > 0:
+                # Use the first element as the main argument
+                main_arg_value = parsed_args[0]
+                logger.debug(f"[TOOL_REGISTRY] Extracted main arg from JSON array: {main_arg_value}")
+        except json.JSONDecodeError:
+            # Not JSON, use as-is
+            pass
+    
     # Parse the 'kwargs' JSON string
     strands_kwargs_str = strands_input['kwargs']
     try:
@@ -55,6 +68,27 @@ def convert_strands_args_kwargs_to_tool_params(tool_func, strands_input: dict) -
     except json.JSONDecodeError as e:
         logger.error(f"[TOOL_REGISTRY] Failed to parse Strands kwargs JSON: {e}")
         strands_kwargs = {}
+    
+    # Handle case where args contains additional parameters
+    if isinstance(strands_input['args'], str):
+        try:
+            parsed_args = json.loads(strands_input['args'])
+            if isinstance(parsed_args, list) and len(parsed_args) > 1:
+                # Map additional args to parameter names based on function signature
+                func_for_signature = getattr(tool_func, '_original_func', tool_func)
+                sig = inspect.signature(func_for_signature)
+                param_names = list(sig.parameters.keys())
+                
+                # Map remaining args to parameters in order
+                for i, arg_value in enumerate(parsed_args[1:], start=1):
+                    if i < len(param_names):
+                        param_name = param_names[i]
+                        # Only map if the parameter doesn't already exist in kwargs
+                        if param_name not in strands_kwargs:
+                            strands_kwargs[param_name] = arg_value
+                            logger.debug(f"[TOOL_REGISTRY] Mapped arg {i} to {param_name}: {arg_value}")
+        except (json.JSONDecodeError, IndexError, TypeError):
+            pass
     
     # Merge with other parameters (excluding args/kwargs)
     merged_kwargs = {k: v for k, v in strands_input.items() if k not in ['args', 'kwargs']}
@@ -116,6 +150,7 @@ def get_tools_for_bot(bot: Optional[BotModel], display_citation: bool = False) -
         "internet_search": lambda bot: create_internet_search_tool(bot),
         "bedrock_agent": lambda bot: bedrock_agent_invoke,  # bedrock_agent is already a tool
         "calculator": lambda bot: calculator,  # calculator doesn't need bot context
+        "simple_list": lambda bot: simple_list,  # simple_list doesn't need bot context
     }
     
     # Add configured tools from bot
