@@ -140,6 +140,10 @@ def _convert_simple_messages_to_strands_messages(
         if simple_msg.role == "system":
             continue
 
+        # Skip instruction messages as they are handled separately via message_map
+        if simple_msg.role == "instruction":
+            continue
+
         # Ensure role is valid
         if simple_msg.role not in ["user", "assistant"]:
             logger.warning(f"Invalid role: {simple_msg.role}, skipping message")
