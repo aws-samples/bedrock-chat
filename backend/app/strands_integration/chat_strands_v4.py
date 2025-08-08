@@ -1,3 +1,4 @@
+import base64
 import dataclasses
 import json
 import logging
@@ -33,6 +34,7 @@ from app.repositories.models.conversation import (
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import ChatInput
+from app.strands_integration.utils import get_strands_tools
 from app.stream import OnStopInput, OnThinking
 from app.usecases.bot import modify_bot_last_used_time, modify_bot_stats
 from app.usecases.chat import prepare_conversation, trace_to_root
@@ -93,6 +95,39 @@ def _map_to_document_format(file_name: str) -> DocumentFormat:
         return "txt"
 
 
+def _convert_attachment_to_content_block(content: AttachmentContentModel) -> ContentBlock:
+    """Convert AttachmentContentModel to Strands ContentBlock format."""
+    import re
+    import urllib.parse
+    from pathlib import Path
+
+    # Use decoded filename for format detection
+    try:
+        decoded_name = urllib.parse.unquote(content.file_name)
+    except:
+        decoded_name = content.file_name
+
+    # Extract format and name like legacy implementation
+    format = Path(decoded_name).suffix[1:]  # Remove the dot
+    name = Path(decoded_name).stem
+
+    # Convert to valid file name (matching legacy)
+    def _convert_to_valid_file_name(file_name: str) -> str:
+        file_name = re.sub(r"[^a-zA-Z0-9\s\-\(\)\[\]]", "", file_name)
+        file_name = re.sub(r"\s+", " ", file_name)
+        return file_name.strip()
+
+    valid_name = _convert_to_valid_file_name(name)
+
+    return {
+        "document": {
+            "format": format,
+            "name": valid_name,
+            "source": {"bytes": content.body},  # Use body directly (already base64)
+        }
+    }
+
+
 def _convert_simple_messages_to_strands_messages(
     simple_messages: list[SimpleMessageModel],
 ) -> Messages:
@@ -100,6 +135,7 @@ def _convert_simple_messages_to_strands_messages(
     messages: Messages = []
 
     for simple_msg in simple_messages:
+
         # Skip system messages as they are handled separately in Strands
         if simple_msg.role == "system":
             continue
@@ -134,19 +170,8 @@ def _convert_simple_messages_to_strands_messages(
                 except Exception as e:
                     logger.warning(f"Failed to convert image content: {e}")
             elif isinstance(content, AttachmentContentModel):
-                # Convert attachment as document
                 try:
-                    import base64
-
-                    doc_bytes = base64.b64decode(content.body)
-                    doc_format = _map_to_document_format(content.file_name)
-                    content_block: ContentBlock = {
-                        "document": {
-                            "format": doc_format,
-                            "name": content.file_name,
-                            "source": {"bytes": doc_bytes},
-                        }
-                    }
+                    content_block = _convert_attachment_to_content_block(content)
                     content_blocks.append(content_block)
                 except Exception as e:
                     logger.warning(f"Failed to convert attachment content: {e}")
@@ -409,26 +434,6 @@ class ToolResultCapture(HookProvider):
         # Convert ToolRunResult back to Strands ToolResult format with `source_id` for citation
         enhanced_result = _convert_tool_run_result_to_strands_tool_result(tool_result)
         event.result = enhanced_result
-
-
-def get_strands_tools(
-    bot: BotModel | None, model_name: type_model_name
-) -> list[StrandsAgentTool]:
-    if not is_tooluse_supported(model_name):
-        logger.warning(
-            f"Tool use is not supported for model {model_name}. Returning empty tool list."
-        )
-        return []
-
-    # TODO: Implement tool conversion from legacy tools to Strands tools
-    # For now, return empty list as placeholder
-    # This should convert tools from backend/app/agents/utils.py to Strands format
-    return []
-
-
-# def get_prompt_to_cite_tool_results(model: type_model_name) -> str:
-#     # TODO. refer backend/app/prompt.py but
-#     ...
 
 
 def create_strands_agent(
@@ -796,10 +801,10 @@ def _post_process_strands_result(
     conversation.total_price += price
     conversation.should_continue = result.stop_reason == "max_tokens"
 
-    # 3. Extract reasoning content and add to message content if present
-    reasoning_content = _extract_reasoning_from_message(result.message)
-    if reasoning_content:
-        message.content.insert(0, reasoning_content)
+    # # 3. Extract reasoning content and add to message content if present
+    # reasoning_content = _extract_reasoning_from_message(result.message)
+    # if reasoning_content:
+    #     message.content.insert(0, reasoning_content)
 
     # 4. Build thinking_log from tool capture
     thinking_log = _build_thinking_log_from_tool_capture(tool_capture)
@@ -902,6 +907,7 @@ def chat_with_strands(
         if chat_input.continue_generate
         else message_map[user_msg_id].parent
     )
+
     if node_id is None:
         raise ValueError("parent_message_id or parent is None")
 
@@ -944,6 +950,12 @@ def chat_with_strands(
             if isinstance(content, TextContentModel):
                 content_block: ContentBlock = {"text": content.body}
                 current_content_blocks.append(content_block)
+            elif isinstance(content, AttachmentContentModel):
+                try:
+                    content_block = _convert_attachment_to_content_block(content)
+                    current_content_blocks.append(content_block)
+                except Exception as e:
+                    logger.warning(f"Failed to convert attachment content: {e}")
 
         if current_content_blocks:
             current_message: Message = {
