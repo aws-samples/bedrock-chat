@@ -95,7 +95,9 @@ def _map_to_document_format(file_name: str) -> DocumentFormat:
         return "txt"
 
 
-def _convert_attachment_to_content_block(content: AttachmentContentModel) -> ContentBlock:
+def _convert_attachment_to_content_block(
+    content: AttachmentContentModel,
+) -> ContentBlock:
     """Convert AttachmentContentModel to Strands ContentBlock format."""
     import re
     import urllib.parse
@@ -227,7 +229,9 @@ def _convert_simple_messages_to_strands_messages(
     return messages
 
 
-def _convert_messages_to_content_blocks(messages: Messages, continue_generate: bool = False) -> list[ContentBlock]:
+def _convert_messages_to_content_blocks(
+    messages: Messages, continue_generate: bool = False
+) -> list[ContentBlock]:
     """Convert Messages to ContentBlock list for Strands agent."""
     content_blocks: list[ContentBlock] = []
 
@@ -239,10 +243,16 @@ def _convert_messages_to_content_blocks(messages: Messages, continue_generate: b
 
         # Add all content blocks from the message
         content_blocks.extend(message["content"])
-        
+
         # If this is the last message and we're continuing generation, add continue instruction
-        if continue_generate and i == len(messages) - 1 and message['role'] == 'assistant':
-            continue_instruction: ContentBlock = {"text": "\n\n[CONTINUE THE ABOVE ASSISTANT MESSAGE]"}
+        if (
+            continue_generate
+            and i == len(messages) - 1
+            and message["role"] == "assistant"
+        ):
+            continue_instruction: ContentBlock = {
+                "text": "\n\n[CONTINUE THE ABOVE ASSISTANT MESSAGE]"
+            }
             content_blocks.append(continue_instruction)
 
     return content_blocks
@@ -800,6 +810,9 @@ def _post_process_strands_result(
     current_time = get_current_time()
 
     # 1. Convert Strands Message to MessageModel
+    # NOTE: Strands agent limitation - when tool use is involved, reasoning content is only
+    # available during streaming but not included in the final AgentResult.message.
+    # This means reasoning is not persisted for tool use scenarios.
     message = _convert_strands_message_to_message_model(
         result.message, model_name, current_time
     )
@@ -809,17 +822,12 @@ def _post_process_strands_result(
     conversation.total_price += price
     conversation.should_continue = result.stop_reason == "max_tokens"
 
-    # # 3. Extract reasoning content and add to message content if present
-    # reasoning_content = _extract_reasoning_from_message(result.message)
-    # if reasoning_content:
-    #     message.content.insert(0, reasoning_content)
-
-    # 4. Build thinking_log from tool capture
+    # 3. Build thinking_log from tool capture
     thinking_log = _build_thinking_log_from_tool_capture(tool_capture)
     if thinking_log:
         message.thinking_log = thinking_log
 
-    # 5. Set message parent and generate assistant message ID
+    # 4. Set message parent and generate assistant message ID
     message.parent = user_msg_id
 
     if continue_generate:
@@ -844,12 +852,12 @@ def _post_process_strands_result(
         conversation.message_map[user_msg_id].children.append(assistant_msg_id)
         conversation.last_message_id = assistant_msg_id
 
-    # 6. Extract related documents from tool capture
+    # 5. Extract related documents from tool capture
     related_documents = _extract_related_documents_from_tool_capture(
         tool_capture, assistant_msg_id
     )
 
-    # 7. Store conversation and related documents
+    # 6. Store conversation and related documents
     store_conversation(user.id, conversation)
     if related_documents:
         store_related_documents(
@@ -858,12 +866,12 @@ def _post_process_strands_result(
             related_documents=related_documents,
         )
 
-    # 8. Call on_stop callback
+    # 7. Call on_stop callback
     if on_stop:
         on_stop_input = _create_on_stop_input(result, message, price)
         on_stop(on_stop_input)
 
-    # 9. Update bot statistics
+    # 8. Update bot statistics
     if bot:
         logger.info("Bot is provided. Updating bot last used time.")
         modify_bot_last_used_time(user, bot)
@@ -996,7 +1004,7 @@ def chat_with_strands(
                 if isinstance(content, TextContentModel):
                     content_block: ContentBlock = {"text": content.body}
                     continue_content_blocks.append(content_block)
-            
+
             if continue_content_blocks:
                 continue_message: Message = {
                     "role": "assistant",
@@ -1005,7 +1013,9 @@ def chat_with_strands(
                 strands_messages.append(continue_message)
 
     # Convert Messages to ContentBlock list for agent
-    content_blocks_for_agent = _convert_messages_to_content_blocks(strands_messages, continue_generate)
+    content_blocks_for_agent = _convert_messages_to_content_blocks(
+        strands_messages, continue_generate
+    )
 
     result = agent(content_blocks_for_agent)
 
