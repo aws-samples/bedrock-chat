@@ -156,9 +156,8 @@ def _convert_simple_messages_to_strands_messages(
             elif isinstance(content, ImageContentModel):
                 # Convert image content
                 try:
-                    import base64
-
-                    image_bytes = base64.b64decode(content.body)
+                    # content.body is already binary data (Base64EncodedBytes), no need to decode
+                    image_bytes = content.body
                     image_format = _map_to_image_format(content.media_type)
                     content_block: ContentBlock = {
                         "image": {
@@ -950,6 +949,22 @@ def chat_with_strands(
             if isinstance(content, TextContentModel):
                 content_block: ContentBlock = {"text": content.body}
                 current_content_blocks.append(content_block)
+            elif isinstance(content, ImageContentModel):
+                # Convert image content
+                try:
+                    # content.body is already binary data (Base64EncodedBytes), no need to decode
+                    image_bytes = content.body
+                    image_format = _map_to_image_format(content.media_type)
+
+                    content_block: ContentBlock = {
+                        "image": {
+                            "format": image_format,
+                            "source": {"bytes": image_bytes},
+                        }
+                    }
+                    current_content_blocks.append(content_block)
+                except Exception as e:
+                    logger.warning(f"Failed to convert image content: {e}")
             elif isinstance(content, AttachmentContentModel):
                 try:
                     content_block = _convert_attachment_to_content_block(content)
