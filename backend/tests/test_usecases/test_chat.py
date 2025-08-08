@@ -400,22 +400,39 @@ class TestContinueChat(unittest.TestCase):
         )
 
     def test_continue_chat(self):
+        # First, add an incomplete assistant message to continue from
+        incomplete_message = "今日は良い天気ですね。外に出て"
+        assistant_msg_id = "incomplete-assistant"
+
+        # Add incomplete assistant message to conversation
+        self.conversation = find_conversation_by_id(self.user.id, self.conversation_id)
+        self.conversation.message_map[assistant_msg_id] = MessageModel(
+            role="assistant",
+            content=[TextContentModel(content_type="text", body=incomplete_message)],
+            model=MODEL,
+            children=[],
+            parent="1-assistant",
+            create_time=1627984879.9,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self.conversation.message_map["1-assistant"].children.append(assistant_msg_id)
+        self.conversation.last_message_id = assistant_msg_id
+        store_conversation(user_id=self.user.id, conversation=self.conversation)
+
+        # Test continue generation
         chat_input = ChatInput(
             conversation_id=self.conversation_id,
             message=MessageInput(
-                role="user",
-                content=[
-                    TextContent(
-                        content_type="text",
-                        body="あなたの名前は？",
-                    )
-                ],
+                role="assistant",
+                content=[],
                 model=MODEL,
-                parent_message_id="1-assistant",
+                parent_message_id=assistant_msg_id,
                 message_id=None,
             ),
             bot_id=None,
-            continue_generate=False,
+            continue_generate=True,  # This is the key test
             enable_reasoning=False,
         )
         conversation, message = chat(self.user, chat_input=chat_input)
@@ -424,16 +441,17 @@ class TestContinueChat(unittest.TestCase):
 
         pprint(output.model_dump())
 
-        conv = find_conversation_by_id(self.user.id, output.conversation_id)
-
-        messages = trace_to_root(conv.last_message_id, conv.message_map)
-        self.assertEqual(len(messages), 4)
-
-        num_empty_children = 0
-        for k, v in conv.message_map.items():
-            if len(v.children) == 0:
-                num_empty_children += 1
-        self.assertEqual(num_empty_children, 1)
+        # Verify the message was continued (should start with original incomplete message)
+        continued_text = message.content[0].body
+        self.assertTrue(
+            continued_text.startswith(incomplete_message),
+            f"Continued message should start with '{incomplete_message}' but got: '{continued_text}'",
+        )
+        self.assertGreater(
+            len(continued_text),
+            len(incomplete_message),
+            "Continued message should be longer than original",
+        )
 
     def tearDown(self) -> None:
         delete_conversation_by_id(self.user.id, self.output.conversation_id)

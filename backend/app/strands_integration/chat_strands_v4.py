@@ -223,11 +223,11 @@ def _convert_simple_messages_to_strands_messages(
     return messages
 
 
-def _convert_messages_to_content_blocks(messages: Messages) -> list[ContentBlock]:
+def _convert_messages_to_content_blocks(messages: Messages, continue_generate: bool = False) -> list[ContentBlock]:
     """Convert Messages to ContentBlock list for Strands agent."""
     content_blocks: list[ContentBlock] = []
 
-    for message in messages:
+    for i, message in enumerate(messages):
         # Add role information as text content block
         role_text = f"[{message['role'].upper()}]"
         role_block: ContentBlock = {"text": role_text}
@@ -235,6 +235,11 @@ def _convert_messages_to_content_blocks(messages: Messages) -> list[ContentBlock
 
         # Add all content blocks from the message
         content_blocks.extend(message["content"])
+        
+        # If this is the last message and we're continuing generation, add continue instruction
+        if continue_generate and i == len(messages) - 1 and message['role'] == 'assistant':
+            continue_instruction: ContentBlock = {"text": "\n\n[CONTINUE THE ABOVE ASSISTANT MESSAGE]"}
+            content_blocks.append(continue_instruction)
 
     return content_blocks
 
@@ -978,9 +983,25 @@ def chat_with_strands(
                 "content": current_content_blocks,
             }
             strands_messages.append(current_message)
+    else:
+        # For continue generation, add the last assistant message to continue from
+        last_message = conversation.message_map[conversation.last_message_id]
+        if last_message.role == "assistant":
+            continue_content_blocks: list[ContentBlock] = []
+            for content in last_message.content:
+                if isinstance(content, TextContentModel):
+                    content_block: ContentBlock = {"text": content.body}
+                    continue_content_blocks.append(content_block)
+            
+            if continue_content_blocks:
+                continue_message: Message = {
+                    "role": "assistant",
+                    "content": continue_content_blocks,
+                }
+                strands_messages.append(continue_message)
 
     # Convert Messages to ContentBlock list for agent
-    content_blocks_for_agent = _convert_messages_to_content_blocks(strands_messages)
+    content_blocks_for_agent = _convert_messages_to_content_blocks(strands_messages, continue_generate)
 
     result = agent(content_blocks_for_agent)
 
