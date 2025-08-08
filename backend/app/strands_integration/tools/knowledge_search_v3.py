@@ -1,0 +1,136 @@
+"""
+Knowledge search tool for Strands v3 - Independent implementation with bot context.
+"""
+
+import logging
+import traceback
+
+from strands import tool
+from strands.types.tools import AgentTool as StrandsAgentTool
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+def _search_knowledge_standalone(bot, query: str) -> list:
+    """Standalone knowledge search implementation."""
+    try:
+        from app.vector_search import search_related_docs
+
+        logger.info(f"Running knowledge search with query: {query}")
+
+        search_results = search_related_docs(bot, query=query)
+
+        # Format results for citation support
+        formatted_results = []
+        for result in search_results:
+            if hasattr(result, "content") and hasattr(result, "source_name"):
+                formatted_results.append(
+                    {
+                        "content": result.content,
+                        "source_name": result.source_name,
+                        "source_link": getattr(result, "source_link", ""),
+                    }
+                )
+            else:
+                # Fallback formatting
+                formatted_results.append(
+                    {
+                        "content": str(result),
+                        "source_name": "Knowledge Base",
+                        "source_link": "",
+                    }
+                )
+
+        logger.info(
+            f"Knowledge search completed. Found {len(formatted_results)} results"
+        )
+        return formatted_results
+
+    except Exception as e:
+        error_traceback = traceback.format_exc()
+        logger.error(
+            f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}"
+        )
+        return [
+            {
+                "content": f"Knowledge search error: {str(e)}",
+                "source_name": "Error",
+                "source_link": "",
+            }
+        ]
+
+
+def create_knowledge_search_tool_v3(bot) -> StrandsAgentTool:
+    """Create a knowledge search tool with bot context captured in closure."""
+
+    @tool
+    def knowledge_search(query: str) -> list:
+        """
+        Search knowledge base for relevant information.
+
+        Args:
+            query: Search query for vector search, full text search, and hybrid search
+
+        Returns:
+            list: Search results for citation support
+        """
+        logger.debug(f"[KNOWLEDGE_SEARCH_V3] Starting search: query={query}")
+
+        try:
+            # botはクロージャでキャプチャされているので、別スレッドでも利用可能
+            current_bot = bot
+
+            if not current_bot:
+                logger.warning("[KNOWLEDGE_SEARCH_V3] No bot context available")
+                return [
+                    {
+                        "content": f"Knowledge search requires bot configuration. Query was: {query}",
+                        "source_name": "Error",
+                        "source_link": "",
+                    }
+                ]
+
+            # ボットがナレッジベースを持っているかチェック
+            if not current_bot.has_knowledge():
+                logger.warning(
+                    "[KNOWLEDGE_SEARCH_V3] Bot has no knowledge base configured"
+                )
+                return [
+                    {
+                        "content": f"Bot does not have a knowledge base configured. Query was: {query}",
+                        "source_name": "Error",
+                        "source_link": "",
+                    }
+                ]
+
+            logger.debug(
+                f"[KNOWLEDGE_SEARCH_V3] Executing search with bot: {current_bot.id}"
+            )
+
+            # ナレッジ検索を実行
+            results = _search_knowledge_standalone(current_bot, query)
+
+            if not results:
+                return [
+                    {
+                        "content": "No relevant information found in the knowledge base.",
+                        "source_name": "Knowledge Base",
+                        "source_link": "",
+                    }
+                ]
+
+            logger.debug(f"[KNOWLEDGE_SEARCH_V3] Search completed successfully")
+            return results
+
+        except Exception as e:
+            logger.error(f"[KNOWLEDGE_SEARCH_V3] Knowledge search error: {e}")
+            return [
+                {
+                    "content": f"An error occurred during knowledge search: {str(e)}",
+                    "source_name": "Error",
+                    "source_link": "",
+                }
+            ]
+
+    return knowledge_search
