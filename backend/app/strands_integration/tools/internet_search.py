@@ -188,7 +188,7 @@ def _get_internet_tool_config(bot):
     return None
 
 
-def create_internet_search_tool_v3(bot) -> StrandsAgentTool:
+def create_internet_search_tool(bot) -> StrandsAgentTool:
     """Create an internet search tool with bot context captured in closure."""
 
     @tool

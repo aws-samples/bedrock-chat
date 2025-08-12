@@ -196,7 +196,7 @@ def _format_trace_for_client_standalone(trace_logs):
         return []
 
 
-def create_bedrock_agent_tool_v3(bot) -> StrandsAgentTool:
+def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
     """Create a Bedrock Agent tool with bot context captured in closure."""
 
     @tool

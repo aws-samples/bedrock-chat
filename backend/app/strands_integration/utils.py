@@ -16,22 +16,22 @@ logger.setLevel(logging.INFO)
 
 def get_strands_available_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
     """Get list of available Strands tools."""
-    from app.strands_integration.tools.calculator_v3 import (
+    from app.strands_integration.tools.calculator import (
         create_calculator_tool,
         create_advanced_calculator_tool,
     )
-    from app.strands_integration.tools.simple_list_v3 import (
+    from app.strands_integration.tools.simple_list import (
         simple_list,
         structured_list,
     )
-    from app.strands_integration.tools.internet_search_v3 import (
-        create_internet_search_tool_v3,
+    from app.strands_integration.tools.internet_search import (
+        create_internet_search_tool,
     )
-    from app.strands_integration.tools.bedrock_agent_v3 import (
-        create_bedrock_agent_tool_v3,
+    from app.strands_integration.tools.bedrock_agent import (
+        create_bedrock_agent_tool,
     )
-    from app.strands_integration.tools.knowledge_search_v3 import (
-        create_knowledge_search_tool_v3,
+    from app.strands_integration.tools.knowledge_search import (
+        create_knowledge_search_tool,
     )
 
     tools: list[StrandsAgentTool] = []
@@ -39,9 +39,9 @@ def get_strands_available_tools(bot: BotModel | None = None) -> list[StrandsAgen
     tools.append(create_advanced_calculator_tool(bot))
     tools.append(simple_list)
     tools.append(structured_list)
-    tools.append(create_internet_search_tool_v3(bot))  # Pass bot for context
-    tools.append(create_bedrock_agent_tool_v3(bot))  # Pass bot for context
-    tools.append(create_knowledge_search_tool_v3(bot))  # Pass bot for context
+    tools.append(create_internet_search_tool(bot))  # Pass bot for context
+    tools.append(create_bedrock_agent_tool(bot))  # Pass bot for context
+    tools.append(create_knowledge_search_tool(bot))  # Pass bot for context
     return tools
 
 
@@ -79,22 +79,22 @@ def get_strands_tools(
 
             # Handle dynamic tools that need bot context
             elif tool_config.name == "internet_search":
-                from app.strands_integration.tools.internet_search_v3 import (
-                    create_internet_search_tool_v3,
+                from app.strands_integration.tools.internet_search import (
+                    create_internet_search_tool,
                 )
 
-                internet_tool = create_internet_search_tool_v3(bot)
+                internet_tool = create_internet_search_tool(bot)
                 tools.append(internet_tool)
 
             elif (
                 tool_config.name == "bedrock_agent"
                 and tool_config.tool_type == "bedrock_agent"
             ):
-                from app.strands_integration.tools.bedrock_agent_v3 import (
-                    create_bedrock_agent_tool_v3,
+                from app.strands_integration.tools.bedrock_agent import (
+                    create_bedrock_agent_tool,
                 )
 
-                bedrock_tool = create_bedrock_agent_tool_v3(bot)
+                bedrock_tool = create_bedrock_agent_tool(bot)
                 tools.append(bedrock_tool)
 
             else:
@@ -105,11 +105,11 @@ def get_strands_tools(
 
     # Add knowledge tool if bot has knowledge base
     if bot.has_knowledge():
-        from app.strands_integration.tools.knowledge_search_v3 import (
-            create_knowledge_search_tool_v3,
+        from app.strands_integration.tools.knowledge_search import (
+            create_knowledge_search_tool,
         )
 
-        knowledge_tool = create_knowledge_search_tool_v3(bot)
+        knowledge_tool = create_knowledge_search_tool(bot)
         tools.append(knowledge_tool)
 
     if len(tools) == 0:

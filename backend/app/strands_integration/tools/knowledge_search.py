@@ -61,7 +61,7 @@ def _search_knowledge_standalone(bot, query: str) -> list:
         ]
 
 
-def create_knowledge_search_tool_v3(bot) -> StrandsAgentTool:
+def create_knowledge_search_tool(bot) -> StrandsAgentTool:
     """Create a knowledge search tool with bot context captured in closure."""
 
     @tool
