@@ -23,6 +23,8 @@ import { Construct } from "constructs";
 import * as path from "path";
 import * as fs from "fs";
 import { Idp, TIdentityProvider } from "../utils/identity-provider";
+import * as wafv2 from "aws-cdk-lib/aws-wafv2";
+import { CfnResource } from "aws-cdk-lib";
 
 export interface AuthProps {
   readonly origin: string;
@@ -32,6 +34,7 @@ export interface AuthProps {
   readonly autoJoinUserGroups: string[];
   readonly selfSignUpEnabled: boolean;
   readonly tokenValidity: Duration;
+  readonly webAclArn?: string;
 }
 
 export class Auth extends Construct {
@@ -286,6 +289,18 @@ export class Auth extends Construct {
       cognitoTrigger.node.addDependency(addUserToGroupsFunction);
     }
 
+    if (props.webAclArn) {
+      const cognitoWebAclAssociation = new wafv2.CfnWebACLAssociation(
+        this,
+        "CognitoWebAclAssociation",
+        {
+          resourceArn: userPool.userPoolArn,
+          webAclArn: props.webAclArn,
+        }
+      );
+      cognitoWebAclAssociation.addDependency(userPool.node.defaultChild as CfnResource);
+    }
+    
     this.client = client;
     this.userPool = userPool;
 

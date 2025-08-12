@@ -81,6 +81,8 @@ const chat = new BedrockChatStack(
       params.publishedApiAllowedIpV4AddressRanges,
     publishedApiAllowedIpV6AddressRanges:
       params.publishedApiAllowedIpV6AddressRanges,
+    allowedIpV4AddressRanges: params.allowedIpV4AddressRanges,
+    allowedIpV6AddressRanges: params.allowedIpV6AddressRanges,
     allowedSignUpEmailDomains: params.allowedSignUpEmailDomains,
     autoJoinUserGroups: params.autoJoinUserGroups,
     selfSignUpEnabled: params.selfSignUpEnabled,

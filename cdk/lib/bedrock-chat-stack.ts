@@ -18,6 +18,7 @@ import { Embedding } from "./constructs/embedding";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
+import { WebAclForCognito } from "./constructs/webacl-for-cognito";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -36,6 +37,8 @@ export interface BedrockChatStackProps extends StackProps {
   readonly userPoolDomainPrefix: string;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
+  readonly allowedIpV4AddressRanges: string[];
+  readonly allowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[];
   readonly autoJoinUserGroups: string[];
   readonly selfSignUpEnabled: boolean;
@@ -145,6 +148,19 @@ export class BedrockChatStack extends cdk.Stack {
       hostedZoneId: props.hostedZoneId,
     });
 
+    let cognitoWebAcl: WebAclForCognito | undefined;
+    if (props.allowedIpV4AddressRanges.length > 0 || props.allowedIpV6AddressRanges.length > 0) {
+      cognitoWebAcl = new WebAclForCognito(
+        this,
+        "WebAclForCognito",
+        {
+          envPrefix: props.envPrefix,
+          allowedIpV4AddressRanges: props.allowedIpV4AddressRanges,
+          allowedIpV6AddressRanges: props.allowedIpV6AddressRanges,
+        }
+      );
+    }
+
     const auth = new Auth(this, "Auth", {
       origin: frontend.getOrigin(),
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
@@ -153,6 +169,7 @@ export class BedrockChatStack extends cdk.Stack {
       autoJoinUserGroups: props.autoJoinUserGroups,
       selfSignUpEnabled: props.selfSignUpEnabled,
       tokenValidity: Duration.minutes(props.tokenValidMinutes),
+      webAclArn: cognitoWebAcl?.webAclArn,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -213,7 +230,7 @@ export class BedrockChatStack extends cdk.Stack {
       ["aoss:DescribeCollectionItems"],
       ["aoss:DescribeIndex", "aoss:ReadDocument"]
     );
-    
+
     // Add data access policy for developers
     // Get IAM user/role ARN from environment variables
     if (props.devAccessIamRoleArn) {
@@ -224,13 +241,13 @@ export class BedrockChatStack extends cdk.Stack {
         iam.Role.fromRoleArn(this, "DevAccessIamRoleArn", props.devAccessIamRoleArn),
         [
           "aoss:DescribeCollectionItems",
-          "aoss:CreateCollectionItems", 
+          "aoss:CreateCollectionItems",
           "aoss:DeleteCollectionItems",
           "aoss:UpdateCollectionItems"
         ],
         [
-          "aoss:DescribeIndex", 
-          "aoss:ReadDocument", 
+          "aoss:DescribeIndex",
+          "aoss:ReadDocument",
           "aoss:WriteDocument",
           "aoss:CreateIndex",
           "aoss:DeleteIndex",
