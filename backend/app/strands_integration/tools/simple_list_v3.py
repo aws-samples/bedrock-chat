@@ -13,8 +13,23 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+"""
+Simple list tool for Strands v3 - Pure @tool decorator implementation.
+"""
+
+import json
+import logging
+import random
+from typing import List
+
+from strands import tool
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
 @tool
-def simple_list(topic: str, count: int = 5) -> str:
+def simple_list(topic: str, count: int = 5) -> dict:
     """
     Generate a simple list of items for a given topic.
 
@@ -23,7 +38,7 @@ def simple_list(topic: str, count: int = 5) -> str:
         count: Number of items to return in the list (default: 5, max: 20)
 
     Returns:
-        str: JSON string containing list of items
+        dict: ToolResult format with list data in json field
     """
     logger.debug(f"[SIMPLE_LIST_V3] Generating list for topic: {topic}, count: {count}")
 
@@ -34,20 +49,43 @@ def simple_list(topic: str, count: int = 5) -> str:
         # Get predefined lists or generate based on topic
         items = _generate_items_for_topic(topic.lower().strip(), count)
 
-        # Format as JSON
-        result = {"topic": topic, "count": len(items), "items": items}
+        # Format as list of dictionaries with source info (same as internet search)
+        result_list = []
+        for item in items:
+            result_list.append({
+                "content": f"Item: {item}",
+                "source_name": f"Simple List Generator - {topic}",
+                "source_link": None
+            })
 
-        json_result = json.dumps(result, ensure_ascii=False, indent=2)
         logger.debug(
             f"[SIMPLE_LIST_V3] Generated {len(items)} items for topic: {topic}"
         )
 
-        return json_result
+        # Return in ToolResult format to prevent Strands from converting to string
+        return {
+            "toolUseId": "placeholder",  # Will be replaced by Strands
+            "status": "success",
+            "content": [{"json": result_list}]
+        }
 
     except Exception as e:
         error_msg = f"Error generating list for topic '{topic}': {str(e)}"
         logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
-        return json.dumps({"error": error_msg}, ensure_ascii=False)
+        return {
+            "toolUseId": "placeholder",
+            "status": "error", 
+            "content": [{"text": error_msg}]
+        }
+
+    except Exception as e:
+        error_msg = f"Error generating list for topic '{topic}': {str(e)}"
+        logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
+        return {
+            "toolUseId": "placeholder",
+            "status": "error", 
+            "content": [{"text": error_msg}]
+        }
 
 
 def _generate_items_for_topic(topic: str, count: int) -> List[str]:
@@ -321,7 +359,7 @@ def _generate_generic_items(topic: str, count: int) -> List[str]:
 @tool
 def structured_list(
     topic: str, count: int = 5, include_description: bool = False
-) -> str:
+) -> list[dict]:
     """
     Generate a structured list with optional descriptions.
 
@@ -331,7 +369,7 @@ def structured_list(
         include_description: Whether to include brief descriptions (default: False)
 
     Returns:
-        str: JSON string containing structured list with optional descriptions
+        list[dict]: List of structured items with content, source_name, and source_link
     """
     logger.debug(
         f"[STRUCTURED_LIST_V3] Topic: {topic}, count: {count}, descriptions: {include_description}"
@@ -344,33 +382,31 @@ def structured_list(
         # Get basic items
         items = _generate_items_for_topic(topic.lower().strip(), count)
 
-        # Add descriptions if requested
-        if include_description:
-            structured_items = []
-            for item in items:
+        # Format as list of dictionaries with source info (same as internet search)
+        result = []
+        for item in items:
+            if include_description:
                 description = _generate_description(item, topic)
-                structured_items.append({"name": item, "description": description})
-        else:
-            structured_items = [{"name": item} for item in items]
+                content = f"Item: {item}\nDescription: {description}"
+            else:
+                content = f"Item: {item}"
+            
+            result.append({
+                "content": content,
+                "source_name": f"Structured List Generator - {topic}",
+                "source_link": None
+            })
 
-        result = {
-            "topic": topic,
-            "count": len(structured_items),
-            "include_description": include_description,
-            "items": structured_items,
-        }
-
-        json_result = json.dumps(result, ensure_ascii=False, indent=2)
         logger.debug(
             f"[STRUCTURED_LIST_V3] Generated structured list with {len(items)} items"
         )
 
-        return json_result
+        return result
 
     except Exception as e:
         error_msg = f"Error generating structured list for topic '{topic}': {str(e)}"
         logger.error(f"[STRUCTURED_LIST_V3] {error_msg}")
-        return json.dumps({"error": error_msg}, ensure_ascii=False)
+        return [{"content": error_msg, "source_name": "Error", "source_link": None}]
 
 
 def _generate_description(item: str, topic: str) -> str:

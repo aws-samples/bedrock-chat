@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def get_strands_available_tools() -> list[StrandsAgentTool]:
+def get_strands_available_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
     """Get list of available Strands tools."""
     from app.strands_integration.tools.calculator_v3 import (
-        calculator,
-        advanced_calculator,
+        create_calculator_tool,
+        create_advanced_calculator_tool,
     )
     from app.strands_integration.tools.simple_list_v3 import (
         simple_list,
@@ -35,13 +35,13 @@ def get_strands_available_tools() -> list[StrandsAgentTool]:
     )
 
     tools: list[StrandsAgentTool] = []
-    tools.append(calculator)
-    tools.append(advanced_calculator)
+    tools.append(create_calculator_tool(bot))
+    tools.append(create_advanced_calculator_tool(bot))
     tools.append(simple_list)
     tools.append(structured_list)
-    tools.append(create_internet_search_tool_v3(None))  # None for metadata
-    tools.append(create_bedrock_agent_tool_v3(None))  # None for metadata
-    tools.append(create_knowledge_search_tool_v3(None))  # None for metadata
+    tools.append(create_internet_search_tool_v3(bot))  # Pass bot for context
+    tools.append(create_bedrock_agent_tool_v3(bot))  # Pass bot for context
+    tools.append(create_knowledge_search_tool_v3(bot))  # Pass bot for context
     return tools
 
 
@@ -67,7 +67,7 @@ def get_strands_tools(
 
     # Get static tools
     available_static_tools = {
-        tool.__name__: tool for tool in get_strands_available_tools()
+        tool.__name__: tool for tool in get_strands_available_tools(bot)
     }
 
     # Get tools based on bot's tool configuration

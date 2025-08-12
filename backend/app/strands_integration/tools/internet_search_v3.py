@@ -194,7 +194,7 @@ def create_internet_search_tool_v3(bot) -> StrandsAgentTool:
     @tool
     def internet_search(
         query: str, country: str = "jp-jp", time_limit: str = "d"
-    ) -> list:
+    ) -> dict:
         """
         Search the internet for information.
 
@@ -204,7 +204,7 @@ def create_internet_search_tool_v3(bot) -> StrandsAgentTool:
             time_limit: Time limit for search results (default: d for day)
 
         Returns:
-            list: Search results for citation support
+            dict: ToolResult format with search results in json field
         """
         logger.debug(
             f"[INTERNET_SEARCH_V3] Starting search: query={query}, country={country}, time_limit={time_limit}"
@@ -217,48 +217,51 @@ def create_internet_search_tool_v3(bot) -> StrandsAgentTool:
             # DuckDuckGo検索（デフォルト）
             if not current_bot:
                 logger.debug("[INTERNET_SEARCH_V3] No bot context, using DuckDuckGo")
-                return _search_with_duckduckgo_standalone(query, time_limit, country)
-
-            # ボット設定からインターネットツール設定を取得
-            internet_tool = _get_internet_tool_config(current_bot)
-
-            if (
-                internet_tool
-                and internet_tool.search_engine == "firecrawl"
-                and internet_tool.firecrawl_config
-                and internet_tool.firecrawl_config.api_key
-            ):
-
-                logger.debug("[INTERNET_SEARCH_V3] Using Firecrawl search")
-                results = _search_with_firecrawl_standalone(
-                    query=query,
-                    api_key=internet_tool.firecrawl_config.api_key,
-                    country=country,
-                    max_results=internet_tool.firecrawl_config.max_results,
-                )
-
-                # Firecrawlで結果が得られない場合はDuckDuckGoにフォールバック
-                if not results:
-                    logger.warning(
-                        "[INTERNET_SEARCH_V3] Firecrawl returned no results, falling back to DuckDuckGo"
-                    )
-                    return _search_with_duckduckgo_standalone(
-                        query, time_limit, country
-                    )
-
-                return results
+                results = _search_with_duckduckgo_standalone(query, time_limit, country)
             else:
-                logger.debug("[INTERNET_SEARCH_V3] Using DuckDuckGo search")
-                return _search_with_duckduckgo_standalone(query, time_limit, country)
+                # ボット設定からインターネットツール設定を取得
+                internet_tool = _get_internet_tool_config(current_bot)
+
+                if (
+                    internet_tool
+                    and internet_tool.search_engine == "firecrawl"
+                    and internet_tool.firecrawl_config
+                    and internet_tool.firecrawl_config.api_key
+                ):
+
+                    logger.debug("[INTERNET_SEARCH_V3] Using Firecrawl search")
+                    results = _search_with_firecrawl_standalone(
+                        query=query,
+                        api_key=internet_tool.firecrawl_config.api_key,
+                        country=country,
+                        max_results=internet_tool.firecrawl_config.max_results,
+                    )
+
+                    # Firecrawlで結果が得られない場合はDuckDuckGoにフォールバック
+                    if not results:
+                        logger.warning(
+                            "[INTERNET_SEARCH_V3] Firecrawl returned no results, falling back to DuckDuckGo"
+                        )
+                        results = _search_with_duckduckgo_standalone(
+                            query, time_limit, country
+                        )
+                else:
+                    logger.debug("[INTERNET_SEARCH_V3] Using DuckDuckGo search")
+                    results = _search_with_duckduckgo_standalone(query, time_limit, country)
+
+            # Return in ToolResult format to prevent Strands from converting to string
+            return {
+                "toolUseId": "placeholder",  # Will be replaced by Strands
+                "status": "success",
+                "content": [{"json": results}]
+            }
 
         except Exception as e:
             logger.error(f"[INTERNET_SEARCH_V3] Internet search error: {e}")
-            return [
-                {
-                    "content": f"Search error: {str(e)}",
-                    "source_name": "Error",
-                    "source_link": "",
-                }
-            ]
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"Search error: {str(e)}"}]
+            }
 
     return internet_search

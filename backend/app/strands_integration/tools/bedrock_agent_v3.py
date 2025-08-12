@@ -200,7 +200,7 @@ def create_bedrock_agent_tool_v3(bot) -> StrandsAgentTool:
     """Create a Bedrock Agent tool with bot context captured in closure."""
 
     @tool
-    def bedrock_agent_invoke(query: str) -> list:
+    def bedrock_agent_invoke(query: str) -> dict:
         """
         Invoke Bedrock Agent for specialized tasks.
 
@@ -218,13 +218,11 @@ def create_bedrock_agent_tool_v3(bot) -> StrandsAgentTool:
 
             if not current_bot:
                 logger.warning("[BEDROCK_AGENT_V3] No bot context available")
-                return [
-                    {
-                        "content": f"Bedrock Agent requires bot configuration. Query was: {query}",
-                        "source_name": "Error",
-                        "source_link": "",
-                    }
-                ]
+                return {
+                    "toolUseId": "placeholder",
+                    "status": "error",
+                    "content": [{"text": f"Bedrock Agent requires bot configuration. Query was: {query}"}]
+                }
 
             # ボット設定からBedrock Agent設定を取得
             agent_config = _get_bedrock_agent_config(current_bot)
@@ -235,13 +233,11 @@ def create_bedrock_agent_tool_v3(bot) -> StrandsAgentTool:
                 or not agent_config.alias_id
             ):
                 logger.warning("[BEDROCK_AGENT_V3] Bot has no Bedrock Agent configured")
-                return [
-                    {
-                        "content": f"Bot does not have a Bedrock Agent configured. Query was: {query}",
-                        "source_name": "Error",
-                        "source_link": "",
-                    }
-                ]
+                return {
+                    "toolUseId": "placeholder",
+                    "status": "error", 
+                    "content": [{"text": f"Bot does not have a Bedrock Agent configured. Query was: {query}"}]
+                }
 
             # セッションIDを生成
             session_id = str(uuid.uuid4())
@@ -259,16 +255,18 @@ def create_bedrock_agent_tool_v3(bot) -> StrandsAgentTool:
             )
 
             logger.debug(f"[BEDROCK_AGENT_V3] Invocation completed successfully")
-            return results
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"json": results}]
+            }
 
         except Exception as e:
             logger.error(f"[BEDROCK_AGENT_V3] Bedrock Agent error: {e}")
-            return [
-                {
-                    "content": f"An error occurred during Bedrock Agent invocation: {str(e)}",
-                    "source_name": "Error",
-                    "source_link": "",
-                }
-            ]
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"An error occurred during Bedrock Agent invocation: {str(e)}"}]
+            }
 
     return bedrock_agent_invoke

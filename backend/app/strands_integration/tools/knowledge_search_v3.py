@@ -65,7 +65,7 @@ def create_knowledge_search_tool_v3(bot) -> StrandsAgentTool:
     """Create a knowledge search tool with bot context captured in closure."""
 
     @tool
-    def knowledge_search(query: str) -> list:
+    def knowledge_search(query: str) -> dict:
         """
         Search knowledge base for relevant information.
 
@@ -83,26 +83,22 @@ def create_knowledge_search_tool_v3(bot) -> StrandsAgentTool:
 
             if not current_bot:
                 logger.warning("[KNOWLEDGE_SEARCH_V3] No bot context available")
-                return [
-                    {
-                        "content": f"Knowledge search requires bot configuration. Query was: {query}",
-                        "source_name": "Error",
-                        "source_link": "",
-                    }
-                ]
+                return {
+                    "toolUseId": "placeholder",
+                    "status": "error",
+                    "content": [{"text": f"Knowledge search requires bot configuration. Query was: {query}"}]
+                }
 
             # ボットがナレッジベースを持っているかチェック
             if not current_bot.has_knowledge():
                 logger.warning(
                     "[KNOWLEDGE_SEARCH_V3] Bot has no knowledge base configured"
                 )
-                return [
-                    {
-                        "content": f"Bot does not have a knowledge base configured. Query was: {query}",
-                        "source_name": "Error",
-                        "source_link": "",
-                    }
-                ]
+                return {
+                    "toolUseId": "placeholder", 
+                    "status": "error",
+                    "content": [{"text": f"Bot does not have a knowledge base configured. Query was: {query}"}]
+                }
 
             logger.debug(
                 f"[KNOWLEDGE_SEARCH_V3] Executing search with bot: {current_bot.id}"
@@ -112,25 +108,25 @@ def create_knowledge_search_tool_v3(bot) -> StrandsAgentTool:
             results = _search_knowledge_standalone(current_bot, query)
 
             if not results:
-                return [
-                    {
-                        "content": "No relevant information found in the knowledge base.",
-                        "source_name": "Knowledge Base",
-                        "source_link": "",
-                    }
-                ]
+                return {
+                    "toolUseId": "placeholder",
+                    "status": "success", 
+                    "content": [{"text": "No relevant information found in the knowledge base."}]
+                }
 
             logger.debug(f"[KNOWLEDGE_SEARCH_V3] Search completed successfully")
-            return results
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"json": results}]
+            }
 
         except Exception as e:
             logger.error(f"[KNOWLEDGE_SEARCH_V3] Knowledge search error: {e}")
-            return [
-                {
-                    "content": f"An error occurred during knowledge search: {str(e)}",
-                    "source_name": "Error",
-                    "source_link": "",
-                }
-            ]
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"An error occurred during knowledge search: {str(e)}"}]
+            }
 
     return knowledge_search
