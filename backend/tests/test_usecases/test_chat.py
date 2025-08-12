@@ -864,7 +864,7 @@ class TestAgentChat(unittest.TestCase):
             self.bot_id,
             True,
             self.user.id,
-            include_internet_tool=True,
+            include_calculator_tool=True,
         )
         store_bot(private_bot)
 
@@ -881,7 +881,7 @@ class TestAgentChat(unittest.TestCase):
                 content=[
                     TextContent(
                         content_type="text",
-                        body="Today's amazon stock price?",
+                        body="5432/64526234??",
                     )
                 ],
                 model=self.model,

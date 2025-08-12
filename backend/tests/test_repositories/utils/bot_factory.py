@@ -51,6 +51,7 @@ def _create_test_bot_model(
     bedrock_knowledge_base=None,
     include_internet_tool=False,
     include_calculator_tool=False,
+    include_simple_list_tool=False,
     set_dummy_knowledge=False,
     usage_count=0,
     **kwargs
@@ -80,6 +81,15 @@ def _create_test_bot_model(
                 description="Perform mathematical calculations like addition, subtraction, multiplication, and division",
             )
         )
+    if include_simple_list_tool:
+        tools.append(
+            PlainToolModel(
+                tool_type="plain",
+                name="simple_list",
+                description="Create and manage simple lists",
+            )
+        )
+
     return BotModel(
         id=id,
         title=title,
@@ -161,6 +171,7 @@ def create_test_private_bot(
     owner_user_id,
     include_internet_tool=False,
     include_calculator_tool=False,
+    include_simple_list_tool=False,
     **kwargs
 ):
     return _create_test_bot_model(
@@ -173,6 +184,7 @@ def create_test_private_bot(
         owner_user_id=owner_user_id,
         include_internet_tool=include_internet_tool,
         include_calculator_tool=include_calculator_tool,
+        include_simple_list_tool=include_simple_list_tool,
         **kwargs,
     )
 
