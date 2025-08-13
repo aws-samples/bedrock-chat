@@ -148,6 +148,14 @@ def _convert_simple_messages_to_strands_messages(
         if simple_msg.role == "instruction":
             continue
 
+        # Skip messages with tool use content or reasoning content (from thinking_log)
+        has_tool_or_reasoning_content = any(
+            isinstance(content, (ToolUseContentModel, ToolResultContentModel, ReasoningContentModel))
+            for content in simple_msg.content
+        )
+        if has_tool_or_reasoning_content:
+            continue
+
         # Ensure role is valid
         if simple_msg.role not in ["user", "assistant"]:
             logger.warning(f"Invalid role: {simple_msg.role}, skipping message")
