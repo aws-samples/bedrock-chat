@@ -21,37 +21,12 @@ def _search_knowledge_standalone(bot, query: str) -> list:
 
         search_results = search_related_docs(bot, query=query)
 
-        # Format results for citation support
-        formatted_results = []
-        for result in search_results:
-            if hasattr(result, "content") and hasattr(result, "source_name"):
-                formatted_results.append(
-                    {
-                        "content": result.content,
-                        "source_name": result.source_name,
-                        "source_link": getattr(result, "source_link", ""),
-                    }
-                )
-            else:
-                # Fallback formatting
-                formatted_results.append(
-                    {
-                        "content": str(result),
-                        "source_name": "Knowledge Base",
-                        "source_link": "",
-                    }
-                )
-
-        logger.info(
-            f"Knowledge search completed. Found {len(formatted_results)} results"
-        )
-        return formatted_results
+        logger.info(f"Knowledge search completed. Found {len(search_results)} results")
+        return search_results
 
     except Exception as e:
         error_traceback = traceback.format_exc()
-        logger.error(
-            f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}"
-        )
+        logger.error(f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}")
         return [
             {
                 "content": f"Knowledge search error: {str(e)}",
@@ -86,7 +61,11 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
                 return {
                     "toolUseId": "placeholder",
                     "status": "error",
-                    "content": [{"text": f"Knowledge search requires bot configuration. Query was: {query}"}]
+                    "content": [
+                        {
+                            "text": f"Knowledge search requires bot configuration. Query was: {query}"
+                        }
+                    ],
                 }
 
             # ボットがナレッジベースを持っているかチェック
@@ -95,9 +74,13 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
                     "[KNOWLEDGE_SEARCH_V3] Bot has no knowledge base configured"
                 )
                 return {
-                    "toolUseId": "placeholder", 
+                    "toolUseId": "placeholder",
                     "status": "error",
-                    "content": [{"text": f"Bot does not have a knowledge base configured. Query was: {query}"}]
+                    "content": [
+                        {
+                            "text": f"Bot does not have a knowledge base configured. Query was: {query}"
+                        }
+                    ],
                 }
 
             logger.debug(
@@ -110,15 +93,17 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
             if not results:
                 return {
                     "toolUseId": "placeholder",
-                    "status": "success", 
-                    "content": [{"text": "No relevant information found in the knowledge base."}]
+                    "status": "success",
+                    "content": [
+                        {"text": "No relevant information found in the knowledge base."}
+                    ],
                 }
 
             logger.debug(f"[KNOWLEDGE_SEARCH_V3] Search completed successfully")
             return {
                 "toolUseId": "placeholder",
                 "status": "success",
-                "content": [{"json": results}]
+                "content": [{"json": results}],
             }
 
         except Exception as e:
@@ -126,7 +111,9 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
             return {
                 "toolUseId": "placeholder",
                 "status": "error",
-                "content": [{"text": f"An error occurred during knowledge search: {str(e)}"}]
+                "content": [
+                    {"text": f"An error occurred during knowledge search: {str(e)}"}
+                ],
             }
 
     return knowledge_search
