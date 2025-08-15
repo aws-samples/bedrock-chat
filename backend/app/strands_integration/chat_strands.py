@@ -754,10 +754,10 @@ def _extract_related_documents_from_tool_capture(
 
     for tool_use_id, tool_result in tool_capture.captured_tool_results.items():
         for related_doc in tool_result["related_documents"]:
-            # Update source_id to be based on assistant_msg_id for citation
+            # Keep original source_id format for compatibility with frontend citation matching
             updated_doc = RelatedDocumentModel(
                 content=related_doc.content,
-                source_id=f"{assistant_msg_id}@{related_doc.source_id}",
+                source_id=related_doc.source_id,
                 source_name=related_doc.source_name,
                 source_link=related_doc.source_link,
                 page_number=related_doc.page_number,
