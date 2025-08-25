@@ -100,6 +100,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // ID token refresh interval
   tokenValidMinutes: z.number().default(30),
 
+  // Global model configuration
+  globalAvailableModels: z.array(z.string()).optional(),
+
   // debug parameter
   devAccessIamRoleArn: z.string().default("")
 });
@@ -224,6 +227,7 @@ export function resolveBedrockChatParameters(
     enableBotStore: app.node.tryGetContext("enableBotStore"),
     enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
+    globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
 
