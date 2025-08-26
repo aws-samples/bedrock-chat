@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import traceback
@@ -26,6 +27,7 @@ from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp, Message
+
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 PUBLISHED_API_ID = os.environ.get("PUBLISHED_API_ID", None)
@@ -65,6 +67,30 @@ if not is_published_api:
     app.include_router(bot_store_router)
 else:
     app.include_router(published_api_router)
+
+
+def get_global_available_models() -> list[str] | None:
+    """
+    Get the list of globally available models from environment variable.
+    Returns None if not configured, which means all models are available.
+    """
+    global_models_env = os.environ.get("GLOBAL_AVAILABLE_MODELS")
+    if global_models_env:
+        try:
+            return json.loads(global_models_env)
+        except json.JSONDecodeError:
+            # If JSON parsing fails, treat as comma-separated list
+            return [model.strip() for model in global_models_env.split(",") if model.strip()]
+    return None
+
+# Configuration endpoint (available for all deployments)
+@app.get("/config/global")
+def get_global_config():
+    """Get global configuration including available models."""
+    global_models = get_global_available_models()
+    return {
+        "globalAvailableModels": global_models
+    }
 
 
 app.add_middleware(
