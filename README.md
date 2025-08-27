@@ -120,7 +120,14 @@ Example usage:
     "selfSignUpEnabled": false,
     "enableLambdaSnapStart": true,
     "allowedIpV4AddressRanges": ["192.168.1.0/24"],
-    "allowedSignUpEmailDomains": ["example.com"]
+    "allowedSignUpEmailDomains": ["example.com"],
+    "globalAvailableModels": [
+      "claude-v3.7-sonnet",
+      "claude-v3.5-sonnet",
+      "amazon-nova-pro",
+      "amazon-nova-lite",
+      "llama3-3-70b-instruct"
+    ]
   }
 }'
 ```
@@ -135,6 +142,7 @@ The override JSON must follow the same structure as cdk.json. You can override a
 - `bedrockRegion`
 - `enableRagReplicas`
 - `enableBedrockCrossRegionInference`
+- `globalAvailableModels`: accepts a list of model IDs to enable. The default value is an empty list, which enables all models.
 - And other context values defined in cdk.json
 
 > [!Note]
@@ -203,11 +211,20 @@ cd cdk
 npm ci
 ```
 
-- If necessary, edit the following entries in [cdk.json](./cdk/cdk.json) if necessary.
+- If necessary, edit the following entries in [cdk.json](./cdk/cdk.json).
 
   - `bedrockRegion`: Region where Bedrock is available. **NOTE: Bedrock does NOT support all regions for now.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Allowed IP Address range.
   - `enableLambdaSnapStart`: Defaults to true. Set to false if deploying to a [region that doesn't support Lambda SnapStart for Python functions](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
+  - `globalAvailableModels`: Defaults to all. If set (list of model IDs), allows to globally control which models appear in dropdown menus across chats for all users and during bot creation in the Bedrock Chat application. 
+The following model IDs are supported (please make sure that they are also enabled in the Bedrock console under Model access in your deployment region):
+- **Claude Models:** `claude-v4-opus`, `claude-v4.1-opus`, `claude-v4-sonnet`, `claude-v3.5-sonnet`, `claude-v3.5-sonnet-v2`, `claude-v3.7-sonnet`, `claude-v3.5-haiku`, `claude-v3-haiku`, `claude-v3-opus`
+- **Amazon Nova Models:** `amazon-nova-pro`, `amazon-nova-lite`, `amazon-nova-micro`
+- **Mistral Models:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
+- **DeepSeek Models:** `deepseek-r1`
+- **Meta Llama Models:** `llama3-3-70b-instruct`, `llama3-2-1b-instruct`, `llama3-2-3b-instruct`, `llama3-2-11b-instruct`, `llama3-2-90b-instruct`
+
+The full list can be found in [index.ts](./frontend/src/constants/index.ts).
 
 - Before deploying the CDK, you will need to work with Bootstrap once for the region you are deploying to.
 
@@ -249,7 +266,14 @@ The traditional way to configure parameters is by editing the `cdk.json` file. T
   "context": {
     "bedrockRegion": "us-east-1",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
-    "selfSignUpEnabled": true
+    "selfSignUpEnabled": true,
+    "globalAvailableModels": [
+      "claude-v3.7-sonnet",
+      "claude-v3.5-sonnet",
+      "amazon-nova-pro",
+      "amazon-nova-lite",
+      "llama3-3-70b-instruct"
+    ],
   }
 }
 ```
@@ -264,6 +288,13 @@ bedrockChatParams.set("default", {
   bedrockRegion: "us-east-1",
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
   selfSignUpEnabled: true,
+  globalAvailableModels: [
+      "claude-v3.7-sonnet",
+      "claude-v3.5-sonnet",
+      "amazon-nova-pro",
+      "amazon-nova-lite",
+      "llama3-3-70b-instruct"
+    ],
 });
 
 // Define parameters for additional environments

@@ -83,7 +83,7 @@ def get_global_available_models() -> list[str] | None:
             return [model.strip() for model in global_models_env.split(",") if model.strip()]
     return None
 
-# Configuration endpoint (available for all deployments)
+# Configuration endpoint
 @app.get("/config/global")
 def get_global_config():
     """Get global configuration including available models."""
