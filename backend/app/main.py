@@ -80,17 +80,18 @@ def get_global_available_models() -> list[str] | None:
             return json.loads(global_models_env)
         except json.JSONDecodeError:
             # If JSON parsing fails, treat as comma-separated list
-            return [model.strip() for model in global_models_env.split(",") if model.strip()]
+            return [
+                model.strip() for model in global_models_env.split(",") if model.strip()
+            ]
     return None
+
 
 # Configuration endpoint
 @app.get("/config/global")
 def get_global_config():
     """Get global configuration including available models."""
     global_models = get_global_available_models()
-    return {
-        "globalAvailableModels": global_models
-    }
+    return {"globalAvailableModels": global_models}
 
 
 app.add_middleware(
