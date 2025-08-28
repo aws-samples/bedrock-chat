@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import traceback
@@ -15,6 +14,7 @@ from app.routes.api_publication import router as api_publication_router
 from app.routes.bot import router as bot_router
 from app.routes.bot_store import router as bot_store_router
 from app.routes.conversation import router as conversation_router
+from app.routes.global_config import router as global_config_router
 from app.routes.published_api import router as published_api_router
 from app.routes.user import router as user_router
 from app.user import User
@@ -45,6 +45,7 @@ if not is_published_api:
         {"name": "admin", "description": "Admin API"},
         {"name": "user", "description": "User API (cognito)"},
         {"name": "bot_store", "description": "Bot Store API"},
+        {"name": "config", "description": "Model Configuration API"},
     ]
     title = "Bedrock Chat"
 else:
@@ -65,33 +66,9 @@ if not is_published_api:
     app.include_router(admin_router)
     app.include_router(user_router)
     app.include_router(bot_store_router)
+    app.include_router(global_config_router)
 else:
     app.include_router(published_api_router)
-
-
-def get_global_available_models() -> list[str] | None:
-    """
-    Get the list of globally available models from environment variable.
-    Returns None if not configured, which means all models are available.
-    """
-    global_models_env = os.environ.get("GLOBAL_AVAILABLE_MODELS")
-    if global_models_env:
-        try:
-            return json.loads(global_models_env)
-        except json.JSONDecodeError:
-            # If JSON parsing fails, treat as comma-separated list
-            return [
-                model.strip() for model in global_models_env.split(",") if model.strip()
-            ]
-    return None
-
-
-# Configuration endpoint
-@app.get("/config/global")
-def get_global_config():
-    """Get global configuration including available models."""
-    global_models = get_global_available_models()
-    return {"globalAvailableModels": global_models}
 
 
 app.add_middleware(

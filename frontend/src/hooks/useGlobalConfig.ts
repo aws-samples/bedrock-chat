@@ -1,16 +1,10 @@
-import useHttp from './useHttp';
-
-interface GlobalConfig {
-  globalAvailableModels?: string[] | null;
-}
+import useGlobalConfigApi from './useGlobalConfigApi';
 
 const useGlobalConfig = () => {
-  const http = useHttp();
+  const api = useGlobalConfigApi();
 
   return {
-    getGlobalConfig: () => {
-      return http.get<GlobalConfig>('config/global');
-    },
+    getGlobalConfig: api.getGlobalConfig,
   };
 };
 

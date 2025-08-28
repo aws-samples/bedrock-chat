@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Model } from '../@types/conversation';
+import { ModelItem } from '../@types/global-config';
 import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -75,15 +76,6 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const { t } = useTranslation();
   const previousBotId = usePreviousBotId(botId);
 
-  type ModelItem = {
-    modelId: (typeof AVAILABLE_MODEL_KEYS)[number];
-    label: string;
-    supportMediaType: string[];
-    supportReasoning: boolean;
-    forceReasoningEnabled?: boolean;
-    description?: string;
-  };
-  
   const availableModels = useMemo<ModelItem[]>(() => {
     return [
       {
