@@ -11,7 +11,7 @@ from app.agents.tools.agent_tool import (
     ToolRunResult,
     _function_result_to_related_document,
 )
-from app.bedrock import is_tooluse_supported
+from app.bedrock import is_tooluse_supported, is_prompt_caching_supported
 from app.prompt import get_prompt_to_cite_tool_results
 from app.repositories.conversation import store_conversation, store_related_documents
 from app.repositories.models.conversation import (
@@ -134,6 +134,8 @@ def _convert_attachment_to_content_block(
 
 def _convert_simple_messages_to_strands_messages(
     simple_messages: list[SimpleMessageModel],
+    model: type_model_name,
+    prompt_caching_enabled: bool = True,
 ) -> Messages:
     """Convert SimpleMessageModel list to Strands Messages format."""
     messages: Messages = []
@@ -238,6 +240,21 @@ def _convert_simple_messages_to_strands_messages(
                 "content": content_blocks,
             }
             messages.append(message)
+
+    # Add message cache points (same logic as legacy bedrock.py)
+    if prompt_caching_enabled and is_prompt_caching_supported(model, target="message"):
+        for order, message in enumerate(
+            filter(lambda m: m["role"] == "user", reversed(messages))
+        ):
+            if order >= 2:
+                break
+
+            message["content"] = [
+                *(message["content"]),
+                {
+                    "cachePoint": {"type": "default"},
+                },
+            ]
 
     return messages
 
@@ -576,7 +593,6 @@ def _get_bedrock_model_config(
     """Get Bedrock model configuration."""
     from app.bedrock import (
         get_model_id,
-        is_prompt_caching_supported,
         is_tooluse_supported,
     )
 
@@ -1086,7 +1102,11 @@ def chat_with_strands(
     )
 
     # Convert SimpleMessageModel list to Strands Messages format
-    strands_messages = _convert_simple_messages_to_strands_messages(messages)
+    strands_messages = _convert_simple_messages_to_strands_messages(
+        messages, 
+        chat_input.message.model,
+        bot.prompt_caching_enabled if bot else True
+    )
 
     # Add current user message if not continuing generation
     if not continue_generate:
