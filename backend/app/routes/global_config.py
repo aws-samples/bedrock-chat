@@ -25,7 +25,7 @@ def get_global_available_models() -> list[str] | None:
             # If JSON parsing fails, return error
             logger.error("Failed to parse GLOBAL_AVAILABLE_MODELS as JSON")
             return None
-        
+
     logger.info("No global available models configured - all models are available")
     return None
 

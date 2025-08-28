@@ -239,7 +239,10 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       },
     ].filter((model) => {
       // Filter based on global configuration if available
-      if (globalConfig?.globalAvailableModels && globalConfig.globalAvailableModels.length > 0) {
+      if (
+        globalConfig?.globalAvailableModels &&
+        globalConfig.globalAvailableModels.length > 0
+      ) {
         return globalConfig.globalAvailableModels.includes(model.modelId);
       }
       // If no global config, show all models
