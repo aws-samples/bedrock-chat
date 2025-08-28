@@ -101,7 +101,7 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   tokenValidMinutes: z.number().default(30),
 
   // Global model configuration
-  globalAvailableModels: z.array(z.string()).optional(),
+  globalAvailableModels: z.array(z.string()).default([]),
 
   // debug parameter
   devAccessIamRoleArn: z.string().default("")
