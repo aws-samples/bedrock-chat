@@ -150,7 +150,10 @@ def _convert_simple_messages_to_strands_messages(
 
         # Skip messages with tool use content or reasoning content (from thinking_log)
         has_tool_or_reasoning_content = any(
-            isinstance(content, (ToolUseContentModel, ToolResultContentModel, ReasoningContentModel))
+            isinstance(
+                content,
+                (ToolUseContentModel, ToolResultContentModel, ReasoningContentModel),
+            )
             for content in simple_msg.content
         )
         if has_tool_or_reasoning_content:
@@ -546,7 +549,9 @@ def create_strands_agent(
     enable_reasoning: bool = False,
     hooks: list[HookProvider] | None = None,
 ) -> Agent:
-    model_config = _get_bedrock_model_config(bot, model_name, enable_reasoning)
+    model_config = _get_bedrock_model_config(
+        bot, model_name, enable_reasoning, instructions
+    )
     logger.debug(f"[AGENT_FACTORY] Model config: {model_config}")
     model = BedrockModel(**model_config)
 
@@ -566,9 +571,14 @@ def _get_bedrock_model_config(
     bot: BotModel | None,
     model_name: type_model_name = "claude-v3.5-sonnet",
     enable_reasoning: bool = False,
+    instructions: list[str] = [],
 ) -> dict:
     """Get Bedrock model configuration."""
-    from app.bedrock import get_model_id
+    from app.bedrock import (
+        get_model_id,
+        is_prompt_caching_supported,
+        is_tooluse_supported,
+    )
 
     model_id = get_model_id(model_name)
 
@@ -580,11 +590,11 @@ def _get_bedrock_model_config(
     # Add model parameters if available
     if bot and bot.generation_params:
         if bot.generation_params.temperature is not None:
-            config["temperature"] = bot.generation_params.temperature
+            config["temperature"] = bot.generation_params.temperature  # type: ignore
         if bot.generation_params.top_p is not None:
-            config["top_p"] = bot.generation_params.top_p
+            config["top_p"] = bot.generation_params.top_p  # type: ignore
         if bot.generation_params.max_tokens is not None:
-            config["max_tokens"] = bot.generation_params.max_tokens
+            config["max_tokens"] = bot.generation_params.max_tokens  # type: ignore
 
     # Add Guardrails configuration (Strands way)
     if bot and bot.bedrock_guardrails:
@@ -593,6 +603,26 @@ def _get_bedrock_model_config(
         config["guardrail_version"] = guardrails.guardrail_version
         config["guardrail_trace"] = "enabled"  # Enable trace for debugging
         logger.info(f"Enabled Guardrails: {guardrails.guardrail_arn}")
+
+    # Add prompt caching configuration
+    prompt_caching_enabled = bot.prompt_caching_enabled if bot is not None else True
+    has_tools = bot is not None and bot.is_agent_enabled()
+    if prompt_caching_enabled and not (
+        has_tools and not is_prompt_caching_supported(model_name, target="tool")
+    ):
+        # Only enable system prompt caching if there are instructions
+        if is_prompt_caching_supported(model_name, "system") and len(instructions) > 0:
+            config["cache_prompt"] = "default"
+            logger.info(f"Enabled system prompt caching for model {model_name}")
+
+        # Only enable tool caching if model supports it and tools are available
+        if is_prompt_caching_supported(model_name, target="tool") and has_tools:
+            config["cache_tools"] = "default"
+            logger.info(f"Enabled tool caching for model {model_name}")
+    else:
+        logger.info(
+            f"Prompt caching disabled for model {model_name} (enabled={prompt_caching_enabled}, has_tools={has_tools})"
+        )
 
     # Add reasoning functionality if explicitly enabled
     additional_request_fields = {}
@@ -614,13 +644,13 @@ def _get_bedrock_model_config(
             "budget_tokens": budget_tokens,
         }
         # When thinking is enabled, temperature must be 1
-        config["temperature"] = 1.0
+        config["temperature"] = 1.0  # type: ignore
         logger.debug(
             f"[AGENT_FACTORY] Reasoning enabled with budget_tokens: {budget_tokens}"
         )
 
     if additional_request_fields:
-        config["additional_request_fields"] = additional_request_fields
+        config["additional_request_fields"] = additional_request_fields  # type: ignore
 
     return config
 
@@ -776,9 +806,12 @@ def _calculate_conversation_cost(
     # Extract token usage from metrics
     input_tokens = metrics.accumulated_usage.get("inputTokens", 0)
     output_tokens = metrics.accumulated_usage.get("outputTokens", 0)
-    # Strands doesn't provide cache token info, so default to 0
-    cache_read_input_tokens = 0
-    cache_write_input_tokens = 0
+
+    # Cache token metrics are not yet supported in strands-agents 1.3.0
+    # See: https://github.com/strands-agents/sdk-python/issues/529
+    # This will be supported in future versions based on the issue discussion
+    cache_read_input_tokens = metrics.accumulated_usage.get("cacheReadInputTokens", 0)
+    cache_write_input_tokens = metrics.accumulated_usage.get("cacheWriteInputTokens", 0)
 
     # Calculate price using the same function as chat_legacy
     price = calculate_price(
@@ -790,8 +823,14 @@ def _calculate_conversation_cost(
     )
 
     logger.info(
-        f"Strands token usage: input={input_tokens}, output={output_tokens}, price={price}"
+        f"Token usage: input={input_tokens}, output={output_tokens}, price={price}"
     )
+
+    # Only warn if caching might be active but tokens are zero (indicating strands limitation)
+    if cache_read_input_tokens == 0 and cache_write_input_tokens == 0:
+        logger.debug(
+            "Cache tokens are zero - may be due to strands not yet supporting cache token metrics (see https://github.com/strands-agents/sdk-python/issues/529)"
+        )
 
     return price
 
@@ -875,8 +914,14 @@ def _create_on_stop_input(
         "price": price,
         "input_token_count": result.metrics.accumulated_usage.get("inputTokens", 0),
         "output_token_count": result.metrics.accumulated_usage.get("outputTokens", 0),
-        "cache_read_input_count": 0,  # Strands doesn't provide cache token info
-        "cache_write_input_count": 0,  # Strands doesn't provide cache token info
+        # Cache token metrics not yet supported in strands-agents 1.3.0
+        # See: https://github.com/strands-agents/sdk-python/issues/529
+        "cache_read_input_count": result.metrics.accumulated_usage.get(
+            "cacheReadInputTokens", 0
+        ),
+        "cache_write_input_count": result.metrics.accumulated_usage.get(
+            "cacheWriteInputTokens", 0
+        ),
     }
 
 
