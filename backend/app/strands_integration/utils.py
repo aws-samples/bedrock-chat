@@ -47,7 +47,7 @@ def get_strands_available_tools(bot: BotModel | None = None) -> list[StrandsAgen
 
 def get_strands_tools(
     bot: BotModel | None, model_name: type_model_name
-) -> list[StrandsAgentTool] | None:
+) -> list[StrandsAgentTool]:
     """
     Get Strands tools based on bot configuration.
 
@@ -57,11 +57,11 @@ def get_strands_tools(
         logger.warning(
             f"Tool use is not supported for model {model_name}. Returning empty tool list."
         )
-        return None
+        return []
 
     # Return empty list if bot is None or agent is not enabled
     if not bot or not bot.is_agent_enabled():
-        return None
+        return []
 
     tools: list[StrandsAgentTool] = []
 
@@ -114,6 +114,6 @@ def get_strands_tools(
 
     if len(tools) == 0:
         logger.warning("No tools configured for bot. Returning empty tool list.")
-        return None
+        return []
 
     return tools
