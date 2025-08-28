@@ -11,7 +11,7 @@ from app.agents.tools.agent_tool import (
     ToolRunResult,
     _function_result_to_related_document,
 )
-from app.bedrock import is_tooluse_supported, is_prompt_caching_supported
+from app.bedrock import is_prompt_caching_supported, is_tooluse_supported
 from app.prompt import get_prompt_to_cite_tool_results
 from app.repositories.conversation import store_conversation, store_related_documents
 from app.repositories.models.conversation import (
@@ -255,6 +255,7 @@ def _convert_simple_messages_to_strands_messages(
                     "cachePoint": {"type": "default"},
                 },
             ]
+            logger.debug(f"Added message cache point to user message: {message}")
 
     return messages
 
@@ -591,10 +592,7 @@ def _get_bedrock_model_config(
     instructions: list[str] = [],
 ) -> dict:
     """Get Bedrock model configuration."""
-    from app.bedrock import (
-        get_model_id,
-        is_tooluse_supported,
-    )
+    from app.bedrock import get_model_id, is_tooluse_supported
 
     model_id = get_model_id(model_name)
 
@@ -629,12 +627,12 @@ def _get_bedrock_model_config(
         # Only enable system prompt caching if there are instructions
         if is_prompt_caching_supported(model_name, "system") and len(instructions) > 0:
             config["cache_prompt"] = "default"
-            logger.info(f"Enabled system prompt caching for model {model_name}")
+            logger.debug(f"Enabled system prompt caching for model {model_name}")
 
         # Only enable tool caching if model supports it and tools are available
         if is_prompt_caching_supported(model_name, target="tool") and has_tools:
             config["cache_tools"] = "default"
-            logger.info(f"Enabled tool caching for model {model_name}")
+            logger.debug(f"Enabled tool caching for model {model_name}")
     else:
         logger.info(
             f"Prompt caching disabled for model {model_name} (enabled={prompt_caching_enabled}, has_tools={has_tools})"
@@ -1103,9 +1101,7 @@ def chat_with_strands(
 
     # Convert SimpleMessageModel list to Strands Messages format
     strands_messages = _convert_simple_messages_to_strands_messages(
-        messages, 
-        chat_input.message.model,
-        bot.prompt_caching_enabled if bot else True
+        messages, chat_input.message.model, bot.prompt_caching_enabled if bot else True
     )
 
     # Add current user message if not continuing generation

@@ -225,7 +225,7 @@ def chat(
     use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
 
     if use_strands:
-        from app.strands_integration.chat_strands_v4 import chat_with_strands
+        from app.strands_integration.chat_strands import chat_with_strands
 
         return chat_with_strands(
             user,
