@@ -47,7 +47,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableBotStore: boolean;
   readonly enableBotStoreReplicas: boolean;
   readonly botStoreLanguage: Language;
-  readonly globalAvailableModels: string[];
+  readonly globalAvailableModels?: string[];
   readonly tokenValidMinutes: number;
   readonly alternateDomainName?: string;
   readonly hostedZoneId?: string;

@@ -42,7 +42,7 @@ export interface ApiProps {
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
   readonly openSearchEndpoint?: string;
-  readonly globalAvailableModels: string[];
+  readonly globalAvailableModels?: string[];
 }
 
 export class Api extends Construct {
