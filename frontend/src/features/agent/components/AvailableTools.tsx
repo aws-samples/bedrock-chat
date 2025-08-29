@@ -53,7 +53,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
 
           return newTools;
         });
-      } else if (tool.name === 'bedrock_agent') {
+      } else if (tool.name === 'bedrock_agent_invoke') {
         setTools((preTools) => {
           const isEnabled = preTools
             ?.map(({ name }) => name)
@@ -66,7 +66,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                 {
                   ...tool,
                   toolType: 'bedrock_agent' as ToolType,
-                  name: 'bedrock_agent',
+                  name: 'bedrock_agent_invoke',
                   bedrockAgentConfig: {
                     agentId: '',
                     aliasId: '',
@@ -113,11 +113,11 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
     (config: BedrockAgentConfig) => {
       setTools((prevTools) =>
         prevTools.map((tool) => {
-          if (tool.name === 'bedrock_agent') {
+          if (tool.name === 'bedrock_agent_invoke') {
             return {
               ...tool,
               toolType: 'bedrock_agent' as ToolType,
-              name: 'bedrock_agent',
+              name: 'bedrock_agent_invoke',
               bedrockAgentConfig: config,
             } as AgentTool;
           }
@@ -273,8 +273,8 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                 </div>
               </ExpandableDrawerGroup>
             )}
-          {tool.name === 'bedrock_agent' &&
-            tools?.map(({ name }) => name).includes('bedrock_agent') && (
+          {tool.name === 'bedrock_agent_invoke' &&
+            tools?.map(({ name }) => name).includes('bedrock_agent_invoke') && (
               <div className="space-y-4">
                 <div className="ml-6 text-sm">
                   <BedrockAgentConfigComponent

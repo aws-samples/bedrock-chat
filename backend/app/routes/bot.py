@@ -21,6 +21,7 @@ from app.routes.schemas.bot import (
     GenerationParams,
     Knowledge,
     PlainTool,
+    Tool,
 )
 from app.routes.schemas.conversation import type_model_name
 from app.usecases.bot import (
@@ -168,11 +169,8 @@ def remove_bot_from_recent_history(request: Request, bot_id: str):
     return {"message": f"Bot {bot_id} removed from recently used bots history"}
 
 
-@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[PlainTool])
+@router.get("/bot/{bot_id}/agent/available-tools", response_model=list[Tool])
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
-    return [
-        PlainTool(tool_type="plain", name=tool.name, description=tool.description)
-        for tool in tools
-    ]
+    return tools
