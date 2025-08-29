@@ -204,10 +204,7 @@ def process_chat_input(
             on_stream=lambda token: notificator.on_stream(
                 token=token,
             ),
-            on_stop=lambda arg: (
-                logger.debug(f"[WEBSOCKET_LAMBDA] on_stop lambda called with: {arg}"),
-                notificator.on_stop(arg=arg),
-            )[1],
+            on_stop=lambda arg: notificator.on_stop(arg=arg),
             on_thinking=lambda tool_use: notificator.on_agent_thinking(
                 tool_use=tool_use,
             ),
