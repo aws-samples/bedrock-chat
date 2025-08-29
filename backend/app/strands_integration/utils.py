@@ -6,7 +6,7 @@ import logging
 from typing import Dict
 
 from app.bedrock import is_tooluse_supported
-from app.repositories.models.custom_bot import BotModel
+from app.repositories.models.custom_bot import BedrockAgentToolModel, BotModel
 from app.routes.schemas.conversation import type_model_name
 from strands.types.tools import AgentTool as StrandsAgentTool
 
@@ -14,34 +14,23 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def get_strands_available_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
+def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
     """Get list of available Strands tools."""
+    from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
     from app.strands_integration.tools.calculator import (
-        create_calculator_tool,
         create_advanced_calculator_tool,
+        create_calculator_tool,
     )
-    from app.strands_integration.tools.simple_list import (
-        simple_list,
-        structured_list,
-    )
-    from app.strands_integration.tools.internet_search import (
-        create_internet_search_tool,
-    )
-    from app.strands_integration.tools.bedrock_agent import (
-        create_bedrock_agent_tool,
-    )
-    from app.strands_integration.tools.knowledge_search import (
-        create_knowledge_search_tool,
-    )
+    from app.strands_integration.tools.internet_search import create_internet_search_tool
+    from app.strands_integration.tools.simple_list import simple_list, structured_list
 
     tools: list[StrandsAgentTool] = []
     tools.append(create_calculator_tool(bot))
     tools.append(create_advanced_calculator_tool(bot))
     tools.append(simple_list)
     tools.append(structured_list)
-    tools.append(create_internet_search_tool(bot))  # Pass bot for context
-    tools.append(create_bedrock_agent_tool(bot))  # Pass bot for context
-    tools.append(create_knowledge_search_tool(bot))  # Pass bot for context
+    tools.append(create_internet_search_tool(bot))
+    tools.append(create_bedrock_agent_tool(bot))
     return tools
 
 
@@ -63,45 +52,20 @@ def get_strands_tools(
     if not bot or not bot.is_agent_enabled():
         return []
 
+    registered_tools = get_strands_registered_tools(bot)
     tools: list[StrandsAgentTool] = []
 
-    # Get static tools
-    available_static_tools = {
-        tool.__name__: tool for tool in get_strands_available_tools(bot)
-    }
-
     # Get tools based on bot's tool configuration
-    for tool_config in bot.agent.tools:
-        try:
-            # Handle static tools
-            if tool_config.name in available_static_tools:
-                tools.append(available_static_tools[tool_config.name])
+    for tool in bot.agent.tools:
+        if tool.name not in [t.tool_name for t in registered_tools]:
+            continue
 
-            # Handle dynamic tools that need bot context
-            elif tool_config.name == "internet_search":
-                from app.strands_integration.tools.internet_search import (
-                    create_internet_search_tool,
-                )
-
-                internet_tool = create_internet_search_tool(bot)
-                tools.append(internet_tool)
-
-            elif (
-                tool_config.name == "bedrock_agent"
-                and tool_config.tool_type == "bedrock_agent"
-            ):
-                from app.strands_integration.tools.bedrock_agent import (
-                    create_bedrock_agent_tool,
-                )
-
-                bedrock_tool = create_bedrock_agent_tool(bot)
-                tools.append(bedrock_tool)
-
-            else:
-                logger.warning(f"Unknown tool: {tool_config.name}")
-
-        except Exception as e:
-            logger.error(f"Error processing tool {tool_config.name}: {e}")
+        # Append tool by matching name
+        matched_tool = next(
+            (t for t in registered_tools if t.tool_name == tool.name), None
+        )
+        if matched_tool:
+            tools.append(matched_tool)
 
     # Add knowledge tool if bot has knowledge base
     if bot.has_knowledge():
@@ -116,4 +80,5 @@ def get_strands_tools(
         logger.warning("No tools configured for bot. Returning empty tool list.")
         return []
 
+    logger.info(f"Strands tools configured for bot: {[t.tool_name for t in tools]}")
     return tools

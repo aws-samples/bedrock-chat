@@ -269,4 +269,23 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
                 "content": [{"text": f"An error occurred during Bedrock Agent invocation: {str(e)}"}]
             }
 
+    # Update tool description dynamically to reflect the actual agent's purpose.
+    # This ensures the LLM selects the correct tool based on the agent's specific capabilities
+    # rather than using a generic description that may lead to inappropriate tool selection.
+    if bot:
+        agent_config = _get_bedrock_agent_config(bot)
+        if agent_config and agent_config.agent_id:
+            try:
+                from app.utils import get_bedrock_agent_client
+                client = get_bedrock_agent_client()
+                response = client.get_agent(agentId=agent_config.agent_id)
+                description = response.get("agent", {}).get("description", "Bedrock Agent")
+                
+                # Dynamically update tool description
+                bedrock_agent_invoke._tool_spec["description"] = description
+                logger.info(f"Updated bedrock_agent tool description to: {description}")
+                
+            except Exception as e:
+                logger.error(f"Failed to update bedrock_agent tool description: {e}")
+    
     return bedrock_agent_invoke
