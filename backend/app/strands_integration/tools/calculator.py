@@ -125,7 +125,9 @@ def create_advanced_calculator_tool(bot: BotModel | None = None):
         Returns:
             str: Result of the calculation with specified precision
         """
-        logger.debug(f"[ADVANCED_CALCULATOR_V3] Bot context: {bot.id if bot else 'None'}")
+        logger.debug(
+            f"[ADVANCED_CALCULATOR_V3] Bot context: {bot.id if bot else 'None'}"
+        )
         logger.debug(
             f"[ADVANCED_CALCULATOR_V3] Expression: {expression}, Precision: {precision}"
         )
@@ -152,7 +154,9 @@ def create_advanced_calculator_tool(bot: BotModel | None = None):
                     "."
                 )
 
-            logger.debug(f"[ADVANCED_CALCULATOR_V3] Formatted result: {formatted_result}")
+            logger.debug(
+                f"[ADVANCED_CALCULATOR_V3] Formatted result: {formatted_result}"
+            )
             return formatted_result
 
         except ValueError:

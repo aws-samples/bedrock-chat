@@ -287,13 +287,17 @@ class ConverseApiStreamHandler:
                                     ]
                             else:
                                 # Should not happen
-                                logger.warning(f"Unexpected reasoning content: {content}")
+                                logger.warning(
+                                    f"Unexpected reasoning content: {content}"
+                                )
                         else:
                             # If the block is not started, create a new block
                             current_message["contents"][index] = {
                                 "text": reasoning.get("text", ""),
                                 "signature": reasoning.get("signature", ""),
-                                "redacted_content": reasoning.get("redactedContent", b""),
+                                "redacted_content": reasoning.get(
+                                    "redactedContent", b""
+                                ),
                             }
                         if self.on_reasoning:
                             # Only text is streamed

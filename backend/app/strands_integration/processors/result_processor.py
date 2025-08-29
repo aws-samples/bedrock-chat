@@ -1,8 +1,9 @@
 """
 Result processing utilities for Strands integration.
 """
+
 import logging
-from typing import Callable
+from typing import Callable, cast
 
 from app.repositories.conversation import store_conversation, store_related_documents
 from app.repositories.models.conversation import (
@@ -41,11 +42,11 @@ def create_on_stop_input(
         "output_token_count": result.metrics.accumulated_usage.get("outputTokens", 0),
         # Cache token metrics not yet supported in strands-agents 1.3.0
         # See: https://github.com/strands-agents/sdk-python/issues/529
-        "cache_read_input_count": result.metrics.accumulated_usage.get(
-            "cacheReadInputTokens", 0
+        "cache_read_input_count": cast(
+            int, result.metrics.accumulated_usage.get("cacheReadInputTokens", 0)
         ),
-        "cache_write_input_count": result.metrics.accumulated_usage.get(
-            "cacheWriteInputTokens", 0
+        "cache_write_input_count": cast(
+            int, result.metrics.accumulated_usage.get("cacheWriteInputTokens", 0)
         ),
     }
 

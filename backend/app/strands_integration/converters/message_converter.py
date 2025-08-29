@@ -1,6 +1,7 @@
 """
 Message conversion utilities for Strands integration.
 """
+
 import logging
 
 from app.bedrock import is_prompt_caching_supported
@@ -76,13 +77,13 @@ def convert_simple_messages_to_strands_messages(
                     # content.body is already binary data (Base64EncodedBytes), no need to decode
                     image_bytes = content.body
                     image_format = map_to_image_format(content.media_type)
-                    content_block: ContentBlock = {
+                    image_content_block: ContentBlock = {
                         "image": {
                             "format": image_format,
                             "source": {"bytes": image_bytes},
                         }
                     }
-                    content_blocks.append(content_block)
+                    content_blocks.append(image_content_block)
                 except Exception as e:
                     logger.warning(f"Failed to convert image content: {e}")
             elif isinstance(content, AttachmentContentModel):
@@ -106,16 +107,16 @@ def convert_simple_messages_to_strands_messages(
                 tool_result_content = []
                 for result_item in content.body.content:
                     if hasattr(result_item, "text"):
-                        tool_result_content.append({"text": result_item.text})
+                        tool_result_content.append({"text": result_item.text})  # type: ignore
                     elif hasattr(result_item, "json_"):
-                        tool_result_content.append({"json": result_item.json_})
+                        tool_result_content.append({"json": result_item.json_})  # type: ignore
                     else:
-                        tool_result_content.append({"text": str(result_item)})
+                        tool_result_content.append({"text": str(result_item)})  # type: ignore
 
                 content_block = {
                     "toolResult": {
                         "toolUseId": content.body.tool_use_id,
-                        "content": tool_result_content,
+                        "content": tool_result_content,  # type: ignore
                         "status": "success",  # Default status
                     }
                 }
@@ -205,7 +206,7 @@ def convert_strands_message_to_message_model(
                 content_model = ReasoningContentModel(
                     content_type="reasoning",
                     text=reasoning_text.get("text", ""),
-                    signature=reasoning_text.get("signature", ""),
+                    signature=reasoning_text.get("signature", "") or "",
                     redacted_content=b"",  # Default empty
                 )
                 content_models.append(content_model)

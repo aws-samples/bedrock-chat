@@ -22,7 +22,9 @@ def _search_knowledge_standalone(bot, query: str) -> list:
 
     except Exception as e:
         error_traceback = traceback.format_exc()
-        logger.error(f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}")
+        logger.error(
+            f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}"
+        )
         return [
             {
                 "content": f"Knowledge search error: {str(e)}",

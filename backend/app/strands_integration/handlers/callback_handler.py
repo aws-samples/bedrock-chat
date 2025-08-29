@@ -1,6 +1,7 @@
 """
 Callback handler for Strands integration.
 """
+
 import logging
 from typing import Callable
 

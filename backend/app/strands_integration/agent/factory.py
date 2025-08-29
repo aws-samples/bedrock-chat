@@ -1,6 +1,7 @@
 """
 Agent factory for Strands integration.
 """
+
 import logging
 
 from app.repositories.models.conversation import type_model_name
@@ -33,7 +34,7 @@ def create_strands_agent(
 
     agent = Agent(
         model=model,
-        tools=get_strands_tools(bot, model_name),
+        tools=get_strands_tools(bot, model_name),  # type: ignore
         hooks=hooks or [],
         system_prompt=system_prompt,
     )

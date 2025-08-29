@@ -412,20 +412,20 @@ class TestFetchAvailableAgentTools(unittest.TestCase):
     def test_fetch_available_agent_tools_basic(self):
         """Test basic functionality of fetch_available_agent_tools"""
         tools = fetch_available_agent_tools()
-        
+
         self.assertIsInstance(tools, list)
         self.assertGreater(len(tools), 0)  # At least one tool should be available
 
     def test_fetch_available_agent_tools_types(self):
         """Test tool type conversion"""
         tools = fetch_available_agent_tools()
-        
+
         # bedrock_agent -> BedrockAgentTool
         bedrock_tools = [t for t in tools if t.name == "bedrock_agent_invoke"]
         self.assertEqual(len(bedrock_tools), 1)
         self.assertIsInstance(bedrock_tools[0], BedrockAgentTool)
         self.assertEqual(bedrock_tools[0].tool_type, "bedrock_agent")
-        
+
         # internet_search -> InternetTool
         internet_tools = [t for t in tools if t.name == "internet_search"]
         self.assertEqual(len(internet_tools), 1)
@@ -436,14 +436,14 @@ class TestFetchAvailableAgentTools(unittest.TestCase):
     def test_fetch_available_agent_tools_descriptions(self):
         """Test tool descriptions are properly extracted and print them"""
         tools = fetch_available_agent_tools()
-        
+
         print("\n=== Available Agent Tools ===")
         for tool in tools:
             print(f"Tool: {tool.name}")
             print(f"Type: {tool.tool_type}")
             print(f"Description: {tool.description}")
             print("-" * 50)
-            
+
             self.assertIsNotNone(tool.description)
             self.assertNotEqual(tool.description, "")
             self.assertIsInstance(tool.description, str)

@@ -1,6 +1,7 @@
 """
 Document extraction utilities for Strands integration.
 """
+
 from app.repositories.models.conversation import (
     ReasoningContentModel,
     RelatedDocumentModel,

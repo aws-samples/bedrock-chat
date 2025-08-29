@@ -3,6 +3,7 @@ Cost calculation utilities for Strands integration.
 """
 
 import logging
+from typing import cast
 
 from app.bedrock import calculate_price
 from app.repositories.models.conversation import type_model_name
@@ -30,8 +31,8 @@ def calculate_conversation_cost(
         model=model_name,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
-        cache_read_input_tokens=cache_read_input_tokens,
-        cache_write_input_tokens=cache_write_input_tokens,
+        cache_read_input_tokens=cast(int, cache_read_input_tokens),
+        cache_write_input_tokens=cast(int, cache_write_input_tokens),
     )
 
     logger.info(

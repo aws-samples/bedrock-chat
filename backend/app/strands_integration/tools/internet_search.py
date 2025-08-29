@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def _search_with_duckduckgo_standalone(query: str, time_limit: str, country: str) -> list:
+def _search_with_duckduckgo_standalone(
+    query: str, time_limit: str, country: str
+) -> list:
     """Standalone DuckDuckGo search implementation."""
     try:
         from duckduckgo_search import DDGS
@@ -70,7 +72,9 @@ def _search_with_firecrawl_standalone(
     try:
         from firecrawl import FirecrawlApp, ScrapeOptions
 
-        logger.info(f"Searching with Firecrawl: query={query}, max_results={max_results}")
+        logger.info(
+            f"Searching with Firecrawl: query={query}, max_results={max_results}"
+        )
 
         app = FirecrawlApp(api_key=api_key)
 
@@ -108,7 +112,9 @@ def _search_with_firecrawl_standalone(
                         }
                     )
 
-        logger.info(f"Firecrawl search completed. Found {len(formatted_results)} results")
+        logger.info(
+            f"Firecrawl search completed. Found {len(formatted_results)} results"
+        )
         return formatted_results
 
     except Exception as e:
@@ -116,7 +122,9 @@ def _search_with_firecrawl_standalone(
         return []
 
 
-def _summarize_content_standalone(content: str, title: str, url: str, query: str) -> str:
+def _summarize_content_standalone(
+    content: str, title: str, url: str, query: str
+) -> str:
     """Standalone content summarization."""
     try:
         from app.utils import get_bedrock_runtime_client

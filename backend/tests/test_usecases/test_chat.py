@@ -435,12 +435,14 @@ class TestContinueChat(unittest.TestCase):
             thinking_log=None,
         )
         self.conversation.message_map[assistant_msg_id].children.append(user_msg_2_id)
-        
+
         # Add assistant response
         assistant_msg_2_id = "assistant-2"
         self.conversation.message_map[assistant_msg_2_id] = MessageModel(
             role="assistant",
-            content=[TextContentModel(content_type="text", body="散歩でもしませんか？")],
+            content=[
+                TextContentModel(content_type="text", body="散歩でもしませんか？")
+            ],
             model=MODEL,
             children=[],
             parent=user_msg_2_id,
@@ -450,12 +452,14 @@ class TestContinueChat(unittest.TestCase):
             thinking_log=None,
         )
         self.conversation.message_map[user_msg_2_id].children.append(assistant_msg_2_id)
-        
+
         # Add third user message to trigger message cache (now we have 3 user messages)
         user_msg_3_id = "user-3"
         self.conversation.message_map[user_msg_3_id] = MessageModel(
             role="user",
-            content=[TextContentModel(content_type="text", body="他にも提案してください")],
+            content=[
+                TextContentModel(content_type="text", body="他にも提案してください")
+            ],
             model=MODEL,
             children=[],
             parent=assistant_msg_2_id,

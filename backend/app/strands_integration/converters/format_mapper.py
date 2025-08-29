@@ -1,6 +1,7 @@
 """
 Format mapping utilities for Strands integration.
 """
+
 import logging
 
 from strands.types.media import DocumentFormat, ImageFormat

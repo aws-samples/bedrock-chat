@@ -71,7 +71,9 @@ def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
                         f"Updated bedrock_agent tool description to: {description}"
                     )
                 except Exception as e:
-                    logger.error(f"Failed to update bedrock_agent tool description: {e}")
+                    logger.error(
+                        f"Failed to update bedrock_agent tool description: {e}"
+                    )
         except Exception as e:
             logger.error(f"Error processing tool {tool_config.name}: {e}")
 

@@ -1,6 +1,8 @@
 """
 Tool result conversion utilities for Strands integration.
 """
+
+from typing import Any, cast
 import logging
 
 from app.agents.tools.agent_tool import (
@@ -59,7 +61,9 @@ def convert_tool_result_content_to_function_result(
         return ""
 
 
-def convert_raw_tool_result_to_tool_result(event: AfterToolInvocationEvent) -> dict:
+def convert_raw_tool_result_to_tool_result(
+    event: AfterToolInvocationEvent,
+) -> dict[str, Any]:
     """Convert raw tool result to proper ToolResult format."""
 
     tool_use_id = event.tool_use["toolUseId"]
@@ -77,7 +81,7 @@ def convert_raw_tool_result_to_tool_result(event: AfterToolInvocationEvent) -> d
         and "status" in raw_result
     ):
         logger.debug("[RAW_TOOL_RESULT_DEBUG] Already in ToolResult format")
-        return raw_result
+        return cast(dict[str, Any], raw_result)
 
     # Convert raw result to ToolResult format
     content_list = []
@@ -113,7 +117,7 @@ def convert_raw_tool_result_to_tool_result(event: AfterToolInvocationEvent) -> d
 
 def convert_tool_run_result_to_strands_tool_result(
     tool_run_result: ToolRunResult,
-) -> dict:
+) -> dict[str, Any]:
     """Convert our ToolRunResult back to Strands ToolResult format with source_id included."""
     # Convert related documents back to ToolResultContent
     content_list = []
@@ -124,23 +128,32 @@ def convert_tool_run_result_to_strands_tool_result(
         # Always return as JSON with source_id included
         if isinstance(content, TextToolResultModel):
             # Convert text content to JSON with source_id
-            original_content = {"text": content.text}
-            enhanced_content = {**original_content, "source_id": source_id}
-            tool_result_content: ToolResultContent = {"json": enhanced_content}
+            text_content = {"text": content.text}
+            enhanced_text_content: dict[str, Any] = {
+                **text_content,
+                "source_id": source_id,
+            }
+            tool_result_content: ToolResultContent = {"json": enhanced_text_content}  # type: ignore
         elif isinstance(content, JsonToolResultModel):
             # Convert JSON content with source_id
-            original_content = (
+            json_content: dict[str, Any] = (
                 content.json_
                 if isinstance(content.json_, dict)
                 else {"data": content.json_}
             )
-            enhanced_content = {**original_content, "source_id": source_id}
-            tool_result_content = {"json": enhanced_content}
+            enhanced_json_content: dict[str, Any] = {
+                **json_content,
+                "source_id": source_id,
+            }
+            tool_result_content = {"json": enhanced_json_content}  # type: ignore
         else:
             # Fallback to text converted to JSON with source_id
-            original_content = {"text": str(content)}
-            enhanced_content = {**original_content, "source_id": source_id}
-            tool_result_content = {"json": enhanced_content}
+            fallback_content = {"text": str(content)}
+            enhanced_fallback_content: dict[str, Any] = {
+                **fallback_content,
+                "source_id": source_id,
+            }
+            tool_result_content = {"json": enhanced_fallback_content}  # type: ignore
 
         content_list.append(tool_result_content)
 
@@ -172,7 +185,9 @@ def convert_after_tool_event_to_tool_run_result(
     logger.debug(f"[TOOL_RESULT_DEBUG] Raw result content: {tool_result_content}")
     logger.debug(f"[TOOL_RESULT_DEBUG] Content type: {type(tool_result_content)}")
     if tool_result_content:
-        logger.debug(f"[TOOL_RESULT_DEBUG] First content item: {tool_result_content[0]}")
+        logger.debug(
+            f"[TOOL_RESULT_DEBUG] First content item: {tool_result_content[0]}"
+        )
         logger.debug(
             f"[TOOL_RESULT_DEBUG] First content item type: {type(tool_result_content[0])}"
         )

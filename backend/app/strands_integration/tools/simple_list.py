@@ -60,7 +60,9 @@ def simple_list(topic: str, count: int = 5) -> dict:
                 }
             )
 
-        logger.debug(f"[SIMPLE_LIST_V3] Generated {len(items)} items for topic: {topic}")
+        logger.debug(
+            f"[SIMPLE_LIST_V3] Generated {len(items)} items for topic: {topic}"
+        )
 
         # Return in ToolResult format to prevent Strands from converting to string
         return {

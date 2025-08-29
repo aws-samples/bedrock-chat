@@ -7,7 +7,10 @@ from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
 from app.stream import OnThinking
-from strands.experimental.hooks import AfterToolInvocationEvent, BeforeToolInvocationEvent
+from strands.experimental.hooks import (
+    AfterToolInvocationEvent,
+    BeforeToolInvocationEvent,
+)
 from strands.hooks import HookProvider, HookRegistry
 
 from ..converters.tool_converter import (

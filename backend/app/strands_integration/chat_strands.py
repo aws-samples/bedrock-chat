@@ -1,6 +1,7 @@
 """
 Main chat function for Strands integration.
 """
+
 import logging
 from typing import Callable
 
@@ -128,19 +129,21 @@ def chat_with_strands(
                     image_bytes = content.body
                     image_format = map_to_image_format(content.media_type)
 
-                    content_block: ContentBlock = {
+                    image_content_block: ContentBlock = {
                         "image": {
                             "format": image_format,
                             "source": {"bytes": image_bytes},
                         }
                     }
-                    current_content_blocks.append(content_block)
+                    current_content_blocks.append(image_content_block)
                 except Exception as e:
                     logger.warning(f"Failed to convert image content: {e}")
             elif isinstance(content, AttachmentContentModel):
                 try:
-                    content_block = convert_attachment_to_content_block(content)
-                    current_content_blocks.append(content_block)
+                    attachment_content_block = convert_attachment_to_content_block(
+                        content
+                    )
+                    current_content_blocks.append(attachment_content_block)
                 except Exception as e:
                     logger.warning(f"Failed to convert attachment content: {e}")
 
@@ -157,8 +160,8 @@ def chat_with_strands(
             continue_content_blocks: list[ContentBlock] = []
             for content in last_message.content:
                 if isinstance(content, TextContentModel):
-                    content_block: ContentBlock = {"text": content.body}
-                    continue_content_blocks.append(content_block)
+                    continue_text_block: ContentBlock = {"text": content.body}
+                    continue_content_blocks.append(continue_text_block)
 
             if continue_content_blocks:
                 continue_message: Message = {

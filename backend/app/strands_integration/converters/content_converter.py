@@ -1,6 +1,7 @@
 """
 Content conversion utilities for Strands integration.
 """
+
 import re
 import urllib.parse
 from pathlib import Path
@@ -33,7 +34,7 @@ def convert_attachment_to_content_block(
 
     return {
         "document": {
-            "format": format,
+            "format": format,  # type: ignore
             "name": valid_name,
             "source": {"bytes": content.body},  # Use body directly (already base64)
         }

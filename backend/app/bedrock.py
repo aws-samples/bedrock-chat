@@ -311,7 +311,11 @@ def compose_args_for_converse_api(
             ):
                 return [
                     {"guardContent": grounding_source},
-                    {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
+                    {
+                        "guardContent": {
+                            "text": {"text": c.body, "qualifiers": ["query"]}
+                        }
+                    },
                 ]
 
         return c.to_contents_for_converse()
@@ -391,8 +395,8 @@ def compose_args_for_converse_api(
 
     elif is_mistral(model):
         # Special handling for Mistral models
-        inference_config, additional_model_request_fields = _prepare_mistral_model_params(
-            model, generation_params
+        inference_config, additional_model_request_fields = (
+            _prepare_mistral_model_params(model, generation_params)
         )
         system_prompts = (
             [
@@ -575,7 +579,9 @@ def call_converse_api(
         return client.converse(**args)
     except ClientError as e:
         if e.response["Error"]["Code"] == "ThrottlingException":
-            raise BedrockThrottlingException("Bedrock API is throttling requests") from e
+            raise BedrockThrottlingException(
+                "Bedrock API is throttling requests"
+            ) from e
         raise
 
 
