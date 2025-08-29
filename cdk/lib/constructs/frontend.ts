@@ -10,6 +10,7 @@ import {
   CachePolicy,
   Distribution,
   ViewerProtocolPolicy,
+  GeoRestriction,
 } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { NodejsBuild } from "deploy-time-build";
@@ -34,6 +35,11 @@ export interface FrontendProps {
    * Required if alternateDomainName is provided
    */
   readonly hostedZoneId?: string;
+  /**
+   * List of allowed countries for the CloudFront distribution, specified as ISO 3166-1 alpha-2 codes (e.g., "US", "CA").
+   * If empty, all countries will be allowed.
+   */
+  readonly allowedCountries?: string[];
 }
 
 export class Frontend extends Construct {
@@ -43,11 +49,14 @@ export class Frontend extends Construct {
   private readonly hostedZone?: route53.IHostedZone;
   /** Alternate domain name for the CloudFront distribution */
   private readonly alternateDomainName?: string;
+  private readonly allowedCountries: string[];
 
   constructor(scope: Construct, id: string, props: FrontendProps) {
     super(scope, id);
 
     this.alternateDomainName = props.alternateDomainName;
+    // Initialize allowedCountries from props (default to empty list meaning no geo restriction)
+    this.allowedCountries = props.allowedCountries ?? [];
 
     const assetBucket = new Bucket(this, "AssetBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -80,6 +89,10 @@ export class Frontend extends Construct {
         viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
         cachePolicy: CachePolicy.CACHING_OPTIMIZED,
       },
+      // Apply geo restriction allowlist only when countries are provided
+      ...(this.allowedCountries.length
+        ? { geoRestriction: GeoRestriction.allowlist(...this.allowedCountries) }
+        : {}),
       ...(this.alternateDomainName && this.certificate ? {
         domainNames: [this.alternateDomainName],
         certificate: this.certificate,
