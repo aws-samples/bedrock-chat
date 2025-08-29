@@ -26,6 +26,7 @@ from mypy_boto3_bedrock_runtime.literals import ConversationRoleType, StopReason
 from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 from pydantic import JsonValue
 from reretry import retry
+from typing_extensions import deprecated
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -152,6 +153,7 @@ def _content_model_to_partial_content(
         raise ValueError(f"Unknown content type")
 
 
+@deprecated("Use strands instead")
 class ConverseApiStreamHandler:
     """Stream handler using Converse API.
     Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
@@ -285,17 +287,13 @@ class ConverseApiStreamHandler:
                                     ]
                             else:
                                 # Should not happen
-                                logger.warning(
-                                    f"Unexpected reasoning content: {content}"
-                                )
+                                logger.warning(f"Unexpected reasoning content: {content}")
                         else:
                             # If the block is not started, create a new block
                             current_message["contents"][index] = {
                                 "text": reasoning.get("text", ""),
                                 "signature": reasoning.get("signature", ""),
-                                "redacted_content": reasoning.get(
-                                    "redactedContent", b""
-                                ),
+                                "redacted_content": reasoning.get("redactedContent", b""),
                             }
                         if self.on_reasoning:
                             # Only text is streamed

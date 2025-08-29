@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, Optional, Literal, Tuple, TypeGuard
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, TypeGuard
 
 from app.config import (
     BEDROCK_PRICING,
@@ -17,6 +17,7 @@ from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 from botocore.exceptions import ClientError
 from reretry import retry
+from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import AgentTool
@@ -279,6 +280,7 @@ def _prepare_nova_model_params(
     return inference_config, additional_fields
 
 
+@deprecated("Use strands instead")
 def compose_args_for_converse_api(
     messages: list[SimpleMessageModel],
     model: type_model_name,
@@ -309,11 +311,7 @@ def compose_args_for_converse_api(
             ):
                 return [
                     {"guardContent": grounding_source},
-                    {
-                        "guardContent": {
-                            "text": {"text": c.body, "qualifiers": ["query"]}
-                        }
-                    },
+                    {"guardContent": {"text": {"text": c.body, "qualifiers": ["query"]}}},
                 ]
 
         return c.to_contents_for_converse()
@@ -393,8 +391,8 @@ def compose_args_for_converse_api(
 
     elif is_mistral(model):
         # Special handling for Mistral models
-        inference_config, additional_model_request_fields = (
-            _prepare_mistral_model_params(model, generation_params)
+        inference_config, additional_model_request_fields = _prepare_mistral_model_params(
+            model, generation_params
         )
         system_prompts = (
             [
@@ -568,6 +566,7 @@ def compose_args_for_converse_api(
     jitter=(0, 2),
     logger=logger,
 )
+@deprecated("Use strands instead")
 def call_converse_api(
     args: ConverseStreamRequestTypeDef,
 ) -> ConverseResponseTypeDef:
@@ -576,9 +575,7 @@ def call_converse_api(
         return client.converse(**args)
     except ClientError as e:
         if e.response["Error"]["Code"] == "ThrottlingException":
-            raise BedrockThrottlingException(
-                "Bedrock API is throttling requests"
-            ) from e
+            raise BedrockThrottlingException("Bedrock API is throttling requests") from e
         raise
 
 
