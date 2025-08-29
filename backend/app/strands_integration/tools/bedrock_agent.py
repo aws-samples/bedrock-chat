@@ -10,18 +10,31 @@ from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def _get_bedrock_agent_config(bot):
     """Extract Bedrock Agent configuration from bot."""
+    logger.debug(f"_get_bedrock_agent_config called with bot: {bot}")
+    logger.debug(f"Bot agent: {bot.agent if bot else None}")
+    logger.debug(f"Bot agent tools: {bot.agent.tools if bot and bot.agent else None}")
+
     if not bot or not bot.agent or not bot.agent.tools:
+        logger.debug("Early return: bot, agent, or tools is None/empty")
         return None
 
     for tool_config in bot.agent.tools:
+        logger.debug(f"Checking tool: {tool_config}")
+        logger.debug(f"Tool type: {tool_config.tool_type}")
+        logger.debug(
+            f"Tool bedrockAgentConfig: {getattr(tool_config, 'bedrockAgentConfig', 'NOT_FOUND')}"
+        )
+
         if tool_config.tool_type == "bedrock_agent" and tool_config.bedrockAgentConfig:
+            logger.info("Found matching bedrock_agent tool config")
             return tool_config.bedrockAgentConfig
 
+    logger.warning("No matching bedrock_agent tool config found")
     return None
 
 
@@ -65,8 +78,8 @@ def _invoke_bedrock_agent_standalone(
                     }
                 )
 
-        logger.info(f"Processed {len(result)} chunks from Bedrock Agent response")
-        logger.info(f"Collected {len(trace_logs)} trace logs")
+        logger.debug(f"Processed {len(result)} chunks from Bedrock Agent response")
+        logger.debug(f"Collected {len(trace_logs)} trace logs")
 
         # Add trace log information to results
         if trace_logs:
@@ -221,22 +234,26 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
                 return {
                     "toolUseId": "placeholder",
                     "status": "error",
-                    "content": [{"text": f"Bedrock Agent requires bot configuration. Query was: {query}"}]
+                    "content": [
+                        {
+                            "text": f"Bedrock Agent requires bot configuration. Query was: {query}"
+                        }
+                    ],
                 }
 
             # ボット設定からBedrock Agent設定を取得
             agent_config = _get_bedrock_agent_config(current_bot)
 
-            if (
-                not agent_config
-                or not agent_config.agent_id
-                or not agent_config.alias_id
-            ):
+            if not agent_config or not agent_config.agent_id or not agent_config.alias_id:
                 logger.warning("[BEDROCK_AGENT_V3] Bot has no Bedrock Agent configured")
                 return {
                     "toolUseId": "placeholder",
-                    "status": "error", 
-                    "content": [{"text": f"Bot does not have a Bedrock Agent configured. Query was: {query}"}]
+                    "status": "error",
+                    "content": [
+                        {
+                            "text": f"Bot does not have a Bedrock Agent configured. Query was: {query}"
+                        }
+                    ],
                 }
 
             # セッションIDを生成
@@ -258,7 +275,7 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
             return {
                 "toolUseId": "placeholder",
                 "status": "success",
-                "content": [{"json": results}]
+                "content": [{"json": results}],
             }
 
         except Exception as e:
@@ -266,26 +283,37 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
             return {
                 "toolUseId": "placeholder",
                 "status": "error",
-                "content": [{"text": f"An error occurred during Bedrock Agent invocation: {str(e)}"}]
+                "content": [
+                    {
+                        "text": f"An error occurred during Bedrock Agent invocation: {str(e)}"
+                    }
+                ],
             }
 
     # Update tool description dynamically to reflect the actual agent's purpose.
     # This ensures the LLM selects the correct tool based on the agent's specific capabilities
     # rather than using a generic description that may lead to inappropriate tool selection.
+    logger.debug(f"create_bedrock_agent_tool called with bot: {bot is not None}")
     if bot:
+        logger.debug("Bot exists, getting agent config...")
         agent_config = _get_bedrock_agent_config(bot)
+        logger.debug(f"Agent config: {agent_config}")
         if agent_config and agent_config.agent_id:
+            logger.debug(f"Agent config valid, agent_id: {agent_config.agent_id}")
             try:
                 from app.utils import get_bedrock_agent_client
+
                 client = get_bedrock_agent_client()
                 response = client.get_agent(agentId=agent_config.agent_id)
-                description = response.get("agent", {}).get("description", "Bedrock Agent")
-                
+                description = response.get("agent", {}).get(
+                    "description", "Bedrock Agent"
+                )
+
                 # Dynamically update tool description
                 bedrock_agent_invoke._tool_spec["description"] = description
                 logger.info(f"Updated bedrock_agent tool description to: {description}")
-                
+
             except Exception as e:
                 logger.error(f"Failed to update bedrock_agent tool description: {e}")
-    
+
     return bedrock_agent_invoke
