@@ -1,7 +1,3 @@
-"""
-Bedrock Agent tool for Strands v3 - Independent implementation with bot context.
-"""
-
 import json
 import logging
 import uuid
@@ -226,7 +222,7 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
         logger.debug(f"[BEDROCK_AGENT_V3] Starting invocation: query={query}")
 
         try:
-            # botはクロージャでキャプチャされているので、別スレッドでも利用可能
+            # # Bot is captured on closure
             current_bot = bot
 
             if not current_bot:
@@ -241,7 +237,7 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
                     ],
                 }
 
-            # ボット設定からBedrock Agent設定を取得
+            # Fetch Bedrock Agent configuration from bot settings
             agent_config = _get_bedrock_agent_config(current_bot)
 
             if not agent_config or not agent_config.agent_id or not agent_config.alias_id:
@@ -256,14 +252,13 @@ def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
                     ],
                 }
 
-            # セッションIDを生成
+            # Generate a session ID
             session_id = str(uuid.uuid4())
 
             logger.debug(
                 f"[BEDROCK_AGENT_V3] Using agent_id: {agent_config.agent_id}, alias_id: {agent_config.alias_id}"
             )
-
-            # Bedrock Agentを実行
+            # Invoke Bedrock Agent
             results = _invoke_bedrock_agent_standalone(
                 agent_id=agent_config.agent_id,
                 alias_id=agent_config.alias_id,

@@ -1,7 +1,3 @@
-"""
-Knowledge search tool for Strands v3 - Independent implementation with bot context.
-"""
-
 import logging
 import traceback
 
@@ -53,7 +49,7 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
         logger.debug(f"[KNOWLEDGE_SEARCH_V3] Starting search: query={query}")
 
         try:
-            # botはクロージャでキャプチャされているので、別スレッドでも利用可能
+            # # Bot is captured on closure
             current_bot = bot
 
             if not current_bot:
@@ -68,7 +64,7 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
                     ],
                 }
 
-            # ボットがナレッジベースを持っているかチェック
+            # Check if bot has knowledge base
             if not current_bot.has_knowledge():
                 logger.warning(
                     "[KNOWLEDGE_SEARCH_V3] Bot has no knowledge base configured"
@@ -87,7 +83,7 @@ def create_knowledge_search_tool(bot) -> StrandsAgentTool:
                 f"[KNOWLEDGE_SEARCH_V3] Executing search with bot: {current_bot.id}"
             )
 
-            # ナレッジ検索を実行
+            # Run knowledge search
             results = _search_knowledge_standalone(current_bot, query)
 
             if not results:

@@ -1,5 +1,5 @@
 """
-Simple list tool for Strands v3 - Pure @tool decorator implementation.
+Simple list tool. For testing purposes only.
 """
 
 import json
@@ -52,21 +52,21 @@ def simple_list(topic: str, count: int = 5) -> dict:
         # Format as list of dictionaries with source info (same as internet search)
         result_list = []
         for item in items:
-            result_list.append({
-                "content": f"Item: {item}",
-                "source_name": f"Simple List Generator - {topic}",
-                "source_link": None
-            })
+            result_list.append(
+                {
+                    "content": f"Item: {item}",
+                    "source_name": f"Simple List Generator - {topic}",
+                    "source_link": None,
+                }
+            )
 
-        logger.debug(
-            f"[SIMPLE_LIST_V3] Generated {len(items)} items for topic: {topic}"
-        )
+        logger.debug(f"[SIMPLE_LIST_V3] Generated {len(items)} items for topic: {topic}")
 
         # Return in ToolResult format to prevent Strands from converting to string
         return {
             "toolUseId": "placeholder",  # Will be replaced by Strands
             "status": "success",
-            "content": [{"json": result_list}]
+            "content": [{"json": result_list}],
         }
 
     except Exception as e:
@@ -74,8 +74,8 @@ def simple_list(topic: str, count: int = 5) -> dict:
         logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
         return {
             "toolUseId": "placeholder",
-            "status": "error", 
-            "content": [{"text": error_msg}]
+            "status": "error",
+            "content": [{"text": error_msg}],
         }
 
     except Exception as e:
@@ -83,8 +83,8 @@ def simple_list(topic: str, count: int = 5) -> dict:
         logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
         return {
             "toolUseId": "placeholder",
-            "status": "error", 
-            "content": [{"text": error_msg}]
+            "status": "error",
+            "content": [{"text": error_msg}],
         }
 
 
@@ -390,12 +390,14 @@ def structured_list(
                 content = f"Item: {item}\nDescription: {description}"
             else:
                 content = f"Item: {item}"
-            
-            result.append({
-                "content": content,
-                "source_name": f"Structured List Generator - {topic}",
-                "source_link": None
-            })
+
+            result.append(
+                {
+                    "content": content,
+                    "source_name": f"Structured List Generator - {topic}",
+                    "source_link": None,
+                }
+            )
 
         logger.debug(
             f"[STRUCTURED_LIST_V3] Generated structured list with {len(items)} items"

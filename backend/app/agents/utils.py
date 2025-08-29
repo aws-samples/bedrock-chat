@@ -8,20 +8,21 @@ from app.agents.tools.internet_search import internet_search_tool
 from app.agents.tools.knowledge import create_knowledge_tool
 from app.agents.tools.simple_list import simple_list_tool
 from app.repositories.models.custom_bot import BotModel
+from typing_extensions import deprecated
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+@deprecated("Use get_strands_registered_tools() instead")
 def get_available_tools() -> list[AgentTool]:
     tools: list[AgentTool] = []
     tools.append(internet_search_tool)
     tools.append(bedrock_agent_tool)
-    tools.append(calculator_tool)
-    tools.append(simple_list_tool)
     return tools
 
 
+@deprecated("Use get_strands_tools() instead")
 def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
     """Get a dictionary of tools based on bot's tool configuration
 
@@ -70,9 +71,7 @@ def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
                         f"Updated bedrock_agent tool description to: {description}"
                     )
                 except Exception as e:
-                    logger.error(
-                        f"Failed to update bedrock_agent tool description: {e}"
-                    )
+                    logger.error(f"Failed to update bedrock_agent tool description: {e}")
         except Exception as e:
             logger.error(f"Error processing tool {tool_config.name}: {e}")
 

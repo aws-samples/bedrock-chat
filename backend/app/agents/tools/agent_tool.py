@@ -1,18 +1,16 @@
 from typing import Any, Callable, Generic, Literal, TypedDict, TypeVar
 
 from app.repositories.models.conversation import (
-    ToolResultModel,
-    TextToolResultModel,
     JsonToolResultModel,
     RelatedDocumentModel,
+    TextToolResultModel,
+    ToolResultModel,
 )
 from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
+from mypy_boto3_bedrock_runtime.type_defs import ToolSpecificationTypeDef
 from pydantic import BaseModel, JsonValue
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
-from mypy_boto3_bedrock_runtime.type_defs import (
-    ToolSpecificationTypeDef,
-)
 
 T = TypeVar("T", bound=BaseModel)
 

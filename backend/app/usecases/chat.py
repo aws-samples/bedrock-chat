@@ -56,6 +56,7 @@ from app.vector_search import (
     search_result_to_related_document,
     to_guardrails_grounding_source,
 )
+from typing_extensions import deprecated
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -171,8 +172,7 @@ def prepare_conversation(
     # If the "Generate continue" button is pressed, a new_message is not generated.
     else:
         message_id = (
-            conversation.message_map[conversation.last_message_id].parent
-            or "instruction"
+            conversation.message_map[conversation.last_message_id].parent or "instruction"
         )
 
     return (message_id, conversation, bot)
@@ -248,6 +248,7 @@ def chat(
         )
 
 
+@deprecated("Use chat() instead")
 def chat_legacy(
     user: User,
     chat_input: ChatInput,
@@ -263,13 +264,6 @@ def chat_legacy(
     WARNING: This implementation is deprecated and will be removed in a future version.
     Please migrate to the Strands-based implementation by setting USE_STRANDS=true.
     """
-    import logging
-
-    logger = logging.getLogger(__name__)
-    logger.warning(
-        "Using deprecated chat_legacy implementation. Please migrate to Strands by setting USE_STRANDS=true."
-    )
-
     user_msg_id, conversation, bot = prepare_conversation(user, chat_input)
 
     # # Set tools only when tooluse is supported

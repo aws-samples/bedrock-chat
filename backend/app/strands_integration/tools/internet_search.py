@@ -1,7 +1,3 @@
-"""
-Internet search tool for Strands v3 - Independent implementation with bot context.
-"""
-
 import json
 import logging
 
@@ -12,9 +8,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def _search_with_duckduckgo_standalone(
-    query: str, time_limit: str, country: str
-) -> list:
+def _search_with_duckduckgo_standalone(query: str, time_limit: str, country: str) -> list:
     """Standalone DuckDuckGo search implementation."""
     try:
         from duckduckgo_search import DDGS
@@ -76,9 +70,7 @@ def _search_with_firecrawl_standalone(
     try:
         from firecrawl import FirecrawlApp, ScrapeOptions
 
-        logger.info(
-            f"Searching with Firecrawl: query={query}, max_results={max_results}"
-        )
+        logger.info(f"Searching with Firecrawl: query={query}, max_results={max_results}")
 
         app = FirecrawlApp(api_key=api_key)
 
@@ -116,9 +108,7 @@ def _search_with_firecrawl_standalone(
                         }
                     )
 
-        logger.info(
-            f"Firecrawl search completed. Found {len(formatted_results)} results"
-        )
+        logger.info(f"Firecrawl search completed. Found {len(formatted_results)} results")
         return formatted_results
 
     except Exception as e:
@@ -126,9 +116,7 @@ def _search_with_firecrawl_standalone(
         return []
 
 
-def _summarize_content_standalone(
-    content: str, title: str, url: str, query: str
-) -> str:
+def _summarize_content_standalone(content: str, title: str, url: str, query: str) -> str:
     """Standalone content summarization."""
     try:
         from app.utils import get_bedrock_runtime_client
@@ -211,15 +199,14 @@ def create_internet_search_tool(bot) -> StrandsAgentTool:
         )
 
         try:
-            # botはクロージャでキャプチャされているので、別スレッドでも利用可能
+            # # Bot is captured on closure
             current_bot = bot
 
-            # DuckDuckGo検索（デフォルト）
+            # Use DuckDuckGo if no bot context
             if not current_bot:
                 logger.debug("[INTERNET_SEARCH_V3] No bot context, using DuckDuckGo")
                 results = _search_with_duckduckgo_standalone(query, time_limit, country)
             else:
-                # ボット設定からインターネットツール設定を取得
                 internet_tool = _get_internet_tool_config(current_bot)
 
                 if (
@@ -237,7 +224,7 @@ def create_internet_search_tool(bot) -> StrandsAgentTool:
                         max_results=internet_tool.firecrawl_config.max_results,
                     )
 
-                    # Firecrawlで結果が得られない場合はDuckDuckGoにフォールバック
+                    # If no results from Firecrawl, fallback to DuckDuckGo
                     if not results:
                         logger.warning(
                             "[INTERNET_SEARCH_V3] Firecrawl returned no results, falling back to DuckDuckGo"
@@ -247,13 +234,15 @@ def create_internet_search_tool(bot) -> StrandsAgentTool:
                         )
                 else:
                     logger.debug("[INTERNET_SEARCH_V3] Using DuckDuckGo search")
-                    results = _search_with_duckduckgo_standalone(query, time_limit, country)
+                    results = _search_with_duckduckgo_standalone(
+                        query, time_limit, country
+                    )
 
             # Return in ToolResult format to prevent Strands from converting to string
             return {
                 "toolUseId": "placeholder",  # Will be replaced by Strands
                 "status": "success",
-                "content": [{"json": results}]
+                "content": [{"json": results}],
             }
 
         except Exception as e:
@@ -261,7 +250,7 @@ def create_internet_search_tool(bot) -> StrandsAgentTool:
             return {
                 "toolUseId": "placeholder",
                 "status": "error",
-                "content": [{"text": f"Search error: {str(e)}"}]
+                "content": [{"text": f"Search error: {str(e)}"}],
             }
 
     return internet_search

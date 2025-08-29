@@ -1,5 +1,5 @@
 """
-Calculator tool for Strands v3 - Closure-based implementation.
+Calculator tool. For testing and demonstration purposes only.
 """
 
 import logging
@@ -8,8 +8,8 @@ import operator
 import re
 from typing import Union
 
-from strands import tool
 from app.repositories.models.custom_bot import BotModel
+from strands import tool
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -17,7 +17,7 @@ logger.setLevel(logging.DEBUG)
 
 def create_calculator_tool(bot: BotModel | None = None):
     """Create calculator tool with bot context closure."""
-    
+
     @tool
     def calculator(expression: str) -> str:
         """
@@ -68,7 +68,9 @@ def create_calculator_tool(bot: BotModel | None = None):
 
             # Validate expression for safety
             if not _is_safe_expression(expression):
-                logger.warning(f"[CALCULATOR_V3] Unsafe expression detected: {expression}")
+                logger.warning(
+                    f"[CALCULATOR_V3] Unsafe expression detected: {expression}"
+                )
                 return f"Error: Expression contains unsafe operations: {expression}"
 
             # Evaluate the expression
@@ -110,7 +112,7 @@ def create_calculator_tool(bot: BotModel | None = None):
 
 def create_advanced_calculator_tool(bot: BotModel | None = None):
     """Create advanced calculator tool with bot context closure."""
-    
+
     @tool
     def advanced_calculator(expression: str, precision: int = 6) -> str:
         """
@@ -146,7 +148,9 @@ def create_advanced_calculator_tool(bot: BotModel | None = None):
             if numeric_result.is_integer():
                 formatted_result = str(int(numeric_result))
             else:
-                formatted_result = f"{numeric_result:.{precision}f}".rstrip("0").rstrip(".")
+                formatted_result = f"{numeric_result:.{precision}f}".rstrip("0").rstrip(
+                    "."
+                )
 
             logger.debug(f"[ADVANCED_CALCULATOR_V3] Formatted result: {formatted_result}")
             return formatted_result
@@ -154,7 +158,7 @@ def create_advanced_calculator_tool(bot: BotModel | None = None):
         except ValueError:
             # If we can't parse as float, return the original result
             return result
-    
+
     return advanced_calculator
 
 
