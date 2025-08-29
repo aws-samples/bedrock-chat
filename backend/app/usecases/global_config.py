@@ -20,7 +20,11 @@ def get_global_available_models() -> list[str]:
             logger.info(f"Global available models (JSON): {models}")
             # Ensure the result is a list
             if isinstance(models, list):
-                return models
+                # Filter out empty strings and None values
+                filtered_models = [
+                    model for model in models if model and isinstance(model, str)
+                ]
+                return filtered_models
             else:
                 logger.error(
                     f"GLOBAL_AVAILABLE_MODELS must be a JSON array, got {type(models)}"
