@@ -120,6 +120,7 @@ Example usage:
     "selfSignUpEnabled": false,
     "enableLambdaSnapStart": true,
     "allowedIpV4AddressRanges": ["192.168.1.0/24"],
+    "allowedCountries": ["US", "CA"],
     "allowedSignUpEmailDomains": ["example.com"]
   }
 }'
@@ -131,6 +132,7 @@ The override JSON must follow the same structure as cdk.json. You can override a
 - `enableLambdaSnapStart`
 - `allowedIpV4AddressRanges`
 - `allowedIpV6AddressRanges`
+- `allowedCountries`
 - `allowedSignUpEmailDomains`
 - `bedrockRegion`
 - `enableRagReplicas`

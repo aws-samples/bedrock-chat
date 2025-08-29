@@ -295,6 +295,46 @@ describe("resolveBedrockChatParameters", () => {
       ]);
       // Note: Actual validation is performed in identityProvider function
     });
+
+    // Tests for allowedCountries parameter
+    test("should default allowedCountries to empty array", () => {
+      // Given
+      const app = createTestApp();
+
+      // When
+      const result = resolveBedrockChatParameters(app);
+
+      // Then
+      expect(result.allowedCountries).toEqual([]);
+    });
+
+    test("should parse allowedCountries from CDK context", () => {
+      // Given
+      const app = createTestApp({
+        allowedCountries: ["NZ", "AU"],
+      });
+
+      // When
+      const result = resolveBedrockChatParameters(app);
+
+      // Then
+      expect(result.allowedCountries).toEqual(["NZ", "AU"]);
+    });
+
+    test("should parse allowedCountries from parametersInput", () => {
+      // Given
+      const app = createTestApp();
+      const inputParams = {
+        bedrockRegion: "eu-west-1",
+        allowedCountries: ["US", "GB"],
+      };
+
+      // When
+      const result = resolveBedrockChatParameters(app, inputParams);
+
+      // Then
+      expect(result.allowedCountries).toEqual(["US", "GB"]);
+    });
   });
 
   test("should correctly parse parameters mimicking cdk.json context properties", () => {
