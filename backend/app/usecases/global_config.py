@@ -17,9 +17,9 @@ def get_global_available_models() -> list[str]:
     if GLOBAL_AVAILABLE_MODELS:
         try:
             models = json.loads(GLOBAL_AVAILABLE_MODELS)
-            logger.info(f"Global available models (JSON): {models}")
             # Ensure the result is a list
             if isinstance(models, list):
+                logger.info(f"Global available models (JSON): {models}")
                 # Filter out empty strings and None values
                 filtered_models = [
                     model for model in models if model and isinstance(model, str)

@@ -45,7 +45,7 @@ if not is_published_api:
         {"name": "admin", "description": "Admin API"},
         {"name": "user", "description": "User API (cognito)"},
         {"name": "bot_store", "description": "Bot Store API"},
-        {"name": "config", "description": "Model Configuration API"},
+        {"name": "config", "description": "Global Configuration API"},
     ]
     title = "Bedrock Chat"
 else:
