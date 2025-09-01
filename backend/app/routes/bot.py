@@ -4,10 +4,6 @@ from typing import Any, Dict, Literal
 from app.dependencies import check_creating_bot_allowed
 from app.repositories.custom_bot import find_bot_by_id
 from app.routes.schemas.bot import (
-    ActiveModelsOutput,
-    Agent,
-    BedrockGuardrailsOutput,
-    BedrockKnowledgeBaseOutput,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -16,11 +12,6 @@ from app.routes.schemas.bot import (
     BotStarredInput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
-    ConversationQuickStarter,
-    FirecrawlConfig,
-    GenerationParams,
-    Knowledge,
-    PlainTool,
     Tool,
 )
 from app.routes.schemas.conversation import type_model_name
@@ -68,9 +59,7 @@ def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
 
 
 @router.patch("/bot/{bot_id}/starred")
-def patch_bot_star_status(
-    request: Request, bot_id: str, starred_input: BotStarredInput
-):
+def patch_bot_star_status(request: Request, bot_id: str, starred_input: BotStarredInput):
     """Modify owned bot star status."""
     current_user: User = request.state.current_user
     return modify_star_status(current_user, bot_id, starred=starred_input.starred)
@@ -145,9 +134,7 @@ def delete_bot(request: Request, bot_id: str):
 
 
 @router.get("/bot/{bot_id}/presigned-url", response_model=BotPresignedUrlOutput)
-def get_bot_presigned_url(
-    request: Request, bot_id: str, filename: str, contentType: str
-):
+def get_bot_presigned_url(request: Request, bot_id: str, filename: str, contentType: str):
     """Get presigned url for bot"""
     current_user: User = request.state.current_user
     url = issue_presigned_url(current_user, bot_id, filename, contentType)
