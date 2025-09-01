@@ -645,35 +645,69 @@ def remove_uploaded_file(user: User, bot_id: str, filename: str):
 
 def fetch_available_agent_tools() -> list[Tool]:
     """Fetch available tools for bot."""
-    tools = get_strands_registered_tools()
-    result: list[Tool] = []
-    for tool in tools:
-        # Extract only the first line of description to avoid showing Args/Returns in UI
-        description = tool.tool_spec["description"].split("\n")[0].strip()
-        if tool.tool_name == "bedrock_agent_invoke":
-            result.append(
-                BedrockAgentTool(
-                    tool_type="bedrock_agent",
-                    name=tool.tool_name,
-                    description=description,
+    use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
+
+    if use_strands:
+        # Use Strands integration
+        tools = get_strands_registered_tools()
+        result: list[Tool] = []
+        for tool in tools:
+            # Extract only the first line of description to avoid showing Args/Returns in UI
+            description = tool.tool_spec["description"].split("\n")[0].strip()
+            if tool.tool_name == "bedrock_agent_invoke":
+                result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=tool.tool_name,
+                        description=description,
+                    )
                 )
-            )
-        elif tool.tool_name == "internet_search":
-            result.append(
-                InternetTool(
-                    tool_type="internet",
-                    name=tool.tool_name,
-                    description=description,
-                    search_engine="duckduckgo",
+            elif tool.tool_name == "internet_search":
+                result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=tool.tool_name,
+                        description=description,
+                        search_engine="duckduckgo",
+                    )
                 )
-            )
-        else:
-            result.append(
-                PlainTool(
-                    tool_type="plain",
-                    name=tool.tool_name,
-                    description=description,
+            else:
+                result.append(
+                    PlainTool(
+                        tool_type="plain",
+                        name=tool.tool_name,
+                        description=description,
+                    )
                 )
-            )
+    else:
+        # Use legacy agents.utils
+        from app.agents.utils import get_available_tools
+
+        tools = get_available_tools()
+        result: list[Tool] = []
+        for tool in tools:
+            if tool.name == "bedrock_agent":
+                result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=tool.name,
+                        description=tool.description,
+                    )
+                )
+            elif tool.name == "internet_search":
+                result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=tool.name,
+                        description=tool.description,
+                        search_engine="duckduckgo",
+                    )
+                )
+            else:
+                result.append(
+                    PlainTool(
+                        tool_type="plain", name=tool.name, description=tool.description
+                    )
+                )
 
     return result
