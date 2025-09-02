@@ -30,6 +30,7 @@ from .converters import (
 )
 from .handlers import ToolResultCapture, create_callback_handler
 from .processors import post_process_strands_result
+from .telemetry import StrandsTelemetryManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,36 @@ def chat_with_strands(
     on_tool_result: Callable[[ToolRunResult], None] | None = None,
     on_reasoning: Callable[[str], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
+    """
+    Chat with Strands agents.
+
+    Architecture Overview:
+
+    1. Reasoning Content:
+       - Streaming: CallbackHandler processes reasoning events for real-time display
+       - Persistence: Telemetry (ReasoningSpanProcessor) extracts from OpenTelemetry spans
+
+    2. Tool Use/Result (Thinking Log):
+       - Streaming: ToolResultCapture processes tool events for real-time display
+       - Persistence: ToolResultCapture stores processed data for DynamoDB storage
+
+    3. Related Documents (Citations):
+       - Source: ToolResultCapture only
+       - Reason: Requires access to raw tool results for source_link extraction
+
+    Why This Hybrid Approach:
+
+    - ToolResultCapture: Processes raw tool results during execution hooks, enabling
+      source_link extraction and citation functionality. Telemetry only captures
+      post-processed data, losing metadata required for citations.
+
+    - Telemetry: Captures complete reasoning content from OpenTelemetry spans,
+      providing reliable persistence for reasoning data that may not be available
+      in final AgentResult when tools are used.
+
+    - CallbackHandler: Handles real-time streaming of reasoning content during
+      agent execution for immediate user feedback.
+    """
     user_msg_id, conversation, bot = prepare_conversation(user, chat_input)
 
     display_citation = bot is not None and bot.display_retrieved_chunks
@@ -88,6 +119,10 @@ def chat_with_strands(
 
     continue_generate = chat_input.continue_generate
 
+    # Setup telemetry manager for reasoning capture
+    telemetry_manager = StrandsTelemetryManager()
+    telemetry_manager.setup(conversation.id, user.id)
+
     # Create ToolResultCapture to capture tool execution data
     tool_capture = ToolResultCapture(
         on_thinking=on_thinking,
@@ -104,8 +139,6 @@ def chat_with_strands(
 
     agent.callback_handler = create_callback_handler(
         on_stream=on_stream,
-        on_thinking=on_thinking,
-        on_tool_result=on_tool_result,
         on_reasoning=on_reasoning,
     )
 
@@ -186,6 +219,7 @@ def chat_with_strands(
         user=user,
         model_name=chat_input.message.model,
         continue_generate=continue_generate,
+        telemetry_manager=telemetry_manager,
         tool_capture=tool_capture,
         on_stop=on_stop,
     )

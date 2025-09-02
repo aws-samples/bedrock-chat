@@ -21,6 +21,7 @@ from ulid import ULID
 
 from ..converters.message_converter import convert_strands_message_to_message_model
 from ..handlers.tool_result_capture import ToolResultCapture
+from ..telemetry.telemetry_manager import StrandsTelemetryManager
 from .cost_calculator import calculate_conversation_cost
 from .document_extractor import (
     build_thinking_log_from_tool_capture,
@@ -59,6 +60,7 @@ def post_process_strands_result(
     user: User,
     model_name: type_model_name,
     continue_generate: bool,
+    telemetry_manager: StrandsTelemetryManager,
     tool_capture: ToolResultCapture,
     on_stop: Callable[[OnStopInput], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
@@ -78,12 +80,21 @@ def post_process_strands_result(
     conversation.total_price += price
     conversation.should_continue = result.stop_reason == "max_tokens"
 
-    # 3. Build thinking_log from tool capture
+    # Extract reasoning content from telemetry
+    from ..telemetry import TelemetryDataExtractor
+
+    data_extractor = TelemetryDataExtractor(telemetry_manager.reasoning_processor)
+
+    reasoning_contents = data_extractor.extract_reasoning_content()
+    if reasoning_contents:
+        message.content.extend(reasoning_contents)
+
+    # Build thinking_log from tool capture
     thinking_log = build_thinking_log_from_tool_capture(tool_capture)
     if thinking_log:
         message.thinking_log = thinking_log
 
-    # 4. Set message parent and generate assistant message ID
+    # 5. Set message parent and generate assistant message ID
     message.parent = user_msg_id
 
     if continue_generate:
@@ -108,12 +119,12 @@ def post_process_strands_result(
         conversation.message_map[user_msg_id].children.append(assistant_msg_id)
         conversation.last_message_id = assistant_msg_id
 
-    # 5. Extract related documents from tool capture
+    # Extract related documents from tool capture
     related_documents = extract_related_documents_from_tool_capture(
         tool_capture, assistant_msg_id
     )
 
-    # 6. Store conversation and related documents
+    # 7. Store conversation and related documents
     store_conversation(user.id, conversation)
     if related_documents:
         store_related_documents(
@@ -122,12 +133,12 @@ def post_process_strands_result(
             related_documents=related_documents,
         )
 
-    # 7. Call on_stop callback
+    # 8. Call on_stop callback
     if on_stop:
         on_stop_input = create_on_stop_input(result, message, price)
         on_stop(on_stop_input)
 
-    # 8. Update bot statistics
+    # 9. Update bot statistics
     if bot:
         logger.debug("Bot is provided. Updating bot last used time.")
         modify_bot_last_used_time(user, bot)
