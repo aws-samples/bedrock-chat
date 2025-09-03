@@ -243,7 +243,11 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
             # Fetch Bedrock Agent configuration from bot settings
             agent_config = _get_bedrock_agent_config(current_bot)
 
-            if not agent_config or not agent_config.agent_id or not agent_config.alias_id:
+            if (
+                not agent_config
+                or not agent_config.agent_id
+                or not agent_config.alias_id
+            ):
                 logger.warning("[BEDROCK_AGENT_V3] Bot has no Bedrock Agent configured")
                 return {
                     "toolUseId": "placeholder",
