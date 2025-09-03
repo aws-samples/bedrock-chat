@@ -39,7 +39,7 @@ def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
     """Create a knowledge search tool with bot context captured in closure."""
 
     @tool
-    def knowledge_search(query: str) -> dict:
+    def knowledge_base_tool(query: str) -> dict:
         """
         Search knowledge base for relevant information.
 
@@ -115,4 +115,4 @@ def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
                 ],
             }
 
-    return knowledge_search
+    return knowledge_base_tool
