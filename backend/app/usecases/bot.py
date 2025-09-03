@@ -155,9 +155,7 @@ def modify_owned_bot(
     bot = find_bot_by_id(bot_id)
 
     if not bot.is_editable_by_user(user):
-        raise PermissionError(
-            f"User {user.id} is not authorized to modify bot {bot_id}"
-        )
+        raise PermissionError(f"User {user.id} is not authorized to modify bot {bot_id}")
 
     source_urls = []
     sitemap_urls = []
@@ -237,9 +235,7 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         generation_params=generation_params,
-        agent=AgentModel.from_agent_input(
-            modify_input.agent, bot.owner_user_id, bot_id
-        ),
+        agent=AgentModel.from_agent_input(modify_input.agent, bot.owner_user_id, bot_id),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -277,9 +273,7 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
-        generation_params=GenerationParams.model_validate(
-            generation_params.model_dump()
-        ),
+        generation_params=GenerationParams.model_validate(generation_params.model_dump()),
         agent=(
             Agent.model_validate(modify_input.agent.model_dump())
             if modify_input.agent
@@ -341,9 +335,7 @@ def fetch_bot(user: User, bot_id: str) -> tuple[bool, BotModel]:
             f"User {user.id} is not authorized to access bot {bot_id}. Update alias."
         )
         update_alias_is_origin_accessible(user.id, bot_id, False)
-        raise PermissionError(
-            f"User {user.id} is not authorized to access bot {bot_id}"
-        )
+        raise PermissionError(f"User {user.id} is not authorized to access bot {bot_id}")
 
     owned = bot.is_owned_by_user(user)
 
@@ -367,9 +359,7 @@ def fetch_all_bots(
     """
 
     if kind == "mixed" and not starred and not limit:
-        raise ValueError(
-            "Must specify either `limit` or `starred when mixed specified`"
-        )
+        raise ValueError("Must specify either `limit` or `starred when mixed specified`")
     if limit and starred:
         raise ValueError("Cannot specify both `limit` and `starred`")
     if limit and (limit < 0 or limit > 100):
@@ -409,9 +399,7 @@ def fetch_bot_summary(user: User, bot_id: str) -> BotSummaryOutput:
     if not bot.is_accessible_by_user(user):
         if alias_exists(user.id, bot_id):
             delete_alias_by_id(user.id, bot_id)
-        raise PermissionError(
-            f"User {user.id} is not authorized to access bot {bot_id}"
-        )
+        raise PermissionError(f"User {user.id} is not authorized to access bot {bot_id}")
 
     logger.debug(f"Bot: {bot}")
     logger.debug(f"User: {user}")
@@ -438,9 +426,7 @@ def modify_star_status(user: User, bot_id: str, starred: bool):
     """Modify bot pin status."""
     bot = find_bot_by_id(bot_id)
     if not bot.is_accessible_by_user(user):
-        raise PermissionError(
-            f"User {user.id} is not authorized to access bot {bot_id}"
-        )
+        raise PermissionError(f"User {user.id} is not authorized to access bot {bot_id}")
 
     if bot.is_owned_by_user(user):
         return update_bot_star_status(user.id, bot_id, starred)
@@ -456,9 +442,7 @@ def remove_bot_by_id(user: User, bot_id: str):
             f"Bot {bot_id} is pinned by an administrator and cannot be deleted."
         )
     if not bot.is_editable_by_user(user):
-        raise PermissionError(
-            f"User {user.id} is not authorized to access bot {bot_id}"
-        )
+        raise PermissionError(f"User {user.id} is not authorized to access bot {bot_id}")
 
     if bot.is_editable_by_user(user):
         owner_user_id = bot.owner_user_id
@@ -598,9 +582,7 @@ def modify_bot_stats(user: User, bot: BotModel, increment: int):
     return update_bot_stats(owner_id, bot.id, increment)
 
 
-def issue_presigned_url(
-    user: User, bot_id: str, filename: str, content_type: str
-) -> str:
+def issue_presigned_url(user: User, bot_id: str, filename: str, content_type: str) -> str:
     response = generate_presigned_url(
         DOCUMENT_BUCKET,
         compose_upload_temp_s3_path(user.id, bot_id, filename),
@@ -654,7 +636,7 @@ def fetch_available_agent_tools() -> list[Tool]:
         for tool in tools:
             # Extract only the first line of description to avoid showing Args/Returns in UI
             description = tool.tool_spec["description"].split("\n")[0].strip()
-            if tool.tool_name == "bedrock_agent_invoke":
+            if tool.tool_name == "bedrock_agent":
                 result.append(
                     BedrockAgentTool(
                         tool_type="bedrock_agent",

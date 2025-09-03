@@ -212,7 +212,7 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
     """Create a Bedrock Agent tool with bot context captured in closure."""
 
     @tool
-    def bedrock_agent_invoke(query: str) -> dict:
+    def bedrock_agent(query: str) -> dict:
         """
         Invoke Bedrock Agent for specialized tasks.
 
@@ -243,11 +243,7 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
             # Fetch Bedrock Agent configuration from bot settings
             agent_config = _get_bedrock_agent_config(current_bot)
 
-            if (
-                not agent_config
-                or not agent_config.agent_id
-                or not agent_config.alias_id
-            ):
+            if not agent_config or not agent_config.agent_id or not agent_config.alias_id:
                 logger.warning("[BEDROCK_AGENT_V3] Bot has no Bedrock Agent configured")
                 return {
                     "toolUseId": "placeholder",
@@ -312,10 +308,10 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
                 )
 
                 # Dynamically update tool description
-                bedrock_agent_invoke._tool_spec["description"] = description
+                bedrock_agent._tool_spec["description"] = description
                 logger.info(f"Updated bedrock_agent tool description to: {description}")
 
             except Exception as e:
                 logger.error(f"Failed to update bedrock_agent tool description: {e}")
 
-    return bedrock_agent_invoke
+    return bedrock_agent
