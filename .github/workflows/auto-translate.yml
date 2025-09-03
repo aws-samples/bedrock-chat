@@ -115,7 +115,7 @@ jobs:
           branch_name="auto-translate-${{ github.run_id }}"
           git checkout -b $branch_name
           git add docs/ README.md 
-          git commit -m "Auto update translated docs using AWS Bedrock (haiku 3.5)"
+          git commit -m "Auto update translated docs using AWS Bedrock (sonnet 3.5 v2)"
           git push origin $branch_name
 
       - name: Create Pull Request
@@ -126,5 +126,5 @@ jobs:
           gh pr create \
             --base ${{ env.BASE_BRANCH }} \
             --head "auto-translate-${{ github.run_id }}" \
-            --title "Auto update translated docs using AWS Bedrock (haiku 3.5)" \
-            --body "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with haiku 3.5 model."
+            --title "Auto update translated docs using AWS Bedrock (sonnet 3.5 v2)" \
+            --body "This PR contains auto-generated translations for docs and README.md using AWS Bedrock Converse API with sonnet 3.5 v2 model."

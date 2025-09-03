@@ -23,7 +23,12 @@ const translation: typeof en = {
       'claude-v4-opus': {
         label: 'Claude 4 (Opus)',
         description:
-          '複雑なタスク、コーディング、AIエージェント向けの最も強力なハイブリッド推論モデル（200Kトークンコンテキストウィンドウ）',
+          '複雑なタスク、コーディング、AIエージェント向けの強力なハイブリッド推論モデル（200Kトークンコンテキストウィンドウ）',
+      },
+      'claude-v4.1-opus': {
+        label: 'Claude 4.1 (Opus)',
+        description:
+          '最も強力なClaudeモデルの最新版。推論能力が向上',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',

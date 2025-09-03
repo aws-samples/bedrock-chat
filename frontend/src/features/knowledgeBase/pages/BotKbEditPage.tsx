@@ -68,6 +68,7 @@ import {
   WebCrawlingScope,
 } from '../types';
 import { toCamelCase } from '../../../utils/StringUtils';
+import useGlobalConfig from '../../../hooks/useGlobalConfig';
 
 const edgeGenerationParams = EDGE_GENERATION_PARAMS;
 
@@ -79,6 +80,8 @@ const BotKbEditPage: React.FC = () => {
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
   const { availableTools } = useAgent();
+  const { getGlobalConfig } = useGlobalConfig();
+  const { data: globalConfig } = getGlobalConfig();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -172,7 +175,16 @@ const BotKbEditPage: React.FC = () => {
     description: string;
   }[] = (() => {
     const getGeneralModels = () => {
-      return AVAILABLE_MODEL_KEYS.map((key) => ({
+      let availableKeys = [...AVAILABLE_MODEL_KEYS];
+      
+      // Filter by global configuration if available
+      if (globalConfig?.globalAvailableModels && globalConfig.globalAvailableModels.length > 0) {
+        availableKeys = availableKeys.filter(key => 
+          globalConfig.globalAvailableModels!.includes(key)
+        );
+      }
+      
+      return availableKeys.map((key) => ({
         key: key as Model,
         label: t(`model.${key}.label`) as string,
         description: t(`model.${key}.description`) as string,

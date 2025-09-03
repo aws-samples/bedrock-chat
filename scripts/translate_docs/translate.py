@@ -49,6 +49,7 @@ def get_model_id(model: str) -> str:
     REGION_PREFIX = "us"
     base_model_ids = {
         "haiku-3.5": "anthropic.claude-3-5-haiku-20241022-v1:0",
+        "sonnet-3.5-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
     }
     region = os.environ.get("AWS_REGION", "")
     if region not in {"us-east-1", "us-west-2"}:
@@ -85,7 +86,7 @@ def translate_text(text: str, target_lang: str) -> str:
     """
     logger.info("Starting translation for target language: %s", target_lang)
     region = os.environ.get("AWS_REGION")
-    model = "haiku-3.5"
+    model = "sonnet-3.5-v2"
     model_id = get_model_id(model)
 
     # ## 見出しで分割
