@@ -23,8 +23,10 @@ from app.repositories.models.conversation import (
 )
 from strands.types.content import ContentBlock, Message, Messages, Role
 
-from .content_converter import convert_attachment_to_content_block
-from .format_mapper import map_to_image_format
+from app.strands_integration.converters.content_converter import (
+    convert_attachment_to_content_block,
+)
+from app.strands_integration.converters.format_mapper import map_to_image_format
 
 logger = logging.getLogger(__name__)
 

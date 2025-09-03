@@ -21,16 +21,16 @@ from app.usecases.chat import prepare_conversation, trace_to_root
 from app.user import User
 from strands.types.content import ContentBlock, Message
 
-from .agent import create_strands_agent
-from .converters import (
+from app.strands_integration.agent import create_strands_agent
+from app.strands_integration.converters import (
     convert_attachment_to_content_block,
     convert_messages_to_content_blocks,
     convert_simple_messages_to_strands_messages,
     map_to_image_format,
 )
-from .handlers import ToolResultCapture, create_callback_handler
-from .processors import post_process_strands_result
-from .telemetry import StrandsTelemetryManager
+from app.strands_integration.handlers import ToolResultCapture, create_callback_handler
+from app.strands_integration.processors import post_process_strands_result
+from app.strands_integration.telemetry import StrandsTelemetryManager
 
 logger = logging.getLogger(__name__)
 

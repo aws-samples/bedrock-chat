@@ -6,7 +6,7 @@ import logging
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from strands.telemetry import StrandsTelemetry
-from .processors import ReasoningSpanProcessor
+from app.strands_integration.telemetry.processors import ReasoningSpanProcessor
 
 logger = logging.getLogger(__name__)
 

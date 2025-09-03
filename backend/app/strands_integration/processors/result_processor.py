@@ -19,11 +19,15 @@ from app.utils import get_current_time
 from strands.agent import AgentResult
 from ulid import ULID
 
-from ..converters.message_converter import convert_strands_message_to_message_model
-from ..handlers.tool_result_capture import ToolResultCapture
-from ..telemetry.telemetry_manager import StrandsTelemetryManager
-from .cost_calculator import calculate_conversation_cost
-from .document_extractor import (
+from app.strands_integration.converters.message_converter import (
+    convert_strands_message_to_message_model,
+)
+from app.strands_integration.handlers.tool_result_capture import ToolResultCapture
+from app.strands_integration.telemetry.telemetry_manager import StrandsTelemetryManager
+from app.strands_integration.processors.cost_calculator import (
+    calculate_conversation_cost,
+)
+from app.strands_integration.processors.document_extractor import (
     build_thinking_log_from_tool_capture,
     extract_related_documents_from_tool_capture,
 )
@@ -81,7 +85,7 @@ def post_process_strands_result(
     conversation.should_continue = result.stop_reason == "max_tokens"
 
     # Extract reasoning content from telemetry
-    from ..telemetry import TelemetryDataExtractor
+    from app.strands_integration.telemetry import TelemetryDataExtractor
 
     data_extractor = TelemetryDataExtractor(telemetry_manager.reasoning_processor)
 
