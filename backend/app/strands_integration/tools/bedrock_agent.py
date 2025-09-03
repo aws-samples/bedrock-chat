@@ -2,6 +2,7 @@ import json
 import logging
 import uuid
 
+from app.repositories.models.custom_bot import BotModel
 from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def _get_bedrock_agent_config(bot):
+def _get_bedrock_agent_config(bot: BotModel | None):
     """Extract Bedrock Agent configuration from bot."""
     logger.debug(f"_get_bedrock_agent_config called with bot: {bot}")
     logger.debug(f"Bot agent: {bot.agent if bot else None}")
@@ -36,7 +37,7 @@ def _get_bedrock_agent_config(bot):
 
 def _invoke_bedrock_agent_standalone(
     agent_id: str, alias_id: str, input_text: str, session_id: str
-) -> list:
+) -> list[dict[str, str]]:
     """Standalone Bedrock Agent invocation implementation."""
     try:
         from app.utils import get_bedrock_agent_runtime_client
@@ -82,29 +83,30 @@ def _invoke_bedrock_agent_standalone(
             formatted_traces = _format_trace_for_client_standalone(trace_logs)
             for formatted_trace in formatted_traces:
                 trace_type = formatted_trace.get("type")
+                trace_input = formatted_trace.get("input")
                 recipient = (
-                    formatted_trace.get("input").get("recipient", None)
-                    if formatted_trace.get("input") is not None
+                    trace_input.get("recipient", None)
+                    if trace_input is not None
                     else None
                 )
 
                 if trace_type == "tool_use":
-                    if recipient is not None:
+                    if recipient is not None and trace_input is not None:
                         result.append(
                             {
                                 "content": json.dumps(
-                                    formatted_trace.get("input").get("content"),
+                                    trace_input.get("content"),
                                     default=str,
                                 ),
                                 "source_name": f"[Trace] Send Message ({agent_id}) -> ({recipient})",
                                 "source_link": "",
                             }
                         )
-                    else:
+                    elif trace_input is not None:
                         result.append(
                             {
                                 "content": json.dumps(
-                                    formatted_trace.get("input").get("content"),
+                                    trace_input.get("content"),
                                     default=str,
                                 ),
                                 "source_name": f"[Trace] Tool Use ({agent_id})",
@@ -147,7 +149,7 @@ def _invoke_bedrock_agent_standalone(
         ]
 
 
-def _format_trace_for_client_standalone(trace_logs):
+def _format_trace_for_client_standalone(trace_logs: list) -> list[dict]:
     """Format trace log information for the client."""
     try:
         traces = []
@@ -189,13 +191,14 @@ def _format_trace_for_client_standalone(trace_logs):
             # Process content list
             for model_invocation_content in content_list:
                 logger.info(f"model_invocation_content: {model_invocation_content}")
-                traces.append(
-                    {
-                        "type": model_invocation_content.get("type"),
-                        "input": model_invocation_content.get("input"),
-                        "text": model_invocation_content.get("text"),
-                    }
-                )
+                if isinstance(model_invocation_content, dict):
+                    traces.append(
+                        {
+                            "type": model_invocation_content.get("type"),
+                            "input": model_invocation_content.get("input"),
+                            "text": model_invocation_content.get("text"),
+                        }
+                    )
         return traces
     except Exception as e:
         logger.error(f"Error formatting trace for client: {e}")
@@ -205,7 +208,7 @@ def _format_trace_for_client_standalone(trace_logs):
         return []
 
 
-def create_bedrock_agent_tool(bot) -> StrandsAgentTool:
+def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
     """Create a Bedrock Agent tool with bot context captured in closure."""
 
     @tool

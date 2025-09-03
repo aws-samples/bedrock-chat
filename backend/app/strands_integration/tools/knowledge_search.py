@@ -1,6 +1,7 @@
 import logging
 import traceback
 
+from app.repositories.models.custom_bot import BotModel
 from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def _search_knowledge_standalone(bot, query: str) -> list:
+def _search_knowledge_standalone(bot: BotModel, query: str) -> list:
     """Standalone knowledge search implementation."""
     try:
         from app.vector_search import search_related_docs
@@ -34,7 +35,7 @@ def _search_knowledge_standalone(bot, query: str) -> list:
         ]
 
 
-def create_knowledge_search_tool(bot) -> StrandsAgentTool:
+def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
     """Create a knowledge search tool with bot context captured in closure."""
 
     @tool

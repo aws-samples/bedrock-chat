@@ -1,6 +1,7 @@
 import json
 import logging
 
+from app.repositories.models.custom_bot import BotModel
 from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
 
@@ -10,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 def _search_with_duckduckgo_standalone(
     query: str, time_limit: str, country: str
-) -> list:
+) -> list[dict[str, str]]:
     """Standalone DuckDuckGo search implementation."""
     try:
         from duckduckgo_search import DDGS
@@ -67,7 +68,7 @@ def _search_with_duckduckgo_standalone(
 
 def _search_with_firecrawl_standalone(
     query: str, api_key: str, country: str, max_results: int = 10
-) -> list:
+) -> list[dict[str, str]]:
     """Standalone Firecrawl search implementation."""
     try:
         from firecrawl import FirecrawlApp, ScrapeOptions
@@ -172,7 +173,7 @@ Summary:"""
         return fallback_content
 
 
-def _get_internet_tool_config(bot):
+def _get_internet_tool_config(bot: BotModel | None):
     """Extract internet tool configuration from bot."""
     if not bot or not bot.agent or not bot.agent.tools:
         return None
@@ -184,7 +185,7 @@ def _get_internet_tool_config(bot):
     return None
 
 
-def create_internet_search_tool(bot) -> StrandsAgentTool:
+def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
     """Create an internet search tool with bot context captured in closure."""
 
     @tool

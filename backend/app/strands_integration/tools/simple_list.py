@@ -5,22 +5,6 @@ Simple list tool. For testing purposes only.
 import json
 import logging
 import random
-from typing import List
-
-from strands import tool
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-
-"""
-Simple list tool for Strands v3 - Pure @tool decorator implementation.
-"""
-
-import json
-import logging
-import random
-from typing import List
 
 from strands import tool
 
@@ -90,7 +74,7 @@ def simple_list(topic: str, count: int = 5) -> dict:
         }
 
 
-def _generate_items_for_topic(topic: str, count: int) -> List[str]:
+def _generate_items_for_topic(topic: str, count: int) -> list[str]:
     """Generate items for a specific topic."""
 
     # Predefined lists for common topics
@@ -296,7 +280,7 @@ def _generate_items_for_topic(topic: str, count: int) -> List[str]:
     return _generate_generic_items(topic, count)
 
 
-def _generate_generic_items(topic: str, count: int) -> List[str]:
+def _generate_generic_items(topic: str, count: int) -> list[str]:
     """Generate generic items when no predefined list exists."""
 
     # Try to generate based on common patterns
