@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { Model } from '../@types/conversation';
+import { ModelItem } from '../@types/global-config';
 import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useLocalStorage from './useLocalStorage';
+import useGlobalConfig from './useGlobalConfig';
 import { ActiveModels } from '../@types/bot';
 import { toCamelCase } from '../utils/StringUtils';
 
@@ -54,6 +56,9 @@ const usePreviousBotId = (botId: string | null | undefined) => {
 };
 
 const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
+  const { getGlobalConfig } = useGlobalConfig();
+  const { data: globalConfig } = getGlobalConfig();
+
   const processedActiveModels = useMemo(() => {
     // Early return if activeModels is provided and not empty
     if (activeModels && Object.keys(activeModels).length > 0) {
@@ -71,16 +76,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const { t } = useTranslation();
   const previousBotId = usePreviousBotId(botId);
 
-  const availableModels = useMemo<
-    {
-      modelId: Model;
-      label: string;
-      supportMediaType: string[];
-      supportReasoning: boolean;
-      forceReasoningEnabled?: boolean;
-      description?: string;
-    }[]
-  >(() => {
+  const availableModels = useMemo<ModelItem[]>(() => {
     return [
       {
         modelId: 'claude-v4-opus',
@@ -241,8 +237,18 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: [],
         supportReasoning: false,
       },
-    ];
-  }, [t]);
+    ].filter((model) => {
+      // Filter based on global configuration if available
+      if (
+        globalConfig?.globalAvailableModels &&
+        globalConfig.globalAvailableModels.length > 0
+      ) {
+        return globalConfig.globalAvailableModels.includes(model.modelId);
+      }
+      // If no global config, show all models
+      return true;
+    }) as ModelItem[];
+  }, [t, globalConfig]);
 
   const [filteredModels, setFilteredModels] = useState(availableModels);
   const { modelId, setModelId } = useModelState();
@@ -260,7 +266,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   // Update filtered models when activeModels changes
   useEffect(() => {
     if (processedActiveModels) {
-      const filtered = availableModels.filter((model) => {
+      const filtered = availableModels.filter((model: ModelItem) => {
         const key = toCamelCase(model.modelId) as keyof ActiveModels;
         return processedActiveModels[key] !== false;
       });
@@ -271,7 +277,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const getDefaultModel = useCallback(() => {
     // check default model is available
     const defaultModelAvailable = filteredModels.some(
-      (m) => m.modelId === DEFAULT_MODEL
+      (m: ModelItem) => m.modelId === DEFAULT_MODEL
     );
     if (defaultModelAvailable) {
       return DEFAULT_MODEL;
@@ -284,7 +290,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const selectModel = useCallback(
     (targetModelId: Model) => {
       const modelExists = filteredModels.some(
-        (m) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
+        (m: ModelItem) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
       );
       return modelExists ? targetModelId : getDefaultModel();
     },
@@ -314,7 +320,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       } else {
         // If there is no bot-specific model ID, check if the last model used can be used
         const lastModelAvailable = filteredModels.some(
-          (m) => m.modelId === recentUseModelId
+          (m: ModelItem) => m.modelId === recentUseModelId
         );
 
         // If the last model used is available, use it.
@@ -330,7 +336,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       // Processing when botId and previousBotID are the same, but there is an update in FilteredModels
       if (botId) {
         const lastModelAvailable = filteredModels.some(
-          (m) =>
+          (m: ModelItem) =>
             toCamelCase(m.modelId) === toCamelCase(recentUseModelId) ||
             toCamelCase(m.modelId) === toCamelCase(botModelId)
         );
@@ -346,7 +352,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
   const model = useMemo(() => {
     return filteredModels.find(
-      (model) => toCamelCase(model.modelId) === toCamelCase(modelId)
+      (model: ModelItem) => toCamelCase(model.modelId) === toCamelCase(modelId)
     );
   }, [filteredModels, modelId]);
 
@@ -362,7 +368,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     model,
     disabledImageUpload: (model?.supportMediaType.length ?? 0) === 0,
     acceptMediaType:
-      model?.supportMediaType.flatMap((mediaType) => {
+      model?.supportMediaType.flatMap((mediaType: string) => {
         const ext = mediaType.split('/')[1];
         return ext === 'jpeg' ? ['.jpg', '.jpeg'] : [`.${ext}`];
       }) ?? [],

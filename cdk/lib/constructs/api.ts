@@ -42,6 +42,7 @@ export interface ApiProps {
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
   readonly openSearchEndpoint?: string;
+  readonly globalAvailableModels?: string[];
 }
 
 export class Api extends Construct {
@@ -263,6 +264,9 @@ export class Api extends Construct {
         USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
+        GLOBAL_AVAILABLE_MODELS: props.globalAvailableModels 
+          ? JSON.stringify(props.globalAvailableModels)
+          : "[]",
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",

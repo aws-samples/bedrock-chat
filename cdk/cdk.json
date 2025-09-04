@@ -74,6 +74,7 @@
     "enableBotStore": true,
     "enableBotStoreReplicas": false,
     "botStoreLanguage": "en",
+    "globalAvailableModels": [],
     "tokenValidMinutes": 30,
     "alternateDomainName": "",
     "hostedZoneId": "",
