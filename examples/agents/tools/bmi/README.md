@@ -6,21 +6,24 @@ The BMI (Body Mass Index) calculation tool is a custom tool designed to compute 
 
 ## How to enable this tool
 
-- Move `bmi.py` under `backend/app/agents/tools` directory.
-- Open `backend/app/agents/utils.py` and modify like:
+- Move `bmi_strands.py` under `backend/app/strands_integration/tools/` directory.
+- Open `backend/app/strands_integration/utils.py` and modify `get_strands_registered_tools` function:
 
 ```py
-from app.agents.langchain import BedrockLLM
-from app.agents.tools.base import BaseTool
-from app.agents.tools.internet_search import internet_search_tool
-+ from app.agents.tools.bmi import bmi_tool
+def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
+    """Get list of available Strands tools."""
+    from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
+    from app.strands_integration.tools.calculator import create_calculator_tool
+    from app.strands_integration.tools.internet_search import (
+        create_internet_search_tool,
+    )
+    from app.strands_integration.tools.simple_list import simple_list, structured_list
++   from app.strands_integration.tools.bmi_strands import create_bmi_tool
 
-
-def get_available_tools() -> list[BaseTool]:
-    tools: list[BaseTool] = []
-    tools.append(internet_search_tool)
-+   tools.append(bmi_tool)
-
+    tools: list[StrandsAgentTool] = []
+    tools.append(create_internet_search_tool(bot))
+    tools.append(create_bedrock_agent_tool(bot))
++   tools.append(create_bmi_tool(bot))
     return tools
 ```
 
