@@ -16,11 +16,6 @@ from app.repositories.models.conversation import (
     TextContentModel,
 )
 from app.routes.schemas.conversation import ChatInput
-from app.stream import OnStopInput, OnThinking
-from app.usecases.chat import prepare_conversation, trace_to_root
-from app.user import User
-from strands.types.content import ContentBlock, Message
-
 from app.strands_integration.agent import create_strands_agent
 from app.strands_integration.converters import (
     convert_attachment_to_content_block,
@@ -30,7 +25,14 @@ from app.strands_integration.converters import (
 )
 from app.strands_integration.handlers import ToolResultCapture, create_callback_handler
 from app.strands_integration.processors import post_process_strands_result
+from app.strands_integration.prompt_builder import build_strands_rag_prompt
 from app.strands_integration.telemetry import StrandsTelemetryManager
+from app.stream import OnStopInput, OnThinking
+from app.usecases.chat import prepare_conversation, trace_to_root
+from app.user import User
+from app.vector_search import search_related_docs, search_result_to_related_document
+from strands.types.content import ContentBlock, Message
+from ulid import ULID
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +90,11 @@ def chat_with_strands(
         else []
     )
 
+    tool_capture = ToolResultCapture(
+        on_thinking=on_thinking,
+        on_tool_result=on_tool_result,
+    )
+
     if bot is not None:
         if bot.is_agent_enabled() and is_tooluse_supported(chat_input.message.model):
             if display_citation:
@@ -97,9 +104,67 @@ def chat_with_strands(
                     )
                 )
         elif bot.has_knowledge() and not is_tooluse_supported(chat_input.message.model):
-            logger.warning(
-                f"Currently not supported for {chat_input.message.model} model."
-            )
+            # Fetch most related documents from vector store
+            # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+            content = conversation.message_map[user_msg_id].content[-1]
+            if isinstance(content, TextContentModel):
+                # Generate tooluse format ID for consistent citation
+                pseudo_tool_use_id = f"tooluse_{str(ULID())}"
+
+                if on_thinking:
+                    on_thinking(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "name": "knowledge_base_tool",
+                            "input": {
+                                "query": content.body,
+                            },
+                        }
+                    )
+
+                search_results = search_related_docs(bot=bot, query=content.body)
+                logger.info(f"Search results from vector store: {search_results}")
+
+                # Create related documents with consistent source_id format
+                related_documents = [
+                    search_result_to_related_document(
+                        search_result=result,
+                        source_id_base=pseudo_tool_use_id,
+                    )
+                    for result in search_results
+                ]
+
+                if on_tool_result:
+                    on_tool_result(
+                        {
+                            "tool_use_id": pseudo_tool_use_id,
+                            "status": "success",
+                            "related_documents": related_documents,
+                        }
+                    )
+
+                # Use Strands RAG prompt with source_id support
+                instructions.append(
+                    build_strands_rag_prompt(
+                        search_results=search_results,
+                        model=chat_input.message.model,
+                        source_id_base=pseudo_tool_use_id,
+                        display_citation=display_citation,
+                    )
+                )
+
+                # Store RAG results in ToolResultCapture for citation support
+                tool_capture.captured_tool_results[pseudo_tool_use_id] = {
+                    "tool_use_id": pseudo_tool_use_id,
+                    "status": "success",
+                    "related_documents": related_documents,
+                }
+
+                # Store tool use info for thinking log
+                tool_capture.captured_tool_uses[pseudo_tool_use_id] = {
+                    "name": "knowledge_base_tool",
+                    "input": {"query": content.body},
+                }
 
     # Leaf node id
     # If `continue_generate` is True, note that new message is not added to the message map.
@@ -122,12 +187,6 @@ def chat_with_strands(
     # Setup telemetry manager for reasoning capture
     telemetry_manager = StrandsTelemetryManager()
     telemetry_manager.setup(conversation.id, user.id)
-
-    # Create ToolResultCapture to capture tool execution data
-    tool_capture = ToolResultCapture(
-        on_thinking=on_thinking,
-        on_tool_result=on_tool_result,
-    )
 
     agent = create_strands_agent(
         bot=bot,
