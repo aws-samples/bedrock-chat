@@ -556,6 +556,19 @@ When these parameters are provided, the deployment will automatically:
 > [!Note]
 > The domain must be managed by Route 53 in your AWS account. The hosted zone ID can be found in the Route 53 console.
 
+### Configure allowed countries (geo restriction)
+
+You can restrict access to Bedrock-Chat based on the country the client is accessing it from.
+Use the `allowedCountries` parameter in [cdk.json](./cdk/cdk.json) which takes a list of [ISO-3166 Country Codes](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes).
+For example a New Zealand based business may decide that only IP addresses from New Zealand (NZ) and Australia (AU) can access the portal and everyone else should be denied access.
+To configure this behaviour use the following setting in [cdk.json](./cdk/cdk.json):
+
+```json
+{
+  "allowedCountries": ["NZ", "AU"]
+}
+```
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
