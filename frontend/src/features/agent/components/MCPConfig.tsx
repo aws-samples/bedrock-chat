@@ -170,7 +170,8 @@ export const MCPConfig = ({ botId, mcpConfig, onChange, isLoading, setIsLoading 
     return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">{t('agent.tools.mcp.config.title')}</h3>
+        <h3 className="text-lg font-medium">{t('agent.tools.mcp.name')}</h3>
+        <p className="text-lg font-medium">{t('agent.tools.mcp.description')}</p>
         <ButtonIcon
           onClick={addServer}
           disabled={isLoading}
@@ -251,7 +252,7 @@ export const MCPConfig = ({ botId, mcpConfig, onChange, isLoading, setIsLoading 
                 <div className="mt-4">
                     <h5 className="font-medium mb-2">{t('agent.tools.mcp.config.tools')}</h5>
                     <div className="border border-gray-200 rounded-md divide-y">
-                        {server.tools.available.map((toolItem, toolIndex) => (
+                        {server.tools.available.map((toolItem) => (
                             <div 
                                 key={toolItem.name} 
                                 className="p-3 flex items-start hover:bg-gray-50"
