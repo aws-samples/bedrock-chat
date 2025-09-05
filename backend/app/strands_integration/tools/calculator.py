@@ -6,7 +6,6 @@ import logging
 import math
 import operator
 import re
-from typing import Union
 
 from app.repositories.models.custom_bot import BotModel
 from strands import tool

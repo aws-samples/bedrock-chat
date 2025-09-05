@@ -35,6 +35,11 @@ const translation = {
         description:
           'Versi terbaru, menawarkan respons yang lebih cepat dan kemampuan yang ditingkatkan dibandingkan Haiku 3.',
       },
+      'claude-v4.1-opus': {
+        label: 'Claude 4.1 (Opus)',
+        description:
+          'Versi terbaru dari model Claude terkuat dengan kemampuan penalaran yang ditingkatkan.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Model yang kuat untuk tugas-tugas yang sangat kompleks.',

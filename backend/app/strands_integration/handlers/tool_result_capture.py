@@ -13,7 +13,7 @@ from strands.experimental.hooks import (
 )
 from strands.hooks import HookProvider, HookRegistry
 
-from ..converters.tool_converter import (
+from app.strands_integration.converters.tool_converter import (
     convert_after_tool_event_to_tool_run_result,
     convert_raw_tool_result_to_tool_result,
     convert_tool_run_result_to_strands_tool_result,

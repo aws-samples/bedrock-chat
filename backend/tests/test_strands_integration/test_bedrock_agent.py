@@ -1,28 +1,29 @@
+import json
+import logging
 import sys
 import time
 import uuid
+
 import boto3
-import logging
-import json
 
 sys.path.append(".")
 import unittest
 
-from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
 from app.repositories.models.custom_bot import (
-    AgentModel,
-    BedrockAgentToolModel,
-    BedrockAgentConfigModel,
-    GenerationParamsModel,
-    ReasoningParamsModel,
     ActiveModelsModel,
+    AgentModel,
+    BedrockAgentConfigModel,
+    BedrockAgentToolModel,
+    GenerationParamsModel,
     KnowledgeModel,
+    ReasoningParamsModel,
     UsageStatsModel,
 )
+from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
 
 sys.path.append("tests")
-from test_repositories.utils.bot_factory import _create_test_bot_model
 from app.utils import get_bedrock_agent_client
+from test_repositories.utils.bot_factory import _create_test_bot_model
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -249,7 +250,7 @@ class TestBedrockAgentTool(unittest.TestCase):
         tool = create_bedrock_agent_tool(bot)
 
         self.assertIsNotNone(tool)
-        self.assertEqual(tool.tool_name, "bedrock_agent_invoke")
+        self.assertEqual(tool.tool_name, "bedrock_agent")
 
     def test_dynamic_description_update(self):
         """Test that tool description is dynamically updated from agent"""

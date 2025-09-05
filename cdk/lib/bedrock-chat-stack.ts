@@ -47,6 +47,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableBotStore: boolean;
   readonly enableBotStoreReplicas: boolean;
   readonly botStoreLanguage: Language;
+  readonly globalAvailableModels?: string[];
   readonly tokenValidMinutes: number;
   readonly alternateDomainName?: string;
   readonly hostedZoneId?: string;
@@ -203,6 +204,7 @@ export class BedrockChatStack extends cdk.Stack {
         props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
       openSearchEndpoint: botStore?.openSearchEndpoint,
+      globalAvailableModels: props.globalAvailableModels,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
     // Add permissions to API handler for BotStore

@@ -69,6 +69,12 @@ BEDROCK_PRICING = {
             "cache_write_input": 0.01875,
             "cache_read_input": 0.0015,
         },
+        "claude-v4.1-opus": {
+            "input": 0.015,
+            "output": 0.075,
+            "cache_write_input": 0.01875,
+            "cache_read_input": 0.0015,
+        },
         "claude-v4-sonnet": {
             "input": 0.003,
             "output": 0.015,
@@ -136,6 +142,12 @@ BEDROCK_PRICING = {
             "cache_write_input": 0.01875,
             "cache_read_input": 0.0015,
         },
+        "claude-v4.1-opus": {
+            "input": 0.015,
+            "output": 0.075,
+            "cache_write_input": 0.01875,
+            "cache_read_input": 0.0015,
+        },
         "claude-v4-sonnet": {
             "input": 0.003,
             "output": 0.015,
@@ -182,6 +194,12 @@ BEDROCK_PRICING = {
     "ap-northeast-1": {},
     "default": {
         "claude-v4-opus": {
+            "input": 0.015,
+            "output": 0.075,
+            "cache_write_input": 0.01875,
+            "cache_read_input": 0.0015,
+        },
+        "claude-v4.1-opus": {
             "input": 0.015,
             "output": 0.075,
             "cache_write_input": 0.01875,

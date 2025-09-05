@@ -421,7 +421,7 @@ class TestFetchAvailableAgentTools(unittest.TestCase):
         tools = fetch_available_agent_tools()
 
         # bedrock_agent -> BedrockAgentTool
-        bedrock_tools = [t for t in tools if t.name == "bedrock_agent_invoke"]
+        bedrock_tools = [t for t in tools if t.name == "bedrock_agent"]
         self.assertEqual(len(bedrock_tools), 1)
         self.assertIsInstance(bedrock_tools[0], BedrockAgentTool)
         self.assertEqual(bedrock_tools[0].tool_type, "bedrock_agent")

@@ -13,7 +13,7 @@ from app.repositories.models.conversation import (
 )
 from strands.types.content import Message
 
-from ..handlers.tool_result_capture import ToolResultCapture
+from app.strands_integration.handlers.tool_result_capture import ToolResultCapture
 
 
 def extract_related_documents_from_tool_capture(

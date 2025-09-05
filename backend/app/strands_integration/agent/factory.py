@@ -11,7 +11,7 @@ from strands import Agent
 from strands.hooks import HookProvider
 from strands.models import BedrockModel
 
-from .config import get_bedrock_model_config
+from app.strands_integration.agent.config import get_bedrock_model_config
 
 logger = logging.getLogger(__name__)
 

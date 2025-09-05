@@ -39,16 +39,6 @@ class CallbackHandler:
             reasoning_text = kwargs.get("reasoningText", "")
             self.on_reasoning(reasoning_text)
             self.collected_reasoning.append(reasoning_text)
-        elif "thinking" in kwargs and self.on_reasoning:
-            thinking_text = kwargs.get("thinking", "")
-            self.on_reasoning(thinking_text)
-            self.collected_reasoning.append(thinking_text)
-        # elif "event" in kwargs:
-        #     event = kwargs["event"]
-        #     print(f"[STRANDS_CALLBACK] Event: {event}")
-        # elif "message" in kwargs:
-        #     message = kwargs["message"]
-        #     print(f"[STRANDS_CALLBACK] Message: {message}")
 
 
 def create_callback_handler(

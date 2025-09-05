@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Literal, TypeGuard
 
-from app.agents.tools.agent_tool import AgentTool
+from app.agents.tools.agent_tool import AgentTool as LegacyAgentTool
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.common import RecordNotFoundError
@@ -649,61 +649,89 @@ def remove_uploaded_file(user: User, bot_id: str, filename: str):
 
 def fetch_available_agent_tools(bot_id) -> list[Tool]:
     """Fetch available tools for bot."""
-    tools = get_strands_registered_tools()
-    bot = find_bot_by_id(bot_id)
-    mcp_config = get_mcp_config(bot)
+    use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
     result: list[Tool] = []
 
-    if mcp_config is not None:
+    if use_strands:
+        # Use Strands integration
+        tools = get_strands_registered_tools()
+        bot = find_bot_by_id(bot_id)
+        mcp_config = get_mcp_config(bot)
+
+        if mcp_config is not None:
         converted_servers = [
-        MCPServer(
-            name=server.name,
-            endpoint=server.endpoint,
-            api_key=server.api_key,
-            secret_arn=server.secret_arn,
-            tools=MCPServerTools(
-                available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
-                selected=server.tools.selected,
-            )
-        ) for server in mcp_config.mcp_servers
-    ]
-
-        result.append(
-            MCPConfig(
-                tool_type=mcp_config.tool_type,
-                name=mcp_config.name,
-                description=mcp_config.description,
-                mcp_servers=converted_servers,
-            )
-        )
-
-    for tool in tools:
-        # Extract only the first line of description to avoid showing Args/Returns in UI
-        description = tool.tool_spec["description"].split("\n")[0].strip()
-        if tool.tool_name == "bedrock_agent_invoke":
-            result.append(
-                BedrockAgentTool(
-                    tool_type="bedrock_agent",
-                    name=tool.tool_name,
-                    description=description,
+            MCPServer(
+                name=server.name,
+                endpoint=server.endpoint,
+                api_key=server.api_key,
+                secret_arn=server.secret_arn,
+                tools=MCPServerTools(
+                    available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
+                    selected=server.tools.selected,
                 )
-            )
-        elif tool.tool_name == "internet_search":
-            result.append(
-                InternetTool(
-                    tool_type="internet",
-                    name=tool.tool_name,
-                    description=description,
-                    search_engine="duckduckgo",
-                )
-            )
-        else:
-            result.append(
-                PlainTool(
-                    tool_type="plain",
-                    name=tool.tool_name,
-                    description=description,
-                )
-            )
+            ) for server in mcp_config.mcp_servers
+        ]
 
+        for tool in tools:
+            # Extract only the first line of description to avoid showing Args/Returns in UI
+            description = tool.tool_spec["description"].split("\n")[0].strip()
+            if tool.tool_name == "bedrock_agent_invoke":
+                result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=tool.tool_name,
+                        description=description,
+                    )
+                )
+            elif tool.tool_name == "internet_search":
+                result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=tool.tool_name,
+                        description=description,
+                        search_engine="duckduckgo",
+                    )
+                )
+            else:
+                result.append(
+                    PlainTool(
+                        tool_type="plain",
+                        name=tool.tool_name,
+                        description=description,
+                    )
+                )
+    else:
+        # Use legacy agents.utils
+        from app.agents.utils import get_available_tools
+
+        legacy_tools: list[LegacyAgentTool] = get_available_tools()
+        legacy_result: list[Tool] = []
+        for legacy_tool in legacy_tools:
+            if legacy_tool.name == "bedrock_agent":
+                legacy_result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                    )
+                )
+            elif legacy_tool.name == "internet_search":
+                legacy_result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                        search_engine="duckduckgo",
+                    )
+                )
+            else:
+                legacy_result.append(
+                    PlainTool(
+                        tool_type="plain",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                    )
+                )
+        result = legacy_result
+        
     return result

@@ -28,7 +28,7 @@ There are two ways to use the Agent feature:
 
 ### Using Tool Use
 
-To enable the Agent functionality with Too Use for your customized chatbot, follow these steps:
+To enable the Agent functionality with Tool Use for your customized chatbot, follow these steps:
 
 1. Navigate to the Agent section in the custom bot screen.
 
@@ -47,7 +47,7 @@ To enable the Agent functionality with Too Use for your customized chatbot, foll
 
 ### Using Bedrock Agent
 
-You can utilize an [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) created in Amazon Bedrock.
+You can utilize a [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) created in Amazon Bedrock.
 
 First, create an Agent in Bedrock (e.g., via the Management Console). Then, specify the Agent ID in the custom bot settings screen. Once set, your chatbot will leverage the Bedrock Agent to process user queries.
 
@@ -71,7 +71,7 @@ Create a new function decorated with the `@tool` decorator from Strands:
 from strands import tool
 
 @tool
-def calculator(expression: str) -> str:
+def calculator(expression: str) -> dict:
     """
     Perform mathematical calculations safely.
 
@@ -79,14 +79,22 @@ def calculator(expression: str) -> str:
         expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
 
     Returns:
-        str: Result of the calculation or error message
+        dict: Result in Strands format with toolUseId, status, and content
     """
     try:
         # Your calculation logic here
         result = eval(expression)  # Note: Use safe evaluation in production
-        return str(result)
+        return {
+            "toolUseId": "placeholder",
+            "status": "success",
+            "content": [{"text": str(result)}]
+        }
     except Exception as e:
-        return f"Error: {str(e)}"
+        return {
+            "toolUseId": "placeholder",
+            "status": "error",
+            "content": [{"text": f"Error: {str(e)}"}]
+        }
 ```
 
 ### Tools with Bot Context (Closure Pattern)
@@ -101,7 +109,7 @@ def create_calculator_tool(bot: BotModel | None = None):
     """Create calculator tool with bot context closure."""
 
     @tool
-    def calculator(expression: str) -> str:
+    def calculator(expression: str) -> dict:
         """
         Perform mathematical calculations safely.
 
@@ -109,7 +117,7 @@ def create_calculator_tool(bot: BotModel | None = None):
             expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
 
         Returns:
-            str: Result of the calculation or error message
+            dict: Result in Strands format with toolUseId, status, and content
         """
         # Access bot context within the tool
         if bot:
@@ -117,12 +125,39 @@ def create_calculator_tool(bot: BotModel | None = None):
 
         try:
             result = eval(expression)  # Use safe evaluation in production
-            return str(result)
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"text": str(result)}]
+            }
         except Exception as e:
-            return f"Error: {str(e)}"
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"Error: {str(e)}"}]
+            }
 
     return calculator
 ```
+
+### Return Format Requirements
+
+All Strands tools must return a dictionary with the following structure:
+
+```python
+{
+    "toolUseId": "placeholder",  # Will be replaced by Strands
+    "status": "success" | "error",
+    "content": [
+        {"text": "Simple text response"} |
+        {"json": {"key": "Complex data object"}}
+    ]
+}
+```
+
+- Use `{"text": "message"}` for simple text responses
+- Use `{"json": data}` for complex data that should be preserved as structured information
+- Always set `status` to either `"success"` or `"error"`
 
 ### Implementation Guidelines
 

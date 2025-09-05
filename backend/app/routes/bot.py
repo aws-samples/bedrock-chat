@@ -4,10 +4,6 @@ from typing import Any, Dict, Literal
 from app.dependencies import check_creating_bot_allowed
 from app.repositories.custom_bot import find_bot_by_id
 from app.routes.schemas.bot import (
-    ActiveModelsOutput,
-    Agent,
-    BedrockGuardrailsOutput,
-    BedrockKnowledgeBaseOutput,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -16,11 +12,6 @@ from app.routes.schemas.bot import (
     BotStarredInput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
-    ConversationQuickStarter,
-    FirecrawlConfig,
-    GenerationParams,
-    Knowledge,
-    PlainTool,
     Tool,
 )
 from app.routes.schemas.conversation import type_model_name

@@ -15,34 +15,51 @@ def create_bmi_tool(bot: BotModel | None = None):
             weight: Weight in kilograms (kg). e.g. 70.0
 
         Returns:
-            dict: BMI value and category information
+            dict: BMI calculation result in Strands format
         """
         # Access bot context if needed
         if bot:
             print(f"BMI calculation for bot: {bot.id}")
 
-        if height <= 0 or weight <= 0:
-            return {
-                "status": "error",
-                "content": [{"text": "Error: Height and weight must be positive numbers."}]
+        try:
+            if height <= 0 or weight <= 0:
+                return {
+                    "toolUseId": "placeholder",
+                    "status": "error",
+                    "content": [{"text": "Error: Height and weight must be positive numbers."}]
+                }
+
+            height_in_meters = height / 100
+            bmi = weight / (height_in_meters**2)
+            bmi_rounded = round(bmi, 1)
+
+            if bmi < 18.5:
+                category = "Underweight"
+            elif bmi < 25:
+                category = "Normal weight"
+            elif bmi < 30:
+                category = "Overweight"
+            else:
+                category = "Obese"
+
+            result_data = {
+                "bmi": bmi_rounded,
+                "category": category,
+                "height_cm": height,
+                "weight_kg": weight
             }
 
-        height_in_meters = height / 100
-        bmi = weight / (height_in_meters**2)
-        bmi_rounded = round(bmi, 1)
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"json": result_data}]
+            }
 
-        if bmi < 18.5:
-            category = "Underweight"
-        elif bmi < 25:
-            category = "Normal weight"
-        elif bmi < 30:
-            category = "Overweight"
-        else:
-            category = "Obese"
-
-        return {
-            "bmi": bmi_rounded,
-            "category": category,
-        }
+        except Exception as e:
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"BMI calculation error: {str(e)}"}]
+            }
 
     return calculate_bmi
