@@ -21,7 +21,7 @@ import { BedrockAgentConfig as BedrockAgentConfigComponent } from './BedrockAgen
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
 import RadioButton from '../../../components/RadioButton';
 import { DEFAULT_FIRECRAWL_CONFIG } from '../constants';
-import { MCPConfig } from './McpConfig';
+import { MCPConfig } from './MCPConfig';
 
 type Props = {
   botId: string;
@@ -35,14 +35,12 @@ type Props = {
 export const AvailableTools = ({ botId, availableTools, tools, setTools, isLoading, setIsLoading }: Props) => {
   const { t } = useTranslation();
   const [searchEngine, setSearchEngine] = useState<SearchEngine>('duckduckgo');
-  const [mcpConfig, setMcpConfig] = useState<MCPConfigType>(
-    {
-      name: 'mcp',
-      description: '',
-      toolType: 'mcp',
-      mcpServers: []
-    }
-  );
+  const [mcpConfig, setMcpConfig] = useState<MCPConfigType>({
+    name: 'mcp',
+    description: '',
+    toolType: 'mcp',
+    mcpServers: [],
+  });
   console.log("Available tools", availableTools)
 
   const handleChangeTool = useCallback(
