@@ -5,6 +5,7 @@ import {
   BedrockAgentTool,
   FirecrawlConfig,
   InternetAgentTool,
+  MCPConfig as MCPConfigType,
   SearchEngine,
   ToolType,
 } from '../types';
@@ -20,16 +21,29 @@ import { BedrockAgentConfig as BedrockAgentConfigComponent } from './BedrockAgen
 import ExpandableDrawerGroup from '../../../components/ExpandableDrawerGroup';
 import RadioButton from '../../../components/RadioButton';
 import { DEFAULT_FIRECRAWL_CONFIG } from '../constants';
+import { MCPConfig } from './McpConfig';
 
 type Props = {
+  botId: string;
   availableTools: AgentTool[] | undefined;
   tools: AgentTool[];
   setTools: Dispatch<React.SetStateAction<AgentTool[]>>;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
 };
 
-export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
+export const AvailableTools = ({ botId, availableTools, tools, setTools, isLoading, setIsLoading }: Props) => {
   const { t } = useTranslation();
   const [searchEngine, setSearchEngine] = useState<SearchEngine>('duckduckgo');
+  const [mcpConfig, setMcpConfig] = useState<MCPConfigType>(
+    {
+      name: 'mcp',
+      description: '',
+      toolType: 'mcp',
+      mcpServers: []
+    }
+  );
+  console.log("Available tools", availableTools)
 
   const handleChangeTool = useCallback(
     (tool: AgentTool) => () => {
@@ -48,7 +62,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                   toolType: 'internet' as ToolType,
                   name: 'internet_search',
                   searchEngine: searchEngine || 'duckduckgo',
-                } as AgentTool,
+                } as InternetAgentTool,
               ];
 
           return newTools;
@@ -71,7 +85,29 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
                     agentId: '',
                     aliasId: '',
                   },
-                } as AgentTool,
+                } as BedrockAgentTool,
+              ];
+
+          return newTools;
+        });
+      } else if (tool.name === 'mcp') {
+        setTools((preTools) => {
+          const isEnabled = preTools
+            ?.map(({ name }) => name)
+            .includes(tool.name);
+
+          setMcpConfig(tool as MCPConfigType)
+          const newTools = isEnabled
+            ? [...preTools.filter(({ name }) => name != tool.name)]
+            : [
+                ...preTools,
+                {
+                  ...tool,
+                  toolType: mcpConfig.toolType as ToolType,
+                  name: mcpConfig.name,
+                  description: mcpConfig.description,
+                  mcpServers: mcpConfig.mcpServers
+                } as MCPConfigType,
               ];
 
           return newTools;
@@ -89,7 +125,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
 
   const handleFirecrawlConfigChange = useCallback(
     (config: FirecrawlConfig) => {
-      setTools((prevTools) =>
+       setTools((prevTools) =>
         prevTools.map((tool) => {
           if (tool.name === 'internet_search') {
             return {
@@ -142,21 +178,22 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
           return prevTools;
         }
 
-        const updatedTools = prevTools.map((tool) =>
-          tool.name === 'internet_search'
-            ? {
-                ...tool,
-                toolType: 'internet' as ToolType,
-                name: 'internet_search',
-                searchEngine: newEngine as SearchEngine,
-                // Reset firecrawlConfig when switching away from firecrawl
-                firecrawlConfig:
-                  newEngine === 'firecrawl' && isInternetTool(tool)
-                    ? tool.firecrawlConfig
-                    : undefined,
-              }
-            : tool
-        );
+        const updatedTools = prevTools.map((tool) => {
+          if (tool.name === 'internet_search' && isInternetTool(tool)) {
+            // Create a properly typed InternetAgentTool
+            const updatedTool: InternetAgentTool = {
+              ...tool,
+              toolType: 'internet',
+              searchEngine: newEngine,
+              // Only include firecrawlConfig when using firecrawl
+              firecrawlConfig: newEngine === 'firecrawl' 
+                ? tool.firecrawlConfig
+                : undefined
+            };
+            return updatedTool;
+          }
+          return tool;
+        });
         return updatedTools;
       });
     },
@@ -174,6 +211,28 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
       setSearchEngine(internetSearchTool.searchEngine);
     }
   }, [tools]);
+
+  const handleMcpConfigChange = useCallback(
+    (newConfig: MCPConfigType) => {
+      setMcpConfig(newConfig);
+      console.log("Updated MCP Config", newConfig)
+      setTools((prevTools) =>
+        prevTools.map((tool) => {
+          if (tool.name === 'mcp') {
+            return {
+              ...tool,
+              toolType: mcpConfig.toolType as ToolType,
+              name: mcpConfig.name,
+              description: mcpConfig.description,
+              mcpServers: mcpConfig.mcpServers
+            } as AgentTool;
+          }
+          return tool;
+        })
+      );
+    },
+    [setTools]
+  );
 
   return (
     <>
@@ -212,6 +271,20 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
               {formatDescription(tool, t)}
             </div>
           </div>
+           {tool.name === 'mcp' &&
+            tools?.map(({ name }) => name).includes('mcp') && (
+              <div className="space-y-4">
+                <div className="ml-6 text-sm">
+                  <MCPConfig
+                    botId={botId}
+                    mcpConfig={mcpConfig}
+                    onChange={handleMcpConfigChange}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
+                  />
+                </div>
+              </div>
+            )}
           {tool.name === 'internet_search' &&
             tools?.map(({ name }) => name).includes('internet_search') && (
               <ExpandableDrawerGroup
