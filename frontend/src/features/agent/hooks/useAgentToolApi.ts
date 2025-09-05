@@ -4,7 +4,7 @@ import { AgentTool } from '../types';
 export const useAgentApi = () => {
   const http = useHttp();
   return {
-    availableTools: () =>
-      http.getOnce<AgentTool[]>(`/bot/new/agent/available-tools`),
+    availableTools: (botId: string) =>
+      http.getOnce<AgentTool[]>(`/bot/${botId}/agent/available-tools`),
   };
 };
