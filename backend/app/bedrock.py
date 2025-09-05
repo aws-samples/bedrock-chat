@@ -242,12 +242,8 @@ REGIONAL_INFERENCE_PROFILES = {
         "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
     },
     # OpenAI GPT-OSS models
-    "gpt-oss-20b": {
-        "supported_regions": {"us-west-2": "us"}
-    },
-    "gpt-oss-120b": {
-        "supported_regions": {"us-west-2": "us"}
-    },
+    "gpt-oss-20b": {"supported_regions": {"us-west-2": "us"}},
+    "gpt-oss-120b": {"supported_regions": {"us-west-2": "us"}},
 }
 
 client = get_bedrock_runtime_client()
