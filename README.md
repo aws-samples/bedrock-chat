@@ -600,6 +600,15 @@ To configure this behaviour use the following setting in [cdk.json](./cdk/cdk.js
 }
 ```
 
+Or, using `parameter.ts` (Recommended Type-Safe Method):
+
+```ts
+// Define parameters for the default environment
+bedrockChatParams.set("default", {
+  allowedCountries: ["NZ", "AU"],
+});
+```
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
