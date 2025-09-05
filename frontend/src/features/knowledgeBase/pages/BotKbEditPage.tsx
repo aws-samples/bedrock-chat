@@ -78,7 +78,6 @@ const BotKbEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
-  const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -378,6 +377,8 @@ const BotKbEditPage: React.FC = () => {
   const botId = useMemo(() => {
     return isNewBot ? ulid() : (paramsBotId ?? '');
   }, [isNewBot, paramsBotId]);
+
+  const { availableTools } = useAgent(botId);
 
   const onChangeIncludePattern = useCallback(
     (pattern: string, idx: number) => {
@@ -1523,9 +1524,12 @@ const BotKbEditPage: React.FC = () => {
 
               <div className="mt-3" />
               <AvailableTools
+                botId={botId}
                 availableTools={availableTools}
                 tools={tools}
                 setTools={setTools}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
               />
 
               <div className="mt-3">
