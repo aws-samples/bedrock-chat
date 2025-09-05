@@ -1,4 +1,5 @@
 import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
+import { MCPServer } from '../features/agent/types';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
 
@@ -226,6 +227,11 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     deleteUploadedFile: (botId: string, filename: string) => {
       return api.deleteUploadedFile(botId, filename);
     },
+    testMcpServerConnection: (botId: string, params: MCPServer) => {
+      return api.testMcpServerConnection(botId, params).finally(() => {
+        mutateMyBots();
+      });
+    }
   };
 };
 

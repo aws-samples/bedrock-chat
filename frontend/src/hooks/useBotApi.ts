@@ -16,6 +16,7 @@ import {
   UpdateBotSharedScopeResponse,
 } from '../@types/bot';
 import useHttp from './useHttp';
+import { MCPServer } from '../features/agent/types';
 
 const useBotApi = () => {
   const http = useHttp();
@@ -111,6 +112,9 @@ const useBotApi = () => {
       return http.delete(`bot/${botId}/uploaded-file`, {
         filename,
       });
+    },
+    testMcpServerConnection: (botId: string, params: MCPServer) => {
+      return http.post<MCPServer>(`bot/${botId}/agent/mcp-config`, params);
     },
   };
 };
