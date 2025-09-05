@@ -1,6 +1,11 @@
+import json
 import logging
 from typing import Annotated, Any, Dict, List, Literal, Optional, Self, Type, get_args
 
+from typing import List, Dict, Optional
+
+from strands.tools.mcp.mcp_agent_tool import MCPAgentTool
+from strands.types.tools import AgentTool
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.models.common import DynamicBaseModel, Float, SecureString
@@ -23,11 +28,15 @@ from app.routes.schemas.bot import (
     GenerationParams,
     InternetTool,
     Knowledge,
+    MCPAgentToolSchema,
     PlainTool,
     ReasoningParams,
     Tool,
     type_shared_scope,
     type_sync_status,
+    MCPServerTools,
+    MCPServer,
+    MCPConfig
 )
 from app.routes.schemas.conversation import type_model_name
 from app.user import User
@@ -254,11 +263,135 @@ class BedrockAgentToolModel(BaseModel):
         )
 
 
-ToolModel = Annotated[
-    PlainToolModel | InternetToolModel | BedrockAgentToolModel,
-    Discriminator("tool_type"),
-]
+class MCPAgentToolModel(BaseModel):
+    name: str
+    description: str | None = None
+    inputSchema: dict[str, Any]
+    # Add other fields that exist in AgentTool
+    
+    @classmethod
+    def from_agent_tool(cls, tool: AgentTool) -> Self:
+        """Convert an AgentTool instance to AgentToolModel"""
+        if not isinstance(tool, MCPAgentTool):
+            raise TypeError(f"Expected MCPAgentTool, got {type(tool)}")
+        
+        return cls(
+            name=tool.tool_name,
+            description=tool.mcp_tool.description,
+            inputSchema=tool.mcp_tool.inputSchema
+        )
+    
+    @classmethod
+    def from__mcp_agent_tool_schema(cls, tool: MCPAgentToolSchema) -> Self:
+        """Convert an AgentTool instance to AgentToolModel"""
+        
+        return cls(
+            name=tool.name,
+            description=tool.description,
+            inputSchema=tool.inputSchema
+        )
+    
+    def to_schema(self) -> MCPAgentToolSchema:
+        return MCPAgentToolSchema(
+            name=self.name,
+            description=self.description,
+            inputSchema=self.inputSchema,
+    )
 
+
+class MCPServerToolsModel(BaseModel):
+    available: List[MCPAgentToolModel] = Field(default_factory=list)
+    selected: List[str] = Field(default_factory=list)
+
+    @classmethod 
+    def from_mcp_server_tools(cls, mcp_server_tools: MCPServerTools) -> Self:
+        return cls(
+            available=[
+                MCPAgentToolModel.from__mcp_agent_tool_schema(tool)
+                for tool in mcp_server_tools.available
+            ],
+            selected=mcp_server_tools.selected
+        )
+        
+
+class MCPServerModel(BaseModel):
+    name: str
+    endpoint: str
+    api_key: Optional[str] = None
+    secret_arn: Optional[str] = None
+    tools: MCPServerToolsModel = Field(default_factory=MCPServerToolsModel)
+    
+    @classmethod
+    def from_mcp_server(cls, mcp_server: MCPServer, user_id: str, bot_id: str) -> Self:
+        secret_arn = None 
+        if mcp_server.api_key is not None and mcp_server.api_key != "":
+            secret_arn = store_api_key_to_secret_manager(
+                user_id, bot_id, f"mcp_server_{mcp_server.name}", mcp_server.api_key
+            )
+
+        return cls(
+            name=mcp_server.name,
+            endpoint=mcp_server.endpoint,
+            api_key=None,
+            secret_arn=secret_arn,
+            tools=MCPServerToolsModel.from_mcp_server_tools(mcp_server.tools)
+        )
+    
+    @model_validator(mode="before")
+    @classmethod
+    def load_secret_from_arn(cls, data):
+        if (
+            isinstance(data, dict)
+            and "api_key" in data
+            and (data["api_key"] is None or data["api_key"] == "")
+            and "secret_arn" in data
+            and data["secret_arn"]
+        ):
+            try:
+                api_key = get_api_key_from_secret_manager(data["secret_arn"])
+                data["api_key"] = api_key
+            except Exception as e:
+                logger.error(f"Failed to retrieve secret from ARN: {e}")
+                raise ValueError(
+                    f"Failed to retrieve secret from ARN: {data['secret_arn']}"
+                )
+
+        return data
+
+
+class MCPConfigModel(BaseModel):
+    tool_type: Literal["mcp"]
+    name: str
+    description: str
+    mcp_servers: List[MCPServerModel] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def load_secret(cls, data):
+        """Ensures validation of nested `MCPServerModel` with secret loading."""
+        if (
+            isinstance(data, dict)
+            and "mcp_servers" in data
+            and isinstance(data["mcp_servers"], list)
+        ):
+            validated_servers = []
+            for server in data["mcp_servers"]:
+                validated_servers.append(MCPServerModel.model_validate(server))
+            data["mcp_servers"] = validated_servers
+        return data
+    
+    @classmethod
+    def from_tool_input(cls, mcp_config: MCPConfig, user_id: str, bot_id: str) -> Self:
+        return cls(
+            tool_type=mcp_config.tool_type,
+            name=mcp_config.name,
+            description=mcp_config.description,
+            mcp_servers=[MCPServerModel.from_mcp_server(server, user_id, bot_id) for server in mcp_config.mcp_servers]
+        )
+
+ToolModel = Annotated[
+    PlainToolModel | InternetToolModel | BedrockAgentToolModel | MCPConfigModel, Discriminator("tool_type")
+]
 
 class AgentModel(BaseModel):
     tools: list[ToolModel]
@@ -292,6 +425,10 @@ class AgentModel(BaseModel):
             elif tool_input.tool_type == "internet":
                 tools.append(
                     InternetToolModel.from_tool_input(tool_input, user_id, bot_id)
+                )
+            elif tool_input.tool_type == "mcp":
+                tools.append(
+                    MCPConfigModel.from_tool_input(tool_input, user_id, bot_id)
                 )
             elif tool_input.tool_type == "bedrock_agent":
                 tools.append(BedrockAgentToolModel.from_tool_input(tool_input))
@@ -333,6 +470,31 @@ class AgentModel(BaseModel):
                             if tool.bedrockAgentConfig
                             else None
                         ),
+                    )
+                )
+            elif isinstance(tool, MCPConfigModel):
+                mcp_servers = []
+                if tool.mcp_servers:
+                    mcp_servers = [
+                        MCPServer(
+                            name=server.name,
+                            endpoint=server.endpoint,
+                            api_key=server.api_key,
+                            secret_arn=server.secret_arn,
+                            tools=MCPServerTools(
+                                available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
+                                selected=server.tools.selected
+                            )
+                        )
+                        for server in tool.mcp_servers
+                    ]
+
+                tools.append(
+                    MCPConfig(
+                        tool_type=tool.tool_type,
+                        name=tool.name,
+                        description=tool.description,
+                        mcp_servers=mcp_servers
                     )
                 )
             else:
