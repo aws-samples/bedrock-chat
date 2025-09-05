@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 USER_POOL_ID = os.environ.get("USER_POOL_ID")
+REGION = os.environ.get("REGION", "us-east-1")
 
-client = boto3.client("cognito-idp")
+client = boto3.client("cognito-idp", region_name=REGION)
 
 
 class TooManyRequestsError(Exception):

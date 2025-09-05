@@ -27,10 +27,8 @@ USAGE_ANALYSIS_OUTPUT_LOCATION = os.environ.get(
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "us-east-1_XXXXXXXXX")
 QUERY_LIMIT = 1000
 
-
 logger = logging.getLogger(__name__)
-athena = boto3.client("athena")
-
+athena = boto3.client("athena", region_name=REGION)
 
 def _find_cognito_user_by_id(user_id: str) -> dict | None:
     """Find user by id from cognito."""

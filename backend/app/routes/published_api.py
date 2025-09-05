@@ -16,7 +16,8 @@ from ulid import ULID
 
 router = APIRouter(tags=["published_api"])
 
-sqs_client = boto3.client("sqs")
+REGION = os.environ.get("REGION", "us-east-1")
+sqs_client = boto3.client("sqs", region_name=REGION)
 QUEUE_URL = os.environ.get("QUEUE_URL", "")
 
 
