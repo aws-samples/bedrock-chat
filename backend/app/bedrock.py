@@ -659,6 +659,9 @@ def get_model_id(
         "llama3-2-3b-instruct": "meta.llama3-2-3b-instruct-v1:0",
         "llama3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
         "llama3-2-90b-instruct": "meta.llama3-2-90b-instruct-v1:0",
+        # OpenAI GPT-OSS models
+        "gpt-oss-20b": "openai.gpt-oss-20b-1:0",
+        "gpt-oss-120b": "openai.gpt-oss-120b-1:0",
     }
 
     # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
@@ -730,6 +733,8 @@ def get_model_id(
                 "llama3-2-3b-instruct",
                 "llama3-2-11b-instruct",
                 "llama3-2-90b-instruct",
+                "gpt-oss-20b",
+                "gpt-oss-120b",
             ],
         },
         "eu-central-1": {

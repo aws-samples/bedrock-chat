@@ -53,6 +53,16 @@ const translation = {
       'mistral-large': {
         label: 'Mistral Grande',
       },
+      'gpt-oss-20b': {
+        label: 'GPT-OSS 20B',
+        description:
+          'Modelo de peso abierto de 20B parámetros con ventana de contexto de 128K y capacidades de razonamiento.',
+      },
+      'gpt-oss-120b': {
+        label: 'GPT-OSS 120B',
+        description:
+          'Modelo de peso abierto de 120B parámetros con ventana de contexto de 128K y capacidades avanzadas de razonamiento.',
+      },
     },
     agent: {
       label: 'Agente',
