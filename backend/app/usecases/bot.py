@@ -90,7 +90,7 @@ from app.utils import (
 from app.strands_integration.tools.mcp import get_mcp_config
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
 
@@ -649,14 +649,18 @@ def remove_uploaded_file(user: User, bot_id: str, filename: str):
 
 def fetch_available_agent_tools(bot_id) -> list[Tool]:
     """Fetch available tools for bot."""
+    logger.debug(f"Fetch available tools for bot: {bot_id}")
     use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
     result: list[Tool] = []
 
     if use_strands:
+        logger.debug("Using Strands integration")
         # Use Strands integration
         tools = get_strands_registered_tools()
         bot = find_bot_by_id(bot_id)
         mcp_config = get_mcp_config(bot)
+
+        logger.debug(f"MCP config: {mcp_config}")
 
         if mcp_config is not None:
             converted_servers = [
@@ -674,10 +678,10 @@ def fetch_available_agent_tools(bot_id) -> list[Tool]:
 
             result.append(
                 MCPConfig(
-                tool_type=mcp_config.tool_type,
-                name=mcp_config.name,
-                description=mcp_config.description,
-                mcp_servers=converted_servers,
+                    tool_type=mcp_config.tool_type,
+                    name=mcp_config.name,
+                    description=mcp_config.description,
+                    mcp_servers=converted_servers,
             )
         )
 
@@ -742,5 +746,6 @@ def fetch_available_agent_tools(bot_id) -> list[Tool]:
                     )
                 )
         result = legacy_result
-        
+
+    logger.debug(f"Available tools: {result}")
     return result
