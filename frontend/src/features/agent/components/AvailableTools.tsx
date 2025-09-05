@@ -219,10 +219,10 @@ export const AvailableTools = ({ botId, availableTools, tools, setTools, isLoadi
           if (tool.name === 'mcp') {
             return {
               ...tool,
-              toolType: mcpConfig.toolType as ToolType,
-              name: mcpConfig.name,
-              description: mcpConfig.description,
-              mcpServers: mcpConfig.mcpServers
+              toolType: newConfig.toolType as ToolType,
+              name: newConfig.name,
+              description: newConfig.description,
+              mcpServers: newConfig.mcpServers
             } as AgentTool;
           }
           return tool;
