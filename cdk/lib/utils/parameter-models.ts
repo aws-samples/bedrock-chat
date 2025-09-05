@@ -51,6 +51,13 @@ function getEnvVar(name: string, defaultValue?: string): string | undefined {
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
 
+  // Frontend WAF toggle (CloudFront scope)
+  // Set to 'false' if you're unable to deploy resources in us-east-1
+  enableFrontendWaf: z.boolean().default(true),
+
+  // Frontend (CloudFront) IPv6 toggle
+  enableFrontendIpv6: z.boolean().default(true),
+
   // IP address restrictions - enforced by WAF if enabled
   allowedIpV4AddressRanges: z
     .array(z.string())
@@ -61,8 +68,6 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1",
     ]),
-  // Frontend (CloudFront) IPv6 toggle
-  enableFrontendIpv6: z.boolean().default(true),
   publishedApiAllowedIpV4AddressRanges: z
     .array(z.string())
     .default(["0.0.0.0/1", "128.0.0.0/1"]),
@@ -204,6 +209,8 @@ export function resolveBedrockChatParameters(
     envName,
     envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+    enableFrontendWaf: app.node.tryGetContext("enableFrontendWaf"),
+    enableFrontendIpv6: app.node.tryGetContext("enableFrontendIpv6"),
     allowedIpV4AddressRanges: app.node.tryGetContext(
       "allowedIpV4AddressRanges"
     ),
@@ -211,7 +218,6 @@ export function resolveBedrockChatParameters(
       "allowedIpV6AddressRanges"
     ),
     allowedCountries: app.node.tryGetContext("allowedCountries"),
-    enableFrontendIpv6: app.node.tryGetContext("enableFrontendIpv6"),
     identityProviders: app.node.tryGetContext("identityProviders"),
     userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
     allowedSignUpEmailDomains: app.node.tryGetContext(
