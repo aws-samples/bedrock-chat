@@ -210,6 +210,31 @@ const translation = {
             placeholder: 'Enter Alias ID',
           },
         },
+        mcp: {
+          name: 'MCP',
+          description: 'Connect to remote MCP servers',
+          config: {
+            addServer: 'Add MCP server',
+            noServers: 'No MCP servers configured',
+            addFirstServer: 'Add first MCP server',
+            server: 'MCP Server',
+            remove: 'Remove',
+            name: 'Server name',
+            namePlaceholder: 'Enter MCP server name',
+            endpoint: 'API endpoint',
+            endpointPlaceholder: 'Enter API endpoint',
+            apiKey: 'API Key (Optional)',
+            apiKeyPlaceholder: 'Enter API Key',
+            connect: 'Connect MCP Server',
+            tools: 'Tools',
+            available: 'Available Tools',
+            selected: 'Selected Tools',
+            noTools: 'No tools available',
+            noToolsSelected: 'No tools selected',
+            noToolsAvailable: 'No tools available',
+            noToolsSelectedAvailable: 'No tools selected or available'
+          }
+        }
       },
     },
     bot: {
