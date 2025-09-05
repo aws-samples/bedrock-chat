@@ -53,8 +53,104 @@ class TestGetModelId(unittest.TestCase):
             expected_model_id,
         )
 
+    def test_get_model_id_with_global_inference_priority(self):
+        """Global inference is selected for supported model and region"""
+        model = "claude-v4-sonnet"
+        expected_model_id = "global.anthropic.claude-sonnet-4-20250514-v1:0"
+        self.assertEqual(
+            get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
+            expected_model_id,
+        )
+
+    def test_get_model_id_with_regional_fallback(self):
+        """Falls back to regional cross-region for non-global supported models"""
+        model = "claude-v3.5-sonnet"  # Non-global supported
+        expected_model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
+        self.assertEqual(
+            get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
+            expected_model_id,
+        )
+
+    def test_get_model_id_with_unsupported_region_fallback(self):
+        """Falls back to regional for global-supported model in unsupported region"""
+        model = "claude-v4-sonnet"
+        # ap-south-1 is not global-supported but APAC regional-supported
+        expected_model_id = "apac.anthropic.claude-sonnet-4-20250514-v1:0"
+        self.assertEqual(
+            get_model_id(model, enable_cross_region=True, bedrock_region="ap-south-1"),
+            expected_model_id,
+        )
+
 
 class TestCallConverseApi(unittest.TestCase):
+    def test_call_converse_api_with_global_inference(self):
+        """Actual LLM call using global inference profile"""
+        message = SimpleMessageModel(
+            role="user",
+            content=[
+                TextContentModel(
+                    content_type="text",
+                    body="Hello! Please respond with just 'Global inference works!'",
+                )
+            ],
+        )
+
+        # Use global inference supported model
+        arg = compose_args_for_converse_api(
+            [message],
+            "claude-v4-sonnet",  # Global inference supported
+            stream=False,
+        )
+
+        # Verify modelId is global profile
+        expected_model_id = "global.anthropic.claude-sonnet-4-20250514-v1:0"
+        self.assertEqual(arg["modelId"], expected_model_id)
+
+        # Actual API call
+        response = call_converse_api(arg)
+
+        # Verify basic response structure
+        self.assertIn("output", response)
+        self.assertIn("message", response["output"])
+        self.assertIn("content", response["output"]["message"])
+
+        print(f"Global inference response: {response['output']['message']['content']}")
+
+    def test_call_converse_api_with_regional_fallback(self):
+        """Actual LLM call with regional cross-region fallback"""
+        message = SimpleMessageModel(
+            role="user",
+            content=[
+                TextContentModel(
+                    content_type="text",
+                    body="Hello! Please respond with just 'Regional inference works!'",
+                )
+            ],
+        )
+
+        # Use non-global supported model
+        arg = compose_args_for_converse_api(
+            [message],
+            "claude-v3.5-sonnet",  # Non-global supported, regional supported
+            stream=False,
+        )
+
+        # Verify modelId is regional profile
+        expected_model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
+        self.assertEqual(arg["modelId"], expected_model_id)
+
+        # Actual API call
+        response = call_converse_api(arg)
+
+        # Verify basic response structure
+        self.assertIn("output", response)
+        self.assertIn("message", response["output"])
+        self.assertIn("content", response["output"]["message"])
+
+        print(
+            f"Regional inference response: {response['output']['message']['content']}"
+        )
+
     def test_call_converse_api(self):
         message = SimpleMessageModel(
             role="user",
