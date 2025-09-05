@@ -215,6 +215,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         description: t('model.gpt-oss-20b.description'),
         supportMediaType: [],
         supportReasoning: true,
+        forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
       },
       {
         modelId: 'gpt-oss-120b',
@@ -222,6 +223,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         description: t('model.gpt-oss-120b.description'),
         supportMediaType: [],
         supportReasoning: true,
+        forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
       },
       // Mistral
       {

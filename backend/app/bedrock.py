@@ -241,9 +241,6 @@ REGIONAL_INFERENCE_PROFILES = {
     "llama3-2-90b-instruct": {
         "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
     },
-    # OpenAI GPT-OSS models
-    "gpt-oss-20b": {"supported_regions": {"us-west-2": "us"}},
-    "gpt-oss-120b": {"supported_regions": {"us-west-2": "us"}},
 }
 
 client = get_bedrock_runtime_client()
@@ -274,6 +271,11 @@ def is_llama_model(model: type_model_name) -> bool:
 def is_mistral(model: type_model_name) -> bool:
     """Check if the model is a Mistral model"""
     return "mistral" in model
+
+
+def is_gpt_oss_model(model: type_model_name) -> bool:
+    """Check if the model is an OpenAI GPT-OSS model"""
+    return "gpt-oss" in model
 
 
 def is_tooluse_supported(model: type_model_name) -> bool:
@@ -398,6 +400,40 @@ def _prepare_mistral_model_params(
     return inference_config, additional_fields
 
 
+def _prepare_gpt_oss_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> Tuple[InferenceConfigurationTypeDef, Dict[str, int] | None]:
+    """
+    Prepare inference configuration for OpenAI GPT-OSS models
+    Note: GPT-OSS models don't support stopSequences
+    """
+    # Base inference configuration
+    inference_config: InferenceConfigurationTypeDef = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_GENERATION_CONFIG["top_p"]
+        ),
+    }
+
+    # Note: GPT-OSS models don't support stopSequences, so we don't add it
+
+    # Additional fields for GPT-OSS models
+    additional_fields = None
+
+    return inference_config, additional_fields
+
+
 def _prepare_llama_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> Tuple[InferenceConfigurationTypeDef, None]:
@@ -498,9 +534,9 @@ def compose_args_for_converse_api(
     prompt_caching_enabled: bool = False,
 ) -> ConverseStreamRequestTypeDef:
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
-        # Drop unsigned reasoning blocks only for DeepSeek R1
+        # Drop unsigned reasoning blocks for DeepSeek R1 and GPT-OSS models
         if (
-            is_deepseek_model(model)
+            (is_deepseek_model(model) or is_gpt_oss_model(model))
             and c.content_type == "reasoning"
             and not getattr(c, "signature", None)
         ):
@@ -601,6 +637,21 @@ def compose_args_for_converse_api(
         # Special handling for Mistral models
         inference_config, additional_model_request_fields = (
             _prepare_mistral_model_params(model, generation_params)
+        )
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if instructions and any(instructions)
+            else []
+        )
+
+    elif is_gpt_oss_model(model):
+        # Special handling for GPT-OSS models
+        inference_config, additional_model_request_fields = (
+            _prepare_gpt_oss_model_params(model, generation_params)
         )
         system_prompts = (
             [
