@@ -659,18 +659,27 @@ def fetch_available_agent_tools(bot_id) -> list[Tool]:
         mcp_config = get_mcp_config(bot)
 
         if mcp_config is not None:
-        converted_servers = [
-            MCPServer(
-                name=server.name,
-                endpoint=server.endpoint,
-                api_key=server.api_key,
-                secret_arn=server.secret_arn,
-                tools=MCPServerTools(
-                    available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
-                    selected=server.tools.selected,
-                )
-            ) for server in mcp_config.mcp_servers
-        ]
+            converted_servers = [
+                MCPServer(
+                    name=server.name,
+                    endpoint=server.endpoint,
+                    api_key=server.api_key,
+                    secret_arn=server.secret_arn,
+                    tools=MCPServerTools(
+                        available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
+                        selected=server.tools.selected,
+                    )
+                ) for server in mcp_config.mcp_servers
+            ]
+
+            result.append(
+                MCPConfig(
+                tool_type=mcp_config.tool_type,
+                name=mcp_config.name,
+                description=mcp_config.description,
+                mcp_servers=converted_servers,
+            )
+        )
 
         for tool in tools:
             # Extract only the first line of description to avoid showing Args/Returns in UI
