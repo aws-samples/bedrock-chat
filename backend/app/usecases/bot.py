@@ -62,6 +62,9 @@ from app.routes.schemas.bot import (
     GenerationParams,
     InternetTool,
     Knowledge,
+    MCPConfig,
+    MCPServer,
+    MCPServerTools,
     PartialVisibilityInput,
     PlainTool,
     PrivateVisibilityInput,
@@ -84,6 +87,7 @@ from app.utils import (
     move_file_in_s3,
     store_api_key_to_secret_manager,
 )
+from app.strands_integration.tools.mcp import get_mcp_config
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -643,10 +647,36 @@ def remove_uploaded_file(user: User, bot_id: str, filename: str):
     return
 
 
-def fetch_available_agent_tools() -> list[Tool]:
+def fetch_available_agent_tools(bot_id) -> list[Tool]:
     """Fetch available tools for bot."""
     tools = get_strands_registered_tools()
+    bot = find_bot_by_id(bot_id)
+    mcp_config = get_mcp_config(bot)
     result: list[Tool] = []
+
+    if mcp_config is not None:
+        converted_servers = [
+        MCPServer(
+            name=server.name,
+            endpoint=server.endpoint,
+            api_key=server.api_key,
+            secret_arn=server.secret_arn,
+            tools=MCPServerTools(
+                available=[mcp_tool.to_schema() for mcp_tool in server.tools.available],
+                selected=server.tools.selected,
+            )
+        ) for server in mcp_config.mcp_servers
+    ]
+
+        result.append(
+            MCPConfig(
+                tool_type=mcp_config.tool_type,
+                name=mcp_config.name,
+                description=mcp_config.description,
+                mcp_servers=converted_servers,
+            )
+        )
+
     for tool in tools:
         # Extract only the first line of description to avoid showing Args/Returns in UI
         description = tool.tool_spec["description"].split("\n")[0].strip()
