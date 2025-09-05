@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useAgentApi } from './useAgentToolApi';
 import { AgentTool } from '../types';
 
-export const useAgent = () => {
+export const useAgent = (botId: string) => {
   const api = useAgentApi();
   const [availableTools, setAvailableTools] = useState<AgentTool[]>();
-  const getAvailableTools = async () => await api.availableTools();
+  const getAvailableTools = async (botId: string) => await api.availableTools(botId);
 
   useEffect(() => {
-    getAvailableTools().then((res) => setAvailableTools(() => res.data));
+    getAvailableTools(botId).then((res) => setAvailableTools(() => res.data));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
