@@ -42,6 +42,204 @@ ENABLE_BEDROCK_CROSS_REGION_INFERENCE = (
     os.environ.get("ENABLE_BEDROCK_CROSS_REGION_INFERENCE", "false") == "true"
 )
 
+# Base model IDs mapping
+BASE_MODEL_IDS = {
+    "claude-v4-opus": "anthropic.claude-opus-4-20250514-v1:0",
+    "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
+    "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
+    "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
+    "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
+    "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    "claude-v3.5-sonnet-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "claude-v3.7-sonnet": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+    "claude-v3.5-haiku": "anthropic.claude-3-5-haiku-20241022-v1:0",
+    "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
+    "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
+    "mistral-large": "mistral.mistral-large-2402-v1:0",
+    "mistral-large-2": "mistral.mistral-large-2407-v1:0",
+    "amazon-nova-pro": "amazon.nova-pro-v1:0",
+    "amazon-nova-lite": "amazon.nova-lite-v1:0",
+    "amazon-nova-micro": "amazon.nova-micro-v1:0",
+    "deepseek-r1": "deepseek.r1-v1:0",
+    "llama3-3-70b-instruct": "meta.llama3-3-70b-instruct-v1:0",
+    "llama3-2-1b-instruct": "meta.llama3-2-1b-instruct-v1:0",
+    "llama3-2-3b-instruct": "meta.llama3-2-3b-instruct-v1:0",
+    "llama3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
+    "llama3-2-90b-instruct": "meta.llama3-2-90b-instruct-v1:0",
+}
+
+# Global inference profiles
+GLOBAL_INFERENCE_PROFILES = {
+    "claude-v4-sonnet": {
+        "supported_regions": [
+            "us-west-2",
+            "us-east-1",
+            "us-east-2",
+            "eu-west-1",
+            "ap-northeast-1",
+        ]
+    }
+}
+
+# Regional inference profiles
+REGIONAL_INFERENCE_PROFILES = {
+    "claude-v4-opus": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "claude-v4.1-opus": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "claude-v4-sonnet": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "claude-v3-haiku": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "claude-v3-opus": {"supported_regions": {"us-east-1": "us", "us-west-2": "us"}},
+    "claude-v3.5-sonnet": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "claude-v3.5-sonnet-v2": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-northeast-3": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "claude-v3.7-sonnet": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+        }
+    },
+    "claude-v3.5-haiku": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "amazon-nova-pro": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+            "eu-north-1": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "amazon-nova-lite": {
+        "supported_regions": {
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+            "eu-north-1": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "amazon-nova-micro": {
+        "supported_regions": {
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-north-1": "eu",
+            "ap-south-1": "apac",
+            "ap-northeast-1": "apac",
+            "ap-northeast-2": "apac",
+            "ap-southeast-1": "apac",
+            "ap-southeast-2": "apac",
+        }
+    },
+    "deepseek-r1": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "llama3-3-70b-instruct": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "llama3-2-1b-instruct": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+        }
+    },
+    "llama3-2-3b-instruct": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
+        }
+    },
+    "llama3-2-11b-instruct": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+    "llama3-2-90b-instruct": {
+        "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
+    },
+}
+
 client = get_bedrock_runtime_client()
 
 
@@ -627,246 +825,64 @@ def calculate_price(
     )
 
 
+def get_global_inference_profile_id(
+    model: type_model_name, source_region: str
+) -> str | None:
+    """Get global inference profile ID if supported"""
+    profile_info = GLOBAL_INFERENCE_PROFILES.get(model)
+    if not profile_info or source_region not in profile_info["supported_regions"]:
+        return None
+
+    base_model_id = BASE_MODEL_IDS.get(model)
+    return f"global.{base_model_id}" if base_model_id else None
+
+
+def get_regional_inference_profile_id(
+    model: type_model_name, source_region: str
+) -> str | None:
+    """Get regional cross-region inference profile ID if supported"""
+    profile_info = REGIONAL_INFERENCE_PROFILES.get(model)
+    if not profile_info or source_region not in profile_info["supported_regions"]:
+        return None
+
+    base_model_id = BASE_MODEL_IDS.get(model)
+    if not base_model_id:
+        return None
+
+    area = profile_info["supported_regions"][source_region]
+    return f"{area}.{base_model_id}"
+
+
 def get_model_id(
     model: type_model_name,
     enable_cross_region: bool = ENABLE_BEDROCK_CROSS_REGION_INFERENCE,
     bedrock_region: str = BEDROCK_REGION,
 ) -> str:
-    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
-    base_model_ids = {
-        "claude-v4-opus": "anthropic.claude-opus-4-20250514-v1:0",
-        "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
-        "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
-        "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
-        "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
-        "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-        "claude-v3.5-sonnet-v2": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "claude-v3.7-sonnet": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "claude-v3.5-haiku": "anthropic.claude-3-5-haiku-20241022-v1:0",
-        "mistral-7b-instruct": "mistral.mistral-7b-instruct-v0:2",
-        "mixtral-8x7b-instruct": "mistral.mixtral-8x7b-instruct-v0:1",
-        "mistral-large": "mistral.mistral-large-2402-v1:0",
-        "mistral-large-2": "mistral.mistral-large-2407-v1:0",
-        # New Amazon Nova models
-        "amazon-nova-pro": "amazon.nova-pro-v1:0",
-        "amazon-nova-lite": "amazon.nova-lite-v1:0",
-        "amazon-nova-micro": "amazon.nova-micro-v1:0",
-        # DeepSeek models
-        "deepseek-r1": "deepseek.r1-v1:0",
-        # Meta Llama 3 models
-        "llama3-3-70b-instruct": "meta.llama3-3-70b-instruct-v1:0",
-        "llama3-2-1b-instruct": "meta.llama3-2-1b-instruct-v1:0",
-        "llama3-2-3b-instruct": "meta.llama3-2-3b-instruct-v1:0",
-        "llama3-2-11b-instruct": "meta.llama3-2-11b-instruct-v1:0",
-        "llama3-2-90b-instruct": "meta.llama3-2-90b-instruct-v1:0",
-    }
-
-    # Made this list by scripts/cross_region_inference/get_supported_cross_region_inferences.py
-    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
-    supported_regions = {
-        "us-east-1": {
-            "area": "us",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-opus",
-                "claude-v4.1-opus",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3-opus",
-                "claude-v3.5-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-                "claude-v3.7-sonnet",
-                "deepseek-r1",
-                "llama3-3-70b-instruct",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-                "llama3-2-11b-instruct",
-                "llama3-2-90b-instruct",
-            ],
-        },
-        "us-east-2": {
-            "area": "us",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-opus",
-                "claude-v4.1-opus",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-                "claude-v3.7-sonnet",
-                "deepseek-r1",
-                "llama3-3-70b-instruct",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-                "llama3-2-11b-instruct",
-                "llama3-2-90b-instruct",
-            ],
-        },
-        "us-west-2": {
-            "area": "us",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-opus",
-                "claude-v4.1-opus",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3-opus",
-                "claude-v3.5-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-                "claude-v3.7-sonnet",
-                "deepseek-r1",
-                "llama3-3-70b-instruct",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-                "llama3-2-11b-instruct",
-                "llama3-2-90b-instruct",
-            ],
-        },
-        "eu-central-1": {
-            "area": "eu",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.7-sonnet",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-            ],
-        },
-        "eu-west-1": {
-            "area": "eu",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.7-sonnet",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-            ],
-        },
-        "eu-west-2": {"area": "eu", "models": []},
-        "eu-west-3": {
-            "area": "eu",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.7-sonnet",
-                "llama3-2-1b-instruct",
-                "llama3-2-3b-instruct",
-            ],
-        },
-        "eu-north-1": {
-            "area": "eu",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-            ],
-        },
-        "ap-south-1": {
-            "area": "apac",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-            ],
-        },
-        "ap-northeast-1": {
-            "area": "apac",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-            ],
-        },
-        "ap-northeast-2": {
-            "area": "apac",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-            ],
-        },
-        "ap-northeast-3": {"area": "apac", "models": ["claude-v3.5-sonnet-v2"]},
-        "ap-southeast-1": {
-            "area": "apac",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-            ],
-        },
-        "ap-southeast-2": {
-            "area": "apac",
-            "models": [
-                "amazon-nova-lite",
-                "amazon-nova-micro",
-                "amazon-nova-pro",
-                "claude-v4-sonnet",
-                "claude-v3-haiku",
-                "claude-v3.5-sonnet",
-                "claude-v3.5-sonnet-v2",
-            ],
-        },
-    }
-
-    base_model_id = base_model_ids.get(model)
+    base_model_id = BASE_MODEL_IDS.get(model)
     if not base_model_id:
         raise ValueError(f"Unsupported model: {model}")
 
-    model_id = base_model_id
-
     if enable_cross_region:
-        if (
-            bedrock_region in supported_regions
-            and model in supported_regions[bedrock_region]["models"]
-        ):
-            region_prefix = supported_regions[bedrock_region]["area"]
-            model_id = f"{region_prefix}.{base_model_id}"
+        # 1. First, try to use global inference profile if available
+        global_profile_id = get_global_inference_profile_id(model, bedrock_region)
+        if global_profile_id:
             logger.info(
-                f"Using cross-region model ID: {model_id} for model '{model}' in region '{BEDROCK_REGION}'"
+                f"Using global inference profile: {global_profile_id} for model '{model}'"
             )
+            return global_profile_id
+
+        # 2. Fallback to regional cross-region inference profile if available
+        regional_profile_id = get_regional_inference_profile_id(model, bedrock_region)
+        if regional_profile_id:
+            logger.info(
+                f"Using regional cross-region model ID: {regional_profile_id} for model '{model}' in region '{bedrock_region}'"
+            )
+            return regional_profile_id
         else:
             logger.warning(
                 f"Region '{bedrock_region}' does not support cross-region inference for model '{model}'."
             )
-    else:
-        logger.info(f"Using local model ID: {model_id} for model '{model}'")
 
-    return model_id
+    # 3. No cross-region inference
+    logger.info(f"Using local model ID: {base_model_id} for model '{model}'")
+    return base_model_id
