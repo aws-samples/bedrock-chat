@@ -51,14 +51,14 @@ def create_mcp_tools(bot) -> list[StrandsAgentTool]:
 
 def get_mcp_config(bot) -> MCPConfigModel | None:
     """Extract MCP configuration from bot."""
-    logger.debug(f"_get_mpc_config called with bot: {bot.id}")
+    logger.debug(f"get_mpc_config called with bot: {bot.id}")
     
     if not bot or not bot.agent or not bot.agent.tools:
         logger.debug("Early return: bot, agent, or tools is None/empty")
         return MCPConfigModel(
             tool_type="mcp",
             name="mcp",
-            description="Configure remote MCP servers and their tools",
+            description="",
             mcp_servers=[]
         )
     
@@ -67,11 +67,11 @@ def get_mcp_config(bot) -> MCPConfigModel | None:
         logger.debug(f"Tool type: {tool_config.tool_type}")
         logger.debug(f"Tool MCP servers: {getattr(tool_config, 'mcp_servers', 'NOT_FOUND')}")
 
-        if tool_config.tool_type == "mcp" and tool_config.mcp_servers and isinstance(tool_config, MCPConfigModel):
+        if tool_config.tool_type == "mcp" and isinstance(tool_config, MCPConfigModel):
                 logger.info("Found matching bedrock_agent tool config")
                 return tool_config
     
-    logger.warning("No matching bedrock_agent tool config found")
+    logger.info("No matching bedrock_agent tool config found")
     return None
 
 class MCPAuth(httpx.Auth):
