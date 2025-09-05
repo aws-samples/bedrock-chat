@@ -6,7 +6,7 @@ import logging
 from typing import Dict
 
 from app.bedrock import is_tooluse_supported
-from app.repositories.models.custom_bot import BedrockAgentToolModel, BotModel
+from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.conversation import type_model_name
 from strands.types.tools import AgentTool as StrandsAgentTool
 
@@ -30,6 +30,16 @@ def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAge
     return tools
 
 
+def get_mcp_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
+    """Get list of available MCP tools."""
+    from app.strands_integration.tools.mcp import create_mcp_tools
+
+    tools: list[StrandsAgentTool] = []
+    tools.extend(create_mcp_tools(bot))
+    logger.info(f"MCP tools configured for bot: {[t.tool_name for t in tools]}")
+    return tools
+    
+
 def get_strands_tools(
     bot: BotModel | None, model_name: type_model_name
 ) -> list[StrandsAgentTool]:
@@ -49,6 +59,9 @@ def get_strands_tools(
         return []
 
     registered_tools = get_strands_registered_tools(bot)
+    mcp_tools = get_mcp_tools(bot)
+    registered_tools.extend(mcp_tools)
+
     tools: list[StrandsAgentTool] = []
 
     # Get tools based on bot's tool configuration
