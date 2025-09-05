@@ -39,7 +39,9 @@ from app.usecases.bot import (
     remove_uploaded_file,
 )
 from app.user import User
+from app.strands_integration.tools.mcp import connect_to_mcp_server_and_list_tools
 from fastapi import APIRouter, Depends, Request
+from app.repositories.models.custom_bot import MCPAgentToolModel, MCPServerModel
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -172,5 +174,18 @@ def remove_bot_from_recent_history(request: Request, bot_id: str):
 @router.get("/bot/{bot_id}/agent/available-tools", response_model=list[Tool])
 def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
-    tools = fetch_available_agent_tools()
+    tools = fetch_available_agent_tools(bot_id)
     return tools
+
+@router.post("/bot/{bot_id}/agent/mcp-config", response_model=MCPServerModel)
+def test_mcp_server_connection(request: Request, mcp_server: MCPServerModel):
+    """Test mcp server connection"""
+    tools = connect_to_mcp_server_and_list_tools(mcp_server)
+    mcp_server.tools.available = [
+        MCPAgentToolModel.from_agent_tool(tool)
+        for tool in tools
+    ]
+
+    logger.debug(f"Returning MCP Server after testing connection: {mcp_server}")
+
+    return mcp_server
