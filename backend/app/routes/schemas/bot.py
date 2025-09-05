@@ -11,7 +11,6 @@ from typing import (
     Type,
     get_args,
 )
-
 from app.routes.schemas.base import BaseSchema
 from app.routes.schemas.bot_guardrails import (
     BedrockGuardrailsInput,
@@ -30,7 +29,9 @@ from pydantic import (
     field_validator,
     model_validator,
     validator,
+    ConfigDict
 )
+from strands.types.tools import AgentTool as StrandsAgentTool
 
 if TYPE_CHECKING:
     from app.repositories.models.custom_bot import BotModel
@@ -97,12 +98,10 @@ class BedrockAgentConfig(BaseSchema):
     agent_id: str
     alias_id: str
 
-
 class PlainTool(BaseSchema):
     tool_type: Literal["plain"] = "plain"
     name: str
     description: str
-
 
 class InternetTool(BaseSchema):
     tool_type: Literal["internet"]
@@ -132,11 +131,34 @@ class BedrockAgentTool(BaseSchema):
     description: str
     bedrockAgentConfig: Optional[BedrockAgentConfig] | None = None
 
+class MCPAgentToolSchema(BaseSchema):
+    name: str
+    description: str | None = None
+    inputSchema: dict[str, Any]
+
+class MCPServerTools(BaseSchema):
+    available: List[MCPAgentToolSchema] = Field(default_factory=list)
+    selected: List[str] = Field(default_factory=list)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+class MCPServer(BaseSchema):
+    name: str
+    endpoint: str
+    api_key: Optional[str] = None
+    secret_arn: Optional[str] = None
+    tools: MCPServerTools = Field(default_factory=MCPServerTools)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+class MCPConfig(BaseSchema):
+    tool_type: Literal["mcp"]
+    name: str
+    description: str
+    mcp_servers: List[MCPServer] = Field(default_factory=list)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 Tool = Annotated[
-    PlainTool | InternetTool | BedrockAgentTool, Discriminator("tool_type")
+    PlainTool | InternetTool | BedrockAgentTool | MCPConfig, Discriminator("tool_type")
 ]
-
 
 class Agent(BaseSchema):
     tools: list[Tool]
