@@ -506,11 +506,19 @@ For CloudFront distributions, AWS WAF WebACLs must be created in the us-east-1 r
 
 To accommodate these restrictions, the Frontend WAF stack is optional. When disabled, the CloudFront distribution is deployed without a WebACL. This means you won’t have IP allow/deny controls at the frontend edge. Authentication and all other application controls continue to work as usual. Note that this setting only affects the Frontend WAF (CloudFront scope); the Published API WAF (regional) remains unaffected.
 
-To disable the Frontend WAF set the following in cdk.json context:
+To disable the Frontend WAF set the following in `parameter.ts` (Recommended Type-Safe Method):
+
+```ts
+bedrockChatParams.set("default", {
+  enableFrontendWaf: false
+});
+```
+
+Or if using the legacy `cdk/cdk.json` set the following:
 
 ```json
 "enableFrontendWaf": false
-```
+``` 
 
 ### Add new users to groups automatically
 
@@ -620,6 +628,18 @@ bedrockChatParams.set("default", {
   allowedCountries: ["NZ", "AU"],
 });
 ```
+
+### Disable IPv6 support
+
+The frontend gets both IP and IPv6 addresses by default. In some rare
+circumstances, you may need to disable IPv6 support explicitly. To do this, set
+the following parameter in [parameter.ts](./cdk/parameter.ts) or similarly in [cdk.json](./cdk/cdk.json):
+
+```ts
+"enableFrontendIpv6": false
+```
+
+If left unset the IPv6 support will be enabled by default.
 
 ### Local Development
 
