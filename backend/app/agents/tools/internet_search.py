@@ -15,29 +15,22 @@ logger.setLevel(logging.INFO)
 
 class InternetSearchInput(BaseModel):
     query: str = Field(description="The query to search for on the internet.")
-    country: str = Field(
-        description="The country code you wish for search. Must be one of: jp-jp (Japan), kr-kr (Korea), cn-zh (China), fr-fr (France), de-de (Germany), es-es (Spain), it-it (Italy), us-en (United States)"
+    locale: str = Field(
+        default="en-us",
+        description="The country code and language code for the search. Must be `{language}-{country}` for example `jp-jp` (Japanese - Japan), `zh-cn` (Chinese - China), `en-ca` (English - Canada), `fr-ca` (French - Canada), `en-nz` (English - New Zealand), etc. If empty the default is `en-us`."
     )
     time_limit: str = Field(
-        description="The time limit for the search. Options are 'd' (day), 'w' (week), 'm' (month), 'y' (year)."
+        description="Retrieve only the most recent results, for example `1w` only returns the results from the last week. Units are 'd' (day), 'w' (week), 'm' (month), 'y' (year). Use empty string to retrieve all results."
     )
 
     @root_validator(pre=True)
-    def validate_country(cls, values):
-        country = values.get("country")
-        if country not in [
-            "jp-jp",
-            "kr-kr",
-            "cn-zh",
-            "fr-fr",
-            "de-de",
-            "es-es",
-            "it-it",
-            "us-en",
-        ]:
-            raise ValueError(
-                f"Country must be one of: jp-jp (Japan), kr-kr (Korea), cn-zh (China), fr-fr (France), de-de (Germany), es-es (Spain), it-it (Italy), us-en (United States)"
-            )
+    def validate_locale(cls, values):
+        locale = values.get("locale")
+        # Basic validation for locale format
+        if not locale or locale.count("-") != 1:
+            # Get the default value from the field definition
+            default_locale = cls.__fields__["locale"].default
+            values["locale"] = default_locale
         return values
 
 
@@ -91,8 +84,10 @@ Summary:"""
         return fallback_content
 
 
-def _search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
-    REGION = country
+def _search_with_duckduckgo(query: str, time_limit: str, locale: str) -> list:
+    # Incoming locale expected as language-country (e.g. 'en-nz'). DDGS prefers country-language, so swap.
+    language, country = locale.split("-", 1)
+    REGION = f"{country}-{language}".lower()
     SAFE_SEARCH = "moderate"
     MAX_RESULTS = 20
     BACKEND = "api"
@@ -134,20 +129,21 @@ def _search_with_duckduckgo(query: str, time_limit: str, country: str) -> list:
 
 
 def _search_with_firecrawl(
-    query: str, api_key: str, country: str, max_results: int = 10
+    query: str, api_key: str, locale: str, max_results: int = 10
 ) -> list:
-    logger.info(f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}")
+    logger.info(f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}, Locale: {locale}")
 
     try:
         app = FirecrawlApp(api_key=api_key)
 
-        # Search using Firecrawl
-        # SearchParams: https://github.com/mendableai/firecrawl/blob/main/apps/python-sdk/firecrawl/firecrawl.py#L24
+        # Incoming locale is language-country (e.g. 'en-us').
+        language, country = locale.split("-", 1)
         results = app.search(
             query,
             {
                 "limit": max_results,
-                "lang": country,
+                "lang": language,
+                "location": country,
                 "scrapeOptions": {"formats": ["markdown"], "onlyMainContent": True},
             },
         )
@@ -189,15 +185,15 @@ def _internet_search(
 ) -> list:
     query = tool_input.query
     time_limit = tool_input.time_limit
-    country = tool_input.country
+    locale = tool_input.locale
 
     logger.info(
-        f"Internet search request - Query: {query}, Time Limit: {time_limit}, Country: {country}"
+        f"Internet search request - Query: {query}, Time Limit: {time_limit}, Locale: {locale}"
     )
 
     if bot is None:
         logger.warning("Bot is None, defaulting to DuckDuckGo search")
-        return _search_with_duckduckgo(query, time_limit, country)
+        return _search_with_duckduckgo(query, time_limit, locale)
 
     # Find internet search tool
     internet_tool = next(
@@ -208,7 +204,7 @@ def _internet_search(
     # If no internet tool found or search engine is duckduckgo, use DuckDuckGo
     if not internet_tool or internet_tool.search_engine == "duckduckgo":
         logger.info("No internet tool found or search engine is DuckDuckGo")
-        return _search_with_duckduckgo(query, time_limit, country)
+        return _search_with_duckduckgo(query, time_limit, locale)
 
     # Handle Firecrawl search
     if internet_tool.search_engine == "firecrawl":
@@ -223,7 +219,7 @@ def _internet_search(
             return _search_with_firecrawl(
                 query=query,
                 api_key=api_key,
-                country=country,
+                locale=locale,
                 max_results=internet_tool.firecrawl_config.max_results,
             )
         except Exception as e:
@@ -232,7 +228,7 @@ def _internet_search(
 
     # Fallback to DuckDuckGo for any unexpected cases
     logger.warning("Unexpected search engine configuration, falling back to DuckDuckGo")
-    return _search_with_duckduckgo(query, time_limit, country)
+    return _search_with_duckduckgo(query, time_limit, locale)
 
 
 internet_search_tool = AgentTool(
