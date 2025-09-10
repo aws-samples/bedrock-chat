@@ -18,18 +18,13 @@ export class FrontendWafStack extends Stack {
    */
   public readonly webAclArn: CfnOutput;
 
-  /**
-   * Whether IPv6 is used or not
-   */
-  public readonly ipV6Enabled: boolean;
-
   constructor(scope: Construct, id: string, props: FrontendWafStackProps) {
     super(scope, id, props);
 
     const sepHyphen = props.envPrefix ? "-" : "";
     const rules: wafv2.CfnWebACL.RuleProperty[] = [];
 
-    // create Ipset for ACL
+    // Prepare IPv4 ACL
     if (props.allowedIpV4AddressRanges.length > 0) {
       const ipV4SetReferenceStatement = new wafv2.CfnIPSet(
         this,
@@ -54,6 +49,8 @@ export class FrontendWafStack extends Stack {
         },
       });
     }
+
+    // Prepare IPv6 ACL
     if (props.allowedIpV6AddressRanges.length > 0) {
       const ipV6SetReferenceStatement = new wafv2.CfnIPSet(
         this,
@@ -77,11 +74,9 @@ export class FrontendWafStack extends Stack {
           ipSetReferenceStatement: { arn: ipV6SetReferenceStatement.attrArn },
         },
       });
-      this.ipV6Enabled = true;
-    } else {
-      this.ipV6Enabled = false;
     }
 
+    // Attach the IP-based ACL rules
     if (rules.length > 0) {
       const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
         defaultAction: { block: {} },
