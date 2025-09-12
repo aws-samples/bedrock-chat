@@ -16,6 +16,13 @@ export const convertThinkingLogToAgentToolProps = (
     }
   })));
   return thinkingLog.flatMap(message => {
+    const reasonings = message.content.flatMap(content => {
+      if (content.contentType === 'reasoning') {
+        return [content.text];
+      } else {
+        return [];
+      }
+    });
     const thoughts = message.content.flatMap(content => {
       if (content.contentType === 'text') {
         return [content.body];
@@ -47,6 +54,7 @@ export const convertThinkingLogToAgentToolProps = (
     }));
     if (Object.keys(tools).length > 0) {
       return [{
+        reasoning: (reasonings.length > 0 ? reasonings.join('\n') : undefined),
         thought: (thoughts.length > 0 ? thoughts.join('\n') : undefined),
         tools: tools,
       }];

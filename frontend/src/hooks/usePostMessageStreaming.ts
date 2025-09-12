@@ -16,12 +16,13 @@ const usePostMessageStreaming = create<{
     dispatch: (completion: string) => void;
     thinkingDispatch: (event: AgentEvent) => void;
     reasoningDispatch: (event: ReasoningEvent) => void;
+    getReasoning: () => string;
   }) => Promise<string>;
   errorDetail: string | null;
 }>((set) => {
   return {
     errorDetail: null,
-    post: async ({ input, dispatch, thinkingDispatch, reasoningDispatch }) => {
+    post: async ({ input, dispatch, thinkingDispatch, reasoningDispatch, getReasoning }) => {
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
         ...input,
@@ -90,7 +91,17 @@ const usePostMessageStreaming = create<{
 
             if (data.status) {
               switch (data.status) {
-                case PostStreamingStatus.AGENT_THINKING:
+                case PostStreamingStatus.AGENT_THINKING: {
+                  const reasoning = getReasoning();
+                  if (reasoning.length > 0) {
+                    reasoningDispatch({
+                      type: 'clear',
+                    });
+                    thinkingDispatch({
+                      type: 'reasoning',
+                      reasoning: reasoning,
+                    });
+                  }
                   if (completion.length > 0) {
                     dispatch('');
                     thinkingDispatch({
@@ -112,6 +123,7 @@ const usePostMessageStreaming = create<{
                     });
                   });
                   break;
+                }
                 case PostStreamingStatus.AGENT_TOOL_RESULT:
                   thinkingDispatch({
                     type: 'tool-result',

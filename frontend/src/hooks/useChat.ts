@@ -238,7 +238,7 @@ const useChatState = create<{
 
 const useChat = () => {
   const [agentThinking, agentSend] = useMachine(agentThinkingState);
-  const [reasoningThinking, reasoningSend] = useMachine(reasoningState);
+  const [reasoningThinking, reasoningSend, reasoningActor] = useMachine(reasoningState);
 
   const {
     chats,
@@ -471,6 +471,9 @@ const useChat = () => {
           reasoningDispatch: (event) => {
             reasoningSend(event);
           },
+          getReasoning: () => {
+            return reasoningActor.getSnapshot().context.content;
+          },
         })
           .then((message) => {
             resolve(message);
@@ -552,6 +555,9 @@ const useChat = () => {
       },
       reasoningDispatch: (event) => {
         reasoningSend(event);
+      },
+      getReasoning: () => {
+        return reasoningActor.getSnapshot().context.content;
       },
     })
       .then(() => {
@@ -657,6 +663,9 @@ const useChat = () => {
       },
       reasoningDispatch: (event) => {
         reasoningSend(event);
+      },
+      getReasoning: () => {
+        return reasoningActor.getSnapshot().context.content;
       },
     })
       .then(() => {

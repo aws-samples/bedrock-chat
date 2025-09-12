@@ -7,6 +7,7 @@ export type ReasoningContext = {
 export type ReasoningEvent =
   | { type: 'start' }
   | { type: 'write'; content: string }
+  | { type: 'clear' }
   | { type: 'end' };
 
 export const reasoningState = setup({
@@ -47,6 +48,9 @@ export const reasoningState = setup({
       on: {
         write: {
           actions: 'appendContent',
+        },
+        clear: {
+          actions: 'clear',
         },
         end: {
           actions: 'clear',

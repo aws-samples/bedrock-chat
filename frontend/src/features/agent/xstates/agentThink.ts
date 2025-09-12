@@ -3,6 +3,7 @@ import { produce } from 'immer';
 import { AgentToolResultContent, RelatedDocument } from '../../../@types/conversation';
 
 export type AgentToolsProps = {
+  reasoning?: string;
   thought?: string;
   tools: {
     // Note: key is toolUseId
@@ -30,6 +31,10 @@ export type AgentState = (typeof AgentState)[keyof typeof AgentState];
 
 export type AgentEvent =
   | { type: 'wakeup' }
+  | {
+      type: 'reasoning';
+      reasoning: string;
+    }
   | {
       type: 'thought';
       thought: string;
@@ -66,6 +71,20 @@ export const agentThinkingState = setup({
     reset: assign({
       tools: [],
       relatedDocuments: [],
+    }),
+    updateReasoning: assign({
+      tools: ({ context, event }) => produce(context.tools, draft => {
+        if (event.type === 'reasoning') {
+          if (draft.length > 0 && draft[draft.length - 1].reasoning == null) {
+            draft[draft.length - 1].reasoning = event.reasoning;
+          } else {
+            draft.push({
+              reasoning: event.reasoning,
+              tools: {},
+            });
+          }
+        }
+      }),
     }),
     updateThought: assign({
       tools: ({ context, event }) => produce(context.tools, draft => {
@@ -153,6 +172,9 @@ export const agentThinkingState = setup({
     },
     thinking: {
       on: {
+        'reasoning': {
+          actions: 'updateReasoning',
+        },
         'thought': {
           actions: 'updateThought',
         },

@@ -366,26 +366,6 @@ def chat(
         if stop_reason != "tool_use":  # Tool use converged
             message.parent = user_msg_id
 
-            # If there is a thinking_log that includes reasoning, add it to the beginning of the content.
-            reasoning_log = next(
-                (
-                    log
-                    for log in thinking_log
-                    if any(
-                        isinstance(content, ReasoningContentModel)
-                        for content in log.content
-                    )
-                ),
-                None,
-            )
-            if reasoning_log:
-                reasoning_content = next(
-                    content
-                    for content in reasoning_log.content
-                    if isinstance(content, ReasoningContentModel)
-                )
-                message.content.insert(0, reasoning_content)
-
             # Retain tool use and its result logs
             tool_logs = [
                 log
