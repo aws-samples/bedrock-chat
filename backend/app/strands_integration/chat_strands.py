@@ -2,283 +2,165 @@
 Main chat function for Strands integration.
 """
 
+import json
 import logging
 from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
-from app.bedrock import is_tooluse_supported
-from app.prompt import get_prompt_to_cite_tool_results
-from app.repositories.models.conversation import (
-    AttachmentContentModel,
-    ConversationModel,
-    ImageContentModel,
-    MessageModel,
-    TextContentModel,
+from app.bedrock import calculate_price, BedrockGuardrailsModel
+from app.repositories.models.conversation import SimpleMessageModel
+from app.repositories.models.custom_bot import (
+    BotModel,
+    GenerationParamsModel,
 )
 from app.routes.schemas.conversation import ChatInput
 from app.strands_integration.agent import create_strands_agent
 from app.strands_integration.converters import (
-    convert_attachment_to_content_block,
-    convert_messages_to_content_blocks,
-    convert_simple_messages_to_strands_messages,
-    map_to_image_format,
+    simple_message_models_to_strands_messages,
+    strands_message_to_simple_message_model,
+    strands_message_to_message_model,
 )
 from app.strands_integration.handlers import ToolResultCapture, create_callback_handler
-from app.strands_integration.processors import post_process_strands_result
-from app.strands_integration.prompt_builder import build_strands_rag_prompt
-from app.strands_integration.telemetry import StrandsTelemetryManager
 from app.stream import OnStopInput, OnThinking
-from app.usecases.chat import prepare_conversation, trace_to_root
-from app.user import User
-from app.vector_search import search_related_docs, search_result_to_related_document
-from strands.types.content import ContentBlock, Message
-from ulid import ULID
+from app.utils import get_current_time
+from app.vector_search import (
+    SearchResult,
+)
+from strands.types.content import Message
 
 logger = logging.getLogger(__name__)
 
 
-def chat_with_strands(
-    user: User,
+def converse_with_strands(
+    bot: BotModel | None,
     chat_input: ChatInput,
+    instructions: list[str],
+    generation_params: GenerationParamsModel | None,
+    guardrail: BedrockGuardrailsModel | None,
+    display_citation: bool,
+    messages: list[SimpleMessageModel],
+    search_results: list[SearchResult],
     on_stream: Callable[[str], None] | None = None,
-    on_stop: Callable[[OnStopInput], None] | None = None,
     on_thinking: Callable[[OnThinking], None] | None = None,
     on_tool_result: Callable[[ToolRunResult], None] | None = None,
     on_reasoning: Callable[[str], None] | None = None,
-) -> tuple[ConversationModel, MessageModel]:
+) -> OnStopInput:
     """
     Chat with Strands agents.
 
     Architecture Overview:
 
     1. Reasoning Content:
-       - Streaming: CallbackHandler processes reasoning events for real-time display
-       - Persistence: Telemetry (ReasoningSpanProcessor) extracts from OpenTelemetry spans
+       - Streaming: CallbackHandler processes reasoning events for real-time display.
+       - Persistence: CallbackHandler notifies the message including reasoning content.
 
     2. Tool Use/Result (Thinking Log):
-       - Streaming: ToolResultCapture processes tool events for real-time display
-       - Persistence: ToolResultCapture stores processed data for DynamoDB storage
+       - Streaming: ToolResultCapture processes tool events for real-time display.
+       - Persistence: CallbackHandler notifies the message including tool use/result content.
 
     3. Related Documents (Citations):
-       - Source: ToolResultCapture only
+       - Source: ToolResultCapture notifies related document.
        - Reason: Requires access to raw tool results for source_link extraction
 
     Why This Hybrid Approach:
 
     - ToolResultCapture: Processes raw tool results during execution hooks, enabling
-      source_link extraction and citation functionality. Telemetry only captures
-      post-processed data, losing metadata required for citations.
+      source_link extraction and citation functionality.
 
-    - Telemetry: Captures complete reasoning content from OpenTelemetry spans,
-      providing reliable persistence for reasoning data that may not be available
-      in final AgentResult when tools are used.
-
-    - CallbackHandler: Handles real-time streaming of reasoning content during
-      agent execution for immediate user feedback.
+    - CallbackHandler: Captures all messages including reasoning / tool use/result content
+      that may not be available in final AgentResult when tools are used.
     """
-    user_msg_id, conversation, bot = prepare_conversation(user, chat_input)
-
-    display_citation = bot is not None and bot.display_retrieved_chunks
-    message_map = conversation.message_map
-    instructions: list[str] = (
-        [
-            content.body
-            for content in message_map["instruction"].content
-            if isinstance(content, TextContentModel)
-        ]
-        if "instruction" in message_map
-        else []
-    )
 
     tool_capture = ToolResultCapture(
+        display_citation=display_citation,
         on_thinking=on_thinking,
         on_tool_result=on_tool_result,
     )
 
-    if bot is not None:
-        if bot.is_agent_enabled() and is_tooluse_supported(chat_input.message.model):
-            if display_citation:
-                instructions.append(
-                    get_prompt_to_cite_tool_results(
-                        model=chat_input.message.model,
-                    )
-                )
-        elif bot.has_knowledge() and not is_tooluse_supported(chat_input.message.model):
-            # Fetch most related documents from vector store
-            # NOTE: Currently embedding not support multi-modal. For now, use the last content.
-            content = conversation.message_map[user_msg_id].content[-1]
-            if isinstance(content, TextContentModel):
-                # Generate tooluse format ID for consistent citation
-                pseudo_tool_use_id = f"tooluse_{str(ULID())}"
-
-                if on_thinking:
-                    on_thinking(
-                        {
-                            "tool_use_id": pseudo_tool_use_id,
-                            "name": "knowledge_base_tool",
-                            "input": {
-                                "query": content.body,
-                            },
-                        }
-                    )
-
-                search_results = search_related_docs(bot=bot, query=content.body)
-                logger.info(f"Search results from vector store: {search_results}")
-
-                # Create related documents with consistent source_id format
-                related_documents = [
-                    search_result_to_related_document(
-                        search_result=result,
-                        source_id_base=pseudo_tool_use_id,
-                    )
-                    for result in search_results
-                ]
-
-                if on_tool_result:
-                    on_tool_result(
-                        {
-                            "tool_use_id": pseudo_tool_use_id,
-                            "status": "success",
-                            "related_documents": related_documents,
-                        }
-                    )
-
-                # Use Strands RAG prompt with source_id support
-                instructions.append(
-                    build_strands_rag_prompt(
-                        search_results=search_results,
-                        model=chat_input.message.model,
-                        source_id_base=pseudo_tool_use_id,
-                        display_citation=display_citation,
-                    )
-                )
-
-                # Store RAG results in ToolResultCapture for citation support
-                tool_capture.captured_tool_results[pseudo_tool_use_id] = {
-                    "tool_use_id": pseudo_tool_use_id,
-                    "status": "success",
-                    "related_documents": related_documents,
-                }
-
-                # Store tool use info for thinking log
-                tool_capture.captured_tool_uses[pseudo_tool_use_id] = {
-                    "name": "knowledge_base_tool",
-                    "input": {"query": content.body},
-                }
-
-    # Leaf node id
-    # If `continue_generate` is True, note that new message is not added to the message map.
-    node_id = (
-        chat_input.message.parent_message_id
-        if chat_input.continue_generate
-        else message_map[user_msg_id].parent
-    )
-
-    if node_id is None:
-        raise ValueError("parent_message_id or parent is None")
-
-    messages = trace_to_root(
-        node_id=node_id,
-        message_map=message_map,
-    )
-
-    continue_generate = chat_input.continue_generate
-
-    # Setup telemetry manager for reasoning capture
-    telemetry_manager = StrandsTelemetryManager()
-    telemetry_manager.setup(conversation.id, user.id)
+    prompt_caching_enabled = bot.prompt_caching_enabled if bot is not None else True
+    has_tools = bot is not None and bot.is_agent_enabled()
 
     agent = create_strands_agent(
         bot=bot,
         instructions=instructions,
         model_name=chat_input.message.model,
+        generation_params=generation_params,
+        guardrail=guardrail,
         enable_reasoning=chat_input.enable_reasoning,
+        prompt_caching_enabled=prompt_caching_enabled,
+        has_tools=has_tools,
         hooks=[tool_capture],
     )
+
+    thinking_log: list[SimpleMessageModel] = []
+
+    def on_message(message: Message):
+        if any(
+            "toolUse" in content or "toolResult" in content
+            for content in message["content"]
+        ):
+            thinking_log.append(strands_message_to_simple_message_model(message))
 
     agent.callback_handler = create_callback_handler(
         on_stream=on_stream,
         on_reasoning=on_reasoning,
+        on_message=on_message,
     )
 
     # Convert SimpleMessageModel list to Strands Messages format
-    strands_messages = convert_simple_messages_to_strands_messages(
-        messages, chat_input.message.model, bot.prompt_caching_enabled if bot else True
+    strands_messages = simple_message_models_to_strands_messages(
+        simple_messages=messages,
+        model=chat_input.message.model,
+        guardrail=guardrail,
+        search_results=search_results,
+        prompt_caching_enabled=prompt_caching_enabled,
     )
 
-    # Add current user message if not continuing generation
-    if not continue_generate:
-        current_user_message = conversation.message_map[user_msg_id]
-        current_content_blocks: list[ContentBlock] = []
-        for content in current_user_message.content:
-            if isinstance(content, TextContentModel):
-                content_block: ContentBlock = {"text": content.body}
-                current_content_blocks.append(content_block)
-            elif isinstance(content, ImageContentModel):
-                # Convert image content
-                try:
-                    # content.body is already binary data (Base64EncodedBytes), no need to decode
-                    image_bytes = content.body
-                    image_format = map_to_image_format(content.media_type)
+    result = agent(strands_messages)
 
-                    image_content_block: ContentBlock = {
-                        "image": {
-                            "format": image_format,
-                            "source": {"bytes": image_bytes},
-                        }
-                    }
-                    current_content_blocks.append(image_content_block)
-                except Exception as e:
-                    logger.warning(f"Failed to convert image content: {e}")
-            elif isinstance(content, AttachmentContentModel):
-                try:
-                    attachment_content_block = convert_attachment_to_content_block(
-                        content
-                    )
-                    current_content_blocks.append(attachment_content_block)
-                except Exception as e:
-                    logger.warning(f"Failed to convert attachment content: {e}")
-
-        if current_content_blocks:
-            current_message: Message = {
-                "role": "user",
-                "content": current_content_blocks,
-            }
-            strands_messages.append(current_message)
-    else:
-        # For continue generation, add the last assistant message to continue from
-        last_message = conversation.message_map[conversation.last_message_id]
-        if last_message.role == "assistant":
-            continue_content_blocks: list[ContentBlock] = []
-            for content in last_message.content:
-                if isinstance(content, TextContentModel):
-                    continue_text_block: ContentBlock = {"text": content.body}
-                    continue_content_blocks.append(continue_text_block)
-
-            if continue_content_blocks:
-                continue_message: Message = {
-                    "role": "assistant",
-                    "content": continue_content_blocks,
-                }
-                strands_messages.append(continue_message)
-
-    # Convert Messages to ContentBlock list for agent
-    content_blocks_for_agent = convert_messages_to_content_blocks(
-        strands_messages, continue_generate
-    )
-
-    result = agent(content_blocks_for_agent)
-
-    # Post handling: process the result and update conversation
-    return post_process_strands_result(
-        result=result,
-        conversation=conversation,
-        user_msg_id=user_msg_id,
-        bot=bot,
-        user=user,
+    # Convert Strands Message to MessageModel
+    message = strands_message_to_message_model(
+        message=result.message,
         model_name=chat_input.message.model,
-        continue_generate=continue_generate,
-        telemetry_manager=telemetry_manager,
-        tool_capture=tool_capture,
-        on_stop=on_stop,
+        create_time=get_current_time(),
+        thinking_log=thinking_log,
+    )
+
+    # Extract token usage from metrics
+    input_tokens = result.metrics.accumulated_usage.get("inputTokens", 0)
+    output_tokens = result.metrics.accumulated_usage.get("outputTokens", 0)
+    cache_read_input_tokens = result.metrics.accumulated_usage.get(
+        "cacheReadInputTokens", 0
+    )
+    cache_write_input_tokens = result.metrics.accumulated_usage.get(
+        "cacheWriteInputTokens", 0
+    )
+
+    # Calculate price using the same function as chat_legacy
+    price = calculate_price(
+        model=chat_input.message.model,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cache_read_input_tokens=cache_read_input_tokens,
+        cache_write_input_tokens=cache_write_input_tokens,
+    )
+
+    logger.info(
+        f"token count: {json.dumps({
+            'input': input_tokens,
+            'output': output_tokens,
+            'cache_read_input': cache_read_input_tokens,
+            'cache_write_input': cache_write_input_tokens
+        })}"
+    )
+    logger.info(f"price: {price}")
+
+    return OnStopInput(
+        message=message,
+        stop_reason=result.stop_reason,
+        input_token_count=input_tokens,
+        output_token_count=output_tokens,
+        cache_read_input_count=cache_read_input_tokens,
+        cache_write_input_count=cache_write_input_tokens,
+        price=price,
     )

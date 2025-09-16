@@ -50,25 +50,14 @@ def simple_list(topic: str, count: int = 5) -> dict:
 
         # Return in ToolResult format to prevent Strands from converting to string
         return {
-            "toolUseId": "placeholder",  # Will be replaced by Strands
             "status": "success",
-            "content": [{"json": result_list}],
+            "content": [{"json": result} for result in result_list],
         }
 
     except Exception as e:
         error_msg = f"Error generating list for topic '{topic}': {str(e)}"
         logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
         return {
-            "toolUseId": "placeholder",
-            "status": "error",
-            "content": [{"text": error_msg}],
-        }
-
-    except Exception as e:
-        error_msg = f"Error generating list for topic '{topic}': {str(e)}"
-        logger.error(f"[SIMPLE_LIST_V3] {error_msg}")
-        return {
-            "toolUseId": "placeholder",
             "status": "error",
             "content": [{"text": error_msg}],
         }

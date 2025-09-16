@@ -140,13 +140,7 @@ def _invoke_bedrock_agent_standalone(
 
     except Exception as e:
         logger.error(f"Error invoking Bedrock Agent: {e}")
-        return [
-            {
-                "content": f"Bedrock Agent error: {str(e)}",
-                "source_name": "Error",
-                "source_link": "",
-            }
-        ]
+        raise e
 
 
 def _format_trace_for_client_standalone(trace_logs: list) -> list[dict]:
@@ -205,7 +199,7 @@ def _format_trace_for_client_standalone(trace_logs: list) -> list[dict]:
         import traceback
 
         logger.error(traceback.format_exc())
-        return []
+        raise e
 
 
 def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
@@ -231,7 +225,6 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
             if not current_bot:
                 logger.warning("[BEDROCK_AGENT_V3] No bot context available")
                 return {
-                    "toolUseId": "placeholder",
                     "status": "error",
                     "content": [
                         {
@@ -250,7 +243,6 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
             ):
                 logger.warning("[BEDROCK_AGENT_V3] Bot has no Bedrock Agent configured")
                 return {
-                    "toolUseId": "placeholder",
                     "status": "error",
                     "content": [
                         {
@@ -275,15 +267,13 @@ def create_bedrock_agent_tool(bot: BotModel | None) -> StrandsAgentTool:
 
             logger.debug(f"[BEDROCK_AGENT_V3] Invocation completed successfully")
             return {
-                "toolUseId": "placeholder",
                 "status": "success",
-                "content": [{"json": results}],
+                "content": [{"json": result} for result in results],
             }
 
         except Exception as e:
             logger.error(f"[BEDROCK_AGENT_V3] Bedrock Agent error: {e}")
             return {
-                "toolUseId": "placeholder",
                 "status": "error",
                 "content": [
                     {

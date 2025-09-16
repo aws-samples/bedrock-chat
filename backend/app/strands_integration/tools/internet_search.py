@@ -10,13 +10,14 @@ logger.setLevel(logging.DEBUG)
 
 
 def _search_with_duckduckgo_standalone(
-    query: str, time_limit: str, country: str
+    query: str, time_limit: str, locale: str
 ) -> list[dict[str, str]]:
     """Standalone DuckDuckGo search implementation."""
     try:
         from duckduckgo_search import DDGS
 
-        REGION = country
+        language, country = locale.split("-", 1)
+        REGION = f"{country}-{language}".lower()
         SAFE_SEARCH = "moderate"
         MAX_RESULTS = 20
         BACKEND = "api"
@@ -57,31 +58,28 @@ def _search_with_duckduckgo_standalone(
 
     except Exception as e:
         logger.error(f"DuckDuckGo search error: {e}")
-        return [
-            {
-                "content": f"Search error: {str(e)}",
-                "source_name": "Error",
-                "source_link": "",
-            }
-        ]
+        raise e
 
 
 def _search_with_firecrawl_standalone(
-    query: str, api_key: str, country: str, max_results: int = 10
+    query: str, api_key: str, locale: str, max_results: int = 10
 ) -> list[dict[str, str]]:
     """Standalone Firecrawl search implementation."""
     try:
         from firecrawl import FirecrawlApp, ScrapeOptions
 
         logger.info(
-            f"Searching with Firecrawl: query={query}, max_results={max_results}"
+            f"Searching with Firecrawl: query={query}, max_results={max_results} locale={locale}"
         )
 
         app = FirecrawlApp(api_key=api_key)
 
+        # Incoming locale is language-country (e.g. 'en-us').
+        language, country = locale.split("-", 1)
         results = app.search(
             query,
             limit=max_results,
+            lang=language,
             location=country,
             scrape_options=ScrapeOptions(formats=["markdown"], onlyMainContent=True),
         )
@@ -120,6 +118,7 @@ def _search_with_firecrawl_standalone(
 
     except Exception as e:
         logger.error(f"Firecrawl search error: {e}")
+        # Instead of raising, return empty list to allow fallback
         return []
 
 
@@ -190,21 +189,21 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
 
     @tool
     def internet_search(
-        query: str, country: str = "jp-jp", time_limit: str = "d"
+        query: str, locale: str = "en-us", time_limit: str = "d"
     ) -> dict:
         """
         Search the internet for information.
 
         Args:
-            query: Search query
-            country: Country code for search (default: jp-jp)
-            time_limit: Time limit for search results (default: d for day)
+            query: The query to search for on the internet.
+            locale: The country code and language code for the search. Must be `{language}-{country}` for example `jp-jp` (Japanese - Japan), `zh-cn` (Chinese - China), `en-ca` (English - Canada), `fr-ca` (French - Canada), `en-nz` (English - New Zealand), etc. If empty the default is `en-us`.
+            time_limit: Retrieve only the most recent results, for example `1w` only returns the results from the last week. Units are 'd' (day), 'w' (week), 'm' (month), 'y' (year). Use empty string to retrieve all results.
 
         Returns:
             dict: ToolResult format with search results in json field
         """
         logger.debug(
-            f"[INTERNET_SEARCH_V3] Starting search: query={query}, country={country}, time_limit={time_limit}"
+            f"[INTERNET_SEARCH_V3] Starting search: query={query}, locale={locale}, time_limit={time_limit}"
         )
 
         try:
@@ -214,7 +213,7 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
             # Use DuckDuckGo if no bot context
             if not current_bot:
                 logger.debug("[INTERNET_SEARCH_V3] No bot context, using DuckDuckGo")
-                results = _search_with_duckduckgo_standalone(query, time_limit, country)
+                results = _search_with_duckduckgo_standalone(query, time_limit, locale)
             else:
                 internet_tool = _get_internet_tool_config(current_bot)
 
@@ -229,7 +228,7 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
                     results = _search_with_firecrawl_standalone(
                         query=query,
                         api_key=internet_tool.firecrawl_config.api_key,
-                        country=country,
+                        locale=locale,
                         max_results=internet_tool.firecrawl_config.max_results,
                     )
 
@@ -239,25 +238,23 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
                             "[INTERNET_SEARCH_V3] Firecrawl returned no results, falling back to DuckDuckGo"
                         )
                         results = _search_with_duckduckgo_standalone(
-                            query, time_limit, country
+                            query, time_limit, locale
                         )
                 else:
                     logger.debug("[INTERNET_SEARCH_V3] Using DuckDuckGo search")
                     results = _search_with_duckduckgo_standalone(
-                        query, time_limit, country
+                        query, time_limit, locale
                     )
 
             # Return in ToolResult format to prevent Strands from converting to string
             return {
-                "toolUseId": "placeholder",  # Will be replaced by Strands
                 "status": "success",
-                "content": [{"json": results}],
+                "content": [{"json": result} for result in results],
             }
 
         except Exception as e:
             logger.error(f"[INTERNET_SEARCH_V3] Internet search error: {e}")
             return {
-                "toolUseId": "placeholder",
                 "status": "error",
                 "content": [{"text": f"Search error: {str(e)}"}],
             }

@@ -7,17 +7,16 @@ from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
 from app.stream import OnThinking
+from app.strands_integration.converters.tool_converter import (
+    strands_tool_result_to_tool_run_result,
+    tool_run_result_to_strands_tool_result,
+)
+
 from strands.experimental.hooks import (
     AfterToolInvocationEvent,
     BeforeToolInvocationEvent,
 )
 from strands.hooks import HookProvider, HookRegistry
-
-from app.strands_integration.converters.tool_converter import (
-    convert_after_tool_event_to_tool_run_result,
-    convert_raw_tool_result_to_tool_result,
-    convert_tool_run_result_to_strands_tool_result,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +24,13 @@ logger = logging.getLogger(__name__)
 class ToolResultCapture(HookProvider):
     def __init__(
         self,
+        display_citation: bool,
         on_thinking: Callable[[OnThinking], None] | None = None,
         on_tool_result: Callable[[ToolRunResult], None] | None = None,
     ):
+        self.display_citation = display_citation
         self.on_thinking = on_thinking
         self.on_tool_result = on_tool_result
-        self.captured_tool_results: dict[str, ToolRunResult] = {}
-        self.captured_tool_uses: dict[str, dict] = {}  # Store tool use info
 
     def register_hooks(self, registry: HookRegistry, **kwargs) -> None:
         registry.add_callback(BeforeToolInvocationEvent, self.before_tool_execution)
@@ -41,38 +40,33 @@ class ToolResultCapture(HookProvider):
         """Handler called before a tool is executed."""
         logger.debug("Before tool execution: %r", event)
 
-        # Store tool use information
-        tool_use = event.tool_use
-        self.captured_tool_uses[tool_use["toolUseId"]] = {
-            "name": tool_use["name"],
-            "input": tool_use["input"],
-        }
-
+        # Call callback if provided
         if self.on_thinking:
-            # Convert BeforeToolInvocationEvent to OnThinking format
-            thinking_data: OnThinking = {
-                "tool_use_id": tool_use["toolUseId"],
-                "name": tool_use["name"],
-                "input": tool_use["input"],
-            }
-            self.on_thinking(thinking_data)
+            self.on_thinking(
+                {
+                    "tool_use_id": event.tool_use["toolUseId"],
+                    "name": event.tool_use["name"],
+                    "input": event.tool_use["input"],
+                }
+            )
 
     def after_tool_execution(self, event: AfterToolInvocationEvent) -> None:
         """Handler called after a tool is executed."""
-        # Convert tool's raw result to proper ToolResult format before processing
-        converted_result = convert_raw_tool_result_to_tool_result(event)
-        event.result = converted_result  # type: ignore
+        logger.debug("After tool execution: %r", event)
 
         # Convert event to ToolRunResult using the new function
-        tool_result = convert_after_tool_event_to_tool_run_result(event)
-
-        # Store the result
-        self.captured_tool_results[tool_result["tool_use_id"]] = tool_result
+        tool_result = strands_tool_result_to_tool_run_result(
+            tool_name=event.tool_use["name"],
+            result=event.result,
+        )
 
         # Call callback if provided
         if self.on_tool_result:
             self.on_tool_result(tool_result)
 
         # Convert ToolRunResult back to Strands ToolResult format with `source_id` for citation
-        enhanced_result = convert_tool_run_result_to_strands_tool_result(tool_result)
-        event.result = enhanced_result  # type: ignore
+        enhanced_result = tool_run_result_to_strands_tool_result(
+            result=tool_result,
+            display_citation=self.display_citation,
+        )
+        event.result = enhanced_result

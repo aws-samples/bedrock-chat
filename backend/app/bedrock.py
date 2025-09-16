@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, TypeGuard
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    NotRequired,
+    Optional,
+    TypedDict,
+    TypeGuard,
+)
 
 from app.config import (
     BEDROCK_PRICING,
@@ -15,6 +23,8 @@ from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
+from app.vector_search import SearchResult
+
 from botocore.exceptions import ClientError
 from reretry import retry
 from typing_extensions import deprecated
@@ -28,7 +38,6 @@ if TYPE_CHECKING:
         ConverseResponseTypeDef,
         ConverseStreamRequestTypeDef,
         GuardrailConverseContentBlockTypeDef,
-        InferenceConfigurationTypeDef,
         MessageTypeDef,
         SystemContentBlockTypeDef,
         ToolTypeDef,
@@ -316,16 +325,50 @@ def is_prompt_caching_supported(
         ]
 
 
+def is_multiple_system_prompt_content_supported(model: type_model_name):
+    return not (
+        is_nova_model(model)
+        or is_deepseek_model(model)
+        or is_llama_model(model)
+        or is_mistral(model)
+        or is_gpt_oss_model(model)
+    )
+
+
+def is_unsigned_reasoning_content_supported(model: type_model_name):
+    return not (is_deepseek_model(model) or is_gpt_oss_model(model))
+
+
+class InferenceConfiguration(TypedDict):
+    maxTokens: NotRequired[int]
+    temperature: NotRequired[float]
+    topP: NotRequired[float]
+    stopSequences: NotRequired[list[str]]
+
+
+class GuardrailConfiguration(TypedDict):
+    guardrailIdentifier: str
+    guardrailVersion: str
+    trace: NotRequired[Literal["disabled", "enabled", "enabled_full"]]
+    streamProcessingMode: NotRequired[Literal["async", "sync"]]
+
+
+class ConverseConfiguration(TypedDict):
+    inferenceConfig: InferenceConfiguration
+    guardrailConfig: NotRequired[GuardrailConfiguration]
+    additionalModelRequestFields: NotRequired[dict[str, Any]]
+
+
 def _prepare_deepseek_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
-) -> Tuple[InferenceConfigurationTypeDef, None]:
+) -> ConverseConfiguration:
     """
     Prepare inference configuration and additional model request fields for DeepSeek models
     > Note that DeepSeek models expect inference parameters as a JSON object under an inferenceConfig attribute,
     > similar to Amazon Nova models.
     """
     # Base inference configuration
-    inference_config: InferenceConfigurationTypeDef = {
+    inference_config: InferenceConfiguration = {
         "maxTokens": (
             generation_params.max_tokens
             if generation_params
@@ -353,19 +396,21 @@ def _prepare_deepseek_model_params(
         else DEFAULT_DEEP_SEEK_GENERATION_CONFIG.get("stop_sequences", [])
     )
 
-    return inference_config, None
+    return {
+        "inferenceConfig": inference_config,
+    }
 
 
 def _prepare_mistral_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
-) -> Tuple[InferenceConfigurationTypeDef, Dict[str, int] | None]:
+) -> ConverseConfiguration:
     """
     Prepare inference configuration and additional model request fields for Mistral models
     > Note that Mistral models expect inference parameters as a JSON object under an inferenceConfig attribute,
     > similar to other models.
     """
     # Base inference configuration
-    inference_config: InferenceConfigurationTypeDef = {
+    inference_config: InferenceConfiguration = {
         "maxTokens": (
             generation_params.max_tokens
             if generation_params
@@ -393,23 +438,28 @@ def _prepare_mistral_model_params(
         else DEFAULT_MISTRAL_GENERATION_CONFIG.get("stop_sequences", [])
     )
 
-    # Add top_k if specified in generation params
-    additional_fields = None
-    if generation_params and generation_params.top_k is not None:
-        additional_fields = {"topK": generation_params.top_k}
+    converse_config: ConverseConfiguration = {
+        "inferenceConfig": inference_config,
+    }
 
-    return inference_config, additional_fields
+    # Add top_k if specified in generation params
+    if generation_params and generation_params.top_k is not None:
+        converse_config["additionalModelRequestFields"] = {
+            "topK": generation_params.top_k
+        }
+
+    return converse_config
 
 
 def _prepare_gpt_oss_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
-) -> Tuple[InferenceConfigurationTypeDef, Dict[str, int] | None]:
+) -> ConverseConfiguration:
     """
     Prepare inference configuration for OpenAI GPT-OSS models
     Note: GPT-OSS models don't support stopSequences
     """
     # Base inference configuration
-    inference_config: InferenceConfigurationTypeDef = {
+    inference_config: InferenceConfiguration = {
         "maxTokens": (
             generation_params.max_tokens
             if generation_params
@@ -429,22 +479,23 @@ def _prepare_gpt_oss_model_params(
 
     # Note: GPT-OSS models don't support stopSequences, so we don't add it
 
-    # Additional fields for GPT-OSS models
-    additional_fields = None
+    # No additional fields for GPT-OSS models
 
-    return inference_config, additional_fields
+    return {
+        "inferenceConfig": inference_config,
+    }
 
 
 def _prepare_llama_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
-) -> Tuple[InferenceConfigurationTypeDef, None]:
+) -> ConverseConfiguration:
     """
     Prepare inference configuration and additional model request fields for Meta Llama models
     > Note that Llama models expect inference parameters as a JSON object under an inferenceConfig attribute,
     > similar to Amazon Nova models.
     """
     # Base inference configuration
-    inference_config: InferenceConfigurationTypeDef = {
+    inference_config: InferenceConfiguration = {
         "maxTokens": (
             generation_params.max_tokens
             if generation_params
@@ -473,21 +524,22 @@ def _prepare_llama_model_params(
     )
 
     # No additional fields for Llama models
-    additional_fields = None
 
-    return inference_config, additional_fields
+    return {
+        "inferenceConfig": inference_config,
+    }
 
 
 def _prepare_nova_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
-) -> Tuple[InferenceConfigurationTypeDef, Dict[str, Any]]:
+) -> ConverseConfiguration:
     """
     Prepare inference configuration and additional model request fields for Nova models
     > Note that Amazon Nova expects inference parameters as a JSON object under a inferenceConfig attribute. Amazon Nova also has an additional parameter "topK" that can be passed as an additional inference parameters. This parameter follows the same structure and is passed through the additionalModelRequestFields, as shown below.
     https://docs.aws.amazon.com/nova/latest/userguide/getting-started-converse.html
     """
     # Base inference configuration
-    inference_config: InferenceConfigurationTypeDef = {
+    inference_config: InferenceConfiguration = {
         "maxTokens": (
             generation_params.max_tokens
             if generation_params
@@ -505,9 +557,11 @@ def _prepare_nova_model_params(
         ),
     }
 
-    # Additional model request fields specific to Nova models
-    additional_fields: Dict[str, Any] = {"inferenceConfig": {}}
+    converse_config: ConverseConfiguration = {
+        "inferenceConfig": inference_config,
+    }
 
+    # Additional model request fields specific to Nova models
     # Add top_k if specified in generation params
     if generation_params and generation_params.top_k is not None:
         top_k = generation_params.top_k
@@ -517,28 +571,46 @@ def _prepare_nova_model_params(
             )
             top_k = 128
 
-        additional_fields["inferenceConfig"]["topK"] = top_k
+        converse_config["additionalModelRequestFields"] = {
+            "inferenceConfig": {
+                "topK": top_k,
+            },
+        }
 
-    return inference_config, additional_fields
+    return converse_config
 
 
-@deprecated("Use strands instead")
-def compose_args_for_converse_api(
-    messages: list[SimpleMessageModel],
+def _to_guardrails_grounding_source(
+    search_results: list[SearchResult],
+) -> GuardrailConverseContentBlockTypeDef | None:
+    """Convert search results to Guardrails Grounding source format."""
+    return (
+        {
+            "text": {
+                "text": "\n\n".join(x["content"] for x in search_results),
+                "qualifiers": ["grounding_source"],
+            }
+        }
+        if len(search_results) > 0
+        else None
+    )
+
+
+def simple_message_models_to_bedrock_messages(
+    simple_messages: list[SimpleMessageModel],
     model: type_model_name,
-    instructions: list[str] = [],
-    generation_params: GenerationParamsModel | None = None,
     guardrail: BedrockGuardrailsModel | None = None,
-    grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
-    tools: dict[str, AgentTool] | None = None,
-    stream: bool = True,
-    enable_reasoning: bool = False,
-    prompt_caching_enabled: bool = False,
-) -> ConverseStreamRequestTypeDef:
+    search_results: list[SearchResult] | None = None,
+    prompt_caching_enabled: bool = True,
+) -> list[MessageTypeDef]:
+    grounding_source = None
+    if search_results and guardrail and guardrail.is_guardrail_enabled:
+        grounding_source = _to_guardrails_grounding_source(search_results)
+
     def process_content(c: ContentModel, role: str) -> list[ContentBlockTypeDef]:
         # Drop unsigned reasoning blocks for DeepSeek R1 and GPT-OSS models
         if (
-            (is_deepseek_model(model) or is_gpt_oss_model(model))
+            not is_unsigned_reasoning_content_supported(model)
             and c.content_type == "reasoning"
             and not getattr(c, "signature", None)
         ):
@@ -562,7 +634,7 @@ def compose_args_for_converse_api(
 
         return c.to_contents_for_converse()
 
-    arg_messages: list[MessageTypeDef] = [
+    messages: list[MessageTypeDef] = [
         {
             "role": message.role,
             "content": [
@@ -571,99 +643,57 @@ def compose_args_for_converse_api(
                 for block in process_content(c, message.role)
             ],
         }
-        for message in messages
+        for message in simple_messages
         if _is_conversation_role(message.role)
     ]
-    tool_specs: list[ToolTypeDef] | None = (
-        [
-            {
-                "toolSpec": tool.to_converse_spec(),
-            }
-            for tool in tools.values()
-        ]
-        if tools
-        else None
-    )
 
-    # Prepare model-specific parameters
-    inference_config: InferenceConfigurationTypeDef
-    additional_model_request_fields: dict[str, Any] | None
-    system_prompts: list[SystemContentBlockTypeDef]
+    if prompt_caching_enabled and is_prompt_caching_supported(model, target="message"):
+        for order, message in enumerate(
+            filter(lambda m: m["role"] == "user", reversed(messages))
+        ):
+            if order >= 2:
+                break
+
+            message["content"] = [
+                *(message["content"]),
+                {
+                    "cachePoint": {"type": "default"},
+                },
+            ]
+
+    return messages
+
+
+def generation_params_to_converse_configuration(
+    model: type_model_name,
+    generation_params: GenerationParamsModel | None = None,
+    guardrail: BedrockGuardrailsModel | None = None,
+    stream: bool = True,
+    enable_reasoning: bool = False,
+) -> ConverseConfiguration:
+    converse_configuration: ConverseConfiguration
 
     if is_nova_model(model):
         # Special handling for Nova models
-        inference_config, additional_model_request_fields = _prepare_nova_model_params(
-            model, generation_params
-        )
-        system_prompts = (
-            [
-                {
-                    "text": "\n\n".join(instructions),
-                }
-            ]
-            if instructions and any(instructions)
-            else []
-        )
+        converse_configuration = _prepare_nova_model_params(model, generation_params)
 
     elif is_deepseek_model(model):
         # Special handling for DeepSeek models
-        inference_config, additional_model_request_fields = (
-            _prepare_deepseek_model_params(model, generation_params)
-        )
-        system_prompts = (
-            [
-                {
-                    "text": "\n\n".join(instructions),
-                }
-            ]
-            if instructions and any(instructions)
-            else []
+        converse_configuration = _prepare_deepseek_model_params(
+            model, generation_params
         )
 
     elif is_llama_model(model):
         # Special handling for Llama models
-        inference_config, additional_model_request_fields = _prepare_llama_model_params(
-            model, generation_params
-        )
-        system_prompts = (
-            [
-                {
-                    "text": "\n\n".join(instructions),
-                }
-            ]
-            if instructions and any(instructions)
-            else []
-        )
+        converse_configuration = _prepare_llama_model_params(model, generation_params)
 
     elif is_mistral(model):
         # Special handling for Mistral models
-        inference_config, additional_model_request_fields = (
-            _prepare_mistral_model_params(model, generation_params)
-        )
-        system_prompts = (
-            [
-                {
-                    "text": "\n\n".join(instructions),
-                }
-            ]
-            if instructions and any(instructions)
-            else []
-        )
+        converse_configuration = _prepare_mistral_model_params(model, generation_params)
 
     elif is_gpt_oss_model(model):
         # Special handling for GPT-OSS models
-        inference_config, additional_model_request_fields = (
-            _prepare_gpt_oss_model_params(model, generation_params)
-        )
-        system_prompts = (
-            [
-                {
-                    "text": "\n\n".join(instructions),
-                }
-            ]
-            if instructions and any(instructions)
-            else []
-        )
+        converse_configuration = _prepare_gpt_oss_model_params(model, generation_params)
 
     else:
         # Standard handling for non-Nova models
@@ -686,65 +716,127 @@ def compose_args_for_converse_api(
                 )
                 max_tokens = budget_tokens + 1024
 
-            inference_config = {
-                "maxTokens": max_tokens,
-                "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
-                "topP": (
-                    generation_params.top_p
-                    if generation_params
-                    else DEFAULT_GENERATION_CONFIG["top_p"]
-                ),
-                "stopSequences": (
-                    generation_params.stop_sequences
-                    if (
-                        generation_params
-                        and generation_params.stop_sequences
-                        and any(generation_params.stop_sequences)
-                    )
-                    else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
-                ),
-            }
-            additional_model_request_fields = {
-                # top_k cannot be used with reasoning
-                "thinking": {
-                    "type": "enabled",
-                    "budget_tokens": budget_tokens,
+            converse_configuration = {
+                "inferenceConfig": {
+                    "maxTokens": max_tokens,
+                    "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
+                    "topP": (
+                        generation_params.top_p
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["top_p"]
+                    ),
+                    "stopSequences": (
+                        generation_params.stop_sequences
+                        if (
+                            generation_params
+                            and generation_params.stop_sequences
+                            and any(generation_params.stop_sequences)
+                        )
+                        else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                    ),
+                },
+                "additionalModelRequestFields": {
+                    # top_k cannot be used with reasoning
+                    "thinking": {
+                        "type": "enabled",
+                        "budget_tokens": budget_tokens,
+                    },
                 },
             }
+
         else:
-            inference_config = {
-                "maxTokens": (
-                    generation_params.max_tokens
-                    if generation_params
-                    else DEFAULT_GENERATION_CONFIG["max_tokens"]
-                ),
-                "temperature": (
-                    generation_params.temperature
-                    if generation_params
-                    else DEFAULT_GENERATION_CONFIG["temperature"]
-                ),
-                "topP": (
-                    generation_params.top_p
-                    if generation_params
-                    else DEFAULT_GENERATION_CONFIG["top_p"]
-                ),
-                "stopSequences": (
-                    generation_params.stop_sequences
-                    if (
-                        generation_params
-                        and generation_params.stop_sequences
-                        and any(generation_params.stop_sequences)
-                    )
-                    else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
-                ),
+            converse_configuration = {
+                "inferenceConfig": {
+                    "maxTokens": (
+                        generation_params.max_tokens
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["max_tokens"]
+                    ),
+                    "temperature": (
+                        generation_params.temperature
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["temperature"]
+                    ),
+                    "topP": (
+                        generation_params.top_p
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["top_p"]
+                    ),
+                    "stopSequences": (
+                        generation_params.stop_sequences
+                        if (
+                            generation_params
+                            and generation_params.stop_sequences
+                            and any(generation_params.stop_sequences)
+                        )
+                        else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                    ),
+                },
+                "additionalModelRequestFields": {
+                    "top_k": (
+                        generation_params.top_k
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["top_k"]
+                    ),
+                },
             }
-            additional_model_request_fields = {
-                "top_k": (
-                    generation_params.top_k
-                    if generation_params
-                    else DEFAULT_GENERATION_CONFIG["top_k"]
-                ),
+
+    if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
+        converse_configuration["guardrailConfig"] = {
+            "guardrailIdentifier": guardrail.guardrail_arn,
+            "guardrailVersion": guardrail.guardrail_version,
+            "trace": "enabled",
+        }
+
+        if stream:
+            # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
+            converse_configuration["guardrailConfig"]["streamProcessingMode"] = "async"
+
+    return converse_configuration
+
+
+@deprecated("Use strands instead")
+def compose_args_for_converse_api(
+    messages: list[SimpleMessageModel],
+    model: type_model_name,
+    instructions: list[str] = [],
+    generation_params: GenerationParamsModel | None = None,
+    guardrail: BedrockGuardrailsModel | None = None,
+    search_results: list[SearchResult] | None = None,
+    tools: dict[str, AgentTool] | None = None,
+    stream: bool = True,
+    enable_reasoning: bool = False,
+    prompt_caching_enabled: bool = False,
+) -> ConverseStreamRequestTypeDef:
+    arg_messages = simple_message_models_to_bedrock_messages(
+        simple_messages=messages,
+        model=model,
+        guardrail=guardrail,
+        search_results=search_results,
+        prompt_caching_enabled=prompt_caching_enabled,
+    )
+    tool_specs: list[ToolTypeDef] | None = (
+        [
+            {
+                "toolSpec": tool.to_converse_spec(),
             }
+            for tool in tools.values()
+        ]
+        if tools
+        else None
+    )
+
+    # Prepare model-specific parameters
+    converse_config = generation_params_to_converse_configuration(
+        model=model,
+        generation_params=generation_params,
+        guardrail=guardrail,
+        stream=stream,
+        enable_reasoning=enable_reasoning,
+    )
+    system_prompts: list[SystemContentBlockTypeDef]
+
+    if is_multiple_system_prompt_content_supported(model):
         system_prompts = [
             {
                 "text": instruction,
@@ -752,6 +844,17 @@ def compose_args_for_converse_api(
             for instruction in instructions
             if len(instruction) > 0
         ]
+
+    else:
+        system_prompts = (
+            [
+                {
+                    "text": "\n\n".join(instructions),
+                }
+            ]
+            if instructions and any(instructions)
+            else []
+        )
 
     if prompt_caching_enabled and not (
         tool_specs and not is_prompt_caching_supported(model, target="tool")
@@ -765,20 +868,6 @@ def compose_args_for_converse_api(
                 }
             )
 
-        if is_prompt_caching_supported(model, target="message"):
-            for order, message in enumerate(
-                filter(lambda m: m["role"] == "user", reversed(arg_messages))
-            ):
-                if order >= 2:
-                    break
-
-                message["content"] = [
-                    *(message["content"]),
-                    {
-                        "cachePoint": {"type": "default"},
-                    },
-                ]
-
         if is_prompt_caching_supported(model, target="tool") and tool_specs:
             tool_specs.append(
                 {
@@ -790,25 +879,32 @@ def compose_args_for_converse_api(
 
     # Construct the base arguments
     args: ConverseStreamRequestTypeDef = {
-        "inferenceConfig": inference_config,
+        "inferenceConfig": {},
         "modelId": get_model_id(model),
         "messages": arg_messages,
         "system": system_prompts,
     }
 
-    if additional_model_request_fields is not None:
-        args["additionalModelRequestFields"] = additional_model_request_fields
+    inference_config = converse_config["inferenceConfig"]
+    if "temperature" in inference_config:
+        args["inferenceConfig"]["temperature"] = inference_config["temperature"]
 
-    if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
-        args["guardrailConfig"] = {
-            "guardrailIdentifier": guardrail.guardrail_arn,
-            "guardrailVersion": guardrail.guardrail_version,
-            "trace": "enabled",
-        }
+    if "topP" in inference_config:
+        args["inferenceConfig"]["topP"] = inference_config["topP"]
 
-        if stream:
-            # https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
-            args["guardrailConfig"]["streamProcessingMode"] = "async"
+    if "maxTokens" in inference_config:
+        args["inferenceConfig"]["maxTokens"] = inference_config["maxTokens"]
+
+    if "stopSequences" in inference_config:
+        args["inferenceConfig"]["stopSequences"] = inference_config["stopSequences"]
+
+    if "additionalModelRequestFields" in converse_config:
+        args["additionalModelRequestFields"] = converse_config[
+            "additionalModelRequestFields"
+        ]
+
+    if "guardrailConfig" in converse_config:
+        args["guardrailConfig"] = converse_config["guardrailConfig"]
 
     # NOTE: Some models doesn't support tool use. https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html
     if tool_specs:

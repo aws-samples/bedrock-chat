@@ -907,11 +907,6 @@ class TestAgentChat(unittest.TestCase):
     model: type_model_name = "claude-v3.7-sonnet"
 
     def setUp(self) -> None:
-        # Enable debug logging for telemetry processors
-        import logging
-
-        logging.getLogger("app.strands_integration.telemetry").setLevel(logging.DEBUG)
-        logging.basicConfig(level=logging.DEBUG)
         private_bot = create_test_private_bot(
             self.bot_id,
             True,

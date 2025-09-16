@@ -26,13 +26,7 @@ def _search_knowledge_standalone(bot: BotModel, query: str) -> list:
         logger.error(
             f"Failed to run knowledge search: {e}\nTraceback: {error_traceback}"
         )
-        return [
-            {
-                "content": f"Knowledge search error: {str(e)}",
-                "source_name": "Error",
-                "source_link": "",
-            }
-        ]
+        raise e
 
 
 def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
@@ -58,7 +52,6 @@ def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
             if not current_bot:
                 logger.warning("[KNOWLEDGE_SEARCH_V3] No bot context available")
                 return {
-                    "toolUseId": "placeholder",
                     "status": "error",
                     "content": [
                         {
@@ -73,7 +66,6 @@ def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
                     "[KNOWLEDGE_SEARCH_V3] Bot has no knowledge base configured"
                 )
                 return {
-                    "toolUseId": "placeholder",
                     "status": "error",
                     "content": [
                         {
@@ -89,26 +81,15 @@ def create_knowledge_search_tool(bot: BotModel | None) -> StrandsAgentTool:
             # Run knowledge search
             results = _search_knowledge_standalone(current_bot, query)
 
-            if not results:
-                return {
-                    "toolUseId": "placeholder",
-                    "status": "success",
-                    "content": [
-                        {"text": "No relevant information found in the knowledge base."}
-                    ],
-                }
-
             logger.debug(f"[KNOWLEDGE_SEARCH_V3] Search completed successfully")
             return {
-                "toolUseId": "placeholder",
                 "status": "success",
-                "content": [{"json": results}],
+                "content": [{"json": result} for result in results],
             }
 
         except Exception as e:
             logger.error(f"[KNOWLEDGE_SEARCH_V3] Knowledge search error: {e}")
             return {
-                "toolUseId": "placeholder",
                 "status": "error",
                 "content": [
                     {"text": f"An error occurred during knowledge search: {str(e)}"}

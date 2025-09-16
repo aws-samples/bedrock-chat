@@ -2,239 +2,264 @@
 Tool result conversion utilities for Strands integration.
 """
 
-from typing import Any, cast
 import logging
 
-from app.agents.tools.agent_tool import (
-    ToolFunctionResult,
-    ToolRunResult,
-    _function_result_to_related_document,
-)
+from app.agents.tools.agent_tool import ToolRunResult
 from app.repositories.models.conversation import (
+    DocumentToolResultModel,
+    ImageToolResultModel,
     JsonToolResultModel,
+    RelatedDocumentModel,
     TextToolResultModel,
+    ToolResultModel,
 )
-from strands.experimental.hooks import AfterToolInvocationEvent
 from strands.types.tools import ToolResult, ToolResultContent
 
 logger = logging.getLogger(__name__)
 
 
-def convert_tool_result_content_to_function_result(
-    content_item: ToolResultContent,
-) -> ToolFunctionResult:
-    """Convert ToolResultContent to ToolFunctionResult format."""
-    if "text" in content_item:
-        return content_item["text"]
-    elif "json" in content_item:
-        # Return json content directly without wrapping in {"data": ...}
-        return content_item["json"]
-    elif "document" in content_item:
-        # Convert document to string
-        doc_content = content_item["document"]
-        if isinstance(doc_content, dict) and "source" in doc_content:
-            # DocumentSource has bytes field according to Strands type definition
-            doc_source = doc_content["source"]
-            if isinstance(doc_source, dict) and "bytes" in doc_source:
-                try:
-                    # Try to decode bytes as UTF-8 text
-                    return doc_source["bytes"].decode("utf-8")
-                except (UnicodeDecodeError, AttributeError):
-                    # If decoding fails, return a description
-                    doc_name = doc_content.get("name", "document")
-                    doc_format = doc_content.get("format", "unknown")
-                    return f"[Document: {doc_name} ({doc_format})]"
-            else:
-                return str(doc_source)
-        else:
-            return str(doc_content)
-    elif "image" in content_item:
-        # Convert image to text description
-        img_content = content_item["image"]
-        if isinstance(img_content, dict):
-            img_format = img_content.get("format", "unknown")
-            return f"[Image content ({img_format})]"
-        else:
-            return "[Image content]"
-    else:
-        # Empty content
-        return ""
-
-
-def convert_raw_tool_result_to_tool_result(
-    event: AfterToolInvocationEvent,
-) -> dict[str, Any]:
-    """Convert raw tool result to proper ToolResult format."""
-
-    tool_use_id = event.tool_use["toolUseId"]
-    raw_result = event.result
-
-    # DEBUG: Log the raw result before conversion
-    logger.debug(f"[RAW_TOOL_RESULT_DEBUG] Tool: {event.tool_use['name']}")
-    logger.debug(f"[RAW_TOOL_RESULT_DEBUG] Raw result type: {type(raw_result)}")
-    logger.debug(f"[RAW_TOOL_RESULT_DEBUG] Raw result: {raw_result}")
-
-    # If already in ToolResult format, return as is
-    if (
-        isinstance(raw_result, dict)
-        and "content" in raw_result
-        and "status" in raw_result
-    ):
-        logger.debug("[RAW_TOOL_RESULT_DEBUG] Already in ToolResult format")
-        return cast(dict[str, Any], raw_result)
-
-    # Convert raw result to ToolResult format
-    content_list = []
-
-    if isinstance(raw_result, list):
-        # Handle list results (like simple_list tool)
-        logger.debug("[RAW_TOOL_RESULT_DEBUG] Converting list result to ToolResult")
-        content_list.append({"json": raw_result})
-    elif isinstance(raw_result, dict):
-        # Handle dict results
-        logger.debug("[RAW_TOOL_RESULT_DEBUG] Converting dict result to ToolResult")
-        content_list.append({"json": raw_result})
-    elif isinstance(raw_result, str):
-        # Handle string results
-        logger.debug("[RAW_TOOL_RESULT_DEBUG] Converting string result to ToolResult")
-        content_list.append({"text": raw_result})
-    else:
-        # Handle other types by converting to JSON
-        logger.debug(
-            f"[RAW_TOOL_RESULT_DEBUG] Converting {type(raw_result)} result to ToolResult"
-        )
-        content_list.append({"json": raw_result})
-
-    result = {
-        "content": content_list,
-        "status": "success",
-        "toolUseId": tool_use_id,
+def text_tool_result_model_to_strands_tool_result_content(
+    result: TextToolResultModel,
+) -> ToolResultContent:
+    return {
+        "text": result.text,
     }
 
-    logger.debug(f"[RAW_TOOL_RESULT_DEBUG] Final ToolResult: {result}")
-    return result
+
+def json_tool_result_model_to_strands_tool_result_content(
+    result: JsonToolResultModel,
+) -> ToolResultContent:
+    return {
+        "json": result.json_,
+    }
 
 
-def convert_tool_run_result_to_strands_tool_result(
-    tool_run_result: ToolRunResult,
-) -> dict[str, Any]:
-    """Convert our ToolRunResult back to Strands ToolResult format with source_id included."""
-    # Convert related documents back to ToolResultContent
-    content_list = []
-    for related_doc in tool_run_result["related_documents"]:
-        content = related_doc.content
-        source_id = related_doc.source_id
+def image_tool_result_model_to_strands_tool_result_content(
+    result: ImageToolResultModel,
+) -> ToolResultContent:
+    return {
+        "image": {
+            "format": result.format,
+            "source": {
+                "bytes": result.image,
+            },
+        }
+    }
 
-        # Always return as JSON with source_id included
-        if isinstance(content, TextToolResultModel):
-            # Convert text content to JSON with source_id
-            text_content = {"text": content.text}
-            enhanced_text_content: dict[str, Any] = {
-                **text_content,
-                "source_id": source_id,
+
+def document_tool_result_model_to_strands_tool_result_content(
+    result: DocumentToolResultModel,
+) -> ToolResultContent:
+    return {
+        "document": (
+            {
+                "format": result.format,
+                "name": result.name,
+                "source": {
+                    "bytes": result.document,
+                },
             }
-            tool_result_content: ToolResultContent = {"json": enhanced_text_content}  # type: ignore
-        elif isinstance(content, JsonToolResultModel):
-            # Convert JSON content with source_id
-            json_content: dict[str, Any] = (
-                content.json_
-                if isinstance(content.json_, dict)
-                else {"data": content.json_}
+            if result.format
+            else {
+                "name": result.name,
+                "source": {
+                    "bytes": result.document,
+                },
+            }
+        )
+    }
+
+
+def tool_result_model_to_strands_tool_result_content(
+    result: ToolResultModel,
+) -> ToolResultContent:
+    """Convert our ToolResultModel to Strands ToolResultContent format."""
+
+    if isinstance(result, TextToolResultModel):
+        return text_tool_result_model_to_strands_tool_result_content(result)
+
+    elif isinstance(result, JsonToolResultModel):
+        return json_tool_result_model_to_strands_tool_result_content(result)
+
+    elif isinstance(result, ImageToolResultModel):
+        return image_tool_result_model_to_strands_tool_result_content(result)
+
+    elif isinstance(result, DocumentToolResultModel):
+        return document_tool_result_model_to_strands_tool_result_content(result)
+
+    else:
+        raise ValueError(f"Unknown tool result type")
+
+
+def strands_tool_result_content_to_tool_result_model(
+    content: ToolResultContent,
+) -> ToolResultModel:
+    """Convert Strands ToolResultContent to our ToolResultModel format."""
+
+    if "text" in content:
+        return TextToolResultModel(
+            text=content["text"],
+        )
+
+    elif "json" in content:
+        return JsonToolResultModel(
+            json=content["json"],
+        )
+
+    elif "image" in content:
+        image = content["image"]
+        return ImageToolResultModel(
+            format=image["format"],
+            image=image["source"]["bytes"],
+        )
+
+    elif "document" in content:
+        document = content["document"]
+        if "name" in document and "format" in document and "source" in document:
+            return DocumentToolResultModel(
+                format=document["format"],
+                name=document["name"],
+                document=document["source"]["bytes"],
             )
-            enhanced_json_content: dict[str, Any] = {
-                **json_content,
-                "source_id": source_id,
-            }
-            tool_result_content = {"json": enhanced_json_content}  # type: ignore
-        else:
-            # Fallback to text converted to JSON with source_id
-            fallback_content = {"text": str(content)}
-            enhanced_fallback_content: dict[str, Any] = {
-                **fallback_content,
-                "source_id": source_id,
-            }
-            tool_result_content = {"json": enhanced_fallback_content}  # type: ignore
 
-        content_list.append(tool_result_content)
+    raise ValueError(f"Unknown tool result content type")
 
-    # If no content, add empty JSON content with source_id
-    if not content_list:
-        content_list.append({"json": {"text": "", "source_id": "unknown"}})
+
+def tool_run_result_to_strands_tool_result(
+    result: ToolRunResult,
+    display_citation: bool,
+) -> ToolResult:
+    """Convert our ToolRunResult back to Strands ToolResult format with source_id included."""
 
     return {
-        "content": content_list,
-        "status": tool_run_result["status"],
-        "toolUseId": tool_run_result["tool_use_id"],
+        "toolUseId": result["tool_use_id"],
+        "status": result["status"],
+        "content": [
+            tool_result_model_to_strands_tool_result_content(
+                related_document.to_tool_result_model(
+                    display_citation=display_citation,
+                )
+            )
+            for related_document in result["related_documents"]
+        ],
     }
 
 
-def convert_after_tool_event_to_tool_run_result(
-    event: AfterToolInvocationEvent,
-) -> ToolRunResult:
-    """Convert AfterToolInvocationEvent to our ToolRunResult format."""
-    tool_input = event.tool_use["input"]
-    tool_name = event.tool_use["name"]
+def strands_tool_result_content_to_related_document(
+    tool_name: str,
+    result_content: ToolResultContent,
+    source_id_base: str,
+    rank: int | None = None,
+) -> RelatedDocumentModel:
+    """Convert ToolResultContent to RelatedDocumentModel."""
 
-    result = event.result
-    tool_use_id = result["toolUseId"]
-    tool_result_status = result["status"]
-    tool_result_content = result["content"]
+    if rank is not None:
+        source_id = f"{source_id_base}@{rank}"
 
-    # DEBUG: Log the raw result content
-    logger.debug(f"[TOOL_RESULT_DEBUG] Tool: {tool_name}")
-    logger.debug(f"[TOOL_RESULT_DEBUG] Raw result content: {tool_result_content}")
-    logger.debug(f"[TOOL_RESULT_DEBUG] Content type: {type(tool_result_content)}")
-    if tool_result_content:
-        logger.debug(
-            f"[TOOL_RESULT_DEBUG] First content item: {tool_result_content[0]}"
-        )
-        logger.debug(
-            f"[TOOL_RESULT_DEBUG] First content item type: {type(tool_result_content[0])}"
-        )
-
-    # Convert content items to function results first
-    function_results = []
-    for content_item in tool_result_content:
-        function_result = convert_tool_result_content_to_function_result(content_item)
-        function_results.append(function_result)
-
-    # Special handling for tools that return lists (like simple_list)
-    if len(function_results) == 1 and isinstance(function_results[0], list):
-        # Tool returned a list - treat each item as a separate result
-        list_items = function_results[0]
-        related_documents = [
-            _function_result_to_related_document(
-                tool_name=tool_name,
-                res=item,
-                source_id_base=tool_use_id,
-                rank=rank,
-            )
-            for rank, item in enumerate(list_items)
-        ]
-    elif len(function_results) > 1:
-        # Multiple results - treat as list
-        related_documents = [
-            _function_result_to_related_document(
-                tool_name=tool_name,
-                res=result,
-                source_id_base=tool_use_id,
-                rank=rank,
-            )
-            for rank, result in enumerate(function_results)
-        ]
     else:
-        # Single result
-        single_result = function_results[0] if function_results else ""
-        related_documents = [
-            _function_result_to_related_document(
-                tool_name=tool_name,
-                res=single_result,
-                source_id_base=tool_use_id,
-            )
-        ]
+        source_id = source_id_base
 
-    return ToolRunResult(
-        tool_use_id=tool_use_id,
-        status=tool_result_status,
-        related_documents=related_documents,
-    )
+    if "text" in result_content:
+        return RelatedDocumentModel(
+            content=TextToolResultModel(text=result_content["text"]),
+            source_id=source_id,
+            source_name=tool_name,
+            page_number=None,
+        )
+
+    elif "json" in result_content:
+        json = result_content["json"]
+        if isinstance(json, dict):
+            content = json.get("content")
+            source_id_from_result = json.get("source_id")
+            source_name = json.get("source_name")
+            source_link = json.get("source_link")
+            page_number = json.get("page_number")
+
+            return RelatedDocumentModel(
+                content=(
+                    TextToolResultModel(
+                        text=content,
+                    )
+                    if isinstance(content, str)
+                    else JsonToolResultModel(
+                        json=content if isinstance(content, dict) else json,
+                    )
+                ),
+                source_id=(
+                    str(source_id_from_result)
+                    if source_id_from_result is not None
+                    else source_id
+                ),
+                source_name=str(source_name) if source_name is not None else tool_name,
+                source_link=str(source_link) if source_link is not None else None,
+                page_number=int(page_number) if page_number is not None else None,
+            )
+
+    elif "image" in result_content:
+        image = result_content["image"]
+        return RelatedDocumentModel(
+            content=ImageToolResultModel(
+                format=image["format"],
+                image=image["source"]["bytes"],
+            ),
+            source_id=source_id,
+            source_name=tool_name,
+            page_number=None,
+        )
+
+    elif "document" in result_content:
+        document = result_content["document"]
+        if "name" in document and "format" in document and "source" in document:
+            return RelatedDocumentModel(
+                content=DocumentToolResultModel(
+                    format=document["format"],
+                    name=document["name"],
+                    document=document["source"]["bytes"],
+                ),
+                source_id=source_id,
+                source_name=tool_name,
+                page_number=None,
+            )
+
+    raise ValueError(f"Unknown tool result content type")
+
+
+def strands_tool_result_to_tool_run_result(
+    tool_name: str,
+    result: ToolResult,
+) -> ToolRunResult:
+    """Convert ToolResult to our ToolRunResult format."""
+
+    tool_use_id = result["toolUseId"]
+    contents = result["content"]
+
+    if len(contents) == 1:
+        # Single result
+        return ToolRunResult(
+            tool_use_id=tool_use_id,
+            status=result["status"],
+            related_documents=[
+                strands_tool_result_content_to_related_document(
+                    tool_name=tool_name,
+                    result_content=contents[0],
+                    source_id_base=tool_use_id,
+                )
+            ],
+        )
+
+    else:
+        # Multiple results
+        return ToolRunResult(
+            tool_use_id=tool_use_id,
+            status=result["status"],
+            related_documents=[
+                strands_tool_result_content_to_related_document(
+                    tool_name=tool_name,
+                    result_content=content,
+                    source_id_base=tool_use_id,
+                    rank=rank,
+                )
+                for rank, content in enumerate(result["content"])
+            ],
+        )
