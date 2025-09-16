@@ -193,12 +193,6 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
 
         <div className="ml-5 grow ">
-          {chatContent?.role == 'assistant' && reasoning?.content && (
-            <ReasoningCard
-              content={reasoning.content}
-              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
-            />
-          )}
           {chatContent?.role === 'assistant' &&
             tools != null &&
             tools.length > 0 && (
@@ -213,7 +207,14 @@ const ChatMessage: React.FC<Props> = (props) => {
                   </div>
                 ))}
               </div>
-            )}
+            )
+          }
+          {chatContent?.role == 'assistant' && reasoning?.content && (
+            <ReasoningCard
+              content={reasoning.content}
+              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
+            />
+          )}
           {chatContent?.role === 'user' && !isEdit && (
             <div>
               {chatContent.content.some(

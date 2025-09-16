@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import ChatMessage from './ChatMessage';
 import { DisplayMessageContent } from '../@types/conversation';
 
@@ -81,6 +83,7 @@ export const Conversation = () => {
 };
 
 export const ConversationThinking = () => {
+  const { t } = useTranslation();
   const messages: DisplayMessageContent[] = [
     {
       id: '1',
@@ -127,6 +130,12 @@ export const ConversationThinking = () => {
           }`}>
           <ChatMessage
             chatContent={message}
+            tools={[
+              {
+                thought: t('agent.progress.label'),
+                tools: {},
+              },
+            ]}
           />
 
           <div className="w-full border-b border-aws-squid-ink-light/10 dark:border-aws-squid-ink-dark/10"></div>
@@ -160,6 +169,12 @@ export const ConversationWithAgnet = () => {
       role: 'assistant',
       content: [
         {
+          contentType: 'reasoning',
+          text: "Tomorrow's weather will be clear skies. According to the search results, the recommended leisure activity for a sunny day is an amusement park.",
+          signature: '',
+          redactedContent: '',
+        },
+        {
           contentType: 'text',
           body: 'I recommend going to an amusement park.[^tool2_cwa@0]',
         },
@@ -175,8 +190,14 @@ export const ConversationWithAgnet = () => {
           role: 'assistant',
           content: [
             {
+              contentType: 'reasoning',
+              text: "To answer the user's question, I have 'get_weather' tool.",
+              signature: '',
+              redactedContent: '',
+            },
+            {
               contentType: 'text',
-              body: "Use tools to check tomorrow's weather.",
+              body: "Use 'get_weather' tool to check tomorrow's weather.",
             },
             {
               contentType: 'toolUse',
