@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useCallback, useMemo, useState } from 'react';
-import { AgentToolState } from '../xstates/agentThink';
+import { AgentToolState } from '../types';
 import { JSONTree } from 'react-json-tree';
 import {
   PiCaretDown,

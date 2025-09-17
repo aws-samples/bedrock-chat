@@ -2,7 +2,7 @@ import {
   SimpleMessage,
   RelatedDocument,
 } from '../../../@types/conversation';
-import { AgentToolUse, AgentToolsProps } from '../xstates/agentThink';
+import { AgentToolUse, AgentToolsProps } from '../types';
 
 export const convertThinkingLogToAgentToolProps = (
   thinkingLog: SimpleMessage[],

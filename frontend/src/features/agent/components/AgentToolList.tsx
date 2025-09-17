@@ -2,7 +2,7 @@ import React from 'react';
 import ToolCard from './ToolCard';
 import ReasoningCard from '../../reasoning/components/ReasoningCard';
 import ChatMessageMarkdown from '../../../components/ChatMessageMarkdown';
-import { AgentToolsProps } from '../xstates/agentThink';
+import { AgentToolsProps } from '../types';
 import { useTranslation } from 'react-i18next';
 import { PiCircleNotchBold } from 'react-icons/pi';
 import { RelatedDocument } from '../../../@types/conversation';
@@ -22,6 +22,7 @@ const AgentToolList: React.FC<AgentToolListProps> = ({messageId, tools, relatedD
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light dark:bg-aws-paper-dark text-aws-font-color-light/80 dark:text-aws-font-color-dark/80">
       {tools.reasoning && (
+        // ReasoningCard for ReasoningContent in thinkingLog of assistant message.
         <ReasoningCard
           content={tools.reasoning}
           className="border-b border-gray"

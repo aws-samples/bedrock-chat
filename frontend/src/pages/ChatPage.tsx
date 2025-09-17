@@ -33,10 +33,8 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
-import {
-  AgentState,
-  AgentToolsProps,
-} from '../features/agent/xstates/agentThink';
+import { StreamingState } from '../hooks/xstates/streaming.ts';
+import { AgentToolsProps } from '../features/agent/types';
 import { getRelatedDocumentsOfToolUse } from '../features/agent/utils/AgentUtils';
 import { SyncStatus } from '../constants';
 import { BottomHelper } from '../features/helper/components/BottomHelper';
@@ -71,8 +69,7 @@ const ChatPage: React.FC = () => {
   const { pinBot, unpinBot } = useBotPinning();
 
   const {
-    agentThinking,
-    reasoningThinking,
+    streamingState,
     conversationError,
     postingMessage,
     newChat,
@@ -342,26 +339,24 @@ const ChatPage: React.FC = () => {
   }> = React.memo((props) => {
     const { chatContent: message } = props;
 
-    const isReasoningActive = reasoningThinking.matches('active');
+    const isReasoningActive = streamingState.matches('streaming');
     const reasoning = useMemo(
-      () => ({
-        content: isReasoningActive ? reasoningThinking.context.content : '',
-      }),
+      () => isReasoningActive ? streamingState.context.reasoning : '',
       [isReasoningActive]
     );
 
     const isAgentThinking = useMemo(
       () =>
-        [AgentState.THINKING, AgentState.LEAVING].some(
-          (v) => v === agentThinking.value
+        [StreamingState.STREAMING, StreamingState.LEAVING].some(
+          (v) => v === streamingState.value
         ),
       []
     );
 
     const tools: AgentToolsProps[] | undefined = useMemo(() => {
       if (isAgentThinking) {
-        if (agentThinking.context.tools.length > 0) {
-          return agentThinking.context.tools;
+        if (streamingState.context.tools.length > 0) {
+          return streamingState.context.tools;
         }
 
         if (bot?.hasAgent) {
@@ -416,7 +411,7 @@ const ChatPage: React.FC = () => {
     const relatedDocumentsForCitation = useMemo(
       () =>
         isAgentThinking
-          ? agentThinking.context.relatedDocuments
+          ? streamingState.context.relatedDocuments
           : relatedDocuments,
       [isAgentThinking]
     );

@@ -2,9 +2,8 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { PostMessageRequest } from '../@types/conversation';
 import { create } from 'zustand';
 import i18next from 'i18next';
-import { AgentEvent } from '../features/agent/xstates/agentThink';
+import { StreamingEvent } from './xstates/streaming';
 import { PostStreamingStatus } from '../constants';
-import { ReasoningEvent } from '../features/reasoning/xstates/reasoningState';
 
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
 const CHUNK_SIZE = 32 * 1024; //32KB
@@ -14,15 +13,16 @@ const usePostMessageStreaming = create<{
     input: PostMessageRequest;
     hasKnowledge?: boolean;
     dispatch: (completion: string) => void;
-    thinkingDispatch: (event: AgentEvent) => void;
-    reasoningDispatch: (event: ReasoningEvent) => void;
-    getReasoning: () => string;
+    streamingDispatch: (event: StreamingEvent) => void;
+    getMessageText: () => string;
   }) => Promise<string>;
   errorDetail: string | null;
 }>((set) => {
   return {
     errorDetail: null,
-    post: async ({ input, dispatch, thinkingDispatch, reasoningDispatch, getReasoning }) => {
+    post: async ({ input, dispatch, streamingDispatch, getMessageText }) => {
+      streamingDispatch({ type: 'wakeup' });
+
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
         ...input,
@@ -40,7 +40,6 @@ const usePostMessageStreaming = create<{
 
       let receivedCount = 0;
       return new Promise<string>((resolve, reject) => {
-        let completion = '';
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
@@ -92,31 +91,14 @@ const usePostMessageStreaming = create<{
             if (data.status) {
               switch (data.status) {
                 case PostStreamingStatus.AGENT_THINKING: {
-                  const reasoning = getReasoning();
-                  if (reasoning.length > 0) {
-                    reasoningDispatch({
-                      type: 'clear',
-                    });
-                    thinkingDispatch({
-                      type: 'reasoning',
-                      reasoning: reasoning,
-                    });
-                  }
-                  if (completion.length > 0) {
-                    dispatch('');
-                    thinkingDispatch({
-                      type: 'thought',
-                      thought: completion,
-                    });
-                    completion = '';
-                  }
+                  dispatch('');
                   Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
                     const typedToolInfo = toolInfo as {
                       name: string;
                       input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
                     };
-                    thinkingDispatch({
-                      type: 'go-on',
+                    streamingDispatch({
+                      type: 'tool-use',
                       toolUseId: toolUseId,
                       name: typedToolInfo.name,
                       input: typedToolInfo.input,
@@ -125,36 +107,36 @@ const usePostMessageStreaming = create<{
                   break;
                 }
                 case PostStreamingStatus.AGENT_TOOL_RESULT:
-                  thinkingDispatch({
+                  streamingDispatch({
                     type: 'tool-result',
                     toolUseId: data.result.toolUseId,
                     status: data.result.status,
                   });
                   break;
                 case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
-                  thinkingDispatch({
+                  streamingDispatch({
                     type: 'related-document',
                     toolUseId: data.result.toolUseId,
                     relatedDocument: data.result.relatedDocument,
                   });
                   break;
                 case PostStreamingStatus.REASONING:
-                  reasoningDispatch({
-                    type: 'write',
-                    content: data.completion,
+                  streamingDispatch({
+                    type: 'reasoning',
+                    reasoning: data.completion,
                   });
                   break;
                 case PostStreamingStatus.STREAMING:
-                  if (data.completion || data.completion === '') {
-                    completion += data.completion;
-                    dispatch(completion);
-                  }
+                  streamingDispatch({
+                    type: 'text',
+                    text: data.completion,
+                  });
+                  dispatch(getMessageText());
                   break;
                 case PostStreamingStatus.STREAMING_END:
-                  thinkingDispatch({
+                  streamingDispatch({
                     type: 'goodbye',
                   });
-                  reasoningDispatch({ type: 'end' });
 
                   ws.close();
                   break;
@@ -189,7 +171,7 @@ const usePostMessageStreaming = create<{
           reject(i18next.t('error.predict.general'));
         };
         ws.onclose = () => {
-          resolve(completion);
+          resolve(getMessageText());
         };
       });
     },

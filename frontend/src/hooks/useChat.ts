@@ -20,8 +20,7 @@ import { convertMessageMapToArray } from '../utils/MessageUtils';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
 import { useMachine } from '@xstate/react';
-import { agentThinkingState } from '../features/agent/xstates/agentThink';
-import { reasoningState } from '../features/reasoning/xstates/reasoningState';
+import { streamingStateMachine } from './xstates/streaming';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -237,8 +236,7 @@ const useChatState = create<{
 });
 
 const useChat = () => {
-  const [agentThinking, agentSend] = useMachine(agentThinkingState);
-  const [reasoningThinking, reasoningSend, reasoningActor] = useMachine(reasoningState);
+  const [streamingState, streamingSend, streamingActor] = useMachine(streamingStateMachine);
 
   const {
     chats,
@@ -458,21 +456,16 @@ const useChat = () => {
     // post message
     const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
-        agentSend({ type: 'wakeup' });
-        reasoningSend({ type: 'start' });
         postStreaming({
           input,
           dispatch: (c: string) => {
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
-          thinkingDispatch: (event) => {
-            agentSend(event);
+          streamingDispatch: (event) => {
+            streamingSend(event);
           },
-          reasoningDispatch: (event) => {
-            reasoningSend(event);
-          },
-          getReasoning: () => {
-            return reasoningActor.getSnapshot().context.content;
+          getMessageText: () => {
+            return streamingActor.getSnapshot().context.text;
           },
         })
           .then((message) => {
@@ -550,14 +543,11 @@ const useChat = () => {
       dispatch: (c: string) => {
         editMessage(conversationId, currentMessage.id, currentContentBody + c);
       },
-      thinkingDispatch: (event) => {
-        agentSend(event);
+      streamingDispatch: (event) => {
+        streamingSend(event);
       },
-      reasoningDispatch: (event) => {
-        reasoningSend(event);
-      },
-      getReasoning: () => {
-        return reasoningActor.getSnapshot().context.content;
+      getMessageText: () => {
+        return streamingActor.getSnapshot().context.text;
       },
     })
       .then(() => {
@@ -652,20 +642,16 @@ const useChat = () => {
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
 
-    agentSend({ type: 'wakeup' });
     postStreaming({
       input,
       dispatch: (c: string) => {
         editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
       },
-      thinkingDispatch: (event) => {
-        agentSend(event);
+      streamingDispatch: (event) => {
+        streamingSend(event);
       },
-      reasoningDispatch: (event) => {
-        reasoningSend(event);
-      },
-      getReasoning: () => {
-        return reasoningActor.getSnapshot().context.content;
+      getMessageText: () => {
+        return streamingActor.getSnapshot().context.text;
       },
     })
       .then(() => {
@@ -687,8 +673,7 @@ const useChat = () => {
   }, [messages]);
 
   return {
-    agentThinking,
-    reasoningThinking,
+    streamingState,
     hasError,
     setConversationId,
     conversationId,
