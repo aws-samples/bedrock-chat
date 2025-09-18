@@ -78,6 +78,7 @@ export type ToolResultContentBody = {
 
 export type SimpleMessageContent =
   | TextContent
+  | ReasoningContent
   | ToolUseContent
   | ToolResultContent;
 

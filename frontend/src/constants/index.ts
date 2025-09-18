@@ -104,4 +104,6 @@ export const AVAILABLE_MODEL_KEYS = [
   'llama3-2-3b-instruct',
   'llama3-2-11b-instruct',
   'llama3-2-90b-instruct',
+  'gpt-oss-20b',
+  'gpt-oss-120b',
 ] as const;

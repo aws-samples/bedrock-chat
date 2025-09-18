@@ -32,6 +32,8 @@ type_model_name = Literal[
     "llama3-2-3b-instruct",
     "llama3-2-11b-instruct",
     "llama3-2-90b-instruct",
+    "gpt-oss-20b",
+    "gpt-oss-120b",
 ]
 
 

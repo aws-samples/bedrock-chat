@@ -20,8 +20,7 @@ import { convertMessageMapToArray } from '../utils/MessageUtils';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
 import { useMachine } from '@xstate/react';
-import { agentThinkingState } from '../features/agent/xstates/agentThink';
-import { reasoningState } from '../features/reasoning/xstates/reasoningState';
+import { streamingStateMachine } from './xstates/streaming';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -161,8 +160,8 @@ const useChatState = create<{
           const textContent = draft[id][messageId].content.find(
             (c) => c.contentType === 'text'
           );
-          if (textContent && 'body' in textContent) {
-            (textContent as TextContent).body = content;
+          if (textContent && textContent.body !== content) {
+            textContent.body = content;
           }
         }),
       }));
@@ -237,8 +236,7 @@ const useChatState = create<{
 });
 
 const useChat = () => {
-  const [agentThinking, agentSend] = useMachine(agentThinkingState);
-  const [reasoningThinking, reasoningSend] = useMachine(reasoningState);
+  const [streamingState, streamingSend, streamingActor] = useMachine(streamingStateMachine);
 
   const {
     chats,
@@ -456,27 +454,25 @@ const useChat = () => {
     pushNewMessage(parentMessageId, messageContent);
 
     // post message
-    const postPromise: Promise<string> = new Promise((resolve, reject) => {
+    const postPromise = new Promise<void>((resolve, reject) => {
       if (USE_STREAMING) {
-        agentSend({ type: 'wakeup' });
-        reasoningSend({ type: 'start' });
+        const subscription = streamingActor.subscribe(state => {
+          editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, state.context.text);
+        });
         postStreaming({
           input,
-          dispatch: (c: string) => {
-            editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
-          },
-          thinkingDispatch: (event) => {
-            agentSend(event);
-          },
-          reasoningDispatch: (event) => {
-            reasoningSend(event);
+          handleStreamingEvent: (event) => {
+            streamingSend(event);
           },
         })
-          .then((message) => {
-            resolve(message);
+          .then(() => {
+            resolve();
           })
           .catch((e) => {
             reject(e);
+          })
+          .finally(() => {
+            subscription.unsubscribe();
           });
       } else {
         conversationApi
@@ -484,7 +480,7 @@ const useChat = () => {
           .then((res) => {
             const textBody = getTextContentBody(res.data.message.content);
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, textBody);
-            resolve(textBody);
+            resolve();
           })
           .catch((e) => {
             reject(e);
@@ -542,16 +538,13 @@ const useChat = () => {
     const currentMessage = messages[messages.length - 1];
 
     // WARNING: Non-streaming is not supported from the UI side as it is planned to be DEPRICATED.
+    const subscription = streamingActor.subscribe(state => {
+      editMessage(conversationId, currentMessage.id, currentContentBody + state.context.text);
+    });
     postStreaming({
       input,
-      dispatch: (c: string) => {
-        editMessage(conversationId, currentMessage.id, currentContentBody + c);
-      },
-      thinkingDispatch: (event) => {
-        agentSend(event);
-      },
-      reasoningDispatch: (event) => {
-        reasoningSend(event);
+      handleStreamingEvent: (event) => {
+        streamingSend(event);
       },
     })
       .then(() => {
@@ -561,6 +554,7 @@ const useChat = () => {
         console.error(e);
       })
       .finally(() => {
+        subscription.unsubscribe();
         setPostingMessage(false);
       });
   };
@@ -646,17 +640,13 @@ const useChat = () => {
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
 
-    agentSend({ type: 'wakeup' });
+    const subscription = streamingActor.subscribe(state => {
+      editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, state.context.text);
+    });
     postStreaming({
       input,
-      dispatch: (c: string) => {
-        editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
-      },
-      thinkingDispatch: (event) => {
-        agentSend(event);
-      },
-      reasoningDispatch: (event) => {
-        reasoningSend(event);
+      handleStreamingEvent: (event) => {
+        streamingSend(event);
       },
     })
       .then(() => {
@@ -668,6 +658,7 @@ const useChat = () => {
         removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
+        subscription.unsubscribe();
         setPostingMessage(false);
       });
   };
@@ -678,8 +669,7 @@ const useChat = () => {
   }, [messages]);
 
   return {
-    agentThinking,
-    reasoningThinking,
+    streamingState,
     hasError,
     setConversationId,
     conversationId,

@@ -71,6 +71,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
       "8000:0000:0000:0000:0000:0000:0000:0000/1",
     ]),
 
+  // Optional list of allowed countries specified as ISO 3166-1 alpha-2 codes
+  allowedCountries: z.array(z.string()).default([]),
+
   // Authentication and user management
   identityProviders: z
     .unknown()
@@ -205,6 +208,7 @@ export function resolveBedrockChatParameters(
     allowedIpV6AddressRanges: app.node.tryGetContext(
       "allowedIpV6AddressRanges"
     ),
+    allowedCountries: app.node.tryGetContext("allowedCountries"),
     identityProviders: app.node.tryGetContext("identityProviders"),
     userPoolDomainPrefix: app.node.tryGetContext("userPoolDomainPrefix"),
     allowedSignUpEmailDomains: app.node.tryGetContext(

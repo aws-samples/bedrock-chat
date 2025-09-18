@@ -190,6 +190,9 @@ BEDROCK_PRICING = {
         "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+        # OpenAI GPT-OSS models
+        "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
+        "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},
     },
     "ap-northeast-1": {},
     "default": {
@@ -266,6 +269,9 @@ BEDROCK_PRICING = {
         "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+        # OpenAI GPT-OSS models
+        "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
+        "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},
     },
     # EU regions (eu-central-1, eu-west-1, eu-west-3)
     "eu-central-1": {

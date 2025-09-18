@@ -38,7 +38,14 @@ from mypy_boto3_bedrock_runtime.type_defs import (
     ToolUseBlockOutputTypeDef,
     ToolUseBlockTypeDef,
 )
-from pydantic import BaseModel, Discriminator, Field, JsonValue, field_validator
+from pydantic import (
+    BaseModel,
+    Discriminator,
+    Field,
+    JsonValue,
+    field_validator,
+    model_validator,
+)
 
 if TYPE_CHECKING:
     from app.agents.tools.agent_tool import ToolRunResult
@@ -690,6 +697,29 @@ class MessageModel(BaseModel):
             used_chunks=None,
             thinking_log=None,
         )
+
+    @model_validator(mode="after")
+    def check_duplicated_reasoning_content(self) -> Self:
+        """
+        There is a possibility that duplicate `ReasoningContentModel` is recorded in DynamoDB.
+        So delete `ReasoningContentModel`s in `content` that has the same one in `thinking_log`.
+        """
+        if self.thinking_log:
+            self.content = [
+                content
+                for content in self.content
+                if not (
+                    isinstance(content, ReasoningContentModel)
+                    and any(
+                        isinstance(log_content, ReasoningContentModel)
+                        and log_content.text == content.text
+                        for log in self.thinking_log
+                        for log_content in log.content
+                    )
+                )
+            ]
+
+        return self
 
 
 class ConversationModel(BaseModel):

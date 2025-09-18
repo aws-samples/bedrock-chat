@@ -116,6 +116,7 @@ export const ToolList = () => {
   return <AgentToolList
     messageId="message_tl"
     tools={{
+      reasoning: 'ユーザーは東京の天気を知りたがっています。internet_searchツールを利用して東京の天気を調べてみましょう。',
       thought: '東京の天気について以下のことがわかりました。\n- search result 1[^tool1_tl@0]\n- search result 2[^tool1_tl@1]\n- search result 3[^tool1_tl@2]',
       tools: {
         tool1_tl: {

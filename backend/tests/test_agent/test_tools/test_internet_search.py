@@ -15,8 +15,8 @@ class TestInternetSearchTool(unittest.TestCase):
         # query = "Amazon Stock Price Today"
         query = "東京 焼肉"
         time_limit = "d"
-        country = "jp-jp"
-        arg = InternetSearchInput(query=query, time_limit=time_limit, country=country)
+        locale = "jp-jp"
+        arg = InternetSearchInput(query=query, time_limit=time_limit, locale=locale)
         response = internet_search_tool.run(
             tool_use_id="dummy",
             input=arg.model_dump(),
@@ -59,6 +59,34 @@ class TestInternetSearchTool(unittest.TestCase):
         print(f"Original length: {len(test_content)}")
         print(f"Summary length: {len(summary)}")
         print(f"Summary: {summary[:200]}...")
+
+    def test_locale_validator(self):
+        """Test that the locale validator uses the default value correctly"""
+        # Test valid locale - should pass through unchanged
+        valid_input = InternetSearchInput(query="test", locale="fr-ca", time_limit="")
+        self.assertEqual(valid_input.locale, "fr-ca")
+
+        # Test invalid locale (no hyphen) - should use default
+        invalid_input = InternetSearchInput(
+            query="test", locale="invalid", time_limit=""
+        )
+        self.assertEqual(invalid_input.locale, "en-us")  # Should use the default
+
+        # Test empty locale - should use default
+        empty_input = InternetSearchInput(query="test", locale="", time_limit="")
+        self.assertEqual(empty_input.locale, "en-us")  # Should use the default
+
+        # Test locale with multiple hyphens - should use default
+        multi_hyphen_input = InternetSearchInput(
+            query="test", locale="en-us-west", time_limit=""
+        )
+        self.assertEqual(multi_hyphen_input.locale, "en-us")  # Should use the default
+
+        # Test None locale - should use default
+        none_input = InternetSearchInput(
+            query="test", time_limit=""
+        )  # locale not provided
+        self.assertEqual(none_input.locale, "en-us")  # Should use the default
 
 
 if __name__ == "__main__":

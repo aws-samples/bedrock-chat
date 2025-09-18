@@ -127,6 +127,16 @@ const translation = {
         description:
           'Large multimodal model with advanced image understanding and visual reasoning capabilities for sophisticated visual intelligence applications.',
       },
+      'gpt-oss-20b': {
+        label: 'GPT-OSS 20B',
+        description:
+          'Open-weight 20B parameter model with 128K context window and reasoning capabilities.',
+      },
+      'gpt-oss-120b': {
+        label: 'GPT-OSS 120B',
+        description:
+          'Open-weight 120B parameter model with 128K context window and advanced reasoning capabilities.',
+      },
     },
     agent: {
       label: 'Agent',

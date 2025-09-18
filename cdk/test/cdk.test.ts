@@ -50,6 +50,8 @@ describe("Bedrock Chat Stack Test", () => {
         userPoolDomainPrefix: domainPrefix,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
+        allowedIpV4AddressRanges: [""],
+        allowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
         selfSignUpEnabled: true,
@@ -128,6 +130,8 @@ describe("Bedrock Chat Stack Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
         autoJoinUserGroups: [],
+        allowedIpV4AddressRanges: [""],
+        allowedIpV6AddressRanges: [""],
         selfSignUpEnabled: true,
         enableIpV6: true,
         documentBucket: bedrockRegionResourcesStack.documentBucket,
@@ -196,6 +200,8 @@ describe("Bedrock Chat Stack Test", () => {
       autoJoinUserGroups: [],
       selfSignUpEnabled: true,
       enableIpV6: true,
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
       documentBucket: bedrockRegionResourcesStack.documentBucket,
       enableRagReplicas: false,
       enableBedrockCrossRegionInference: false,
@@ -244,6 +250,8 @@ describe("Bedrock Chat Stack Test", () => {
       documentBucket: bedrockRegionResourcesStack.documentBucket,
       enableRagReplicas: false,
       enableBedrockCrossRegionInference: false,
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
       enableLambdaSnapStart: true,
       alternateDomainName: "chat.example.com",
       hostedZoneId: "Z0123456789ABCDEF",
@@ -325,6 +333,8 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
       alternateDomainName: "",
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
       hostedZoneId: "",
       enableBotStore: true,
       enableBotStoreReplicas: false,
@@ -384,6 +394,8 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
       alternateDomainName: "chat.example.com",
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
       hostedZoneId: "Z0123456789ABCDEF",
       enableBotStore: true,
       enableBotStoreReplicas: false,
@@ -458,6 +470,8 @@ describe("Bedrock Chat Stack Test", () => {
       autoJoinUserGroups: [],
       selfSignUpEnabled: true,
       enableIpV6: true,
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
       documentBucket: bedrockRegionResourcesStack.documentBucket,
       enableRagReplicas: false,
       enableBedrockCrossRegionInference: false,
@@ -538,27 +552,27 @@ describe("Bedrock Knowledge Base Stack", () => {
             params.analyzer !== undefined
               ? JSON.parse(params.analyzer)
               : {
-                  character_filters: {
-                    L: [
-                      {
-                        S: "icu_normalizer",
-                      },
-                    ],
-                  },
-                  token_filters: {
-                    L: [
-                      {
-                        S: "kuromoji_baseform",
-                      },
-                      {
-                        S: "kuromoji_part_of_speech",
-                      },
-                    ],
-                  },
-                  tokenizer: {
-                    S: "kuromoji_tokenizer",
-                  },
+                character_filters: {
+                  L: [
+                    {
+                      S: "icu_normalizer",
+                    },
+                  ],
                 },
+                token_filters: {
+                  L: [
+                    {
+                      S: "kuromoji_baseform",
+                    },
+                    {
+                      S: "kuromoji_part_of_speech",
+                    },
+                  ],
+                },
+                tokenizer: {
+                  S: "kuromoji_tokenizer",
+                },
+              },
         },
       },
       embeddings_model: {

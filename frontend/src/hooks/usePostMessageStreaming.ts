@@ -2,9 +2,8 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { PostMessageRequest } from '../@types/conversation';
 import { create } from 'zustand';
 import i18next from 'i18next';
-import { AgentEvent } from '../features/agent/xstates/agentThink';
+import { StreamingEvent } from './xstates/streaming';
 import { PostStreamingStatus } from '../constants';
-import { ReasoningEvent } from '../features/reasoning/xstates/reasoningState';
 
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
 const CHUNK_SIZE = 32 * 1024; //32KB
@@ -13,15 +12,15 @@ const usePostMessageStreaming = create<{
   post: (params: {
     input: PostMessageRequest;
     hasKnowledge?: boolean;
-    dispatch: (completion: string) => void;
-    thinkingDispatch: (event: AgentEvent) => void;
-    reasoningDispatch: (event: ReasoningEvent) => void;
-  }) => Promise<string>;
+    handleStreamingEvent: (event: StreamingEvent) => void;
+  }) => Promise<void>;
   errorDetail: string | null;
 }>((set) => {
   return {
     errorDetail: null,
-    post: async ({ input, dispatch, thinkingDispatch, reasoningDispatch }) => {
+    post: async ({ input, handleStreamingEvent }) => {
+      handleStreamingEvent({ type: 'wakeup' });
+
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
         ...input,
@@ -38,8 +37,7 @@ const usePostMessageStreaming = create<{
       }
 
       let receivedCount = 0;
-      return new Promise<string>((resolve, reject) => {
-        let completion = '';
+      return new Promise<void>((resolve, reject) => {
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
@@ -94,53 +92,46 @@ const usePostMessageStreaming = create<{
             if (data.status) {
               console.log('[FRONTEND_WS] Processing status:', data.status);
               switch (data.status) {
-                case PostStreamingStatus.AGENT_THINKING:
-                  if (completion.length > 0) {
-                    dispatch('');
-                    thinkingDispatch({
-                      type: 'thought',
-                      thought: completion,
-                    });
-                    completion = '';
-                  }
+                case PostStreamingStatus.AGENT_THINKING: {
                   Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
                     const typedToolInfo = toolInfo as {
                       name: string;
                       input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
                     };
-                    thinkingDispatch({
-                      type: 'go-on',
+                    handleStreamingEvent({
+                      type: 'tool-use',
                       toolUseId: toolUseId,
                       name: typedToolInfo.name,
                       input: typedToolInfo.input,
                     });
                   });
                   break;
+                }
                 case PostStreamingStatus.AGENT_TOOL_RESULT:
-                  thinkingDispatch({
+                  handleStreamingEvent({
                     type: 'tool-result',
                     toolUseId: data.result.toolUseId,
                     status: data.result.status,
                   });
                   break;
                 case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
-                  thinkingDispatch({
+                  handleStreamingEvent({
                     type: 'related-document',
                     toolUseId: data.result.toolUseId,
                     relatedDocument: data.result.relatedDocument,
                   });
                   break;
                 case PostStreamingStatus.REASONING:
-                  reasoningDispatch({
-                    type: 'write',
-                    content: data.completion,
+                  handleStreamingEvent({
+                    type: 'reasoning',
+                    reasoning: data.completion,
                   });
                   break;
                 case PostStreamingStatus.STREAMING:
-                  if (data.completion || data.completion === '') {
-                    completion += data.completion;
-                    dispatch(completion);
-                  }
+                  handleStreamingEvent({
+                    type: 'text',
+                    text: data.completion,
+                  });
                   break;
                 case PostStreamingStatus.STREAMING_END:
                   console.log(
@@ -148,19 +139,13 @@ const usePostMessageStreaming = create<{
                   );
                   try {
                     console.log(
-                      '[FRONTEND_WS] Calling thinkingDispatch goodbye'
+                      '[FRONTEND_WS] Calling handleStreamingEvent goodbye'
                     );
-                    thinkingDispatch({
+                    handleStreamingEvent({
                       type: 'goodbye',
                     });
                     console.log(
-                      '[FRONTEND_WS] thinkingDispatch goodbye completed'
-                    );
-
-                    console.log('[FRONTEND_WS] Calling reasoningDispatch end');
-                    reasoningDispatch({ type: 'end' });
-                    console.log(
-                      '[FRONTEND_WS] reasoningDispatch end completed'
+                      '[FRONTEND_WS] handleStreamingEvent goodbye completed'
                     );
 
                     console.log('[FRONTEND_WS] Closing WebSocket');
@@ -185,7 +170,9 @@ const usePostMessageStreaming = create<{
                     data.reason || i18next.t('error.predict.invalidResponse')
                   );
                 default:
-                  dispatch('');
+                  handleStreamingEvent({
+                    type: 'reset',
+                  });
                   break;
               }
             } else {
@@ -214,7 +201,7 @@ const usePostMessageStreaming = create<{
             event.code,
             event.reason
           );
-          resolve(completion);
+          resolve();
         };
       });
     },

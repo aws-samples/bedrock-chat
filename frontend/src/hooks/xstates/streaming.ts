@@ -1,41 +1,38 @@
 import { setup, assign } from 'xstate';
 import { produce } from 'immer';
-import { AgentToolResultContent, RelatedDocument } from '../../../@types/conversation';
 
-export type AgentToolsProps = {
-  thought?: string;
-  tools: {
-    // Note: key is toolUseId
-    [key: string]: AgentToolUse;
-  };
-};
+import { AgentToolsProps, AgentToolState } from '../../features/agent/types';
+import { RelatedDocument } from '../../@types/conversation';
 
-export type AgentToolUse = {
-  name: string;
-  status: AgentToolState;
-  input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
-  resultContents?: AgentToolResultContent[];
-  relatedDocuments?: RelatedDocument[];
-};
-
-export const AgentState = {
+export const StreamingState = {
   SLEEPING: 'sleeping',
-  THINKING: 'thinking',
+  STREAMING: 'streaming',
   LEAVING: 'leaving',
 } as const;
 
-export type AgentToolState = 'running' | 'success' | 'error';
+export type StreamingState = (typeof StreamingState)[keyof typeof StreamingState];
 
-export type AgentState = (typeof AgentState)[keyof typeof AgentState];
+export type StreamingContext = {
+  /** ReasoningContent in assistant message itself. */
+  reasoning: string;
+  /** TextContent in assistant message itself. */
+  text: string;
+  tools: AgentToolsProps[];
+  relatedDocuments: RelatedDocument[];
+};
 
-export type AgentEvent =
+export type StreamingEvent =
   | { type: 'wakeup' }
   | {
-      type: 'thought';
-      thought: string;
+      type: 'reasoning';
+      reasoning: string;
     }
   | {
-      type: 'go-on';
+      type: 'text';
+      text: string;
+    }
+  | {
+      type: 'tool-use';
       toolUseId: string;
       name: string;
       input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -50,48 +47,55 @@ export type AgentEvent =
       toolUseId: string;
       relatedDocument: RelatedDocument;
     }
+  | { type: 'reset' }
   | { type: 'goodbye' };
 
-export type AgentEventKeys = AgentEvent['type'];
-
-export const agentThinkingState = setup({
+export const streamingStateMachine = setup({
   types: {
-    context: {} as {
-      tools: AgentToolsProps[];
-      relatedDocuments: RelatedDocument[];
-    },
-    events: {} as AgentEvent,
+    context: {} as StreamingContext,
+    events: {} as StreamingEvent,
   },
   actions: {
     reset: assign({
+      reasoning: '',
       tools: [],
       relatedDocuments: [],
     }),
-    updateThought: assign({
-      tools: ({ context, event }) => produce(context.tools, draft => {
-        if (event.type === 'thought') {
-          if (draft.length > 0 && draft[draft.length - 1].thought == null) {
-            draft[draft.length - 1].thought = event.thought;
-          } else {
-            draft.push({
-              thought: event.thought,
-              tools: {},
-            });
-          }
-        }
-      }),
+    appendReasoning: assign({
+      reasoning: ({ context, event }) =>
+        event.type === 'reasoning'
+          ? context.reasoning + event.reasoning
+          : context.reasoning,
     }),
-    addTool: assign({
-      tools: ({ context, event }) => produce(context.tools, draft => {
-        if (event.type === 'go-on') {
-          if (draft.length > 0) {
-            draft[draft.length - 1].tools[event.toolUseId] = {
+    appendText: assign({
+      text: ({ context, event }) =>
+        event.type === 'text'
+          ? context.text + event.text
+          : context.text,
+    }),
+    addTool: assign(
+      ({ context, event }) => produce(context, draft => {
+        if (event.type === 'tool-use') {
+          // If reasoing is streamed before the tool arrives, let it be the tool's reasoning.
+          const reasoning = draft.reasoning ? draft.reasoning : undefined;
+          draft.reasoning = '';
+
+          // If text is streamed before the tool arrives, let it be the tool's thought.
+          const text = draft.text ? draft.text : undefined;
+          draft.text = '';
+
+          if (draft.tools.length > 0 && text == null && reasoning == null) {
+            // If there is no reasoning or thought, simply add the tool.
+            draft.tools[draft.tools.length - 1].tools[event.toolUseId] = {
               name: event.name,
               input: event.input,
               status: 'running',
             };
           } else {
-            draft.push({
+            // Otherwise, append the tool with the reasoning or the thought.
+            draft.tools.push({
+              reasoning: reasoning,
+              thought: text,
               tools: {
                 [event.toolUseId]: {
                   name: event.name,
@@ -103,7 +107,7 @@ export const agentThinkingState = setup({
           }
         }
       }),
-    }),
+    ),
     updateToolResult: assign({
       tools: ({ context, event }) => produce(context.tools, draft => {
         if (event.type === 'tool-result') {
@@ -130,13 +134,11 @@ export const agentThinkingState = setup({
         draft.relatedDocuments.push(event.relatedDocument);
       }
     })),
-    close: assign({
-      tools: [],
-      relatedDocuments: [],
-    }),
   },
 }).createMachine({
   context: {
+    reasoning: '',
+    text: '',
     tools: [],
     relatedDocuments: [],
     areAllToolsSuccessful: false,
@@ -147,16 +149,19 @@ export const agentThinkingState = setup({
       on: {
         wakeup: {
           actions: 'reset',
-          target: 'thinking',
+          target: 'streaming',
         },
       },
     },
-    thinking: {
+    streaming: {
       on: {
-        'thought': {
-          actions: 'updateThought',
+        reasoning: {
+          actions: 'appendReasoning',
         },
-        'go-on': {
+        text: {
+          actions: 'appendText',
+        },
+        'tool-use': {
           actions: 'addTool',
         },
         'tool-result': {
@@ -165,8 +170,11 @@ export const agentThinkingState = setup({
         'related-document': {
           actions: ['addRelatedDocument'],
         },
+        reset: {
+          actions: 'reset',
+        },
         goodbye: {
-          actions: 'close',
+          actions: 'reset',
           target: 'leaving',
         },
       },

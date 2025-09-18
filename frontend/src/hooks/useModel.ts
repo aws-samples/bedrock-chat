@@ -208,6 +208,23 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
+      // OpenAI GPT-OSS models
+      {
+        modelId: 'gpt-oss-20b',
+        label: t('model.gpt-oss-20b.label'),
+        description: t('model.gpt-oss-20b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+        forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
+      },
+      {
+        modelId: 'gpt-oss-120b',
+        label: t('model.gpt-oss-120b.label'),
+        description: t('model.gpt-oss-120b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+        forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
+      },
       // Mistral
       {
         modelId: 'mistral-7b-instruct',

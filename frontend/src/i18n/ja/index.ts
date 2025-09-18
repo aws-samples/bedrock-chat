@@ -128,6 +128,16 @@ const translation: typeof en = {
         description:
           '高度な画像理解と視覚的推論機能を備えた大規模マルチモーダルモデル。複雑な推論と画像テキスト検索に優れた性能を発揮する',
       },
+      'gpt-oss-20b': {
+        label: 'GPT-OSS 20B',
+        description:
+          '128Kコンテキストウィンドウと推論機能を持つオープンウェイト20Bパラメータモデル',
+      },
+      'gpt-oss-120b': {
+        label: 'GPT-OSS 120B',
+        description:
+          '128Kコンテキストウィンドウと高度な推論機能を持つオープンウェイト120Bパラメータモデル',
+      },
     },
     agent: {
       label: 'エージェント',
