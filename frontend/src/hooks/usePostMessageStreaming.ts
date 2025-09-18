@@ -12,16 +12,14 @@ const usePostMessageStreaming = create<{
   post: (params: {
     input: PostMessageRequest;
     hasKnowledge?: boolean;
-    dispatch: (completion: string) => void;
-    streamingDispatch: (event: StreamingEvent) => void;
-    getMessageText: () => string;
-  }) => Promise<string>;
+    handleStreamingEvent: (event: StreamingEvent) => void;
+  }) => Promise<void>;
   errorDetail: string | null;
 }>((set) => {
   return {
     errorDetail: null,
-    post: async ({ input, dispatch, streamingDispatch, getMessageText }) => {
-      streamingDispatch({ type: 'wakeup' });
+    post: async ({ input, handleStreamingEvent }) => {
+      handleStreamingEvent({ type: 'wakeup' });
 
       const token = (await fetchAuthSession()).tokens?.idToken?.toString();
       const payloadString = JSON.stringify({
@@ -39,7 +37,7 @@ const usePostMessageStreaming = create<{
       }
 
       let receivedCount = 0;
-      return new Promise<string>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
@@ -91,13 +89,12 @@ const usePostMessageStreaming = create<{
             if (data.status) {
               switch (data.status) {
                 case PostStreamingStatus.AGENT_THINKING: {
-                  dispatch('');
                   Object.entries(data.log).forEach(([toolUseId, toolInfo]) => {
                     const typedToolInfo = toolInfo as {
                       name: string;
                       input: { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
                     };
-                    streamingDispatch({
+                    handleStreamingEvent({
                       type: 'tool-use',
                       toolUseId: toolUseId,
                       name: typedToolInfo.name,
@@ -107,34 +104,33 @@ const usePostMessageStreaming = create<{
                   break;
                 }
                 case PostStreamingStatus.AGENT_TOOL_RESULT:
-                  streamingDispatch({
+                  handleStreamingEvent({
                     type: 'tool-result',
                     toolUseId: data.result.toolUseId,
                     status: data.result.status,
                   });
                   break;
                 case PostStreamingStatus.AGENT_RELATED_DOCUMENT:
-                  streamingDispatch({
+                  handleStreamingEvent({
                     type: 'related-document',
                     toolUseId: data.result.toolUseId,
                     relatedDocument: data.result.relatedDocument,
                   });
                   break;
                 case PostStreamingStatus.REASONING:
-                  streamingDispatch({
+                  handleStreamingEvent({
                     type: 'reasoning',
                     reasoning: data.completion,
                   });
                   break;
                 case PostStreamingStatus.STREAMING:
-                  streamingDispatch({
+                  handleStreamingEvent({
                     type: 'text',
                     text: data.completion,
                   });
-                  dispatch(getMessageText());
                   break;
                 case PostStreamingStatus.STREAMING_END:
-                  streamingDispatch({
+                  handleStreamingEvent({
                     type: 'goodbye',
                   });
 
@@ -151,7 +147,9 @@ const usePostMessageStreaming = create<{
                     data.reason || i18next.t('error.predict.invalidResponse')
                   );
                 default:
-                  dispatch('');
+                  handleStreamingEvent({
+                    type: 'reset',
+                  });
                   break;
               }
             } else {
@@ -171,7 +169,7 @@ const usePostMessageStreaming = create<{
           reject(i18next.t('error.predict.general'));
         };
         ws.onclose = () => {
-          resolve(getMessageText());
+          resolve();
         };
       });
     },
