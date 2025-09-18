@@ -65,21 +65,27 @@ class TestInternetSearchTool(unittest.TestCase):
         # Test valid locale - should pass through unchanged
         valid_input = InternetSearchInput(query="test", locale="fr-ca", time_limit="")
         self.assertEqual(valid_input.locale, "fr-ca")
-        
+
         # Test invalid locale (no hyphen) - should use default
-        invalid_input = InternetSearchInput(query="test", locale="invalid", time_limit="")
+        invalid_input = InternetSearchInput(
+            query="test", locale="invalid", time_limit=""
+        )
         self.assertEqual(invalid_input.locale, "en-us")  # Should use the default
-        
+
         # Test empty locale - should use default
         empty_input = InternetSearchInput(query="test", locale="", time_limit="")
         self.assertEqual(empty_input.locale, "en-us")  # Should use the default
-        
+
         # Test locale with multiple hyphens - should use default
-        multi_hyphen_input = InternetSearchInput(query="test", locale="en-us-west", time_limit="")
+        multi_hyphen_input = InternetSearchInput(
+            query="test", locale="en-us-west", time_limit=""
+        )
         self.assertEqual(multi_hyphen_input.locale, "en-us")  # Should use the default
-        
+
         # Test None locale - should use default
-        none_input = InternetSearchInput(query="test", time_limit="")  # locale not provided
+        none_input = InternetSearchInput(
+            query="test", time_limit=""
+        )  # locale not provided
         self.assertEqual(none_input.locale, "en-us")  # Should use the default
 
 

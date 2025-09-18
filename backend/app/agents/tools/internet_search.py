@@ -17,7 +17,7 @@ class InternetSearchInput(BaseModel):
     query: str = Field(description="The query to search for on the internet.")
     locale: str = Field(
         default="en-us",
-        description="The country code and language code for the search. Must be `{language}-{country}` for example `jp-jp` (Japanese - Japan), `zh-cn` (Chinese - China), `en-ca` (English - Canada), `fr-ca` (French - Canada), `en-nz` (English - New Zealand), etc. If empty the default is `en-us`."
+        description="The country code and language code for the search. Must be `{language}-{country}` for example `jp-jp` (Japanese - Japan), `zh-cn` (Chinese - China), `en-ca` (English - Canada), `fr-ca` (French - Canada), `en-nz` (English - New Zealand), etc. If empty the default is `en-us`.",
     )
     time_limit: str = Field(
         description="Retrieve only the most recent results, for example `1w` only returns the results from the last week. Units are 'd' (day), 'w' (week), 'm' (month), 'y' (year). Use empty string to retrieve all results."
@@ -131,7 +131,9 @@ def _search_with_duckduckgo(query: str, time_limit: str, locale: str) -> list:
 def _search_with_firecrawl(
     query: str, api_key: str, locale: str, max_results: int = 10
 ) -> list:
-    logger.info(f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}, Locale: {locale}")
+    logger.info(
+        f"Searching with Firecrawl. Query: {query}, Max Results: {max_results}, Locale: {locale}"
+    )
 
     try:
         app = FirecrawlApp(api_key=api_key)
