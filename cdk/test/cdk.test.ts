@@ -358,6 +358,105 @@ describe("Bedrock Chat Stack Test", () => {
     });
   });
 
+  test("Frontend WAF disabled => no WebACLId on CloudFront", () => {
+    const app = new cdk.App();
+
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStackNoWaf",
+      {
+        env: { region: "us-east-1" },
+        crossRegionReferences: true,
+      }
+    );
+
+    const stack = new BedrockChatStack(app, "NoWafStack", {
+      env: { region: "us-west-2" },
+      envName: "test",
+      envPrefix: "test-",
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      // Simulate WAF disabled: no ARN provided from bin
+      webAclId: "",
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
+      allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
+      selfSignUpEnabled: true,
+      enableIpV6: true,
+      documentBucket: bedrockRegionResourcesStack.documentBucket,
+      enableRagReplicas: false,
+      enableBedrockCrossRegionInference: false,
+      enableLambdaSnapStart: true,
+      enableBotStore: true,
+      enableBotStoreReplicas: false,
+      botStoreLanguage: "en",
+      tokenValidMinutes: 60,
+    });
+
+    const template = Template.fromStack(stack);
+
+    template.hasResourceProperties("AWS::CloudFront::Distribution", {
+      DistributionConfig: {
+        WebACLId: Match.absent(),
+      },
+    });
+  });
+
+  test("Frontend WAF enabled => WebACLId set on CloudFront", () => {
+    const app = new cdk.App();
+
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStackWaf",
+      {
+        env: { region: "us-east-1" },
+        crossRegionReferences: true,
+      }
+    );
+
+    const wafArn = "arn:aws:wafv2:us-east-1:123456789012:global/webacl/test/uuid";
+
+    const stack = new BedrockChatStack(app, "WithWafStack", {
+      env: { region: "us-west-2" },
+      envName: "test",
+      envPrefix: "test-",
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: wafArn,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      allowedIpV4AddressRanges: [""],
+      allowedIpV6AddressRanges: [""],
+      allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
+      selfSignUpEnabled: true,
+      enableIpV6: true,
+      documentBucket: bedrockRegionResourcesStack.documentBucket,
+      enableRagReplicas: false,
+      enableBedrockCrossRegionInference: false,
+      enableLambdaSnapStart: true,
+      enableBotStore: true,
+      enableBotStoreReplicas: false,
+      botStoreLanguage: "en",
+      tokenValidMinutes: 60,
+    });
+
+    const template = Template.fromStack(stack);
+
+    template.hasResourceProperties("AWS::CloudFront::Distribution", {
+      DistributionConfig: {
+        WebACLId: wafArn,
+      },
+    });
+  });
+
   test("custom domain configuration", () => {
     const app = new cdk.App();
 

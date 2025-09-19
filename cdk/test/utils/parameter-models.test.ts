@@ -157,6 +157,7 @@ describe("resolveBedrockChatParameters", () => {
         "0.0.0.0/1",
         "128.0.0.0/1",
       ]); // default value
+      expect(result.enableFrontendIpv6).toBe(true); // default value
     });
 
     test("should correctly parse all parameters when specified", () => {
@@ -166,6 +167,7 @@ describe("resolveBedrockChatParameters", () => {
         bedrockRegion: "us-west-2",
         allowedIpV4AddressRanges: ["192.168.0.0/16"],
         allowedIpV6AddressRanges: ["2001:db8::/32"],
+        enableFrontendIpv6: false,
         identityProviders: [{ service: "google", secretName: "GoogleSecret" }],
         userPoolDomainPrefix: "my-app",
         allowedSignUpEmailDomains: ["example.com"],
@@ -188,6 +190,7 @@ describe("resolveBedrockChatParameters", () => {
       expect(result.bedrockRegion).toBe("us-west-2");
       expect(result.allowedIpV4AddressRanges).toEqual(["192.168.0.0/16"]);
       expect(result.allowedIpV6AddressRanges).toEqual(["2001:db8::/32"]);
+      expect(result.enableFrontendIpv6).toBe(false);
       expect(result.identityProviders).toEqual([
         { service: "google", secretName: "GoogleSecret" },
       ]);
@@ -346,6 +349,7 @@ describe("resolveBedrockChatParameters", () => {
         "0000:0000:0000:0000:0000:0000:0000:0000/1",
         "8000:0000:0000:0000:0000:0000:0000:0000/1",
       ],
+      enableFrontendIpv6: false,
       identityProviders: [],
       userPoolDomainPrefix: "",
       allowedSignUpEmailDomains: [],
@@ -377,6 +381,7 @@ describe("resolveBedrockChatParameters", () => {
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1",
     ]);
+    expect(result.enableFrontendIpv6).toBe(false);
     expect(result.identityProviders).toEqual([]);
     expect(result.userPoolDomainPrefix).toBe("");
     expect(result.allowedSignUpEmailDomains).toEqual([]);

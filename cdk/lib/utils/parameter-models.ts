@@ -51,7 +51,14 @@ function getEnvVar(name: string, defaultValue?: string): string | undefined {
  */
 const BedrockChatParametersSchema = BaseParametersSchema.extend({
 
-  // IP address restrictions
+  // Frontend WAF toggle (CloudFront scope)
+  // Set to 'false' if you're unable to deploy resources in us-east-1
+  enableFrontendWaf: z.boolean().default(true),
+
+  // Frontend (CloudFront) IPv6 toggle
+  enableFrontendIpv6: z.boolean().default(true),
+
+  // IP address restrictions - enforced by WAF if enabled
   allowedIpV4AddressRanges: z
     .array(z.string())
     .default(["0.0.0.0/1", "128.0.0.0/1"]),
@@ -202,6 +209,8 @@ export function resolveBedrockChatParameters(
     envName,
     envPrefix,
     bedrockRegion: app.node.tryGetContext("bedrockRegion"),
+    enableFrontendWaf: app.node.tryGetContext("enableFrontendWaf"),
+    enableFrontendIpv6: app.node.tryGetContext("enableFrontendIpv6"),
     allowedIpV4AddressRanges: app.node.tryGetContext(
       "allowedIpV4AddressRanges"
     ),

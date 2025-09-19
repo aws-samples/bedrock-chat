@@ -500,6 +500,26 @@ By default, this sample does not restrict the domains for sign-up email addresse
 
 This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
 
+### Optional Frontend WAF
+
+For CloudFront distributions, AWS WAF WebACLs must be created in the us-east-1 region. In some organizations, creating resources outside the primary region is restricted by policy. In such environments, CDK deployment can fail when attempting to provision the Frontend WAF in us-east-1.
+
+To accommodate these restrictions, the Frontend WAF stack is optional. When disabled, the CloudFront distribution is deployed without a WebACL. This means you won’t have IP allow/deny controls at the frontend edge. Authentication and all other application controls continue to work as usual. Note that this setting only affects the Frontend WAF (CloudFront scope); the Published API WAF (regional) remains unaffected.
+
+To disable the Frontend WAF set the following in `parameter.ts` (Recommended Type-Safe Method):
+
+```ts
+bedrockChatParams.set("default", {
+  enableFrontendWaf: false
+});
+```
+
+Or if using the legacy `cdk/cdk.json` set the following:
+
+```json
+"enableFrontendWaf": false
+``` 
+
 ### Add new users to groups automatically
 
 This sample has the following groups to give permissions to users:
@@ -608,6 +628,18 @@ bedrockChatParams.set("default", {
   allowedCountries: ["NZ", "AU"],
 });
 ```
+
+### Disable IPv6 support
+
+The frontend gets both IP and IPv6 addresses by default. In some rare
+circumstances, you may need to disable IPv6 support explicitly. To do this, set
+the following parameter in [parameter.ts](./cdk/parameter.ts) or similarly in [cdk.json](./cdk/cdk.json):
+
+```ts
+"enableFrontendIpv6": false
+```
+
+If left unset the IPv6 support will be enabled by default.
 
 ### Local Development
 
