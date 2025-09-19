@@ -58,6 +58,7 @@ export const streamingStateMachine = setup({
   actions: {
     reset: assign({
       reasoning: '',
+      text: '',
       tools: [],
       relatedDocuments: [],
     }),
