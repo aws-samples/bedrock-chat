@@ -461,17 +461,17 @@ class BotModel(BaseModel):
             or len(self.knowledge.sitemap_urls) > 0
             or len(self.knowledge.filenames) > 0
             or len(self.knowledge.s3_urls) > 0
-            or self.has_bedrock_knowledge_base()
+            or self.has_existing_knowledge_base()
         )
 
     def is_agent_enabled(self) -> bool:
         # Always consider agents active, even if they have a knowledge base
         return len(self.agent.tools) > 0 or self.has_knowledge()
 
-    def has_bedrock_knowledge_base(self) -> bool:
-        return self.bedrock_knowledge_base is not None and (
-            self.bedrock_knowledge_base.knowledge_base_id is not None
-            or self.bedrock_knowledge_base.exist_knowledge_base_id is not None
+    def has_existing_knowledge_base(self) -> bool:
+        return (
+            self.bedrock_knowledge_base is not None
+            and self.bedrock_knowledge_base.exist_knowledge_base_id is not None
         )
 
     def is_pinned(self) -> bool:
@@ -812,7 +812,6 @@ class BotMeta(BaseModel):
     last_used_time: Float
     is_starred: bool
     sync_status: type_sync_status
-    has_bedrock_knowledge_base: bool
     # Whether the bot is owned by the user
     owned: bool
 
@@ -852,7 +851,6 @@ class BotMeta(BaseModel):
             last_used_time=item.get("LastUsedTime", item["CreateTime"]),
             is_starred=_is_starred,
             sync_status=item["SyncStatus"],
-            has_bedrock_knowledge_base=bool(item.get("BedrockKnowledgeBase")),
             owned=owned,
             is_origin_accessible=is_origin_accessible,
             shared_scope=item.get("SharedScope", "private"),
@@ -881,7 +879,6 @@ class BotMeta(BaseModel):
             last_used_time=item.get("LastUsedTime", item["CreateTime"]),
             is_starred=_is_starred,
             sync_status=item["SyncStatus"],
-            has_bedrock_knowledge_base=bool(item.get("BedrockKnowledgeBase")),
             owned=owned,
             is_origin_accessible=is_origin_accessible,
             shared_scope="private",
@@ -930,7 +927,6 @@ class BotMeta(BaseModel):
             last_used_time=float(source.get("LastUsedTime", source["CreateTime"])),
             is_starred=source.get("IsStarred", False),
             sync_status=source["SyncStatus"],
-            has_bedrock_knowledge_base=bool(source.get("BedrockKnowledgeBase")),
             owned=source["PK"] == user_id,
             is_origin_accessible=True,  # Always True as it's from direct search result
             shared_scope=source.get("SharedScope", "private"),
