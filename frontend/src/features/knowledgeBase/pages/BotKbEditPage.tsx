@@ -131,6 +131,14 @@ const BotKbEditPage: React.FC = () => {
     'new' | 'existing'
   >('new');
 
+  // When loading an existing bot that already has a knowledge base id(s),
+  // default the radio selection to 'existing' so the UI reflects the bot state.
+  useEffect(() => {
+    if (existKnowledgeBaseId && knowledgeBaseType !== 'existing') {
+      setKnowledgeBaseType('existing');
+    }
+  }, [existKnowledgeBaseId, knowledgeBaseType]);
+
   const disabledKnowledgeEdit = useMemo(() => {
     return !!existKnowledgeBaseId;
   }, [existKnowledgeBaseId]);
