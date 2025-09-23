@@ -205,6 +205,7 @@ const translation = {
         newBot: '建立一个新的 Bot',
         create: '建立',
         edit: '编辑',
+        save: '保存',
         delete: '删除',
         share: '共用',
         apiSettings: 'API 发布设定',

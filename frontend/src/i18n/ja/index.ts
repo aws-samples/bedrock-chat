@@ -442,6 +442,7 @@ const translation: typeof en = {
         newBot: 'ボットを新規作成',
         create: '新規作成',
         edit: '更新',
+        save: '保存',
         delete: '削除',
         share: '共有',
         copy: 'コピー',
