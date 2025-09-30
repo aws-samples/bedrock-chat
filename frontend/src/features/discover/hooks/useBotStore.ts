@@ -1,6 +1,6 @@
 import useBotApi from '../../../hooks/useBotApi';
 import useBotStoreApi from './useBotStoreApi';
-import { BotMeta } from '../../../@types/bot';
+import { BotListItem, BotMeta } from '../../../@types/bot';
 import { useCallback } from 'react';
 
 const useBotStore = () => {
@@ -31,7 +31,7 @@ const useBotStore = () => {
       // Update pinnedBots
       if (pinnedBots) {
         mutatePinnedBots(
-          pinnedBots.map((bot: BotMeta) =>
+          pinnedBots.map((bot: BotListItem) =>
             bot.id === botId ? { ...bot, isStarred } : bot
           ),
           false

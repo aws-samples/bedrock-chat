@@ -9,6 +9,7 @@ const translation = {
       name: 'ACO-gpt',
       nameWithoutClaude: 'ACO-gpt',
       inputMessage: 'Send en melding',
+      pinnedBots: 'Faste boter',
       starredBots: 'Favorittbot',
       recentlyUsedBots: 'Nylig brukte boter',
       conversationHistory: 'Historikk',
@@ -36,6 +37,7 @@ const translation = {
         app: {
           name: 'Bedrock Chat',
           inputMessage: 'Send en melding',
+          pinnedBots: 'Faste boter',
           starredBots: 'Favorittbot',
           recentlyUsedBots: 'Nylig brukte boter',
           conversationHistory: 'Historikk',

@@ -8,6 +8,7 @@ const translation = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: 'Bolehkah Saya Membantu Anda?',
+      pinnedBots: 'Bot yang Disemat',
       starredBots: 'Bot Berbintang',
       recentlyUsedBots: 'Bot Yang Baru Digunakan',
       conversationHistory: 'Sejarah',

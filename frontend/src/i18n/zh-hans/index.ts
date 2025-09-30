@@ -6,6 +6,7 @@ const translation = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: '请输入',
+      pinnedBots: '置顶 Bots',
       starredBots: '我的 Bots 收藏',
       recentlyUsedBots: '最近使用过的 Bots',
       conversationHistory: '交谈纪录',

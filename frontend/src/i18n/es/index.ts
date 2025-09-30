@@ -8,6 +8,7 @@ const translation = {
     app: {
       name: 'Chat Bedrock',
       inputMessage: 'Enviar un mensaje',
+      pinnedBots: 'Bots Fijados',
       starredBots: 'Bots Favoritos',
       recentlyUsedBots: 'Bots Usados Recientemente',
       conversationHistory: 'Historial',

@@ -11,6 +11,7 @@ const translation: typeof en = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: 'お手伝いできることはありますか？',
+      pinnedBots: 'ピン留めボット',
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '最近のチャット',

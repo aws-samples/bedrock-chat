@@ -45,6 +45,7 @@ import IconPinnedBot from './IconPinnedBot';
 type Props = BaseProps & {
   isAdmin: boolean;
   conversations?: ConversationMeta[];
+  pinnedBots?: BotListItem[];
   starredBots?: BotListItem[];
   recentlyUsedUnstarredBots?: BotListItem[];
   updateConversationTitle: (
@@ -202,7 +203,7 @@ const Drawer: React.FC<Props> = (props) => {
   const navigate = useNavigate();
   const { getPageLabel } = usePageLabel();
   const { opened, switchOpen, drawerOptions } = useDrawer();
-  const { conversations, starredBots, recentlyUsedUnstarredBots } = props;
+  const { conversations, pinnedBots, starredBots, recentlyUsedUnstarredBots } = props;
 
   const location = useLocation();
 
@@ -309,6 +310,25 @@ const Drawer: React.FC<Props> = (props) => {
                 labelComponent={getPageLabel('/bot/discover')}
                 onClick={closeSmallDrawer}
               />
+
+              {pinnedBots?.filter((bot) => bot.available).length ? (
+                <ExpandableDrawerGroup
+                  label={t('app.pinnedBots')}
+                  className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                  {pinnedBots
+                    .filter((bot) => bot.available)
+                    .map((bot) => (
+                      <DrawerItem
+                        key={bot.id}
+                        isActive={botId === bot.id && !conversationId}
+                        to={`/bot/${bot.id}`}
+                        icon={<IconPinnedBot showAlways />}
+                        labelComponent={bot.title}
+                        onClick={onClickNewBotChat}
+                      />
+                    ))}
+                </ExpandableDrawerGroup>
+              ) : null}
 
               <ExpandableDrawerGroup
                 label={t('app.starredBots')}
