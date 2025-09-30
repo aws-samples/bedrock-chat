@@ -1,0 +1,22 @@
+<svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0" y1="0" x2="160" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#005276" />
+      <stop offset="0.55" stop-color="#007FAA" />
+      <stop offset="1" stop-color="#232F3E" />
+    </linearGradient>
+    <mask id="logoMask" maskUnits="userSpaceOnUse">
+      <rect width="160" height="40" rx="8" ry="8" fill="white" />
+    </mask>
+  </defs>
+  <g mask="url(#logoMask)">
+    <rect width="160" height="40" fill="url(#logoGradient)" />
+    <circle cx="24" cy="20" r="12" fill="rgba(241,243,243,0.28)" />
+    <circle cx="40" cy="20" r="20" fill="rgba(0,82,118,0.18)" />
+    <path d="M20 24L26 14L32 24H20Z" fill="#F1F3F3" opacity="0.9" />
+    <path d="M30 24L36 14L42 24H30Z" fill="#F1F3F3" opacity="0.75" />
+    <text x="48" y="20" fill="#F1F3F3" font-size="16" font-family="'M PLUS Rounded 1c', 'Inter', 'Segoe UI', sans-serif" font-weight="600" letter-spacing="0.3" dominant-baseline="middle">
+      Bedrock Chat
+    </text>
+  </g>
+</svg>

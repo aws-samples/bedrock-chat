@@ -114,6 +114,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // If not configured (empty array), all models are available
   globalAvailableModels: z.array(z.string()).default([]),
 
+  // Frontend branding
+  logoPath: z.string().default("/images/bedrock-chat-logo.svg"),
+
   // debug parameter
   devAccessIamRoleArn: z.string().default("")
 });
@@ -242,6 +245,7 @@ export function resolveBedrockChatParameters(
     enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
+    logoPath: app.node.tryGetContext("logoPath"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
 

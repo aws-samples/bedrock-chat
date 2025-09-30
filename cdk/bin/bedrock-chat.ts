@@ -105,6 +105,7 @@ const chat = new BedrockChatStack(
     tokenValidMinutes: params.tokenValidMinutes,
     devAccessIamRoleArn: params.devAccessIamRoleArn,
     allowedCountries: params.allowedCountries,
+    logoPath: params.logoPath,
   }
 );
 if (waf) {

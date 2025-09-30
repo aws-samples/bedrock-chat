@@ -41,6 +41,7 @@ import Button from './Button';
 import Skeleton from './Skeleton';
 import { isPinnedBot } from '../utils/BotUtils';
 import IconPinnedBot from './IconPinnedBot';
+import useGlobalConfig from '../hooks/useGlobalConfig';
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -212,6 +213,9 @@ const Drawer: React.FC<Props> = (props) => {
 
   const { newChat, conversationId } = useChat();
   const { botId } = useParams();
+  const { getGlobalConfig } = useGlobalConfig();
+  const { data: globalConfig } = getGlobalConfig();
+  const logoSrc = globalConfig?.logoPath ?? '/images/bedrock-chat-logo.svg';
 
   useEffect(() => {
     setPrevConversations(conversations);
@@ -256,6 +260,11 @@ const Drawer: React.FC<Props> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const onClickLogo = useCallback(() => {
+    navigate('/');
+    closeSmallDrawer();
+  }, [navigate, closeSmallDrawer]);
+
   useLayoutEffect(() => {
     // リサイズイベントを拾って状態を更新する
     const onResize = () => {
@@ -286,6 +295,19 @@ const Drawer: React.FC<Props> = (props) => {
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm  text-white transition-width`}>
+          <div className="sticky top-0 z-10 flex items-center justify-center border-b border-white/10 bg-aws-squid-ink-light px-4 py-6 dark:bg-aws-squid-ink-dark">
+            <button
+              type="button"
+              onClick={onClickLogo}
+              className="flex w-full items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
+              <img
+                src={logoSrc}
+                alt={t('app.name')}
+                className="h-10 w-auto max-w-[170px]"
+                loading="lazy"
+              />
+            </button>
+          </div>
           {!isAdminPanel && (
             <>
               <DrawerItem
