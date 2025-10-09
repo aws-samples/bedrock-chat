@@ -1022,11 +1022,11 @@ Como você categorizaria este e-mail?`,
         hint: 'Use esta política para validar se as respostas do modelo estão fundamentadas na fonte de referência e são relevantes para a consulta do usuário para filtrar alucinações do modelo.',
         groundingThreshold: {
           label: 'Aterramento',
-          hint: 'Valide se as respostas do modelo estão fundamentadas e factualmente corretas com base nas informações fornecidas na fonte de referência, e bloqueie respostas que estão abaixo do limite definido de aterramento. 0: não bloqueia nada, 0.99: bloqueia quase tudo',
+          hint: 'Valide se as respostas do modelo estão fundamentadas e factualmente corretas com base nas informações fornecidas na fonte de referência, e bloqueie respostas que estão abaixo do limite definido de aterramento. 0: não bloqueia nada, 1: bloqueia quase tudo',
         },
         relevanceThreshold: {
           label: 'Relevância',
-          hint: "Valide se as respostas do modelo são relevantes para a consulta do usuário e bloqueie respostas que estão abaixo do limite definido de relevância. 0: não bloqueia nada, 0.99: bloqueia quase tudo",
+          hint: "Valide se as respostas do modelo são relevantes para a consulta do usuário e bloqueie respostas que estão abaixo do limite definido de relevância. 0: não bloqueia nada, 1: bloqueia quase tudo",
         },
       },
     },

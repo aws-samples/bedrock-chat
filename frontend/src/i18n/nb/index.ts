@@ -654,11 +654,11 @@ Hvordan vil du kategorisere denne e-posten?`,
         hint: 'Bruk denne policyen for å validere om modellens svar er forankret i referansekilden og relevante for brukerens forespørsel for å filtrere modellhallusinasjoner.',
         groundingThreshold: {
           label: 'Forankring',
-          hint: 'alider om modellsvarene er forankret og faktisk korrekte basert på informasjonen gitt i referansekilden, og blokker svar som er under den definerte terskelen for forankring. 0: blokkerer ingenting, 0,99: blokkerer nesten alt',
+          hint: 'alider om modellsvarene er forankret og faktisk korrekte basert på informasjonen gitt i referansekilden, og blokker svar som er under den definerte terskelen for forankring. 0: blokkerer ingenting, 1: blokkerer nesten alt',
         },
         relevanceThreshold: {
           label: 'Relevans',
-          hint: 'Valider om modellsvarene er relevante for brukerens spørring og blokker svar som er under den definerte terskelen for relevans. 0: blokkerer ingenting, 0,99: blokkerer nesten alt',
+          hint: 'Valider om modellsvarene er relevante for brukerens spørring og blokker svar som er under den definerte terskelen for relevans. 0: blokkerer ingenting, 1: blokkerer nesten alt',
         },
       },
     },

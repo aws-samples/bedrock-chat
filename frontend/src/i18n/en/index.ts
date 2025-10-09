@@ -1054,11 +1054,11 @@ How would you categorize this email?`,
         hint: 'Use this policy to validate if model responses are grounded in the reference source and relevant to user’s query to filter model hallucination.',
         groundingThreshold: {
           label: 'Grounding',
-          hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 0.99: blocks almost everything',
+          hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 1: blocks almost everything',
         },
         relevanceThreshold: {
           label: 'Relevance',
-          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything",
+          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 1: blocks almost everything",
         },
       },
     },

@@ -806,11 +806,11 @@ Bạn sẽ phân loại email này như thế nào?`,
         hint: 'Dùng chính sách này để xác thực xem phản hồi mô hình có căn cứ vào nguồn tham chiếu và liên quan đến truy vấn người dùng hay không, nhằm lọc bỏ thông tin "hallucination" của mô hình.',
         groundingThreshold: {
           label: 'Căn cứ',
-          hint: 'Xác nhận xem phản hồi mô hình có căn cứ và chính xác dựa trên thông tin trong nguồn tham chiếu hay không, và chặn phản hồi dưới ngưỡng căn cứ đã định. 0: không chặn, 0.99: chặn gần như tất cả',
+          hint: 'Xác nhận xem phản hồi mô hình có căn cứ và chính xác dựa trên thông tin trong nguồn tham chiếu hay không, và chặn phản hồi dưới ngưỡng căn cứ đã định. 0: không chặn, 1: chặn gần như tất cả',
         },
         relevanceThreshold: {
           label: 'Mức liên quan',
-          hint: 'Xác nhận xem phản hồi mô hình có liên quan đến truy vấn người dùng không, và chặn phản hồi dưới ngưỡng liên quan đã định. 0: không chặn, 0.99: chặn gần như tất cả',
+          hint: 'Xác nhận xem phản hồi mô hình có liên quan đến truy vấn người dùng không, và chặn phản hồi dưới ngưỡng liên quan đã định. 0: không chặn, 1: chặn gần như tất cả',
         },
       },
     },
