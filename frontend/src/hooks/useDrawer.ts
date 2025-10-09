@@ -7,6 +7,15 @@ const DEFAULT_OPTIONS: DrawerOptions = {
     recentlyUsedBots: 15,
     conversationHistory: 5,
   },
+  show: {
+    newChat: true,
+    myBots: true,
+    discoverBots: true,
+    pinnedBots: true,
+    starredBots: true,
+    recentlyUsedBots: true,
+    conversationHistory: true,
+  },
 };
 
 const useDrawerStore = create<{
@@ -20,7 +29,18 @@ const useDrawerStore = create<{
   try {
     const savedOptions = localStorage.getItem('DrawerOptions');
     if (savedOptions) {
-      initialOptions = JSON.parse(savedOptions);
+      const parsed = JSON.parse(savedOptions);
+      // Merge with defaults to handle migration from old structure
+      initialOptions = {
+        displayCount: {
+          ...DEFAULT_OPTIONS.displayCount,
+          ...(parsed.displayCount || {}),
+        },
+        show: {
+          ...DEFAULT_OPTIONS.show,
+          ...(parsed.show || {}),
+        },
+      };
     }
   } catch (e) {
     console.error('Failed to parse DrawerOptions from localStorage', e);

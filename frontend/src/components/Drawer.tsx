@@ -289,180 +289,193 @@ const Drawer: React.FC<Props> = (props) => {
           } text-sm  text-white transition-width`}>
           {!isAdminPanel && (
             <>
-              <DrawerItem
-                isActive={false}
-                icon={<PiNotePencil />}
-                to="/"
-                onClick={onClickNewChat}
-                labelComponent={t('button.newChat')}
-              />
-              <DrawerItem
-                isActive={false}
-                icon={<PiListBullets />}
-                to="/bot/my"
-                labelComponent={getPageLabel('/bot/my')}
-                onClick={closeSmallDrawer}
-              />
-              <DrawerItem
-                isActive={false}
-                icon={<PiCompass />}
-                to="/bot/discover"
-                labelComponent={getPageLabel('/bot/discover')}
-                onClick={closeSmallDrawer}
-              />
+              {drawerOptions.show.newChat && (
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiNotePencil />}
+                  to="/"
+                  onClick={onClickNewChat}
+                  labelComponent={t('button.newChat')}
+                />
+              )}
+              {drawerOptions.show.myBots && (
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiListBullets />}
+                  to="/bot/my"
+                  labelComponent={getPageLabel('/bot/my')}
+                  onClick={closeSmallDrawer}
+                />
+              )}
+              {drawerOptions.show.discoverBots && (
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiCompass />}
+                  to="/bot/discover"
+                  labelComponent={getPageLabel('/bot/discover')}
+                  onClick={closeSmallDrawer}
+                />
+              )}
 
-              {pinnedBots?.filter((bot) => bot.available).length ? (
+              {drawerOptions.show.pinnedBots &&
+                pinnedBots?.filter((bot) => bot.available).length ? (
+                  <ExpandableDrawerGroup
+                    label={t('app.pinnedBots')}
+                    className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                    {pinnedBots
+                      .filter((bot) => bot.available)
+                      .map((bot) => (
+                        <DrawerItem
+                          key={bot.id}
+                          isActive={botId === bot.id && !conversationId}
+                          to={`/bot/${bot.id}`}
+                          icon={<IconPinnedBot showAlways />}
+                          labelComponent={bot.title}
+                          onClick={onClickNewBotChat}
+                        />
+                      ))}
+                  </ExpandableDrawerGroup>
+                ) : null}
+
+              {drawerOptions.show.starredBots && (
                 <ExpandableDrawerGroup
-                  label={t('app.pinnedBots')}
+                  label={t('app.starredBots')}
                   className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
-                  {pinnedBots
-                    .filter((bot) => bot.available)
+                  {starredBots === undefined && (
+                    <div className="flex flex-col gap-2 p-2">
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    </div>
+                  )}
+                  {starredBots
+                    ?.slice(0, drawerOptions.displayCount.starredBots)
                     .map((bot) => (
                       <DrawerItem
                         key={bot.id}
                         isActive={botId === bot.id && !conversationId}
                         to={`/bot/${bot.id}`}
-                        icon={<IconPinnedBot showAlways />}
+                        icon={
+                          isPinnedBot(bot.sharedStatus) ? (
+                            <IconPinnedBot showAlways />
+                          ) : (
+                            <PiRobot />
+                          )
+                        }
                         labelComponent={bot.title}
                         onClick={onClickNewBotChat}
                       />
                     ))}
+
+                  {starredBots && starredBots.length > 15 && (
+                    <Button
+                      text
+                      rightIcon={<PiArrowRight />}
+                      className="w-full"
+                      onClick={() => {
+                        navigate('/bot/starred');
+                        closeSmallDrawer();
+                      }}>
+                      {t('bot.button.viewAll')}
+                    </Button>
+                  )}
                 </ExpandableDrawerGroup>
-              ) : null}
+              )}
 
-              <ExpandableDrawerGroup
-                label={t('app.starredBots')}
-                className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
-                {starredBots === undefined && (
-                  <div className="flex flex-col gap-2 p-2">
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                  </div>
-                )}
-                {starredBots
-                  ?.slice(0, drawerOptions.displayCount.starredBots)
-                  .map((bot) => (
-                    <DrawerItem
-                      key={bot.id}
-                      isActive={botId === bot.id && !conversationId}
-                      to={`/bot/${bot.id}`}
-                      icon={
-                        isPinnedBot(bot.sharedStatus) ? (
-                          <IconPinnedBot showAlways />
-                        ) : (
-                          <PiRobot />
-                        )
-                      }
-                      labelComponent={bot.title}
-                      onClick={onClickNewBotChat}
-                    />
-                  ))}
+              {drawerOptions.show.recentlyUsedBots && (
+                <ExpandableDrawerGroup
+                  label={t('app.recentlyUsedBots')}
+                  className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark ">
+                  {recentlyUsedUnstarredBots === undefined && (
+                    <div className="flex flex-col gap-2 p-2">
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    </div>
+                  )}
+                  {recentlyUsedUnstarredBots
+                    ?.slice(0, drawerOptions.displayCount.recentlyUsedBots)
+                    .map((bot) => (
+                      <DrawerItem
+                        key={bot.id}
+                        isActive={false}
+                        to={`/bot/${bot.id}`}
+                        icon={
+                          isPinnedBot(bot.sharedStatus) ? (
+                            <IconPinnedBot showAlways />
+                          ) : (
+                            <PiRobot />
+                          )
+                        }
+                        labelComponent={bot.title}
+                        onClick={onClickNewBotChat}
+                      />
+                    ))}
 
-                {starredBots && starredBots.length > 15 && (
-                  <Button
-                    text
-                    rightIcon={<PiArrowRight />}
-                    className="w-full"
-                    onClick={() => {
-                      navigate('/bot/starred');
-                      closeSmallDrawer();
-                    }}>
-                    {t('bot.button.viewAll')}
-                  </Button>
-                )}
-              </ExpandableDrawerGroup>
+                  {recentlyUsedUnstarredBots && (
+                    <Button
+                      text
+                      rightIcon={<PiArrowRight />}
+                      className="w-full"
+                      onClick={() => {
+                        navigate('/bot/recently-used');
+                        closeSmallDrawer();
+                      }}>
+                      {t('bot.button.viewAll')}
+                    </Button>
+                  )}
+                </ExpandableDrawerGroup>
+              )}
 
-              <ExpandableDrawerGroup
-                label={t('app.recentlyUsedBots')}
-                className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark ">
-                {recentlyUsedUnstarredBots === undefined && (
-                  <div className="flex flex-col gap-2 p-2">
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                  </div>
-                )}
-                {recentlyUsedUnstarredBots
-                  ?.slice(0, drawerOptions.displayCount.recentlyUsedBots)
-                  .map((bot) => (
-                    <DrawerItem
-                      key={bot.id}
-                      isActive={false}
-                      to={`/bot/${bot.id}`}
-                      icon={
-                        isPinnedBot(bot.sharedStatus) ? (
-                          <IconPinnedBot showAlways />
-                        ) : (
-                          <PiRobot />
-                        )
-                      }
-                      labelComponent={bot.title}
-                      onClick={onClickNewBotChat}
-                    />
-                  ))}
+              {drawerOptions.show.conversationHistory && (
+                <ExpandableDrawerGroup
+                  label={t('app.conversationHistory')}
+                  className={twMerge(
+                    'border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark',
+                    props.isAdmin ? 'mb-20' : 'mb-10'
+                  )}>
+                  {conversations === undefined && (
+                    <div className="flex flex-col gap-2 p-2">
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    </div>
+                  )}
+                  {conversations
+                    ?.slice(0, drawerOptions.displayCount.conversationHistory)
+                    .map((conversation, idx) => (
+                      <Item
+                        key={idx}
+                        className="grow"
+                        label={conversation.title}
+                        conversationId={conversation.id}
+                        generatedTitle={idx === generateTitleIndex}
+                        updateTitle={props.updateConversationTitle}
+                        onClick={closeSmallDrawer}
+                        onDelete={() => props.onDeleteConversation(conversation)}
+                      />
+                    ))}
 
-                {recentlyUsedUnstarredBots && (
-                  <Button
-                    text
-                    rightIcon={<PiArrowRight />}
-                    className="w-full"
-                    onClick={() => {
-                      navigate('/bot/recently-used');
-                      closeSmallDrawer();
-                    }}>
-                    {t('bot.button.viewAll')}
-                  </Button>
-                )}
-              </ExpandableDrawerGroup>
-
-              <ExpandableDrawerGroup
-                label={t('app.conversationHistory')}
-                className={twMerge(
-                  'border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark',
-                  props.isAdmin ? 'mb-20' : 'mb-10'
-                )}>
-                {conversations === undefined && (
-                  <div className="flex flex-col gap-2 p-2">
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                    <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                  </div>
-                )}
-                {conversations
-                  ?.slice(0, drawerOptions.displayCount.conversationHistory)
-                  .map((conversation, idx) => (
-                    <Item
-                      key={idx}
-                      className="grow"
-                      label={conversation.title}
-                      conversationId={conversation.id}
-                      generatedTitle={idx === generateTitleIndex}
-                      updateTitle={props.updateConversationTitle}
-                      onClick={closeSmallDrawer}
-                      onDelete={() => props.onDeleteConversation(conversation)}
-                    />
-                  ))}
-
-                {conversations && (
-                  <Button
-                    text
-                    rightIcon={<PiArrowRight />}
-                    className="w-full"
-                    onClick={() => {
-                      navigate('/conversations');
-                      closeSmallDrawer();
-                    }}>
-                    {t('bot.button.viewAll')}
-                  </Button>
-                )}
-              </ExpandableDrawerGroup>
+                  {conversations && (
+                    <Button
+                      text
+                      rightIcon={<PiArrowRight />}
+                      className="w-full"
+                      onClick={() => {
+                        navigate('/conversations');
+                        closeSmallDrawer();
+                      }}>
+                      {t('bot.button.viewAll')}
+                    </Button>
+                  )}
+                </ExpandableDrawerGroup>
+              )}
             </>
           )}
 

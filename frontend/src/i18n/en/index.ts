@@ -8,6 +8,8 @@ const translation = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: 'How can I Help You?',
+      myBots: 'My Bots',
+      discoverBots: 'Discover Bots',
       pinnedBots: 'Pinned Bots',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
@@ -646,6 +648,7 @@ How would you categorize this email?`,
     drawerOptionsDialog: {
       title: 'Side Menu Options',
       label: {
+        visibility: 'Visibility',
         displayCount: 'Display Count',
       },
     },
