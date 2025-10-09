@@ -46,6 +46,7 @@ from app.routes.schemas.conversation import (
 )
 from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time, modify_bot_stats
+from app.usecases.global_config import get_default_model
 from app.user import User
 from app.utils import get_current_time
 from app.vector_search import (
@@ -633,8 +634,10 @@ def chat_output_from_message(
 def propose_conversation_title(
     user_id: str,
     conversation_id: str,
-    model: type_model_name = "claude-v3-haiku",
 ) -> str:
+    # Use the configured default model for generating conversation titles
+    model = get_default_model()
+
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
 - Title length must be from 15 to 20 characters.
