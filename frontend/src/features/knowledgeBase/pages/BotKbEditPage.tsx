@@ -52,7 +52,7 @@ import {
 } from '../constants';
 import {
   GUARDRAILS_FILTERS_THRESHOLD,
-  GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD,
+  GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD,
 } from '../../../constants';
 import { Model } from '../../../@types/conversation';
 import { AVAILABLE_MODEL_KEYS } from '../../../constants/index';
@@ -2549,9 +2549,9 @@ const BotKbEditPage: React.FC = () => {
                       'guardrails.contextualGroundingCheck.groundingThreshold.label'
                     )}
                     range={{
-                      min: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.MIN,
-                      max: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.MAX,
-                      step: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.STEP,
+                      min: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.MIN,
+                      max: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.MAX,
+                      step: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.STEP,
                     }}
                     onChange={(groundingThreshold) => {
                       setGroundingThreshold(groundingThreshold);
@@ -2570,9 +2570,9 @@ const BotKbEditPage: React.FC = () => {
                       'guardrails.contextualGroundingCheck.relevanceThreshold.label'
                     )}
                     range={{
-                      min: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.MIN,
-                      max: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.MAX,
-                      step: GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD.STEP,
+                      min: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.MIN,
+                      max: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.MAX,
+                      step: GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD.STEP,
                     }}
                     onChange={(relevanceThreshold) => {
                       setRelevanceThreshold(relevanceThreshold);
