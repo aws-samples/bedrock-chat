@@ -47,6 +47,7 @@ export interface ApiProps {
   readonly enableLambdaSnapStart: boolean;
   readonly openSearchEndpoint?: string;
   readonly globalAvailableModels?: string[];
+  readonly defaultModel?: string;
   readonly logoPath?: string;
 }
 
@@ -276,6 +277,7 @@ export class Api extends Construct {
         GLOBAL_AVAILABLE_MODELS: props.globalAvailableModels 
           ? JSON.stringify(props.globalAvailableModels)
           : "[]",
+        DEFAULT_MODEL: props.defaultModel!,
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
         LOGO_PATH: props.logoPath || "",
         USE_STRANDS: "true",

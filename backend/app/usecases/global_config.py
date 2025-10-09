@@ -2,10 +2,13 @@ import json
 import logging
 import os
 
+from app.routes.schemas.conversation import type_model_name
+
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 GLOBAL_AVAILABLE_MODELS = os.environ.get("GLOBAL_AVAILABLE_MODELS")
+DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL")
 LOGO_PATH = os.environ.get("LOGO_PATH", "")
 
 
@@ -37,6 +40,13 @@ def get_global_available_models() -> list[str]:
 
     logger.info("No global available models configured - all models are available")
     return []
+
+
+def get_default_model() -> type_model_name:
+    """Return the configured default model."""
+    if not DEFAULT_MODEL:
+        raise ValueError("DEFAULT_MODEL environment variable must be set")
+    return DEFAULT_MODEL  # type: ignore[return-value]
 
 
 def get_logo_path() -> str:

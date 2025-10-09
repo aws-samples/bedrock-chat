@@ -30,13 +30,11 @@ const LLAMA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
-const DEFAULT_MODEL: Model = 'claude-v3.7-sonnet';
-
 const useModelState = create<{
   modelId: Model;
   setModelId: (m: Model) => void;
 }>((set) => ({
-  modelId: DEFAULT_MODEL,
+  modelId: '' as Model, // Will be set by useEffect based on config/localStorage
   setModelId: (m) => {
     set({
       modelId: m,
@@ -285,7 +283,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const { modelId, setModelId } = useModelState();
   const [recentUseModelId, setRecentUseModelId] = useLocalStorage(
     'recentUseModelId',
-    DEFAULT_MODEL
+    '' // Will use getDefaultModel() if localStorage is empty
   );
 
   // Save the model id by each bot
@@ -306,16 +304,22 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   }, [processedActiveModels, availableModels]);
 
   const getDefaultModel = useCallback(() => {
-    // check default model is available
-    const defaultModelAvailable = filteredModels.some(
-      (m: ModelItem) => m.modelId === DEFAULT_MODEL
-    );
-    if (defaultModelAvailable) {
-      return DEFAULT_MODEL;
+    // Use the default model from global config if available
+    const configDefaultModel = globalConfig?.defaultModel as Model | undefined;
+
+    if (configDefaultModel) {
+      // Check if the configured default model is available
+      const defaultModelAvailable = filteredModels.some(
+        (m: ModelItem) => m.modelId === configDefaultModel
+      );
+      if (defaultModelAvailable) {
+        return configDefaultModel;
+      }
     }
-    // If the default model is not available, select the first model on the list
-    return filteredModels[0]?.modelId ?? DEFAULT_MODEL;
-  }, [filteredModels]);
+
+    // If config default is not available or not set yet, select the first model
+    return filteredModels[0]?.modelId;
+  }, [filteredModels, globalConfig?.defaultModel]);
 
   // select the model via list of activeModels
   const selectModel = useCallback(

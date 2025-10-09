@@ -53,6 +53,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableBotStoreReplicas: boolean;
   readonly botStoreLanguage: Language;
   readonly globalAvailableModels?: string[];
+  readonly defaultModel?: string;
   readonly tokenValidMinutes: number;
   readonly alternateDomainName?: string;
   readonly hostedZoneId?: string;
@@ -251,6 +252,7 @@ export class BedrockChatStack extends cdk.Stack {
       enableLambdaSnapStart: props.enableLambdaSnapStart,
       openSearchEndpoint: botStore?.openSearchEndpoint,
       globalAvailableModels: props.globalAvailableModels,
+      defaultModel: props.defaultModel,
       logoPath: props.logoPath,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
