@@ -55,10 +55,47 @@ jobs:
             exit 1
           fi
           PR_SUMMARY=$(echo "$PR_LIST" | jq -r '.[] | "PR #\(.number): \(.title)\nAuthor: @\(.author.login)\nMerged At: \(.mergedAt)\nURL: \(.url)\nDescription: \(.body)\n---\n"')
+
+          # This block safely writes the PR_SUMMARY variable to $GITHUB_ENV without risk of injection.
+          # Background:
+          #   A fixed delimiter ("EOF") was used when appending multi-line content.
+          #   If a pull request body contained the same delimiter, it could prematurely terminate the block,
+          #   allowing an attacker to inject new environment variables (e.g., BASH_ENV=... → RCE).
+          # Purpose:
+          #   To eliminate this injection vector by generating a unique, random delimiter for each run.
+          #   The script verifies that the delimiter does not appear in PR_SUMMARY before writing.
+          # Why it’s safe:
+          #   Because the random delimiter never appears inside the user-controlled content,
+          #   the here-document cannot be closed early, and no unintended environment variables are created.
+          #   The behavior of downstream steps remains unchanged — PR_SUMMARY is identical to before.
+
+          gen_delim() {
+            # generate a delimiter unlikely to collide; retry if it does collide with content
+            if command -v uuidgen >/dev/null 2>&1; then
+              echo "GITHUB_ENV_DELIM_$(uuidgen)"
+            else
+              echo "GITHUB_ENV_DELIM_$(head -c16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+            fi
+          }
+
+          DELIM="$(gen_delim)"
+          tries=0
+          # increase retries to reduce chance of hitting the failure path
+          while printf '%s' "$PR_SUMMARY" | grep -F -- "$DELIM" >/dev/null 2>&1; do
+            tries=$((tries+1))
+            if [ "$tries" -ge 10 ]; then
+              >&2 echo "ERROR: failed to generate non-colliding DELIM after $tries attempts"
+              >&2 echo "Sample offending snippet (first 200 chars):"
+              >&2 printf '%s\n' "$(printf '%s' "$PR_SUMMARY" | cut -c1-200)"
+              exit 1
+            fi
+            DELIM="$(gen_delim)"
+          done
+
           {
-            echo 'PR_SUMMARY<<EOF'
-            echo "$PR_SUMMARY"
-            echo EOF
+            echo "PR_SUMMARY<<$DELIM"
+            printf '%s' "$PR_SUMMARY"
+            echo "$DELIM"
           } >> "$GITHUB_ENV"
 
       - name: Analyze changes with Claude
