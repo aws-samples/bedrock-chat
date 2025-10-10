@@ -319,6 +319,9 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "FrontendURL", {
       value: frontend.getOrigin(),
     });
+    new CfnOutput(this, "CloudFrontURL", {
+      value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,
+    });
 
     // Outputs for API publication
     new CfnOutput(this, "PublishedApiWebAclArn", {
