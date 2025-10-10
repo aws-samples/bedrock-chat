@@ -269,7 +269,7 @@ export class Api extends Construct {
           ? JSON.stringify(props.globalAvailableModels)
           : "[]",
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
-        LOGO_PATH: props.logoPath || "/images/bedrock-chat-logo.svg",
+        LOGO_PATH: props.logoPath || "",
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
       },

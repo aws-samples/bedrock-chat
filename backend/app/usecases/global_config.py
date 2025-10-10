@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(messa
 logger = logging.getLogger(__name__)
 
 GLOBAL_AVAILABLE_MODELS = os.environ.get("GLOBAL_AVAILABLE_MODELS")
-LOGO_PATH = os.environ.get("LOGO_PATH", "/images/bedrock-chat-logo.svg")
+LOGO_PATH = os.environ.get("LOGO_PATH", "")
 
 
 def get_global_available_models() -> list[str]:

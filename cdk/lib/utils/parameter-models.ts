@@ -115,7 +115,7 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   globalAvailableModels: z.array(z.string()).default([]),
 
   // Frontend branding
-  logoPath: z.string().default("/images/bedrock-chat-logo.svg"),
+  logoPath: z.string().default(""),
 
   // debug parameter
   devAccessIamRoleArn: z.string().default("")

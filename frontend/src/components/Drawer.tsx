@@ -215,7 +215,7 @@ const Drawer: React.FC<Props> = (props) => {
   const { botId } = useParams();
   const { getGlobalConfig } = useGlobalConfig();
   const { data: globalConfig } = getGlobalConfig();
-  const logoSrc = globalConfig?.logoPath ?? '/images/bedrock-chat-logo.svg';
+  const logoSrc = globalConfig?.logoPath ?? '';
 
   useEffect(() => {
     setPrevConversations(conversations);
@@ -295,19 +295,21 @@ const Drawer: React.FC<Props> = (props) => {
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm  text-white transition-width`}>
-          <div className="sticky top-0 z-10 flex items-center justify-center border-b border-white/10 bg-aws-squid-ink-light px-4 py-6 dark:bg-aws-squid-ink-dark">
-            <button
-              type="button"
-              onClick={onClickLogo}
-              className="flex w-full items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
-              <img
-                src={logoSrc}
-                alt={t('app.name')}
-                className="h-10 w-auto max-w-[170px]"
-                loading="lazy"
-              />
-            </button>
-          </div>
+          {logoSrc && (
+            <div className="sticky top-0 z-10 flex items-center justify-center border-b border-white/10 bg-aws-squid-ink-light px-4 py-6 dark:bg-aws-squid-ink-dark">
+              <button
+                type="button"
+                onClick={onClickLogo}
+                className="flex w-full items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
+                <img
+                  src={logoSrc}
+                  alt={t('app.name')}
+                  className="h-10 w-auto max-w-[170px]"
+                  loading="lazy"
+                />
+              </button>
+            </div>
+          )}
           {!isAdminPanel && (
             <>
               <DrawerItem
