@@ -409,6 +409,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       }) ?? [],
     availableModels: filteredModels,
     forceReasoningEnabled: model?.forceReasoningEnabled ?? false,
+    getDefaultModel,
   };
 };
 

@@ -2,7 +2,7 @@ import { BaseProps } from '../@types/common';
 import useModel from '../hooks/useModel';
 import { Popover, Transition } from '@headlessui/react';
 import { Fragment } from 'react/jsx-runtime';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { PiCaretDown, PiCheck } from 'react-icons/pi';
 import { ActiveModels } from '../@types/bot';
 import { toCamelCase } from '../utils/StringUtils';
@@ -17,6 +17,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
     availableModels: allModels,
     modelId,
     setModelId,
+    getDefaultModel,
   } = useModel(props.botId, props.activeModels);
 
   const availableModels = useMemo(() => {
@@ -32,11 +33,30 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
     });
   }, [allModels, props.activeModels]);
 
-  const modelName = useMemo(() => {
-    return (
-      availableModels.find((model) => model.modelId === modelId)?.label ?? ''
+  // Automatically switch to the default model if the current model is not available
+  useEffect(() => {
+    const isCurrentModelAvailable = availableModels.some(
+      (model) => model.modelId === modelId
     );
-  }, [availableModels, modelId]);
+
+    if (!isCurrentModelAvailable && availableModels.length > 0) {
+      const defaultModelId = getDefaultModel();
+      if (defaultModelId) {
+        setModelId(defaultModelId);
+      }
+    }
+  }, [availableModels, modelId, setModelId, getDefaultModel]);
+
+  const modelName = useMemo(() => {
+    const foundModel = availableModels.find((model) => model.modelId === modelId);
+    if (foundModel) {
+      return foundModel.label;
+    }
+    // Fallback to the default model's label if the current model is not found
+    const defaultModelId = getDefaultModel();
+    const defaultModel = availableModels.find((model) => model.modelId === defaultModelId);
+    return defaultModel?.label ?? '';
+  }, [availableModels, modelId, getDefaultModel]);
 
   return (
     <div className="">
