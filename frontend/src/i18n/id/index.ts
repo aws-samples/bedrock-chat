@@ -344,6 +344,7 @@ const translation = {
         newBot: 'Buat Bot Baru',
         create: 'Buat',
         edit: 'Ubah',
+        save: 'Simpan',
         delete: 'Hapus',
         share: 'Bagikan',
         apiSettings: 'Pengaturan Publikasi API',

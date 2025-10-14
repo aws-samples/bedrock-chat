@@ -57,6 +57,7 @@ BASE_MODEL_IDS = {
     "claude-v4-opus": "anthropic.claude-opus-4-20250514-v1:0",
     "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
     "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
+    "claude-v4.5-sonnet": "anthropic.claude-sonnet-4-5-20250929-v1:0",
     "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
     "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
     "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
@@ -91,7 +92,34 @@ GLOBAL_INFERENCE_PROFILES = {
             "eu-west-1",
             "ap-northeast-1",
         ]
-    }
+    },
+    "claude-v4.5-sonnet": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-south-2",
+            "eu-south-1",
+            "eu-north-1",
+            "eu-central-2",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-4",
+            "ap-southeast-3",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-2",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
 }
 
 # Regional inference profiles
@@ -115,6 +143,23 @@ REGIONAL_INFERENCE_PROFILES = {
             "ap-northeast-2": "apac",
             "ap-southeast-1": "apac",
             "ap-southeast-2": "apac",
+        }
+    },
+    "claude-v4.5-sonnet": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-north-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-2": "eu",
+            "eu-west-3": "eu",
+            "eu-south-1": "eu",
+            "eu-south-2": "eu",
+            "ap-northeast-1": "jp",
+            "ap-northeast-3": "jp",
         }
     },
     "claude-v3-haiku": {
@@ -298,6 +343,12 @@ def is_tooluse_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_specify_both_temperature_and_top_p_supported(model: type_model_name) -> bool:
+    return model not in [
+        "claude-v4.5-sonnet",
+    ]
+
+
 def is_prompt_caching_supported(
     model: type_model_name, target: Literal["system", "message", "tool"]
 ) -> bool:
@@ -306,6 +357,7 @@ def is_prompt_caching_supported(
             "claude-v4-opus",
             "claude-v4.1-opus",
             "claude-v4-sonnet",
+            "claude-v4.5-sonnet",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
             "claude-v3.5-haiku",
@@ -316,6 +368,7 @@ def is_prompt_caching_supported(
             "claude-v4-opus",
             "claude-v4.1-opus",
             "claude-v4-sonnet",
+            "claude-v4.5-sonnet",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
             "claude-v3.5-haiku",
@@ -781,6 +834,18 @@ def generation_params_to_converse_configuration(
                 },
             }
 
+    # "claude-v4.5-sonnet" cannot specify temperature and top_p together due to specifications.
+    # https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html
+    if not is_specify_both_temperature_and_top_p_supported(model):
+        inference_config = converse_configuration["inferenceConfig"]
+        if (
+            inference_config.get("temperature") == DEFAULT_GENERATION_CONFIG["temperature"]
+            and inference_config.get("topP") != DEFAULT_GENERATION_CONFIG["top_p"]
+        ):
+            del inference_config["temperature"]
+        else:
+            inference_config.pop("topP", None)
+
     if guardrail and guardrail.guardrail_arn and guardrail.guardrail_version:
         converse_configuration["guardrailConfig"] = {
             "guardrailIdentifier": guardrail.guardrail_arn,
@@ -834,6 +899,7 @@ def compose_args_for_converse_api(
         stream=stream,
         enable_reasoning=enable_reasoning,
     )
+
     system_prompts: list[SystemContentBlockTypeDef]
 
     if is_multiple_system_prompt_content_supported(model):

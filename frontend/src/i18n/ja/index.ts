@@ -28,12 +28,17 @@ const translation: typeof en = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          '最も強力なClaudeモデルの最新版。推論能力が向上',
+          '最も強力なOpusの最新版。推論能力が向上',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
           '効率性とスケールを最適化したバランスの取れたハイブリッド推論モデル（200Kトークンコンテキストウィンドウ）',
+      },
+      'claude-v4.5-sonnet': {
+        label: 'Claude 4.5 (Sonnet)',
+        description:
+          'Sonnetの最新版。Claudeモデル最高レベルのコーディング性能と長時間タスク処理が可能',
       },
       'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
@@ -442,6 +447,7 @@ const translation: typeof en = {
         newBot: 'ボットを新規作成',
         create: '新規作成',
         edit: '更新',
+        save: '保存',
         delete: '削除',
         share: '共有',
         copy: 'コピー',

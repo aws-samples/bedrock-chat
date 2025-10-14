@@ -331,6 +331,7 @@ Las categorías de clasificación son:
         newBot: 'Crear Nuevo Bot',
         create: 'Crear',
         edit: 'Editar',
+        save: 'Guardar',
         delete: 'Eliminar',
         share: 'Compartir',
         apiSettings: 'Configuración de Publicación de API',

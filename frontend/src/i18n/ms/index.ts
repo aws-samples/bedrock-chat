@@ -337,6 +337,7 @@ const translation = {
         newBot: 'Buat Bot Baru',
         create: 'Buat',
         edit: 'Edit',
+        save: 'Simpan',
         delete: 'Padam',
         share: 'Kongsi',
         apiSettings: 'Tetapan Terbit API',

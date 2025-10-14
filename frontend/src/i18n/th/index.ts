@@ -334,6 +334,7 @@ const translation = {
         newBot: 'สร้างบ็อตใหม่',
         create: 'สร้าง',
         edit: 'แก้ไข',
+        save: 'บันทึก',
         delete: 'ลบ',
         share: 'แชร์',
         apiSettings: 'ตั้งค่าเผยแพร่ API',
