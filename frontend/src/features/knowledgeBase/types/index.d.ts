@@ -1,4 +1,7 @@
+export type BedrockKnowledgeBaseType = "dedicated" | "shared" | undefined;
+
 export type BedrockKnowledgeBase = {
+  type?: BedrockKnowledgeBaseType;
   knowledgeBaseId: string | null;
   existKnowledgeBaseId: string | null;
   dataSourceIds?: string[]; // only present after bot is ready

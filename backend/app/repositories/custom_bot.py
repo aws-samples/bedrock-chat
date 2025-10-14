@@ -1,12 +1,9 @@
 import base64
+from hashlib import md5
 import json
 import logging
-import os
-from datetime import datetime
 from decimal import Decimal as decimal
-from typing import Union
 
-import boto3
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.common import (
     TRANSACTION_BATCH_READ_SIZE,
@@ -96,6 +93,18 @@ def store_bot(custom_bot: BotModel):
         item["IsStarred"] = "TRUE"
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
+        if custom_bot.bedrock_knowledge_base.type is not None:
+            item["BedrockKnowledgeBaseType"] = custom_bot.bedrock_knowledge_base.type
+            item["BedrockKnowledgeBaseHash"] = (
+                base64.b32encode(
+                    md5(
+                        custom_bot.bedrock_knowledge_base.model_dump_json().encode()
+                    ).digest()
+                )
+                .decode()
+                .rstrip("=")
+            )
+
     if custom_bot.bedrock_guardrails:
         item["GuardrailsParams"] = custom_bot.bedrock_guardrails.model_dump()
 
@@ -142,6 +151,7 @@ def update_bot(
         "ConversationQuickStarters = :conversation_quick_starters, "
         "ActiveModels = :active_models"
     )
+    remove_attributes: list[str] = []
 
     expression_attribute_values = {
         ":title": title,
@@ -160,18 +170,60 @@ def update_bot(
         ":active_models": active_models.model_dump(),  # type: ignore[attr-defined]
     }
     if bedrock_knowledge_base:
+        if (
+            bedrock_knowledge_base.exist_knowledge_base_id is not None
+            or (
+                len(knowledge.source_urls) == 0
+                and len(knowledge.sitemap_urls) == 0
+                and len(knowledge.filenames) == 0
+                and len(knowledge.s3_urls) == 0
+            )
+        ):
+            bedrock_knowledge_base.type = None
+            bedrock_knowledge_base.knowledge_base_id = None
+
+        elif bedrock_knowledge_base.type is None:
+            bedrock_knowledge_base.type = "dedicated"
+
         update_expression += ", BedrockKnowledgeBase = :bedrock_knowledge_base"
         expression_attribute_values[":bedrock_knowledge_base"] = (
             bedrock_knowledge_base.model_dump()
         )
 
+        if bedrock_knowledge_base.type is not None:
+            update_expression += (
+                ", BedrockKnowledgeBaseType = :bedrock_knowledge_base_type"
+                ", BedrockKnowledgeBaseHash = :bedrock_knowledge_base_hash"
+            )
+            expression_attribute_values[":bedrock_knowledge_base_type"] = (
+                bedrock_knowledge_base.type
+            )
+            expression_attribute_values[":bedrock_knowledge_base_hash"] = (
+                base64.b32encode(
+                    md5(bedrock_knowledge_base.model_dump_json().encode()).digest()
+                )
+                .decode()
+                .rstrip("=")
+            )
+
+        else:
+            remove_attributes.append("BedrockKnowledgeBaseType")
+            remove_attributes.append("BedrockKnowledgeBaseHash")
+
     if bedrock_guardrails:
+        if not bedrock_guardrails.is_guardrail_enabled:
+            bedrock_guardrails.guardrail_arn = ""
+            bedrock_guardrails.guardrail_version = ""
+
         update_expression += ", GuardrailsParams = :bedrock_guardrails"
         expression_attribute_values[":bedrock_guardrails"] = (
             bedrock_guardrails.model_dump()
         )
 
     try:
+        if len(remove_attributes) > 0:
+            update_expression += " REMOVE " + ", ".join(remove_attributes)
+
         response = table.update_item(
             Key={"PK": owner_user_id, "SK": compose_sk(bot_id, "bot")},
             UpdateExpression=update_expression,
@@ -336,7 +388,10 @@ def update_alias_star_status(user_id: str, original_bot_id: str, starred: bool):
 
 
 def update_knowledge_base_id(
-    user_id: str, bot_id: str, knowledge_base_id: str, data_source_ids: list[str]
+    user_id: str,
+    bot_id: str,
+    knowledge_base_id: str | None,
+    data_source_ids: list[str] | None,
 ):
     table = get_bot_table_client()
     logger.info(f"Updating knowledge base id for bot: {bot_id}")

@@ -2,6 +2,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { BedrockCustomBotStack } from "../lib/bedrock-custom-bot-stack";
 import {
+  getKnowledgeBaseType,
   getEmbeddingModel,
   getChunkingStrategy,
   getAnalyzer,
@@ -40,10 +41,12 @@ interface BaseConfig {
 }
 
 interface KnowledgeConfig {
+  knowledgeBaseType: "dedicated" | "shared" | undefined;
   embeddingsModel: BedrockFoundationModel;
   parsingModel: BedrockFoundationModel | undefined;
   existKnowledgeBaseId?: string;
   existingS3Urls: string[];
+  filenames: string[];
   sourceUrls: string[];
   instruction?: string;
   analyzer?: Analyzer | undefined;
@@ -90,10 +93,12 @@ const baseConfig: BaseConfig = {
 };
 
 const knowledgeConfig: KnowledgeConfig = {
+  knowledgeBaseType: getKnowledgeBaseType(knowledgeBaseJson.type),
   embeddingsModel: getEmbeddingModel(knowledgeBaseJson.embeddings_model.S),
   parsingModel: getParsingModel(knowledgeBaseJson.parsing_model.S),
   existKnowledgeBaseId: knowledgeBaseJson.exist_knowledge_base_id?.S,
   existingS3Urls: knowledgeJson.s3_urls.L.map((s3Url: any) => s3Url.S),
+  filenames: knowledgeJson.filenames.L.map((filename: any) => filename.S),
   sourceUrls: knowledgeJson.source_urls.L.map((sourceUrl: any) => sourceUrl.S),
   instruction: knowledgeBaseJson.instruction?.S,
   analyzer: knowledgeBaseJson.open_search.M.analyzer.M
@@ -236,10 +241,12 @@ new BedrockCustomBotStack(app, `BrChatKbStack${baseConfig.botId}`, {
   enableRagReplicas: baseConfig.enableRagReplicas,
 
   // Knowledge base configuration
+  knowledgeBaseType: knowledgeConfig.knowledgeBaseType,
   embeddingsModel: knowledgeConfig.embeddingsModel,
   parsingModel: knowledgeConfig.parsingModel,
   existKnowledgeBaseId: knowledgeConfig.existKnowledgeBaseId,
   existingS3Urls: knowledgeConfig.existingS3Urls,
+  filenames: knowledgeConfig.filenames,
   sourceUrls: knowledgeConfig.sourceUrls,
   instruction: knowledgeConfig.instruction,
   analyzer: knowledgeConfig.analyzer,

@@ -124,6 +124,7 @@ def _create_test_bot_model(
         ),
         bedrock_knowledge_base=(
             BedrockKnowledgeBaseModel(
+                type="dedicated",
                 embeddings_model="titan_v2",
                 open_search=OpenSearchParamsModel(analyzer=None),
                 chunking_configuration=None,

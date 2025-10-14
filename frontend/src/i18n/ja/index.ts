@@ -950,6 +950,9 @@ const translation: typeof en = {
           createNewKb: {
             label: '新規のナレッジを作成する',
           },
+          useSharedKb: {
+            label: 'Pool Pattern',
+          },
           existing: {
             label: '外部のナレッジ(Knowledge Base)を利用する',
           },

@@ -6,6 +6,7 @@ import {
   getEmbeddingModel,
   getChunkingStrategy,
   getAnalyzer,
+  getKnowledgeBaseType,
 } from "../lib/utils/bedrock-knowledge-base-args";
 import { BedrockCustomBotStack } from "../lib/bedrock-custom-bot-stack";
 import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
@@ -630,6 +631,9 @@ describe("Bedrock Knowledge Base Stack", () => {
     };
 
     const BEDROCK_KNOWLEDGE_BASE = {
+      type: {
+        S: "dedicated",
+      },
       chunking_strategy: {
         S: "fixed_size",
       },
@@ -690,6 +694,7 @@ describe("Bedrock Knowledge Base Stack", () => {
       (s3Url: any) => s3Url.S
     );
 
+    const knowledgeBaseType = getKnowledgeBaseType(knowledgeBase.type);
     const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
     const chunkingStrategy = getChunkingStrategy(
       knowledgeBase.chunking_strategy.S,
@@ -715,12 +720,14 @@ describe("Bedrock Knowledge Base Stack", () => {
       embeddingsModel,
       bedrockClaudeChatDocumentBucketName:
         BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME,
+      knowledgeBaseType,
       chunkingStrategy,
       existingS3Urls,
       maxTokens,
       instruction,
       analyzer,
       overlapPercentage,
+      filenames: knowledge.filenames.L.map((filename: any) => filename.S),
       sourceUrls: knowledge.source_urls.L.map((sourceUrl: any) => sourceUrl.S),
       existKnowledgeBaseId: undefined,
     });

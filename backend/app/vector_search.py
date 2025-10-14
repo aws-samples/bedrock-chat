@@ -103,6 +103,13 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
                 }
             },
         }
+        if bot.bedrock_knowledge_base.type == "shared":
+            retrieve_parameter["retrievalConfiguration"]["vectorSearchConfiguration"]["filter"] = {  # type: ignore
+                "listContains": {
+                    "key": "tenants",
+                    "value": f"BOT#{bot.id}",
+                },
+            }
 
         # Omit overrideSearchType parameter if needed
         def omit_override_search_type_parameter(

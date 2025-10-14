@@ -128,6 +128,7 @@ class TestBotModel(unittest.TestCase):
             ],
             bedrock_knowledge_base=(
                 BedrockKnowledgeBaseModel(
+                    type="dedicated",
                     embeddings_model="titan_v2",
                     open_search=OpenSearchParamsModel(analyzer=None),
                     chunking_configuration=None,

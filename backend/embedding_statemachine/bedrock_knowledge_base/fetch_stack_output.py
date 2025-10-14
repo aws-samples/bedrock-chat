@@ -12,18 +12,18 @@ cf_client = boto3.client("cloudformation", BEDROCK_REGION)
 class StackItem(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
-    GuardrailArn: str
-    GuardrailVersion: str
     PK: str
     SK: str
 
 
-class StackResult(TypedDict):
+class StackOutput(TypedDict):
     KnowledgeBaseId: str
     items: List[StackItem]
+    GuardrailArn: str
+    GuardrailVersion: str
 
 
-def handler(event: Dict[str, str], context: Any) -> StackResult:
+def handler(event: Dict[str, str], context: Any) -> StackOutput:
     print(event)
     pk = event["pk"]
     sk = event["sk"]
@@ -39,9 +39,12 @@ def handler(event: Dict[str, str], context: Any) -> StackResult:
 
     knowledge_base_id = None
     data_source_ids: List[str] = []
-    guardrail_arn = None
-    guardrail_version = None
-    result: StackResult = {"KnowledgeBaseId": "", "items": []}
+    result: StackOutput = {
+        "KnowledgeBaseId": "",
+        "items": [],
+        "GuardrailArn": "",
+        "GuardrailVersion": "",
+    }
 
     for output in outputs:
         if output["OutputKey"] == "KnowledgeBaseId":
@@ -50,19 +53,15 @@ def handler(event: Dict[str, str], context: Any) -> StackResult:
         elif output["OutputKey"].startswith("DataSource"):
             data_source_ids.append(output["OutputValue"])
         elif output["OutputKey"] == "GuardrailArn":
-            guardrail_arn = output["OutputValue"]
+            result["GuardrailArn"] = output["OutputValue"]
         elif output["OutputKey"] == "GuardrailVersion":
-            guardrail_version = output["OutputValue"]
+            result["GuardrailVersion"] = output["OutputValue"]
 
     for data_source_id in data_source_ids:
         result["items"].append(
             {
                 "KnowledgeBaseId": knowledge_base_id or "",
                 "DataSourceId": data_source_id,
-                "GuardrailArn": guardrail_arn if guardrail_arn is not None else "",
-                "GuardrailVersion": (
-                    guardrail_version if guardrail_version is not None else ""
-                ),
                 "PK": pk,
                 "SK": sk,
             }

@@ -28,6 +28,28 @@ interface SemanticOptions {
   readonly breakpointPercentileThreshold: number;
 }
 
+export const getKnowledgeBaseType = (
+  type: unknown
+): "dedicated" | "shared" | undefined => {
+  if (type == null || typeof(type) !== "object") {
+    return undefined;
+  }
+
+  if ("S" in type) {
+    const value = type["S"];
+    switch(value) {
+      case "dedicated":
+      case "shared":
+        return value;
+
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
+};
+
 export const getEmbeddingModel = (
   embeddingsModel: string
 ): BedrockFoundationModel => {

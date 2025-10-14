@@ -944,6 +944,9 @@ How would you categorize this email?`,
           createNewKb: {
             label: 'Create New Knowledge Base',
           },
+          useSharedKb: {
+            label: 'Pool Pattern',
+          },
           existing: {
             label: 'Use your existing knowledge base',
           },

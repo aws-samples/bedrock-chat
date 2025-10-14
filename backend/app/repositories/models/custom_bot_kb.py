@@ -9,7 +9,7 @@ from app.routes.schemas.bot_kb import (
     type_os_tokenizer,
     type_kb_resource_type,
 )
-from typing import Self
+from typing import Literal
 from pydantic import BaseModel, validator, model_validator
 
 
@@ -74,6 +74,7 @@ class BedrockAgentGetKnowledgeBaseResponse(BaseModel):
 
 
 class BedrockKnowledgeBaseModel(BaseModel):
+    type: Literal["dedicated", "shared"] | None = None
     embeddings_model: type_kb_embeddings_model
     open_search: OpenSearchParamsModel
     chunking_configuration: (

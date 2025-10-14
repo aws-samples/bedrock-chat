@@ -89,6 +89,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
             bedrock_knowledge_base=BedrockKnowledgeBaseModel(
+                type="dedicated",
                 embeddings_model="titan_v2",
                 open_search=OpenSearchParamsModel(
                     analyzer=AnalyzerParamsModel(
@@ -159,6 +160,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(len(bot.conversation_quick_starters), 1)
         self.assertEqual(bot.conversation_quick_starters[0].title, "QS title")
         self.assertEqual(bot.conversation_quick_starters[0].example, "QS example")
+        self.assertEqual(bot.bedrock_knowledge_base.type, "dedicated")
         self.assertEqual(bot.bedrock_knowledge_base.embeddings_model, "titan_v2")
         self.assertEqual(
             bot.bedrock_knowledge_base.chunking_configuration.max_tokens, 2000
@@ -275,6 +277,7 @@ class TestCustomBotRepository(unittest.TestCase):
             False,
             "user1",
             bedrock_knowledge_base=BedrockKnowledgeBaseModel(
+                type="dedicated",
                 embeddings_model="titan_v2",
                 open_search=OpenSearchParamsModel(
                     analyzer=AnalyzerParamsModel(
@@ -339,6 +342,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
             bedrock_knowledge_base=BedrockKnowledgeBaseModel(
+                type="dedicated",
                 embeddings_model="titan_v2",
                 open_search=OpenSearchParamsModel(
                     analyzer=AnalyzerParamsModel(
@@ -397,6 +401,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.conversation_quick_starters[0].title, "QS title")
         self.assertEqual(bot.conversation_quick_starters[0].example, "QS example")
 
+        self.assertEqual(bot.bedrock_knowledge_base.type, "dedicated")
         self.assertEqual(bot.bedrock_knowledge_base.embeddings_model, "titan_v2")
         self.assertEqual(
             bot.bedrock_knowledge_base.chunking_configuration.max_tokens, 2500

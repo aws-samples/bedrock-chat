@@ -351,6 +351,16 @@ class BotModifyInput(BaseSchema):
             else:
                 return True
 
+        if (
+            self.bedrock_knowledge_base is not None
+            and current_bot_model.bedrock_knowledge_base is not None
+        ):
+            if (
+                self.bedrock_knowledge_base.type
+                != current_bot_model.bedrock_knowledge_base.type
+            ):
+                return True
+
         return False
 
 

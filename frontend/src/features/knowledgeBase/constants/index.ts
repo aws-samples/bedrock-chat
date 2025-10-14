@@ -48,6 +48,7 @@ export const DEFAULT_OPENSEARCH_ANALYZER: {
 } as const;
 
 export const DEFAULT_BEDROCK_KNOWLEDGEBASE: BedrockKnowledgeBase = {
+  type: "dedicated",
   knowledgeBaseId: null,
   existKnowledgeBaseId: null,
   embeddingsModel: 'cohere_multilingual_v3',

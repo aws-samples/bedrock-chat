@@ -444,6 +444,35 @@ class BotModel(BaseModel):
                 )
         return self
 
+    @model_validator(mode="after")
+    def validate_knowledge_base_type(self) -> Self:
+        if self.bedrock_knowledge_base is not None:
+            if (
+                self.bedrock_knowledge_base.exist_knowledge_base_id is not None
+                or (
+                    len(self.knowledge.source_urls) == 0
+                    and len(self.knowledge.sitemap_urls) == 0
+                    and len(self.knowledge.filenames) == 0
+                    and len(self.knowledge.s3_urls) == 0
+                )
+            ):
+                self.bedrock_knowledge_base.type = None
+                self.bedrock_knowledge_base.knowledge_base_id = None
+
+            elif self.bedrock_knowledge_base.type is None:
+                self.bedrock_knowledge_base.type = "dedicated"
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_guardrails(self) -> Self:
+        if self.bedrock_guardrails is not None:
+            if not self.bedrock_guardrails.is_guardrail_enabled:
+                self.bedrock_guardrails.guardrail_arn = ""
+                self.bedrock_guardrails.guardrail_version = ""
+
+        return self
+
     @field_validator("published_api_stack_name", mode="after")
     def validate_published_api_stack_name(
         cls, value: str | None, info: ValidationInfo

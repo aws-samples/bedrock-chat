@@ -1,29 +1,26 @@
 import logging
-import os
 from typing import List
 
 from app.repositories.common import decompose_sk
 from app.repositories.custom_bot import update_knowledge_base_id
-from app.routes.schemas.bot import type_sync_status
-from reretry import retry
 from typing_extensions import TypedDict
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class Items(TypedDict):
+class StackItem(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
-    GuardrailArn: str
-    GuardrailVersion: str
     PK: str
     SK: str
 
 
 class StackOutput(TypedDict):
     KnowledgeBaseId: str
-    items: List[Items]
+    items: List[StackItem]
+    GuardrailArn: str
+    GuardrailVersion: str
 
 
 def handler(event, context):
@@ -32,20 +29,30 @@ def handler(event, context):
     sk = event["sk"]
     stack_output: StackOutput = event["stack_output"]
 
-    kb_id = (
-        stack_output["KnowledgeBaseId"] if "KnowledgeBaseId" in stack_output else None
-    )
-    if not kb_id:
-        raise ValueError("KnowledgeBaseId not found in stack outputs")
+    knowledge_base_id: str | None
+    data_source_ids: list[str] | None
 
-    # Filter out None values and ensure all elements are strings
-    data_source_ids: List[str] = [
-        item["DataSourceId"]
-        for item in stack_output.get("items", [])
-        if item.get("DataSourceId")
-    ]
+    # Check if stack_output is valid
+    if not stack_output:
+        logger.warning("No stack_output received")
+        knowledge_base_id = None
+        data_source_ids = None
+
+    else:
+        kb_id = stack_output.get("KnowledgeBaseId")
+
+        # Filter out None values and ensure all elements are strings
+        ds_ids = [
+            item["DataSourceId"]
+            for item in stack_output.get("items", [])
+            if item.get("DataSourceId")
+        ]
+
+        knowledge_base_id = kb_id if kb_id else None
+        data_source_ids = ds_ids if kb_id else None
 
     user_id = pk
     bot_id = decompose_sk(sk)
 
-    update_knowledge_base_id(user_id, bot_id, kb_id, data_source_ids)
+    if knowledge_base_id is not None:
+        update_knowledge_base_id(user_id, bot_id, knowledge_base_id, data_source_ids)
