@@ -18,7 +18,7 @@ from strands.types.tools import ToolResult, ToolResultContent
 logger = logging.getLogger(__name__)
 
 
-def text_tool_result_model_to_strands_tool_result_content(
+def _text_tool_result_model_to_strands_tool_result_content(
     result: TextToolResultModel,
 ) -> ToolResultContent:
     return {
@@ -26,7 +26,7 @@ def text_tool_result_model_to_strands_tool_result_content(
     }
 
 
-def json_tool_result_model_to_strands_tool_result_content(
+def _json_tool_result_model_to_strands_tool_result_content(
     result: JsonToolResultModel,
 ) -> ToolResultContent:
     return {
@@ -34,7 +34,7 @@ def json_tool_result_model_to_strands_tool_result_content(
     }
 
 
-def image_tool_result_model_to_strands_tool_result_content(
+def _image_tool_result_model_to_strands_tool_result_content(
     result: ImageToolResultModel,
 ) -> ToolResultContent:
     return {
@@ -47,7 +47,7 @@ def image_tool_result_model_to_strands_tool_result_content(
     }
 
 
-def document_tool_result_model_to_strands_tool_result_content(
+def _document_tool_result_model_to_strands_tool_result_content(
     result: DocumentToolResultModel,
 ) -> ToolResultContent:
     return {
@@ -76,16 +76,16 @@ def tool_result_model_to_strands_tool_result_content(
     """Convert our ToolResultModel to Strands ToolResultContent format."""
 
     if isinstance(result, TextToolResultModel):
-        return text_tool_result_model_to_strands_tool_result_content(result)
+        return _text_tool_result_model_to_strands_tool_result_content(result)
 
     elif isinstance(result, JsonToolResultModel):
-        return json_tool_result_model_to_strands_tool_result_content(result)
+        return _json_tool_result_model_to_strands_tool_result_content(result)
 
     elif isinstance(result, ImageToolResultModel):
-        return image_tool_result_model_to_strands_tool_result_content(result)
+        return _image_tool_result_model_to_strands_tool_result_content(result)
 
     elif isinstance(result, DocumentToolResultModel):
-        return document_tool_result_model_to_strands_tool_result_content(result)
+        return _document_tool_result_model_to_strands_tool_result_content(result)
 
     else:
         raise ValueError(f"Unknown tool result type")
@@ -145,7 +145,7 @@ def tool_run_result_to_strands_tool_result(
     }
 
 
-def strands_tool_result_content_to_related_document(
+def _strands_tool_result_content_to_related_document(
     tool_name: str,
     result_content: ToolResultContent,
     source_id_base: str,
@@ -240,7 +240,7 @@ def strands_tool_result_to_tool_run_result(
             tool_use_id=tool_use_id,
             status=result["status"],
             related_documents=[
-                strands_tool_result_content_to_related_document(
+                _strands_tool_result_content_to_related_document(
                     tool_name=tool_name,
                     result_content=contents[0],
                     source_id_base=tool_use_id,
@@ -254,7 +254,7 @@ def strands_tool_result_to_tool_run_result(
             tool_use_id=tool_use_id,
             status=result["status"],
             related_documents=[
-                strands_tool_result_content_to_related_document(
+                _strands_tool_result_content_to_related_document(
                     tool_name=tool_name,
                     result_content=content,
                     source_id_base=tool_use_id,

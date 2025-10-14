@@ -20,7 +20,7 @@ from app.strands_integration.converters.tool_converter import (
 from strands.types.content import ContentBlock
 
 
-def text_content_model_to_strands_content_blocks(
+def _text_content_model_to_strands_content_blocks(
     content: TextContentModel,
 ) -> list[ContentBlock]:
     """Convert TextContentModel to Strands ContentBlock format."""
@@ -32,7 +32,7 @@ def text_content_model_to_strands_content_blocks(
     ]
 
 
-def image_content_model_to_strands_content_blocks(
+def _image_content_model_to_strands_content_blocks(
     content: ImageContentModel,
 ) -> list[ContentBlock]:
     """Convert ImageContentModel to Strands ContentBlock format."""
@@ -53,7 +53,7 @@ def image_content_model_to_strands_content_blocks(
     ]
 
 
-def attachment_content_model_to_strands_content_blocks(
+def _attachment_content_model_to_strands_content_blocks(
     content: AttachmentContentModel,
 ) -> list[ContentBlock]:
     """Convert AttachmentContentModel to Strands ContentBlock format."""
@@ -81,7 +81,7 @@ def attachment_content_model_to_strands_content_blocks(
     ]
 
 
-def tool_use_content_model_to_strands_content_blocks(
+def _tool_use_content_model_to_strands_content_blocks(
     content: ToolUseContentModel,
 ) -> list[ContentBlock]:
     """Convert ToolUseContentModel to Strands ContentBlock format."""
@@ -97,7 +97,7 @@ def tool_use_content_model_to_strands_content_blocks(
     ]
 
 
-def tool_result_content_model_to_strands_content_blocks(
+def _tool_result_content_model_to_strands_content_blocks(
     content: ToolResultContentModel,
 ) -> list[ContentBlock]:
     """Convert ToolResultContentModel to Strands ContentBlock format."""
@@ -116,7 +116,7 @@ def tool_result_content_model_to_strands_content_blocks(
     ]
 
 
-def reasoning_content_model_to_strands_content_blocks(
+def _reasoning_content_model_to_strands_content_blocks(
     content: ReasoningContentModel,
 ) -> list[ContentBlock]:
     """Convert ReasoningContentModel to Strands ContentBlock format."""
@@ -159,22 +159,22 @@ def content_model_to_strands_content_blocks(
     """Convert ContentModel to Strands ContentBlock format."""
 
     if isinstance(content, TextContentModel):
-        return text_content_model_to_strands_content_blocks(content)
+        return _text_content_model_to_strands_content_blocks(content)
 
     elif isinstance(content, ImageContentModel):
-        return image_content_model_to_strands_content_blocks(content)
+        return _image_content_model_to_strands_content_blocks(content)
 
     elif isinstance(content, AttachmentContentModel):
-        return attachment_content_model_to_strands_content_blocks(content)
+        return _attachment_content_model_to_strands_content_blocks(content)
 
     elif isinstance(content, ToolUseContentModel):
-        return tool_use_content_model_to_strands_content_blocks(content)
+        return _tool_use_content_model_to_strands_content_blocks(content)
 
     elif isinstance(content, ToolResultContentModel):
-        return tool_result_content_model_to_strands_content_blocks(content)
+        return _tool_result_content_model_to_strands_content_blocks(content)
 
     elif isinstance(content, ReasoningContentModel):
-        return reasoning_content_model_to_strands_content_blocks(content)
+        return _reasoning_content_model_to_strands_content_blocks(content)
 
     else:
         raise ValueError(f"Unknown content type")

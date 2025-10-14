@@ -16,7 +16,6 @@ from .tool_converter import (
     tool_result_model_to_strands_tool_result_content,
     strands_tool_result_content_to_tool_result_model,
     tool_run_result_to_strands_tool_result,
-    strands_tool_result_content_to_related_document,
     strands_tool_result_to_tool_run_result,
 )
 
@@ -29,6 +28,5 @@ __all__ = [
     "tool_result_model_to_strands_tool_result_content",
     "strands_tool_result_content_to_tool_result_model",
     "tool_run_result_to_strands_tool_result",
-    "strands_tool_result_content_to_related_document",
     "strands_tool_result_to_tool_run_result",
 ]
