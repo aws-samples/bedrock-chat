@@ -6,6 +6,8 @@ An Agent is an advanced AI system that utilizes large language models (LLMs) as 
 
 This sample implements an Agent using the [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react) approach. ReAct enables the agent to solve complex tasks by combining reasoning and actions in an iterative feedback loop. The agent repeatedly goes through three key steps: Thought, Action, and Observation. It analyzes the current situation using the LLM, decides on the next action to take, executes the action using available tools or APIs, and learns from the observed results. This continuous process allows the agent to adapt to dynamic environments, improve its task-solving accuracy, and provide context-aware solutions.
 
+The implementation is powered by [Strands Agents](https://strandsagents.com/), an open-source SDK that takes a model-driven approach to building AI agents. Strands provides a lightweight, flexible framework for creating custom tools using Python decorators and supports multiple model providers including Amazon Bedrock.
+
 ## Example Use Case
 
 An Agent using ReAct can be applied in various scenarios, providing accurate and efficient solutions.
@@ -53,25 +55,121 @@ First, create an Agent in Bedrock (e.g., via the Management Console). Then, spec
 
 ## How to develop your own tools
 
-To develop your own custom tools for the Agent, follow these guidelines:
+To develop your own custom tools for the Agent using Strands SDK, follow these guidelines:
 
-- Create a new class that inherits from the `AgentTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `AgentTool` class, which you should inherit from ([source](../backend/app/agents/tools/agent_tool.py)).
+### About Strands Tools
 
-- Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
+Strands provides a simple `@tool` decorator that transforms regular Python functions into AI agent tools. The decorator automatically extracts information from your function's docstring and type hints to create tool specifications that the LLM can understand and use. This approach leverages Python's native features for a clean, functional tool development experience.
 
-  - The name and description declared on the tool are used when LLM considers which tool should be used to respond user's question. In other words, they are embedded on prompt when invoke LLM. So it's recommended to describe precisely as much as possible.
+For detailed information about Strands tools, see the [Python Tools documentation](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
-- [Optional] Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../examples/agents/tools/bmi/test_bmi.py)). This script will help you ensure that your tool is working as expected.
+### Basic Tool Creation
 
-- After completing the development and testing of your custom tool, move the implementation file to the [backend/app/agents/tools/](../backend/app/agents/tools/) directory. Then open [backend/app/agents/utils.py](../backend/app/agents/utils.py) and edit `get_available_tools` so that the user can select the tool developed.
+Create a new function decorated with the `@tool` decorator from Strands:
 
-- [Optional] Add clear names and descriptions for the frontend. This step is optional, but if you don't do this step, the tool name and description declared in your tool will be used. They are for LLM but not for the user, so it's recommended to add a dedicated explanation for better UX.
+```python
+from strands import tool
+
+@tool
+def calculator(expression: str) -> dict:
+    """
+    Perform mathematical calculations safely.
+
+    Args:
+        expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
+
+    Returns:
+        dict: Result in Strands format with toolUseId, status, and content
+    """
+    try:
+        # Your calculation logic here
+        result = eval(expression)  # Note: Use safe evaluation in production
+        return {
+            "toolUseId": "placeholder",
+            "status": "success",
+            "content": [{"text": str(result)}]
+        }
+    except Exception as e:
+        return {
+            "toolUseId": "placeholder",
+            "status": "error",
+            "content": [{"text": f"Error: {str(e)}"}]
+        }
+```
+
+### Tools with Bot Context (Closure Pattern)
+
+To access bot information (BotModel), use a closure pattern that captures the bot context:
+
+```python
+from strands import tool
+from app.repositories.models.custom_bot import BotModel
+
+def create_calculator_tool(bot: BotModel | None = None):
+    """Create calculator tool with bot context closure."""
+
+    @tool
+    def calculator(expression: str) -> dict:
+        """
+        Perform mathematical calculations safely.
+
+        Args:
+            expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
+
+        Returns:
+            dict: Result in Strands format with toolUseId, status, and content
+        """
+        # Access bot context within the tool
+        if bot:
+            print(f"Tool used by bot: {bot.id}")
+
+        try:
+            result = eval(expression)  # Use safe evaluation in production
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"text": str(result)}]
+            }
+        except Exception as e:
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"Error: {str(e)}"}]
+            }
+
+    return calculator
+```
+
+### Return Format Requirements
+
+All Strands tools must return a dictionary with the following structure:
+
+```python
+{
+    "toolUseId": "placeholder",  # Will be replaced by Strands
+    "status": "success" | "error",
+    "content": [
+        {"text": "Simple text response"} |
+        {"json": {"key": "Complex data object"}}
+    ]
+}
+```
+
+- Use `{"text": "message"}` for simple text responses
+- Use `{"json": data}` for complex data that should be preserved as structured information
+- Always set `status` to either `"success"` or `"error"`
+
+### Implementation Guidelines
+
+- The function name and docstring are used when the LLM considers which tool to use. The docstring is embedded in the prompt, so describe the tool's purpose and parameters precisely.
+
+- Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi/bmi_strands.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) using the Strands `@tool` decorator and closure pattern.
+
+- After completing development, place your implementation file in the [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/) directory. Then open [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) and edit `get_strands_registered_tools` to include your new tool.
+
+- [Optional] Add clear names and descriptions for the frontend. This step is optional, but if you don't do this step, the tool name and description from your function will be used. Since these are for LLM consumption, it's recommended to add user-friendly explanations for better UX.
 
   - Edit i18n files. Open [en/index.ts](../frontend/src/i18n/en/index.ts) and add your own `name` and `description` on `agent.tools`.
   - Edit `xx/index.ts` as well. Where `xx` represents the country code you wish.
 
 - Run `npx cdk deploy` to deploy your changes. This will make your custom tool available in the custom bot screen.
-
-## Contribution
-
-**Contributions to the tool repository are welcome!** If you develop a useful and well-implemented tool, consider contributing it to the project by submitting an issue or a pull request.

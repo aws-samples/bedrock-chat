@@ -21,12 +21,14 @@ opensearch-py = ">=2.0.0"
 requests-aws4auth = ">=1.0.0"
 duckduckgo-search = "^7.3.0"
 boto3-stubs = {extras = ["bedrock", "bedrock-agent-runtime", "bedrock-runtime", "boto3"], version = "^1.37.0"}
-firecrawl-py = "^1.11.1"
+firecrawl-py = "^2.16.3"
 reretry = "^0.11.8"
+strands-agents = "^1.8.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
 black = "^24.8.0"
+pytest = "^8.4.1"
 
 [build-system]
 requires = ["poetry-core"]

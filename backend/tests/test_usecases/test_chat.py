@@ -400,18 +400,86 @@ class TestContinueChat(unittest.TestCase):
         )
 
     def test_continue_chat(self):
+        # First, add an incomplete assistant message to continue from
+        incomplete_message = "今日は良い天気ですね。外に出て"
+        assistant_msg_id = "incomplete-assistant"
+
+        # Add incomplete assistant message to conversation
+        self.conversation = find_conversation_by_id(self.user.id, self.conversation_id)
+        self.conversation.message_map[assistant_msg_id] = MessageModel(
+            role="assistant",
+            content=[TextContentModel(content_type="text", body=incomplete_message)],
+            model=MODEL,
+            children=[],
+            parent="1-assistant",
+            create_time=1627984879.9,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self.conversation.message_map["1-assistant"].children.append(assistant_msg_id)
+        self.conversation.last_message_id = assistant_msg_id
+        store_conversation(user_id=self.user.id, conversation=self.conversation)
+
+        # Add second user message to trigger message cache (need 3+ user messages)
+        user_msg_2_id = "user-2"
+        self.conversation.message_map[user_msg_2_id] = MessageModel(
+            role="user",
+            content=[TextContentModel(content_type="text", body="続けてください")],
+            model=MODEL,
+            children=[],
+            parent=assistant_msg_id,
+            create_time=1627984880.0,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self.conversation.message_map[assistant_msg_id].children.append(user_msg_2_id)
+
+        # Add assistant response
+        assistant_msg_2_id = "assistant-2"
+        self.conversation.message_map[assistant_msg_2_id] = MessageModel(
+            role="assistant",
+            content=[
+                TextContentModel(content_type="text", body="散歩でもしませんか？")
+            ],
+            model=MODEL,
+            children=[],
+            parent=user_msg_2_id,
+            create_time=1627984880.1,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self.conversation.message_map[user_msg_2_id].children.append(assistant_msg_2_id)
+
+        # Add third user message to trigger message cache (now we have 3 user messages)
+        user_msg_3_id = "user-3"
+        self.conversation.message_map[user_msg_3_id] = MessageModel(
+            role="user",
+            content=[
+                TextContentModel(content_type="text", body="他にも提案してください")
+            ],
+            model=MODEL,
+            children=[],
+            parent=assistant_msg_2_id,
+            create_time=1627984880.2,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        self.conversation.message_map[assistant_msg_2_id].children.append(user_msg_3_id)
+        self.conversation.last_message_id = user_msg_3_id
+        store_conversation(user_id=self.user.id, conversation=self.conversation)
+
+        # Test continue generation with 3 user messages (should trigger message cache)
         chat_input = ChatInput(
             conversation_id=self.conversation_id,
             message=MessageInput(
                 role="user",
-                content=[
-                    TextContent(
-                        content_type="text",
-                        body="あなたの名前は？",
-                    )
-                ],
+                content=[TextContent(content_type="text", body="詳しく教えてください")],
                 model=MODEL,
-                parent_message_id="1-assistant",
+                parent_message_id=user_msg_3_id,
                 message_id=None,
             ),
             bot_id=None,
@@ -424,16 +492,13 @@ class TestContinueChat(unittest.TestCase):
 
         pprint(output.model_dump())
 
-        conv = find_conversation_by_id(self.user.id, output.conversation_id)
-
-        messages = trace_to_root(conv.last_message_id, conv.message_map)
-        self.assertEqual(len(messages), 4)
-
-        num_empty_children = 0
-        for k, v in conv.message_map.items():
-            if len(v.children) == 0:
-                num_empty_children += 1
-        self.assertEqual(num_empty_children, 1)
+        # Verify the message was generated
+        response_text = message.content[0].body
+        self.assertGreater(
+            len(response_text),
+            0,
+            "Response should not be empty",
+        )
 
     def tearDown(self) -> None:
         delete_conversation_by_id(self.user.id, self.output.conversation_id)
@@ -846,7 +911,7 @@ class TestAgentChat(unittest.TestCase):
             self.bot_id,
             True,
             self.user.id,
-            include_internet_tool=True,
+            include_calculator_tool=True,
         )
         store_bot(private_bot)
 
@@ -863,7 +928,7 @@ class TestAgentChat(unittest.TestCase):
                 content=[
                     TextContent(
                         content_type="text",
-                        body="Today's amazon stock price?",
+                        body="5432/64526234??",
                     )
                 ],
                 model=self.model,

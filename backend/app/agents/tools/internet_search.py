@@ -1,12 +1,12 @@
-import logging
 import json
+import logging
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel, InternetToolModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 from duckduckgo_search import DDGS
-from firecrawl.firecrawl import FirecrawlApp
+from firecrawl import FirecrawlApp
 from pydantic import BaseModel, Field, root_validator
 
 logger = logging.getLogger(__name__)
@@ -138,48 +138,104 @@ def _search_with_firecrawl(
     try:
         app = FirecrawlApp(api_key=api_key)
 
+        # Search using Firecrawl
+        # SearchParams: https://github.com/mendableai/firecrawl/blob/main/apps/python-sdk/firecrawl/firecrawl.py#L24
+        from firecrawl import ScrapeOptions
+
         # Incoming locale is language-country (e.g. 'en-us').
         language, country = locale.split("-", 1)
         results = app.search(
             query,
-            {
-                "limit": max_results,
-                "lang": language,
-                "location": country,
-                "scrapeOptions": {"formats": ["markdown"], "onlyMainContent": True},
-            },
+            limit=max_results,
+            lang=language,
+            location=country,
+            scrape_options=ScrapeOptions(formats=["markdown"], onlyMainContent=True),
         )
 
         if not results:
             logger.warning("No results found")
             return []
-        logger.info(f"results of firecrawl: {results}")
+
+        # Log detailed information about the results object
+        logger.info(
+            f"results of firecrawl: success={getattr(results, 'success', 'unknown')} warning={getattr(results, 'warning', None)} error={getattr(results, 'error', None)}"
+        )
+
+        # Log the data structure
+        if hasattr(results, "data"):
+            data_sample = results.data[:1] if results.data else []
+            logger.info(f"data sample: {data_sample}")
+        else:
+            logger.info(
+                f"results attributes: {[attr for attr in dir(results) if not attr.startswith('_')]}"
+            )
+            logger.info(
+                f"results as dict attempt: {dict(results) if hasattr(results, '__dict__') else 'no __dict__'}"
+            )
 
         # Format and summarize search results
         search_results = []
-        for data in results.get("data", []):
-            if isinstance(data, dict):
-                title = data.get("title", "")
-                url = data.get("metadata", {}).get("sourceURL", "")
-                content = data.get("markdown", {})
 
-                # Summarize the content
-                summary = _summarize_content(content, title, url, query)
+        # Handle Firecrawl SearchResponse object structure
+        # The Python SDK returns a SearchResponse object with .data attribute
+        if hasattr(results, "data") and results.data:
+            data_list = results.data
+        else:
+            logger.error(
+                f"No data found in results. Results type: {type(results)}, attributes: {[attr for attr in dir(results) if not attr.startswith('_')]}"
+            )
+            return []
 
-                search_results.append(
-                    {
-                        "content": summary,
-                        "source_name": title,
-                        "source_link": url,
-                    }
+        logger.info(f"Found {len(data_list)} data items")
+        for i, data in enumerate(data_list):
+            try:
+                logger.info(
+                    f"Data item {i}: type={type(data)}, keys={list(data.keys()) if isinstance(data, dict) else 'not dict'}"
                 )
+
+                if isinstance(data, dict):
+                    title = data.get("title", "")
+                    # Try different URL fields based on Firecrawl API response structure
+                    url = data.get("url", "") or (
+                        data.get("metadata", {}).get("sourceURL", "")
+                        if isinstance(data.get("metadata"), dict)
+                        else ""
+                    )
+                    content = data.get("markdown", "") or data.get("content", "")
+
+                    if not title and not content:
+                        logger.warning(f"Skipping data item {i} - no title or content")
+                        continue
+
+                    # Summarize the content
+                    summary = _summarize_content(content, title, url, query)
+
+                    search_results.append(
+                        {
+                            "content": summary,
+                            "source_name": title,
+                            "source_link": url,
+                        }
+                    )
+                else:
+                    logger.warning(f"Data item {i} is not a dict: {type(data)}")
+            except Exception as e:
+                logger.error(f"Error processing data item {i}: {e}")
+                continue
 
         logger.info(f"Found {len(search_results)} results from Firecrawl")
         return search_results
 
     except Exception as e:
         logger.error(f"Error searching with Firecrawl: {e}")
-        raise e
+        logger.error(f"Exception type: {type(e)}")
+        logger.error(f"Exception args: {e.args}")
+        import traceback
+
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
+        # Instead of raising, return empty list to allow fallback
+        return []
 
 
 def _internet_search(
@@ -211,22 +267,38 @@ def _internet_search(
     # Handle Firecrawl search
     if internet_tool.search_engine == "firecrawl":
         if not internet_tool.firecrawl_config:
-            raise ValueError("Firecrawl configuration is not set in the bot.")
+            logger.error(
+                "Firecrawl configuration is not set in the bot, falling back to DuckDuckGo"
+            )
+            return _search_with_duckduckgo(query, time_limit, locale)
 
         try:
             api_key = internet_tool.firecrawl_config.api_key
             if not api_key:
-                raise ValueError("Firecrawl API key is empty")
+                logger.error("Firecrawl API key is empty, falling back to DuckDuckGo")
+                return _search_with_duckduckgo(query, time_limit, locale)
 
-            return _search_with_firecrawl(
+            results = _search_with_firecrawl(
                 query=query,
                 api_key=api_key,
                 locale=locale,
                 max_results=internet_tool.firecrawl_config.max_results,
             )
+
+            # If Firecrawl returns empty results, fallback to DuckDuckGo
+            if not results:
+                logger.warning(
+                    "Firecrawl returned no results, falling back to DuckDuckGo"
+                )
+                return _search_with_duckduckgo(query, time_limit, locale)
+
+            return results
+
         except Exception as e:
-            logger.error(f"Error with Firecrawl search: {e}")
-            raise e
+            logger.error(
+                f"Error with Firecrawl search: {e}, falling back to DuckDuckGo"
+            )
+            return _search_with_duckduckgo(query, time_limit, locale)
 
     # Fallback to DuckDuckGo for any unexpected cases
     logger.warning("Unexpected search engine configuration, falling back to DuckDuckGo")

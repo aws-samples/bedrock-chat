@@ -2,8 +2,7 @@ import logging
 import os
 from typing import Literal, TypeGuard
 
-from app.agents.tools.agent_tool import AgentTool
-from app.agents.utils import get_available_tools
+from app.agents.tools.agent_tool import AgentTool as LegacyAgentTool
 from app.config import DEFAULT_GENERATION_CONFIG
 from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.common import RecordNotFoundError
@@ -72,6 +71,7 @@ from app.routes.schemas.bot import (
 )
 from app.routes.schemas.bot_guardrails import BedrockGuardrailsOutput
 from app.routes.schemas.bot_kb import BedrockKnowledgeBaseOutput
+from app.strands_integration.utils import get_strands_registered_tools
 from app.user import User
 from app.utils import (
     compose_upload_document_s3_path,
@@ -645,31 +645,72 @@ def remove_uploaded_file(user: User, bot_id: str, filename: str):
 
 def fetch_available_agent_tools() -> list[Tool]:
     """Fetch available tools for bot."""
-    tools: list[AgentTool] = get_available_tools()
-    result: list[Tool] = []
-    for tool in tools:
-        if tool.name == "bedrock_agent":
-            result.append(
-                BedrockAgentTool(
-                    tool_type="bedrock_agent",
-                    name=tool.name,
-                    description=tool.description,
+    use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
+
+    if use_strands:
+        # Use Strands integration
+        tools = get_strands_registered_tools()
+        result: list[Tool] = []
+        for tool in tools:
+            # Extract only the first line of description to avoid showing Args/Returns in UI
+            description = tool.tool_spec["description"].split("\n")[0].strip()
+            if tool.tool_name == "bedrock_agent":
+                result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=tool.tool_name,
+                        description=description,
+                    )
                 )
-            )
-        elif tool.name == "internet_search":
-            result.append(
-                InternetTool(
-                    tool_type="internet",
-                    name=tool.name,
-                    description=tool.description,
-                    search_engine="duckduckgo",
+            elif tool.tool_name == "internet_search":
+                result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=tool.tool_name,
+                        description=description,
+                        search_engine="duckduckgo",
+                    )
                 )
-            )
-        else:
-            result.append(
-                PlainTool(
-                    tool_type="plain", name=tool.name, description=tool.description
+            else:
+                result.append(
+                    PlainTool(
+                        tool_type="plain",
+                        name=tool.tool_name,
+                        description=description,
+                    )
                 )
-            )
+    else:
+        # Use legacy agents.utils
+        from app.agents.utils import get_available_tools
+
+        legacy_tools: list[LegacyAgentTool] = get_available_tools()
+        legacy_result: list[Tool] = []
+        for legacy_tool in legacy_tools:
+            if legacy_tool.name == "bedrock_agent":
+                legacy_result.append(
+                    BedrockAgentTool(
+                        tool_type="bedrock_agent",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                    )
+                )
+            elif legacy_tool.name == "internet_search":
+                legacy_result.append(
+                    InternetTool(
+                        tool_type="internet",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                        search_engine="duckduckgo",
+                    )
+                )
+            else:
+                legacy_result.append(
+                    PlainTool(
+                        tool_type="plain",
+                        name=legacy_tool.name,
+                        description=legacy_tool.description,
+                    )
+                )
+        result = legacy_result
 
     return result

@@ -25,12 +25,17 @@ const translation = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          'Latest version of the most powerful Claude model with enhanced reasoning capabilities.',
+          'Latest version of the most powerful Opus model with enhanced reasoning capabilities.',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
           'Balanced hybrid reasoning model optimized for efficiency at scale with 200K token context window.',
+      },
+      'claude-v4.5-sonnet': {
+        label: 'Claude 4.5 (Sonnet)',
+        description:
+          'The latest version of the Sonnet model that achieves the highest level of coding performance and extended task processing',
       },
       'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',

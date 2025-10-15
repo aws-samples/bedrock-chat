@@ -1,10 +1,10 @@
 import logging
-from typing import Callable, Dict
+from typing import Callable
 
-from app.agents.tools.agent_tool import AgentTool, ToolRunResult
-from app.agents.tools.knowledge import create_knowledge_tool
+from app.agents.tools.agent_tool import ToolRunResult
 from app.agents.utils import get_tools
 from app.bedrock import (
+    BedrockGuardrailsModel,
     call_converse_api,
     compose_args_for_converse_api,
     is_tooluse_supported,
@@ -31,7 +31,6 @@ from app.repositories.models.conversation import (
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotModel,
-    ConversationQuickStarterModel,
     GenerationParamsModel,
 )
 from app.routes.schemas.conversation import (
@@ -39,7 +38,6 @@ from app.routes.schemas.conversation import (
     ChatOutput,
     Chunk,
     Conversation,
-    ConversationMetaOutput,
     ConversationSearchResult,
     FeedbackOutput,
     MessageOutput,
@@ -54,8 +52,8 @@ from app.vector_search import (
     SearchResult,
     search_related_docs,
     search_result_to_related_document,
-    to_guardrails_grounding_source,
 )
+from typing_extensions import deprecated
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -218,12 +216,6 @@ def chat(
     on_reasoning: Callable[[str], None] | None = None,
 ) -> tuple[ConversationModel, MessageModel]:
     user_msg_id, conversation, bot = prepare_conversation(user, chat_input)
-
-    # # Set tools only when tooluse is supported
-    tools: Dict[str, AgentTool] = {}
-    if is_tooluse_supported(chat_input.message.model):
-        tools = get_tools(bot)
-
     display_citation = bot is not None and bot.display_retrieved_chunks
 
     message_map = conversation.message_map
@@ -241,12 +233,6 @@ def chat(
     search_results: list[SearchResult] = []
     if bot is not None:
         if bot.is_agent_enabled() and is_tooluse_supported(chat_input.message.model):
-            # If it have a knowledge base, always process it in agent mode
-            if bot.has_knowledge():
-                # Add knowledge tool
-                knowledge_tool = create_knowledge_tool(bot=bot)
-                tools[knowledge_tool.name] = knowledge_tool
-
             if display_citation:
                 instructions.append(
                     get_prompt_to_cite_tool_results(
@@ -313,9 +299,7 @@ def chat(
         message_map=message_map,
     )
 
-    continue_generate = chat_input.continue_generate
-
-    if continue_generate:
+    if chat_input.continue_generate:
         message_for_continue_generate = SimpleMessageModel.from_message_model(
             message=message_map[conversation.last_message_id],
         )
@@ -330,10 +314,92 @@ def chat(
 
     # Guardrails
     guardrail = bot.bedrock_guardrails if bot else None
-    grounding_source = None
-    if guardrail and guardrail.is_guardrail_enabled:
-        grounding_source = to_guardrails_grounding_source(search_results)
 
+    def on_tool_run_result(run_result: ToolRunResult):
+        if run_result["status"] == "success":
+            related_documents.extend(run_result["related_documents"])
+
+        if on_tool_result:
+            on_tool_result(run_result)
+
+    """
+    Routes to Strands or legacy implementation based on USE_STRANDS environment variable.
+    """
+    import os
+
+    use_strands = os.environ.get("USE_STRANDS", "true").lower() == "true"
+
+    if use_strands:
+        from app.strands_integration.chat_strands import converse_with_strands
+
+        result = converse_with_strands(
+            bot=bot,
+            chat_input=chat_input,
+            instructions=instructions,
+            generation_params=generation_params,
+            guardrail=guardrail,
+            display_citation=display_citation,
+            messages=messages,
+            search_results=search_results,
+            on_stream=on_stream,
+            on_thinking=on_thinking,
+            on_tool_result=on_tool_run_result,
+            on_reasoning=on_reasoning,
+        )
+
+    else:
+        result = converse_legacy(
+            bot=bot,
+            chat_input=chat_input,
+            instructions=instructions,
+            generation_params=generation_params,
+            guardrail=guardrail,
+            display_citation=display_citation,
+            messages=messages,
+            search_results=search_results,
+            on_stream=on_stream,
+            on_thinking=on_thinking,
+            on_tool_result=on_tool_run_result,
+            on_reasoning=on_reasoning,
+        )
+
+    # Post handling: process the result and update conversation
+    return post_process_result(
+        result=result,
+        message_for_continue_generate=message_for_continue_generate,
+        conversation=conversation,
+        user_msg_id=user_msg_id,
+        bot=bot,
+        user=user,
+        chat_input=chat_input,
+        search_results=search_results,
+        related_documents=related_documents,
+        on_stop=on_stop,
+    )
+
+
+@deprecated("Use chat() instead")
+def converse_legacy(
+    bot: BotModel | None,
+    chat_input: ChatInput,
+    instructions: list[str],
+    generation_params: GenerationParamsModel | None,
+    guardrail: BedrockGuardrailsModel | None,
+    display_citation: bool,
+    messages: list[SimpleMessageModel],
+    search_results: list[SearchResult],
+    on_stream: Callable[[str], None] | None = None,
+    on_thinking: Callable[[OnThinking], None] | None = None,
+    on_tool_result: Callable[[ToolRunResult], None] | None = None,
+    on_reasoning: Callable[[str], None] | None = None,
+) -> OnStopInput:
+    """
+    Legacy converse implementation.
+
+    WARNING: This implementation is deprecated and will be removed in a future version.
+    Please migrate to the Strands-based implementation by setting USE_STRANDS=true.
+    """
+    tools = get_tools(bot, chat_input.message.model)
     stream_handler = ConverseApiStreamHandler(
         model=chat_input.message.model,
         instructions=instructions,
@@ -346,11 +412,18 @@ def chat(
     )
 
     thinking_log: list[SimpleMessageModel] = []
+
+    continue_generate = chat_input.continue_generate
+    input_token_count = 0
+    output_token_count = 0
+    cache_read_input_count = 0
+    cache_write_input_count = 0
+    price = 0.0
+
     while True:
-        result = stream_handler.run(
+        result: OnStopInput = stream_handler.run(
             messages=messages,
-            grounding_source=grounding_source,
-            message_for_continue_generate=message_for_continue_generate,
+            search_results=search_results,
             enable_reasoning=chat_input.enable_reasoning,
             prompt_caching_enabled=(
                 bot.prompt_caching_enabled if bot is not None else True
@@ -360,12 +433,13 @@ def chat(
         message = result["message"]
         stop_reason = result["stop_reason"]
 
-        conversation.total_price += result["price"]
-        conversation.should_continue = stop_reason == "max_tokens"
+        input_token_count += result["input_token_count"]
+        output_token_count += result["output_token_count"]
+        cache_read_input_count += result["cache_read_input_count"]
+        cache_write_input_count += result["cache_write_input_count"]
+        price += result["price"]
 
         if stop_reason != "tool_use":  # Tool use converged
-            message.parent = user_msg_id
-
             # Retain tool use and its result logs
             tool_logs = [
                 log
@@ -378,44 +452,21 @@ def chat(
             if tool_logs:
                 message.thinking_log = tool_logs
 
-            if chat_input.continue_generate:
-                # For continue generate
-                if len(thinking_log) == 0:
-                    assistant_msg_id = conversation.last_message_id
-                    conversation.message_map[assistant_msg_id] = message
-                    break
-
-                else:
-                    old_assistant_msg_id = conversation.last_message_id
-                    conversation.message_map[user_msg_id].children.remove(
-                        old_assistant_msg_id
-                    )
-                    del conversation.message_map[old_assistant_msg_id]
-
-            # Issue id for new assistant message
-            assistant_msg_id = str(ULID())
-            conversation.message_map[assistant_msg_id] = message
-
-            # Append children to parent
-            conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-            conversation.last_message_id = assistant_msg_id
-
-            search_results_as_related_documents = [
-                search_result_to_related_document(
-                    search_result=result,
-                    source_id_base=assistant_msg_id,
-                )
-                for result in search_results
-            ]
-            related_documents.extend(search_results_as_related_documents)
-            break
+            return OnStopInput(
+                message=message,
+                stop_reason=stop_reason,
+                input_token_count=input_token_count,
+                output_token_count=output_token_count,
+                cache_read_input_count=cache_read_input_count,
+                cache_write_input_count=cache_write_input_count,
+                price=price,
+            )
 
         tool_use_message = SimpleMessageModel.from_message_model(message=message)
         if continue_generate:
             messages[-1] = tool_use_message
 
             continue_generate = False
-            message_for_continue_generate = None
 
         else:
             messages.append(tool_use_message)
@@ -439,9 +490,6 @@ def chat(
             )
             run_results.append(run_result)
 
-            if run_result["status"] == "success":
-                related_documents.extend(run_result["related_documents"])
-
             if on_tool_result:
                 on_tool_result(run_result)
 
@@ -459,20 +507,84 @@ def chat(
         messages.append(tool_result_message)
         thinking_log.append(tool_result_message)
 
+
+def post_process_result(
+    result: OnStopInput,
+    message_for_continue_generate: SimpleMessageModel | None,
+    conversation: ConversationModel,
+    user_msg_id: str,
+    bot: BotModel | None,
+    user: User,
+    chat_input: ChatInput,
+    search_results: list[SearchResult],
+    related_documents: list[RelatedDocumentModel],
+    on_stop: Callable[[OnStopInput], None] | None = None,
+):
+    """Post-process OnStopInput and update conversation."""
+
+    message = result["message"]
+    stop_reason = result["stop_reason"]
+
+    conversation.total_price += result["price"]
+    conversation.should_continue = stop_reason == "max_tokens"
+
+    # Set message parent and generate assistant message ID
+    message.parent = user_msg_id
+
+    # Generate assistant message ID
+    if chat_input.continue_generate and not message.thinking_log:
+        if message_for_continue_generate is not None:
+            message.continue_from(message_for_continue_generate)
+
+        assistant_msg_id = conversation.last_message_id
+        conversation.message_map[assistant_msg_id] = message
+
+    else:
+        if chat_input.continue_generate and message.thinking_log:
+            if message_for_continue_generate is not None:
+                message.thinking_log[0].continue_from(message_for_continue_generate)
+
+            # Remove old assistant message and create new one
+            old_assistant_msg_id = conversation.last_message_id
+            conversation.message_map[user_msg_id].children.remove(old_assistant_msg_id)
+            del conversation.message_map[old_assistant_msg_id]
+
+        # Issue id for new assistant message
+        assistant_msg_id = str(ULID())
+        conversation.message_map[assistant_msg_id] = message
+
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
+
+        # Create related documents with consistent source_id format
+        search_results_as_related_documents = [
+            search_result_to_related_document(
+                search_result=result,
+                source_id_base=assistant_msg_id,
+            )
+            for result in search_results
+        ]
+
+        # Store RAG results in ToolResultCapture for citation support
+        related_documents.extend(search_results_as_related_documents)
+
     # Store conversation before finish streaming so that front-end can avoid 404 issue
     store_conversation(user.id, conversation)
-    store_related_documents(
-        user_id=user.id,
-        conversation_id=conversation.id,
-        related_documents=related_documents,
-    )
+    if related_documents:
+        store_related_documents(
+            user_id=user.id,
+            conversation_id=conversation.id,
+            related_documents=related_documents,
+        )
 
+    # Call on_stop callback
     if on_stop:
         on_stop(result)
 
-    # Update bot last used time
+    # Update bot statistics
     if bot:
-        logger.info("Bot is provided. Updating bot last used time.")
+        logger.debug("Bot is provided. Updating bot last used time.")
         # Update bot last used time
         modify_bot_last_used_time(user, bot)
         # Update bot stats

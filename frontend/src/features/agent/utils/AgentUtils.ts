@@ -17,7 +17,7 @@ export const convertThinkingLogToAgentToolProps = (
   })));
   return thinkingLog.flatMap(message => {
     const reasonings = message.content.flatMap(content => {
-      if (content.contentType === 'reasoning') {
+      if (content.contentType === 'reasoning' && content.text) {
         return [content.text];
       } else {
         return [];
