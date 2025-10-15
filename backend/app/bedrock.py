@@ -839,7 +839,8 @@ def generation_params_to_converse_configuration(
     if not is_specify_both_temperature_and_top_p_supported(model):
         inference_config = converse_configuration["inferenceConfig"]
         if (
-            inference_config.get("temperature") == DEFAULT_GENERATION_CONFIG["temperature"]
+            inference_config.get("temperature")
+            == DEFAULT_GENERATION_CONFIG["temperature"]
             and inference_config.get("topP") != DEFAULT_GENERATION_CONFIG["top_p"]
         ):
             del inference_config["temperature"]
