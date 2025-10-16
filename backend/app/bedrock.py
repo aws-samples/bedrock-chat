@@ -196,10 +196,11 @@ REGIONAL_INFERENCE_PROFILES = {
             "us-east-2": "us",
             "us-west-1": "us",
             "us-west-2": "us",
+            "ap-northeast-1": "jp",
+            "ap-northeast-3": "jp",
             "eu-central-1": "eu",
             "eu-north-1": "eu",
             "eu-west-1": "eu",
-            "eu-west-2": "eu",
             "eu-west-3": "eu",
             "eu-south-1": "eu",
             "eu-south-2": "eu",
@@ -389,6 +390,7 @@ def is_tooluse_supported(model: type_model_name) -> bool:
 def is_specify_both_temperature_and_top_p_supported(model: type_model_name) -> bool:
     return model not in [
         "claude-v4.5-sonnet",
+        "claude-v4.5-haiku",
     ]
 
 
