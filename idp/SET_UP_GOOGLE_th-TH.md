@@ -1,35 +1,35 @@
-# การตั้งค่าผู้ให้บริการตัวตนภายนอกสำหรับ Google
+# ตั้งค่าผู้ให้บริการยืนยันตัวตนภายนอกสำหรับ Google
 
-## ขั้นตอนที่ 1: สร้างไคลเอ็นต์ Google OAuth 2.0
+## ขั้นตอนที่ 1: สร้าง Google OAuth 2.0 Client
 
-1. ไปที่คอนโซลนักพัฒนาของ Google
-2. สร้างโปรเจ็กต์ใหม่หรือเลือกโปรเจ็กต์ที่มีอยู่
-3. ไปที่ "ข้อมูลประจำตัว" แล้วคลิก "สร้างข้อมูลประจำตัว" และเลือก "ไอดีไคลเอ็นต์ OAuth"
-4. กำหนดค่าหน้าจอความยินยอมหากมีการแจ้งเตือน
-5. สำหรับประเภทแอปพลิเคชัน ให้เลือก "เว็บแอปพลิเคชัน"
-6. ปล่อยให้ URI การเปลี่ยนเส้นทางว่างไว้ก่อนเพื่อตั้งค่าในภายหลัง [ดูขั้นตอนที่ 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. เมื่อสร้างเสร็จ ให้จดบันทึก Client ID และ Client Secret
+1. ไปที่ Google Developer Console
+2. สร้างโปรเจกต์ใหม่หรือเลือกโปรเจกต์ที่มีอยู่
+3. นำทางไปที่ "Credentials" จากนั้นคลิกที่ "Create Credentials" และเลือก "OAuth client ID"
+4. ตั้งค่าหน้าจอการยินยอมหากมีการแจ้งเตือน
+5. สำหรับประเภทแอปพลิเคชัน ให้เลือก "Web application"
+6. เว้น redirect URI ว่างไว้ก่อนเพื่อตั้งค่าภายหลัง [ดูขั้นตอนที่ 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+7. เมื่อสร้างเสร็จแล้ว จดบันทึก Client ID และ Client Secret
 
-สำหรับรายละเอียด โปรดเยี่ยมชม [เอกสารอย่างเป็นทางการของ Google](https://support.google.com/cloud/answer/6158849?hl=en)
+สำหรับรายละเอียดเพิ่มเติม เยี่ยมชม [เอกสารอย่างเป็นทางการของ Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
-## ขั้นตอนที่ 2: จัดเก็บข้อมูลประจำตัว Google OAuth ใน AWS Secrets Manager
+## ขั้นตอนที่ 2: จัดเก็บข้อมูลรับรอง Google OAuth ใน AWS Secrets Manager
 
 1. ไปที่ AWS Management Console
 2. นำทางไปที่ Secrets Manager และเลือก "Store a new secret"
 3. เลือก "Other type of secrets"
-4. ป้อน Google OAuth clientId และ clientSecret เป็นคู่คีย์และค่า
+4. ป้อนค่า clientId และ clientSecret ของ Google OAuth เป็นคู่ key-value
 
-   1. คีย์: clientId, ค่า: <YOUR_GOOGLE_CLIENT_ID>
-   2. คีย์: clientSecret, ค่า: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
+   2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. ทำตามคำแนะนำเพื่อตั้งชื่อและอธิบายข้อมูลลับ สังเกตชื่อข้อมูลลับเนื่องจากคุณจะต้องใช้ในโค้ด CDK ของคุณ ตัวอย่างเช่น googleOAuthCredentials (ใช้ในชื่อตัวแปร <YOUR_SECRET_NAME> ของขั้นตอนที่ 3)
+5. ทำตามคำแนะนำเพื่อตั้งชื่อและอธิบายข้อมูลลับ จดจำชื่อข้อมูลลับเนื่องจากคุณจะต้องใช้ในโค้ด CDK ของคุณ ตัวอย่างเช่น googleOAuthCredentials (ใช้ในขั้นตอนที่ 3 ชื่อตัวแปร <YOUR_SECRET_NAME>)
 6. ตรวจสอบและจัดเก็บข้อมูลลับ
 
 ### ข้อควรระวัง
 
-ชื่อคีย์ต้องตรงกับสตริง 'clientId' และ 'clientSecret' โดยเคร่งครัด
+ชื่อ key ต้องตรงกับข้อความ 'clientId' และ 'clientSecret' อย่างแน่นอน
 
-## ขั้นตอนที่ 3: อัปเดต cdk.json
+## ขั้นตอนที่ 3: อัปเดตไฟล์ cdk.json
 
 ในไฟล์ cdk.json ของคุณ ให้เพิ่ม ID Provider และ SecretName ลงในไฟล์ cdk.json
 
@@ -42,10 +42,10 @@
     "identityProviders": [
       {
         "service": "google",
-        "secretName": "<ชื่อความลับของคุณ>"
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<คำนำหน้าโดเมนที่ไม่ซ้ำกันสำหรับ User Pool ของคุณ>"
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```
@@ -54,16 +54,16 @@
 
 #### ความเป็นเอกลักษณ์
 
-คำนำหน้าโดเมนของ User Pool ต้องมีความเป็นเอกลักษณ์ทั่วโลกสำหรับผู้ใช้ Amazon Cognito ทั้งหมด หากคุณเลือกคำนำหน้าที่ถูกใช้งานแล้วโดยบัญชี AWS อื่น การสร้างโดเมน User Pool จะล้มเหลว เป็นวิธีปฏิบัติที่ดีในการรวมตัวระบุ ชื่อโครงการ หรือชื่อสภาพแวดล้อมลงในคำนำหน้าเพื่อรับประกันความเป็นเอกลักษณ์
+userPoolDomainPrefix จะต้องมีความเป็นเอกลักษณ์ในระดับโลกสำหรับผู้ใช้ Amazon Cognito ทั้งหมด หากคุณเลือกคำนำหน้าที่มีการใช้งานแล้วโดยบัญชี AWS อื่น การสร้างโดเมนของ user pool จะล้มเหลว แนวปฏิบัติที่ดีคือการรวมตัวระบุ ชื่อโครงการ หรือชื่อสภาพแวดล้อมไว้ในคำนำหน้าเพื่อให้แน่ใจว่ามีความเป็นเอกลักษณ์
 
-## ขั้นตอนที่ 4: ปรับใช้สแต็ก CDK
+## ขั้นตอนที่ 4: ติดตั้ง CDK Stack ของคุณ
 
-ปรับใช้สแต็ก CDK ไปยัง AWS:
+ติดตั้ง CDK stack ของคุณไปยัง AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## ขั้นตอนที่ 5: อัปเดตไคลเอนต์ Google OAuth ด้วย URI การเปลี่ยนเส้นทางของ Cognito
+## ขั้นตอนที่ 5: อัปเดต Google OAuth Client ด้วย URI การเปลี่ยนเส้นทางของ Cognito
 
-หลังจากการปรับใช้สแต็ก ค่า AuthApprovedRedirectURI จะปรากฏในผลลัพธ์ของ CloudFormation ให้กลับไปที่คอนโซลนักพัฒนา Google และอัปเดตไคลเอนต์ OAuth ด้วย URI การเปลี่ยนเส้นทางที่ถูกต้อง
+หลังจากที่ได้ทำการ deploy stack แล้ว AuthApprovedRedirectURI จะแสดงอยู่ในส่วนของผลลัพธ์ของ CloudFormation ให้กลับไปที่ Google Developer Console และอัปเดต OAuth client ด้วย URI การเปลี่ยนเส้นทางที่ถูกต้อง

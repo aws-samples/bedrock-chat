@@ -2,72 +2,69 @@
 
 ## 前提条件
 
-管理者ユーザーは、管理コンソール > Amazon Cognito ユーザープールまたはAWS CLIを介して設定できる `Admin` と呼ばれるグループのメンバーである必要があります。ユーザープールIDは、CloudFormation > BedrockChatStack > 出力 > `AuthUserPoolIdxxxx` にアクセスすることで参照できます。
+管理者ユーザーは、管理コンソール > Amazon Cognito ユーザープールまたはaws cliを通じて設定できる`Admin`というグループのメンバーである必要があります。なお、ユーザープールIDは、CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`からアクセスできます。
 
 ![](./imgs/group_membership_admin.png)
 
-## 公ボットットット」として指マーク
+## 公開ボットを「Essential」としてマークする
 
-公開ットボ管者者」ーク可能になり。「Essential（要要不可欠）」」とマークされたでたボットは、、ストアの「Essential」セクションに�特集され、ユーザーが�簡単にクる。これに理理者は、要すべのユ使用したほしい重要なボをットをピンできますよう。
-
-
+管理者は公開ボットを「Essential」（必須）としてマークできるようになりました。Essentialとしてマークされたボットは、ボットストアの「Essential」セクションに表示され、ユーザーが簡単にアクセスできるようになります。これにより、管理者は全ユーザーに使ってほしい重要なボットをピン留めすることができます。
 
 ### 例
 
-- HR ア助タントボット：従事関問と タスクを支援します。
-- ITサポートボットット技術的的的な問題とアカウント管理のサポート提供します。
-。
-- 内部針ドボット：出席規則、セ全セキュリティポリシー、その他の内部規定に関する頻繁な質問に回答します。
-- 新入社員オンボーディングボット：新入社員の初日の、順とシステム使用をガイドします。
-- 福利厚生情報ボット：会社の福利厚生プログラムと福祉サービスをします明。
+- HR アシスタントボット：人事関連の質問やタスクについて従業員をサポート
+- IT サポートボット：社内の技術的な問題やアカウント管理についてサポートを提供
+- 社内規定ガイドボット：勤怠規則、セキュリティポリシー、その他の社内規定に関するよくある質問に回答
+- 新入社員オンボーディングボット：初日の手続きやシステムの使用方法について新入社員をガイド
+- 福利厚生情報ボット：会社の福利厚生プログラムやサービスについて説明
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## フィードバックループ
 
-LLMの出力が常にユーザーの期待に応えるとは限りません。時にはユーザーのニーズを満たせないことがあります。LLMをビジネス運営や日常生活に効果的に「統合」するためには、フィードバックループの実装が不可欠です。Bedrock Chatには、ユーザーが不満の原因を分析できるフィードバック機能が備わっています。分析結果に基づき、ユーザーはプロンプト、RAGデータソース、パラメータを適切に調整できます。
+LLMからの出力は、必ずしもユーザーの期待に沿うものとは限りません。時にはユーザーのニーズを満たせないこともあります。LLMをビジネス運営や日常生活に効果的に「統合」するためには、フィードバックループの実装が不可欠です。Bedrock Chatには、不満が生じた理由を分析できるフィードバック機能が搭載されています。分析結果に基づいて、プロンプト、RAGデータソース、パラメータなどを適宜調整することができます。
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-データアナリストは、[Amazon Athena](https://aws.amazon.com/jp/athena/)を使用して会話ログにアクセスできます。[Jupyter Notebook](https://jupyter.org/)でデータを分析したい場合、[このノートブックの例](../examples/notebooks/feedback_analysis_example.ipynb)を参考にできます。
+データアナリストは[Amazon Athena](https://aws.amazon.com/jp/athena/)を使用して会話ログにアクセスできます。[Jupyter Notebook](https://jupyter.org/)でデータを分析したい場合は、[このノートブック例](../examples/notebooks/feedback_analysis_example.ipynb)を参考にすることができます。
 
 ## ダッシュボード
 
-現在、チャットボットとユーザーの使用状況に関する基本的な概要を提供しており、特定の期間内の各ボットとユーザーのデータを集計し、使用料金によって結果をソートすることに焦点を当てています。
+現在、チャットボットとユーザーの使用状況の基本的な概要を提供しており、各ボットとユーザーのデータを特定の期間にわたって集計し、使用料金順に結果を並べ替えることに重点を置いています。
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## 注意事項
 
-- [アーキテクチャ](../README.md#architecture)で述べられているように、管理者機能はDynamoDBからエクスポートされたS3バケットを参照します。エクスポートは1時間ごとに実行されるため、最新の会話がすぐに反映されない場合があることに注意してください。
+- [アーキテクチャ](../README.md#architecture)に記載されているように、管理者機能はDynamoDBからエクスポートされたS3バケットを参照します。エクスポートは1時間ごとに実行されるため、最新の会話がすぐには反映されない場合があることにご注意ください。
 
 - パブリックボットの使用状況では、指定された期間中に全く使用されていないボットは一覧に表示されません。
 
 - ユーザーの使用状況では、指定された期間中にシステムを全く使用していないユーザーは一覧に表示されません。
 
 > [!Important]
-> 複数の環境（dev、prod など）を使用している場合、Athenaデータベース名には環境プレフィックスが含まれます。`bedrockchatstack_usage_analysis`の代わりに、データベース名は次のようになります：
+> 複数の環境（dev、prodなど）を使用している場合、Athenaのデータベース名には環境のプレフィックスが含まれます。`bedrockchatstack_usage_analysis`の代わりに、以下のようになります：
 >
 > - デフォルト環境の場合：`bedrockchatstack_usage_analysis`
 > - 名前付き環境の場合：`<env-prefix>_bedrockchatstack_usage_analysis`（例：`dev_bedrockchatstack_usage_analysis`）
 >
-> さらに、テーブル名にも環境プレフィックスが含まれます：
+> さらに、テーブル名にも環境のプレフィックスが含まれます：
 >
 > - デフォルト環境の場合：`ddb_export`
 > - 名前付き環境の場合：`<env-prefix>_ddb_export`（例：`dev_ddb_export`）
 >
-> 複数の環境で作業する際は、クエリを適切に調整してください。
+> 複数の環境で作業する場合は、クエリを適切に調整するようにしてください。
 
 ## 会話データのダウンロード
 
-Athenaを使用してSQLで会話ログを照会できます。ログをダウンロードするには、管理コンソールからAthenaクエリエディターを開き、SQLを実行します。以下は、ユースケースを分析するのに役立つクエリの例です。フィードバックは`MessageMap`属性で参照できます。
+Athenaを使用してSQLで会話ログを照会することができます。ログをダウンロードするには、管理コンソールからAthena Query Editorを開いてSQLを実行します。以下は、ユースケースの分析に役立つクエリ例です。フィードバックは`MessageMap`属性で参照できます。
 
-### Bot IDごとのクエリ
+### ボットID別のクエリ
 
-`bot-id`と`datehour`を編集します。`bot-id`は、Bot公開APIからアクセスできるBot管理画面で確認できます。URLの最後の部分（`https://xxxx.cloudfront.net/admin/bot/<bot-id>`）に注意してください。
+`bot-id`と`datehour`を編集してください。`bot-id`は、左サイドバーに表示されているBot Publish APIsからアクセスできるBot Management画面で参照できます。URLの末尾の`https://xxxx.cloudfront.net/admin/bot/<bot-id>`のような部分に注目してください。
 
 ```sql
 SELECT
@@ -89,15 +86,15 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!メモ]
-> 名前付き環境（例：「dev」）を使用する場合、上記のクエリの`bedrockchatstack_usage_analysis.ddb_export`を`dev_bedrockchatstack_usage_analysis.dev_ddb_export`に置き換えてください。
+> [!Note]
+> 名前付き環境（例：「dev」）を使用している場合は、上記クエリの`bedrockchatstack_usage_analysis.ddb_export`を`dev_bedrockchatstack_usage_analysis.dev_ddb_export`に置き換えてください。
 
-### ユーザーIDごとのクエリ
+### ユーザーID別のクエリ
 
-`user-id`と`datehour`を編集します。`user-id`はBot管理画面で確認できます。
+`user-id`と`datehour`を編集してください。`user-id`はBot Management画面で参照できます。
 
-> [!メモ]
-> ユーザー利用状況分析は近日中に提供予定です。
+> [!Note]
+> ユーザー使用状況の分析は近日公開予定です。
 
 ```sql
 SELECT
@@ -119,5 +116,5 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!メモ]
-> 名前付き環境（例：「dev」）を使用する場合、上記のクエリの`bedrockchatstack_usage_analysis.ddb_export`を`dev_bedrockchatstack_usage_analysis.dev_ddb_export`に置き換えてください。
+> [!Note]
+> 名前付き環境（例：「dev」）を使用している場合は、上記クエリの`bedrockchatstack_usage_analysis.ddb_export`を`dev_bedrockchatstack_usage_analysis.dev_ddb_export`に置き換えてください。

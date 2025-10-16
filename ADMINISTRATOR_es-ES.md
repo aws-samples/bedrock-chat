@@ -2,69 +2,69 @@
 
 ## Requisitos previos
 
-El usuario administrador debe ser miembro de un grupo llamado `Admin`, que se puede configurar a través de la consola de administración > Grupos de usuarios de Amazon Cognito o la CLI de AWS. Ten en cuenta que el ID del grupo de usuarios se puede consultar accediendo a CloudFormation > BedrockChatStack > Salidas > `AuthUserPoolIdxxxx`.
+El usuario administrador debe ser miembro del grupo llamado `Admin`, que se puede configurar a través de la consola de administración > Amazon Cognito User pools o mediante aws cli. Ten en cuenta que el ID del grupo de usuarios se puede consultar accediendo a CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
 ## Marcar bots públicos como Esenciales
 
-Los bots públicos ahora pueden ser marcados como "Esenciales" por los administradores. Los bots marcados como Esenciales se mostrarán en la sección "Esenciales" de la tienda de bots, lo que los hace fácilmente accesibles para los usuarios. Esto permite a los administradores destacar bots importantes que quieren que todos los usuarios utilicen.
+Los bots públicos ahora pueden ser marcados como "Esenciales" por los administradores. Los bots marcados como Esenciales aparecerán destacados en la sección "Esencial" de la tienda de bots, haciéndolos fácilmente accesibles para los usuarios. Esto permite a los administradores fijar bots importantes que quieren que todos los usuarios utilicen.
 
 ### Ejemplos
 
-- Bot de Asistente de RR.HH.: Ayuda a los empleados con preguntas y tareas relacionadas con recursos humanos.
-- Bot de Soporte de TI: Proporciona asistencia para problemas técnicos internos y gestión de cuentas.
-- Bot de Guía de Políticas Internas: Responde preguntas frecuentes sobre reglas de asistencia, políticas de seguridad y otros reglamentos internos.
+- Bot Asistente de RRHH: Ayuda a los empleados con preguntas y tareas relacionadas con Recursos Humanos.
+- Bot de Soporte TI: Proporciona asistencia para problemas técnicos internos y gestión de cuentas.
+- Bot Guía de Políticas Internas: Responde a preguntas frecuentes sobre reglas de asistencia, políticas de seguridad y otras normativas internas.
 - Bot de Incorporación de Nuevos Empleados: Guía a los nuevos empleados a través de procedimientos y uso de sistemas en su primer día.
-- Bot de Información de Beneficios: Explica los programas de beneficios de la empresa y servicios de bienestar.
+- Bot de Información de Beneficios: Explica los programas de beneficios y servicios de bienestar de la empresa.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
-## Bucle de retroalimentación
+## Ciclo de retroalimentación
 
-La salida de LLM puede no satisfacer siempre las expectativas del usuario. A veces no logra cumplir con sus necesidades. Para "integrar" efectivamente los LLM en operaciones comerciales y la vida diaria, implementar un bucle de retroalimentación es esencial. Bedrock Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los prompts, las fuentes de datos RAG y los parámetros en consecuencia.
+La salida del LLM no siempre puede cumplir con las expectativas del usuario. A veces no logra satisfacer las necesidades del usuario. Para "integrar" efectivamente los LLMs en las operaciones comerciales y la vida diaria, es esencial implementar un ciclo de retroalimentación. Bedrock Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los prompts, las fuentes de datos RAG y los parámetros según corresponda.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Los analistas de datos pueden acceder a los registros de conversación utilizando [Amazon Athena](https://aws.amazon.com/jp/athena/). Si desean analizar los datos en [Jupyter Notebook](https://jupyter.org/), [este ejemplo de notebook](../examples/notebooks/feedback_analysis_example.ipynb) puede servir como referencia.
+Los analistas de datos pueden acceder a los registros de conversación utilizando [Amazon Athena](https://aws.amazon.com/jp/athena/). Si desean analizar los datos mediante [Jupyter Notebook](https://jupyter.org/), [este ejemplo de notebook](../examples/notebooks/feedback_analysis_example.ipynb) puede servir como referencia.
 
-## Panel de Control
+## Panel de control
 
-Actualmente proporciona una visión general básica del uso de chatbots y usuarios, centrándose en agregar datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados por tarifas de uso.
+Actualmente proporciona una visión general básica del uso del chatbot y los usuarios, centrándose en agregar datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados por tarifas de uso.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Notas
 
-- Como se indica en la [arquitectura](../README.md#architecture), las funciones de administración harán referencia al bucket de S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza cada hora, es posible que las conversaciones más recientes no se reflejen inmediatamente.
+- Como se indica en la [arquitectura](../README.md#architecture), las funciones de administración harán referencia al bucket S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza una vez cada hora, es posible que las conversaciones más recientes no se reflejen inmediatamente.
 
-- En usos públicos de bots, los bots que no hayan sido utilizados en absoluto durante el período especificado no se mostrarán.
+- En los usos de bots públicos, los bots que no se hayan utilizado en absoluto durante el período especificado no aparecerán en la lista.
 
-- En usos de usuarios, los usuarios que no hayan utilizado el sistema durante el período especificado no se mostrarán.
+- En los usos de usuario, los usuarios que no hayan utilizado el sistema en absoluto durante el período especificado no aparecerán en la lista.
 
-> [!Importante]
-> Si está utilizando varios entornos (dev, prod, etc.), el nombre de la base de datos de Athena incluirá el prefijo del entorno. En lugar de `bedrockchatstack_usage_analysis`, el nombre de la base de datos será:
+> [!Important]
+> Si está utilizando múltiples entornos (dev, prod, etc.), el nombre de la base de datos de Athena incluirá el prefijo del entorno. En lugar de `bedrockchatstack_usage_analysis`, el nombre de la base de datos será:
 >
 > - Para el entorno predeterminado: `bedrockchatstack_usage_analysis`
-> - Para entornos con nombre: `<prefijo-env>_bedrockchatstack_usage_analysis` (por ejemplo, `dev_bedrockchatstack_usage_analysis`)
+> - Para entornos con nombre: `<env-prefix>_bedrockchatstack_usage_analysis` (por ejemplo, `dev_bedrockchatstack_usage_analysis`)
 >
 > Además, el nombre de la tabla incluirá el prefijo del entorno:
 >
 > - Para el entorno predeterminado: `ddb_export`
-> - Para entornos con nombre: `<prefijo-env>_ddb_export` (por ejemplo, `dev_ddb_export`)
+> - Para entornos con nombre: `<env-prefix>_ddb_export` (por ejemplo, `dev_ddb_export`)
 >
-> Asegúrese de ajustar sus consultas en consecuencia al trabajar con varios entornos.
+> Asegúrese de ajustar sus consultas en consecuencia cuando trabaje con múltiples entornos.
 
 ## Descargar datos de conversación
 
-Puede consultar los registros de conversaciones mediante Athena, utilizando SQL. Para descargar los registros, abra el Editor de Consultas de Athena desde la consola de administración y ejecute SQL. A continuación, se muestran algunos ejemplos de consultas útiles para analizar casos de uso. Los comentarios pueden consultarse en el atributo `MessageMap`.
+Puede consultar los registros de conversación mediante Athena, usando SQL. Para descargar los registros, abra el Editor de consultas de Athena desde la consola de administración y ejecute SQL. A continuación se muestran algunos ejemplos de consultas útiles para analizar casos de uso. Los comentarios se pueden consultar en el atributo `MessageMap`.
 
 ### Consulta por ID de Bot
 
-Edite `bot-id` y `datehour`. El `bot-id` se puede consultar en la pantalla de Administración de Bots, a la que se puede acceder desde las API de Publicación de Bots, que se muestra en la barra lateral izquierda. Tenga en cuenta la parte final de la URL, como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edite `bot-id` y `datehour`. El `bot-id` se puede consultar en la pantalla de Gestión de Bots, a la que se puede acceder desde las APIs de Publicación de Bots, que se muestran en la barra lateral izquierda. Observe la parte final de la URL como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -86,15 +86,15 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Nota]
-> Si está utilizando un entorno con nombre (por ejemplo, "dev"), reemplace `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` en la consulta anterior.
+> [!Note]
+> Si usa un entorno con nombre (por ejemplo, "dev"), reemplace `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` en la consulta anterior.
 
 ### Consulta por ID de Usuario
 
-Edite `user-id` y `datehour`. El `user-id` se puede consultar en la pantalla de Administración de Bots.
+Edite `user-id` y `datehour`. El `user-id` se puede consultar en la pantalla de Gestión de Bots.
 
-> [!Nota]
-> Los análisis de uso de usuario están próximamente disponibles.
+> [!Note]
+> El análisis de uso por usuario estará disponible próximamente.
 
 ```sql
 SELECT
@@ -116,5 +116,5 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Nota]
-> Si está utilizando un entorno con nombre (por ejemplo, "dev"), reemplace `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` en la consulta anterior.
+> [!Note]
+> Si usa un entorno con nombre (por ejemplo, "dev"), reemplace `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` en la consulta anterior.
