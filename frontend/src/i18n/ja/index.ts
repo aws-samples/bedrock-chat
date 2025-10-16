@@ -40,6 +40,11 @@ const translation: typeof en = {
         description:
           'Sonnetの最新版。Claudeモデル最高レベルのコーディング性能と長時間タスク処理が可能',
       },
+      'claude-v4.5-haiku': {
+        label: 'Claude 4.5 (Haiku)',
+        description:
+          'Haikuシリーズ最速かつ最高性能。フロンティアレベルの性能と拡張思考機能を搭載',
+      },
       'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
         description:

@@ -37,6 +37,11 @@ const translation = {
         description:
           'The latest version of the Sonnet model that achieves the highest level of coding performance and extended task processing',
       },
+      'claude-v4.5-haiku': {
+        label: 'Claude 4.5 (Haiku)',
+        description:
+          'The fastest and most intelligent Haiku model with near-frontier performance and extended thinking capabilities',
+      },
       'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
         description:

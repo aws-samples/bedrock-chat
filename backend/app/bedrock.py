@@ -58,6 +58,7 @@ BASE_MODEL_IDS = {
     "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
     "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
     "claude-v4.5-sonnet": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "claude-v4.5-haiku": "anthropic.claude-haiku-4-5-20251001-v1:0",
     "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
     "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
     "claude-v3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
@@ -94,6 +95,33 @@ GLOBAL_INFERENCE_PROFILES = {
         ]
     },
     "claude-v4.5-sonnet": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-south-2",
+            "eu-south-1",
+            "eu-north-1",
+            "eu-central-2",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-4",
+            "ap-southeast-3",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-2",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "claude-v4.5-haiku": {
         "supported_regions": [
             "us-west-2",
             "us-west-1",
@@ -160,6 +188,21 @@ REGIONAL_INFERENCE_PROFILES = {
             "eu-south-2": "eu",
             "ap-northeast-1": "jp",
             "ap-northeast-3": "jp",
+        }
+    },
+    "claude-v4.5-haiku": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "eu-central-1": "eu",
+            "eu-north-1": "eu",
+            "eu-west-1": "eu",
+            "eu-west-2": "eu",
+            "eu-west-3": "eu",
+            "eu-south-1": "eu",
+            "eu-south-2": "eu",
         }
     },
     "claude-v3-haiku": {
@@ -358,6 +401,7 @@ def is_prompt_caching_supported(
             "claude-v4.1-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
+            "claude-v4.5-haiku",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
             "claude-v3.5-haiku",
@@ -369,6 +413,7 @@ def is_prompt_caching_supported(
             "claude-v4.1-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
+            "claude-v4.5-haiku",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
             "claude-v3.5-haiku",
