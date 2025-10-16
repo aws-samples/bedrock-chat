@@ -1,39 +1,39 @@
-# Configurare un provider di identità esterno per Google
+# Configurazione di un provider di identità esterno per Google
 
-## Passaggio 1: Creare un Client OAuth 2.0 di Google
+## Step 1: Creare un Client OAuth 2.0 di Google
 
-1. Vai nella Console degli Sviluppatori Google.
-2. Crea un nuovo progetto o seleziona un progetto esistente.
-3. Vai su "Credenziali", quindi fai clic su "Crea credenziali" e scegli "ID client OAuth".
+1. Vai alla Console per Sviluppatori Google.
+2. Crea un nuovo progetto o seleziona uno esistente.
+3. Naviga su "Credenziali", poi clicca su "Crea credenziali" e scegli "ID client OAuth".
 4. Configura la schermata di consenso se richiesto.
 5. Per il tipo di applicazione, seleziona "Applicazione web".
-6. Lascia l'URI di reindirizzamento vuoto per ora per impostarlo successivamente, e salva temporaneamente.[Vedi Passaggio 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. Una volta creato, annota l'ID client e il Segreto client.
+6. Lascia l'URI di reindirizzamento vuoto per ora per impostarlo successivamente.[Vedi Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+7. Una volta creato, prendi nota dell'ID Client e del Client Secret.
 
-Per i dettagli, visita [Documento ufficiale di Google](https://support.google.com/cloud/answer/6158849?hl=en)
+Per i dettagli, visita il [documento ufficiale di Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
-## Passaggio 2: Archiviare le Credenziali Google OAuth in AWS Secrets Manager
+## Step 2: Memorizza le Credenziali Google OAuth in AWS Secrets Manager
 
-1. Accedere alla AWS Management Console.
-2. Navigare in Secrets Manager e scegliere "Archivia un nuovo segreto".
-3. Selezionare "Altro tipo di segreti".
-4. Inserire clientId e clientSecret di Google OAuth come coppie chiave-valore.
+1. Vai alla Console di Gestione AWS.
+2. Naviga su Secrets Manager e seleziona "Store a new secret".
+3. Seleziona "Other type of secrets".
+4. Inserisci il clientId e clientSecret di Google OAuth come coppie chiave-valore.
 
-   1. Chiave: clientId, Valore: <YOUR_GOOGLE_CLIENT_ID>
-   2. Chiave: clientSecret, Valore: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
+   2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Seguire le istruzioni per assegnare un nome e una descrizione al segreto. Annotare il nome del segreto poiché sarà necessario nel codice CDK. Ad esempio, googleOAuthCredentials. (Utilizzare nel nome della variabile del Passaggio 3 <YOUR_SECRET_NAME>)
-6. Rivedere e archiviare il segreto.
+5. Segui le istruzioni per assegnare un nome e descrivere il segreto. Prendi nota del nome del segreto poiché ti servirà nel codice CDK. Per esempio, googleOAuthCredentials. (Da usare nello Step 3 come variabile <YOUR_SECRET_NAME>)
+6. Rivedi e salva il segreto.
 
 ### Attenzione
 
 I nomi delle chiavi devono corrispondere esattamente alle stringhe 'clientId' e 'clientSecret'.
 
-## Passaggio 3: Aggiornare cdk.json
+## Step 3: Aggiornare cdk.json
 
-Nel file cdk.json, aggiungi il Provider di Identità e il Nome del Segreto al file cdk.json.
+Nel file cdk.json, aggiungi l'ID Provider e il SecretName al file cdk.json.
 
-come segue:
+in questo modo:
 
 ```json
 {
@@ -42,10 +42,10 @@ come segue:
     "identityProviders": [
       {
         "service": "google",
-        "secretName": "<TUO_NOME_SEGRETO>"
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<PREFISSO_DOMINIO_UNIVOCO_PER_IL_TUO_USER_POOL>"
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```
@@ -54,9 +54,9 @@ come segue:
 
 #### Unicità
 
-Il userPoolDomainPrefix deve essere globalmente univoco tra tutti gli utenti Amazon Cognito. Se scegli un prefisso già utilizzato da un altro account AWS, la creazione del dominio del user pool non riuscirà. È una buona pratica includere identificatori, nomi di progetto o nomi di ambienti nel prefisso per garantire l'unicità.
+Il userPoolDomainPrefix deve essere globalmente unico tra tutti gli utenti di Amazon Cognito. Se scegli un prefisso che è già in uso da un altro account AWS, la creazione del dominio del pool di utenti fallirà. È una buona pratica includere identificatori, nomi di progetti o nomi di ambiente nel prefisso per garantirne l'unicità.
 
-## Passaggio 4: Distribuire lo Stack CDK
+## Step 4: Distribuisci il tuo Stack CDK
 
 Distribuisci il tuo stack CDK su AWS:
 
@@ -64,6 +64,6 @@ Distribuisci il tuo stack CDK su AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Passaggio 5: Aggiornare il Client Google OAuth con gli URI di Reindirizzamento di Cognito
+## Step 5: Aggiornare il Client OAuth di Google con gli URI di Reindirizzamento di Cognito
 
-Dopo aver distribuito lo stack, AuthApprovedRedirectURI sarà visibile negli output di CloudFormation. Torna nella Console per Sviluppatori di Google e aggiorna il client OAuth con gli URI di reindirizzamento corretti.
+Dopo aver distribuito lo stack, l'AuthApprovedRedirectURI viene mostrato negli output di CloudFormation. Torna alla Console per Sviluppatori di Google e aggiorna il client OAuth con gli URI di reindirizzamento corretti.

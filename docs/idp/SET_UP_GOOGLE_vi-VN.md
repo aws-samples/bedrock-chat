@@ -1,37 +1,37 @@
-# Thiết lập nhà cung cấp danh tính bên ngoài cho Google
+# Thiết lập nhà cung cấp định danh bên ngoài cho Google
 
-## Bước 1: Tạo Client OAuth 2.0 của Google
+## Bước 1: Tạo Google OAuth 2.0 Client
 
-1. Truy cập Bảng điều khiển Nhà phát triển Google.
-2. Tạo một dự án mới hoặc chọn một dự án hiện có.
-3. Điều hướng đến "Thông tin xác thực", sau đó nhấp vào "Tạo thông tin xác thực" và chọn "ID client OAuth".
-4. Cấu hình màn hình đồng ý nếu được yêu cầu.
-5. Đối với loại ứng dụng, chọn "Ứng dụng web".
-6. Để trống URI chuyển hướng tạm thời để thiết lập sau, và lưu tạm thời.[Xem Bước 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. Sau khi tạo, ghi lại ID Client và Client Secret.
+1. Truy cập vào Google Developer Console.
+2. Tạo một dự án mới hoặc chọn một dự án có sẵn.
+3. Điều hướng đến "Credentials", sau đó nhấp vào "Create Credentials" và chọn "OAuth client ID".
+4. Cấu hình màn hình chấp thuận nếu được yêu cầu.
+5. Đối với loại ứng dụng, chọn "Web application".
+6. Tạm thời để trống URI chuyển hướng để cài đặt sau.[Xem Bước 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+7. Sau khi tạo xong, ghi lại Client ID và Client Secret.
 
-Để biết chi tiết, hãy truy cập [tài liệu chính thức của Google](https://support.google.com/cloud/answer/6158849?hl=en)
+Để biết chi tiết, truy cập [tài liệu chính thức của Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
-## Bước 2: Lưu Thông Tin Đăng Nhập Google OAuth trong AWS Secrets Manager
+## Bước 2: Lưu trữ Thông tin xác thực Google OAuth trong AWS Secrets Manager
 
 1. Truy cập vào AWS Management Console.
 2. Điều hướng đến Secrets Manager và chọn "Store a new secret".
 3. Chọn "Other type of secrets".
-4. Nhập clientId và clientSecret của Google OAuth dưới dạng các cặp key-value.
+4. Nhập clientId và clientSecret của Google OAuth dưới dạng cặp khóa-giá trị.
 
-   1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
-   2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. Khóa: clientId, Giá trị: <YOUR_GOOGLE_CLIENT_ID>
+   2. Khóa: clientSecret, Giá trị: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Làm theo các lời nhắc để đặt tên và mô tả secret. Ghi chú tên secret vì bạn sẽ cần nó trong mã CDK. Ví dụ: googleOAuthCredentials. (Sử dụng trong tên biến <YOUR_SECRET_NAME> ở Bước 3)
-6. Xem lại và lưu secret.
+5. Làm theo hướng dẫn để đặt tên và mô tả secret. Ghi nhớ tên secret vì bạn sẽ cần nó trong mã CDK của mình. Ví dụ: googleOAuthCredentials (Sử dụng trong tên biến Bước 3 <YOUR_SECRET_NAME>)
+6. Xem lại và lưu trữ secret.
 
-### Lưu Ý
+### Lưu ý
 
-Tên key phải chính xác là các chuỗi 'clientId' và 'clientSecret'.
+Tên các khóa phải khớp chính xác với chuỗi 'clientId' và 'clientSecret'.
 
 ## Bước 3: Cập nhật cdk.json
 
-Trong tệp cdk.json của bạn, hãy thêm ID Provider và SecretName vào tệp cdk.json.
+Trong tệp cdk.json của bạn, thêm ID Provider và SecretName vào tệp cdk.json.
 
 như sau:
 
@@ -42,21 +42,21 @@ như sau:
     "identityProviders": [
       {
         "service": "google",
-        "secretName": "<TÊN_BÍ_MẬT_CỦA_BẠN>"
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<TIỀN_TỐ_MIỀN_DUY_NHẤT_CHO_USER_POOL_CỦA_BẠN>"
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```
 
 ### Lưu ý
 
-#### Tính Duy Nhất
+#### Tính duy nhất
 
-Tiền tố userPoolDomainPrefix phải là duy nhất trên toàn cầu giữa tất cả người dùng Amazon Cognito. Nếu bạn chọn một tiền tố đã được sử dụng bởi một tài khoản AWS khác, việc tạo miền user pool sẽ thất bại. Một thực hành tốt là bao gồm các định danh, tên dự án hoặc tên môi trường trong tiền tố để đảm bảo tính duy nhất.
+userPoolDomainPrefix phải là duy nhất trên toàn cầu trong tất cả người dùng Amazon Cognito. Nếu bạn chọn một tiền tố đã được sử dụng bởi một tài khoản AWS khác, việc tạo domain user pool sẽ thất bại. Một cách thực hành tốt là bao gồm các định danh, tên dự án, hoặc tên môi trường trong tiền tố để đảm bảo tính duy nhất.
 
-## Bước 4: Triển Khai Stack CDK
+## Bước 4: Triển khai Stack CDK
 
 Triển khai stack CDK của bạn lên AWS:
 
@@ -64,6 +64,6 @@ Triển khai stack CDK của bạn lên AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Bước 5: Cập Nhật OAuth Client của Google với URI Chuyển Hướng Cognito
+## Bước 5: Cập nhật Google OAuth Client với các URI chuyển hướng của Cognito
 
-Sau khi triển khai stack, AuthApprovedRedirectURI sẽ hiển thị trong các kết quả của CloudFormation. Hãy quay lại Bảng điều khiển Nhà phát triển Google và cập nhật OAuth client với các URI chuyển hướng chính xác.
+Sau khi triển khai stack, AuthApprovedRedirectURI sẽ hiển thị trong phần đầu ra của CloudFormation. Quay lại Google Developer Console và cập nhật OAuth client với các URI chuyển hướng chính xác.

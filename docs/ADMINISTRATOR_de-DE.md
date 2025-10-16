@@ -1,70 +1,70 @@
-# Administratives Features
+# Verwaltungsfunktionen
 
 ## Voraussetzungen
 
-Der Administrator-Benutzer muss Mitglied einer Gruppe namens `Admin` sein, die über die Verwaltungskonsole > Amazon Cognito-Benutzer-Pools oder die AWS CLI eingerichtet werden kann. Beachten Sie, dass die Benutzer-Pool-ID durch den Zugriff auf CloudFormation > BedrockChatStack > Ausgaben > `AuthUserPoolIdxxxx` referenziert werden kann.
+Der Admin-Benutzer muss Mitglied einer Gruppe namens `Admin` sein, die über die Management-Konsole > Amazon Cognito User pools oder aws cli eingerichtet werden kann. Beachten Sie, dass die User Pool ID über CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` abgerufen werden kann.
 
 ![](./imgs/group_membership_admin.png)
 
-## Öffentliche Bots als Wesentlich markieren
+## Öffentliche Bots als "Essentiell" markieren
 
-Öffentliche Bots können jetzt von Administratoren als "Wesentlich" markiert werden. Bots, die als Wesentlich gekennzeichnet sind, werden im Abschnitt "Wesentlich" des Bot-Stores hervorgehoben, wodurch sie für Benutzer leicht zugänglich sind. Dies ermöglicht es Administratoren, wichtige Bots zu markieren, die alle Benutzer nutzen sollen.
+Öffentliche Bots können jetzt von Administratoren als "Essentiell" markiert werden. Als essentiell markierte Bots werden im Bereich "Essentiell" des Bot-Stores angezeigt, wodurch sie für Benutzer leicht zugänglich sind. Dies ermöglicht es Administratoren, wichtige Bots hervorzuheben, die von allen Benutzern verwendet werden sollen.
 
 ### Beispiele
 
-- HR-Assistenz-Bot: Hilft Mitarbeitern bei HR-bezogenen Fragen und Aufgaben.
-- IT-Support-Bot: Bietet Unterstützung bei internen technischen Problemen und Kontoverwaltung.
-- Interner Richtlinien-Leitfaden-Bot: Beantwortet häufig gestellte Fragen zu Anwesenheitsregeln, Sicherheitsrichtlinien und anderen internen Vorschriften.
-- Neuer Mitarbeiter Onboarding-Bot: Leitet neue Mitarbeiter an ersten Tag durch Verfahren und Systemnutzung.
-- Leistungsinformations-Bot: Erläutert betriebliche Leistungsprogramme und Sozialleistungen.
+- HR Assistant Bot: Unterstützt Mitarbeiter bei HR-bezogenen Fragen und Aufgaben.
+- IT Support Bot: Bietet Unterstützung bei internen technischen Problemen und Kontoverwaltung.
+- Internal Policy Guide Bot: Beantwortet häufig gestellte Fragen zu Anwesenheitsregeln, Sicherheitsrichtlinien und anderen internen Vorschriften.
+- New Employee Onboarding Bot: Führt neue Mitarbeiter durch Prozesse und Systemnutzung an ihrem ersten Tag.
+- Benefits Information Bot: Erklärt betriebliche Vorsorgeprogramme und Sozialleistungen.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## Feedback-Schleife
 
-Die Ausgabe von LLMs entspricht nicht immer den Erwartungen des Benutzers. Manchmal erfüllt sie die Bedürfnisse des Benutzers nicht. Um LLMs effektiv in Geschäftsprozesse und den Alltag zu integrieren, ist die Implementierung einer Feedback-Schleife unerlässlich. Bedrock Chat verfügt über eine Feedbackfunktion, die es Benutzern ermöglicht, zu analysieren, warum Unzufriedenheit aufgetreten ist. Basierend auf den Analyseergebnissen können Benutzer die Prompts, RAG-Datenquellen und Parameter entsprechend anpassen.
+Die Ausgabe von LLM entspricht möglicherweise nicht immer den Erwartungen des Benutzers. Manchmal werden die Bedürfnisse des Benutzers nicht erfüllt. Um LLMs effektiv in Geschäftsprozesse und den Alltag zu "integrieren", ist die Implementierung einer Feedback-Schleife unerlässlich. Bedrock Chat ist mit einer Feedback-Funktion ausgestattet, die es Benutzern ermöglicht zu analysieren, warum Unzufriedenheit entstanden ist. Basierend auf den Analyseergebnissen können Benutzer die Prompts, RAG-Datenquellen und Parameter entsprechend anpassen.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Datenanalysten können auf Gesprächsprotokolle über [Amazon Athena](https://aws.amazon.com/jp/athena/) zugreifen. Wenn sie die Daten in [Jupyter Notebook](https://jupyter.org/) analysieren möchten, kann [dieses Notebook-Beispiel](../examples/notebooks/feedback_analysis_example.ipynb) als Referenz dienen.
+Datenanalysten können über [Amazon Athena](https://aws.amazon.com/jp/athena/) auf Gesprächsprotokolle zugreifen. Wenn sie die Daten mit [Jupyter Notebook](https://jupyter.org/) analysieren möchten, kann [dieses Notebook-Beispiel](../examples/notebooks/feedback_analysis_example.ipynb) als Referenz dienen.
 
 ## Dashboard
 
-Bietet derzeit einen grundlegenden Überblick über die Nutzung von Chatbots und Benutzern, mit Fokus auf der Aggregation von Daten für jeden Bot und Benutzer über festgelegte Zeiträume und Sortierung der Ergebnisse nach Nutzungsgebühren.
+Bietet derzeit einen grundlegenden Überblick über die Nutzung von Chatbots und Benutzern, wobei der Fokus auf der Aggregation von Daten für jeden Bot und Benutzer über bestimmte Zeiträume liegt und die Ergebnisse nach Nutzungsgebühren sortiert werden.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Hinweise
 
-- Wie in der [Architektur](../README.md#architecture) beschrieben, beziehen sich die Administratorfunktionen auf den S3-Bucket, der aus DynamoDB exportiert wurde. Bitte beachten Sie, dass aufgrund des stündlichen Exports die neuesten Gespräche möglicherweise nicht sofort widergespiegelt werden.
+- Wie in der [Architektur](../README.md#architecture) beschrieben, greifen die Admin-Funktionen auf den aus DynamoDB exportierten S3-Bucket zu. Bitte beachten Sie, dass der Export nur einmal pro Stunde durchgeführt wird, weshalb die neuesten Konversationen möglicherweise nicht sofort sichtbar sind.
 
-- Bei öffentlichen Bot-Nutzungen werden Bots, die während des angegebenen Zeitraums überhaupt nicht genutzt wurden, nicht aufgelistet.
+- Bei der öffentlichen Bot-Nutzung werden Bots, die während des angegebenen Zeitraums überhaupt nicht verwendet wurden, nicht aufgelistet.
 
-- Bei Benutzernutzungen werden Benutzer, die das System während des angegebenen Zeitraums überhaupt nicht genutzt haben, nicht aufgelistet.
+- Bei der Benutzernutzung werden Benutzer, die das System während des angegebenen Zeitraums überhaupt nicht genutzt haben, nicht aufgelistet.
 
-> [!Wichtig]
-> Bei Verwendung mehrerer Umgebungen (dev, prod, etc.) enthält der Athena-Datenbankname das Umgebungs-Präfix. Anstelle von `bedrockchatstack_usage_analysis` lautet der Datenbankname:
+> [!Important]
+> Wenn Sie mehrere Umgebungen verwenden (dev, prod, etc.), wird der Athena-Datenbankname das Umgebungspräfix enthalten. Statt `bedrockchatstack_usage_analysis` lautet der Datenbankname:
 >
 > - Für Standardumgebung: `bedrockchatstack_usage_analysis`
 > - Für benannte Umgebungen: `<env-prefix>_bedrockchatstack_usage_analysis` (z.B. `dev_bedrockchatstack_usage_analysis`)
 >
-> Zusätzlich enthält der Tabellenname das Umgebungs-Präfix:
+> Zusätzlich wird der Tabellenname das Umgebungspräfix enthalten:
 >
 > - Für Standardumgebung: `ddb_export`
 > - Für benannte Umgebungen: `<env-prefix>_ddb_export` (z.B. `dev_ddb_export`)
 >
-> Stellen Sie sicher, dass Sie Ihre Abfragen bei der Arbeit mit mehreren Umgebungen entsprechend anpassen.
+> Stellen Sie sicher, dass Sie Ihre Abfragen entsprechend anpassen, wenn Sie mit mehreren Umgebungen arbeiten.
 
 ## Gesprächsdaten herunterladen
 
-Sie können die Gesprächsprotokolle mithilfe von Athena und SQL abfragen. Um Protokolle herunterzuladen, öffnen Sie den Athena Query Editor über die Verwaltungskonsole und führen Sie SQL aus. Die folgenden Beispielabfragen sind nützlich zur Analyse von Anwendungsfällen. Feedback kann im `MessageMap`-Attribut nachgeschlagen werden.
+Sie können die Gesprächsprotokolle mit Athena über SQL abfragen. Um Protokolle herunterzuladen, öffnen Sie den Athena Query Editor in der Management Console und führen Sie SQL aus. Im Folgenden finden Sie einige Beispielabfragen, die für die Analyse von Anwendungsfällen nützlich sind. Feedback kann im Attribut `MessageMap` eingesehen werden.
 
 ### Abfrage nach Bot-ID
 
-Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` kann auf dem Bot-Verwaltungsbildschirm nachgeschlagen werden, auf den über die Bot Publish-APIs zugegriffen werden kann und der in der linken Seitenleiste angezeigt wird. Beachten Sie den Endteil der URL wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` kann im Bot Management Bildschirm eingesehen werden, der über die Bot Publish APIs in der linken Seitenleiste zugänglich ist. Beachten Sie den letzten Teil der URL wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -86,15 +86,15 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Hinweis]
-> Bei Verwendung einer benannten Umgebung (z.B. "dev") ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
+> [!Note]
+> Bei Verwendung einer benannten Umgebung (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
 
 ### Abfrage nach Benutzer-ID
 
-Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann auf dem Bot-Verwaltungsbildschirm nachgeschlagen werden.
+Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann im Bot Management Bildschirm eingesehen werden.
 
-> [!Hinweis]
-> Benutzer-Nutzungsanalysen sind in Kürze verfügbar.
+> [!Note]
+> Benutzernutzungsanalysen werden in Kürze verfügbar sein.
 
 ```sql
 SELECT
@@ -116,5 +116,5 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Hinweis]
-> Bei Verwendung einer benannten Umgebung (z.B. "dev") ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
+> [!Note]
+> Bei Verwendung einer benannten Umgebung (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
