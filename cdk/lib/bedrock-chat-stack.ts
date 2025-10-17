@@ -25,6 +25,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
+import { BedrockSharedKnowledgeBasesCodebuild } from "./constructs/bedrock-shared-knowledge-bases-codebuild";
 import { BotStore, Language } from "./constructs/bot-store";
 import { Duration } from "aws-cdk-lib";
 
@@ -141,6 +142,17 @@ export class BedrockChatStack extends cdk.Stack {
         bedrockRegion: props.bedrockRegion,
       }
     );
+    // CodeBuild used for KnowledgeBase
+    const bedrockSharedKnowledgeBasesCodebuild = new BedrockSharedKnowledgeBasesCodebuild(
+      this,
+      "BedrockSharedKnowledgeBasesCodebuild",
+      {
+        sourceBucket,
+        envName: props.envName,
+        envPrefix: props.envPrefix,
+        bedrockRegion: props.bedrockRegion,
+      }
+    );
 
     const frontend = new Frontend(this, "Frontend", {
       accessLogBucket,
@@ -217,6 +229,7 @@ export class BedrockChatStack extends cdk.Stack {
       documentBucket: props.documentBucket,
       apiPublishProject: apiPublishCodebuild.project,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
+      bedrockSharedKnowledgeBasesProject: bedrockSharedKnowledgeBasesCodebuild.project,
       usageAnalysis,
       largeMessageBucket,
       enableBedrockCrossRegionInference:
@@ -298,6 +311,7 @@ export class BedrockChatStack extends cdk.Stack {
       database,
       documentBucket: props.documentBucket,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
+      bedrockSharedKnowledgeBasesProject: bedrockSharedKnowledgeBasesCodebuild.project,
       enableRagReplicas: props.enableRagReplicas,
     });
 

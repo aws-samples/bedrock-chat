@@ -2,8 +2,6 @@ import { Construct } from "constructs";
 import * as path from "path";
 import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
-import { ITable } from "aws-cdk-lib/aws-dynamodb";
-import { CfnPipe } from "aws-cdk-lib/aws-pipes";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
@@ -25,16 +23,16 @@ export interface EmbeddingProps {
   readonly bedrockRegion: string;
   readonly documentBucket: IBucket;
   readonly bedrockCustomBotProject: codebuild.IProject;
+  readonly bedrockSharedKnowledgeBasesProject: codebuild.IProject;
   readonly enableRagReplicas: boolean;
 }
 
 export class Embedding extends Construct {
   readonly removalHandler: IFunction;
   private _updateSyncStatusHandler: IFunction;
-  private _fetchStackOutputHandler: IFunction;
-  private _StoreKnowledgeBaseIdHandler: IFunction;
-  private _StoreGuardrailArnHandler: IFunction;
-  private _pipeRole: iam.Role;
+  private _bootstrapStateMachineHandler: IFunction;
+  private _finalizeCustomBotBuildHandler: IFunction;
+  private _finalizeSharedKnowledgeBasesBuildHandler: IFunction;
   private _stateMachine: sfn.StateMachine;
   private _removalHandler: IFunction;
 
@@ -43,7 +41,6 @@ export class Embedding extends Construct {
 
     this.setupStateMachineHandlers(props)
       .setupStateMachine(props)
-      .setupEventBridgePipe(props)
       .setupRemovalHandler(props);
 
     this.removalHandler = this._removalHandler;
@@ -117,9 +114,9 @@ export class Embedding extends Construct {
       }
     );
 
-    this._fetchStackOutputHandler = new DockerImageFunction(
+    this._bootstrapStateMachineHandler = new DockerImageFunction(
       this,
-      "FetchStackOutputHandler",
+      "BootstrapStateMachineHandler",
       {
         code: DockerImageCode.fromImageAsset(
           path.join(__dirname, "../../../backend"),
@@ -127,7 +124,7 @@ export class Embedding extends Construct {
             platform: Platform.LINUX_AMD64,
             file: "lambda.Dockerfile",
             cmd: [
-              "embedding_statemachine.bedrock_knowledge_base.fetch_stack_output.handler",
+              "embedding_statemachine.bedrock_knowledge_base.bootstrap_state_machine.handler",
             ],
             exclude: [...excludeDockerImage],
           }
@@ -136,14 +133,46 @@ export class Embedding extends Construct {
         timeout: Duration.minutes(1),
         role: handlerRole,
         environment: {
+          ACCOUNT: Stack.of(this).account,
+          REGION: Stack.of(this).region,
+          BOT_TABLE_NAME: props.database.botTable.tableName,
+          TABLE_ACCESS_ROLE_ARN: props.database.tableAccessRole.roleArn,
+        },
+        logRetention: logs.RetentionDays.THREE_MONTHS,
+      }
+    );
+    this._finalizeCustomBotBuildHandler = new DockerImageFunction(
+      this,
+      "FinalizeCustomBotBuildHandler",
+      {
+        code: DockerImageCode.fromImageAsset(
+          path.join(__dirname, "../../../backend"),
+          {
+            platform: Platform.LINUX_AMD64,
+            file: "lambda.Dockerfile",
+            cmd: [
+              "embedding_statemachine.bedrock_knowledge_base.finalize_custom_bot_build.handler",
+            ],
+            exclude: [...excludeDockerImage],
+          }
+        ),
+        memorySize: 512,
+        timeout: Duration.minutes(1),
+        role: handlerRole,
+        environment: {
+          ACCOUNT: Stack.of(this).account,
+          REGION: Stack.of(this).region,
           BEDROCK_REGION: props.bedrockRegion,
+          CONVERSATION_TABLE_NAME: props.database.conversationTable.tableName,
+          BOT_TABLE_NAME: props.database.botTable.tableName,
+          TABLE_ACCESS_ROLE_ARN: props.database.tableAccessRole.roleArn,
         },
         logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
-    this._StoreKnowledgeBaseIdHandler = new DockerImageFunction(
+    this._finalizeSharedKnowledgeBasesBuildHandler = new DockerImageFunction(
       this,
-      "StoreKnowledgeBaseIdHandler",
+      "FinalizeSharedKnowledgeBasesBuildHandler",
       {
         code: DockerImageCode.fromImageAsset(
           path.join(__dirname, "../../../backend"),
@@ -151,49 +180,22 @@ export class Embedding extends Construct {
             platform: Platform.LINUX_AMD64,
             file: "lambda.Dockerfile",
             cmd: [
-              "embedding_statemachine.bedrock_knowledge_base.store_knowledge_base_id.handler",
+              "embedding_statemachine.bedrock_knowledge_base.finalize_shared_knowledge_bases_build.handler",
             ],
             exclude: [...excludeDockerImage],
           }
         ),
         memorySize: 512,
         timeout: Duration.minutes(1),
+        role: handlerRole,
         environment: {
           ACCOUNT: Stack.of(this).account,
           REGION: Stack.of(this).region,
+          BEDROCK_REGION: props.bedrockRegion,
           CONVERSATION_TABLE_NAME: props.database.conversationTable.tableName,
           BOT_TABLE_NAME: props.database.botTable.tableName,
           TABLE_ACCESS_ROLE_ARN: props.database.tableAccessRole.roleArn,
         },
-        role: handlerRole,
-        logRetention: logs.RetentionDays.THREE_MONTHS,
-      }
-    );
-    this._StoreGuardrailArnHandler = new DockerImageFunction(
-      this,
-      "StoreGuardrailArnHandler",
-      {
-        code: DockerImageCode.fromImageAsset(
-          path.join(__dirname, "../../../backend"),
-          {
-            platform: Platform.LINUX_AMD64,
-            file: "lambda.Dockerfile",
-            cmd: [
-              "embedding_statemachine.guardrails.store_guardrail_arn.handler",
-            ],
-            exclude: [...excludeDockerImage],
-          }
-        ),
-        memorySize: 512,
-        timeout: Duration.minutes(1),
-        environment: {
-          ACCOUNT: Stack.of(this).account,
-          REGION: Stack.of(this).region,
-          CONVERSATION_TABLE_NAME: props.database.conversationTable.tableName,
-          BOT_TABLE_NAME: props.database.botTable.tableName,
-          TABLE_ACCESS_ROLE_ARN: props.database.tableAccessRole.roleArn,
-        },
-        role: handlerRole,
         logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
@@ -201,67 +203,34 @@ export class Embedding extends Construct {
   }
 
   private setupStateMachine(props: EmbeddingProps): this {
-    const extractFirstElement = new sfn.Pass(this, "ExtractFirstElement", {
-      parameters: {
-        "dynamodb.$": "$[0].dynamodb",
-        "eventID.$": "$[0].eventID",
-        "eventName.$": "$[0].eventName",
-        "eventSource.$": "$[0].eventSource",
-        "eventVersion.$": "$[0].eventVersion",
-        "awsRegion.$": "$[0].awsRegion",
-        "eventSourceARN.$": "$[0].eventSourceARN",
+    const bootstrapStateMachine = new tasks.LambdaInvoke(this, "BootstrapStateMachine", {
+      lambdaFunction: this._bootstrapStateMachineHandler,
+      resultSelector: {
+        Bots: sfn.JsonPath.objectAt("$.Payload.Bots"),
+        SharedKnowledgeBases: sfn.JsonPath.objectAt("$.Payload.SharedKnowledgeBases"),
       },
-      resultPath: "$",
     });
 
-    const startCustomBotBuild = new tasks.CodeBuildStartBuild(
-      this,
-      "StartCustomBotBuild",
-      {
-        project: props.bedrockCustomBotProject,
-        integrationPattern: sfn.IntegrationPattern.RUN_JOB,
-        environmentVariablesOverride: {
-          PK: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt("$.dynamodb.NewImage.PK.S"),
-          },
-          SK: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt("$.dynamodb.NewImage.SK.S"),
-          },
-          // Bucket name provisioned by the bedrock stack
-          BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: props.documentBucket.bucketName,
-          },
-          // Source info e.g. file names, URLs, etc.
-          KNOWLEDGE: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.dynamodb.NewImage.Knowledge.M)"
-            ),
-          },
-          // Bedrock Knowledge Base configuration
-          BEDROCK_KNOWLEDGE_BASE: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.dynamodb.NewImage.BedrockKnowledgeBase.M)"
-            ),
-          },
-          BEDROCK_GUARDRAILS: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.dynamodb.NewImage.GuardrailsParams.M)"
-            ),
-          },
-          ENABLE_RAG_REPLICAS: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: props.enableRagReplicas.toString(),
-          },
+    const buildSharedKnowledgeBases = new tasks.CodeBuildStartBuild(this, "BuildSharedKnowledgeBases", {
+      project: props.bedrockSharedKnowledgeBasesProject,
+      integrationPattern: sfn.IntegrationPattern.RUN_JOB,
+      environmentVariablesOverride: {
+        SHARED_KNOWLEDGE_BASES: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.stringAt("States.JsonToString($.SharedKnowledgeBases)"),
         },
-        resultPath: "$.Build",
-      }
-    );
+        // Bucket name provisioned by the bedrock stack
+        BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: props.documentBucket.bucketName,
+        },
+        ENABLE_RAG_REPLICAS: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: props.enableRagReplicas.toString(),
+        },
+      },
+      resultPath: "$.Build",
+    });
 
     const updateSyncStatusRunning = this.createUpdateSyncStatusTask(
       "UpdateSyncStatusRunning",
@@ -274,65 +243,190 @@ export class Embedding extends Construct {
       "Knowledge base sync succeeded"
     );
 
-    const updateSyncStatusFailed = new tasks.LambdaInvoke(
-      this,
-      "UpdateSyncStatusFailed",
-      {
-        lambdaFunction: this._updateSyncStatusHandler,
-        payload: sfn.TaskInput.fromObject({
-          "cause.$": "$.Cause",
-        }),
-        resultPath: sfn.JsonPath.DISCARD,
-      }
-    );
+    // const updateSyncStatusFailed = new tasks.LambdaInvoke(
+    //   this,
+    //   "UpdateSyncStatusFailed",
+    //   {
+    //     lambdaFunction: this._updateSyncStatusHandler,
+    //     payload: sfn.TaskInput.fromObject({
+    //       "cause.$": "$.Cause",
+    //     }),
+    //     resultPath: sfn.JsonPath.DISCARD,
+    //   }
+    // );
 
-    const fallback = updateSyncStatusFailed.next(
-      new sfn.Fail(this, "Fail", {
-        cause: "Knowledge base sync failed",
-        error: "Knowledge base sync failed",
-      })
-    );
-    startCustomBotBuild.addCatch(fallback);
+    // const fallback = updateSyncStatusFailed.next(
+    //   new sfn.Fail(this, "Fail", {
+    //     cause: "Knowledge base sync failed",
+    //     error: "Knowledge base sync failed",
+    //   })
+    // );
+    // buildSharedKnowledgeBases.addCatch(fallback);
 
-    const fetchStackOutput = new tasks.LambdaInvoke(this, "FetchStackOutput", {
-      lambdaFunction: this._fetchStackOutputHandler,
-      payload: sfn.TaskInput.fromObject({
-        "pk.$": "$.dynamodb.NewImage.PK.S",
-        "sk.$": "$.dynamodb.NewImage.SK.S",
-      }),
+    const finalizeSharedKnowledgeBasesBuild = new tasks.LambdaInvoke(this, "FinalizeSharedKnowledgeBasesBuild", {
+      lambdaFunction: this._finalizeSharedKnowledgeBasesBuildHandler,
+      resultSelector: {
+        DataSources: sfn.JsonPath.objectAt("$.Payload.DataSources"),
+      },
       resultPath: "$.StackOutput",
     });
-    fetchStackOutput.addCatch(fallback);
+    // finalizeSharedKnowledgeBasesBuild.addCatch(fallback);
 
-    const storeKnowledgeBaseId = new tasks.LambdaInvoke(
+    const startIngestionJobForSharedKnowledgeBases = new tasks.CallAwsServiceCrossRegion(this, "StartIngestionJobstartIngestionJobForSharedKnowledgeBases", {
+      service: "bedrock-agent",
+      action: "startIngestionJob",
+      iamAction: "bedrock:StartIngestionJob",
+      region: props.bedrockRegion,
+      parameters: {
+        dataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
+        knowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
+      },
+      // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
+      iamResources: [
+        `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
+          Stack.of(this).account
+        }:knowledge-base/*`,
+      ],
+      resultPath: "$.IngestionJob",
+    });
+
+    const getIngestionJobForSharedKnowledgeBases = new tasks.CallAwsServiceCrossRegion(this, "GetIngestionJobForSharedKnowledgeBases", {
+      service: "bedrock-agent",
+      action: "getIngestionJob",
+      iamAction: "bedrock:GetIngestionJob",
+      region: props.bedrockRegion,
+      parameters: {
+        dataSourceId: sfn.JsonPath.stringAt(
+          "$.IngestionJob.ingestionJob.dataSourceId"
+        ),
+        knowledgeBaseId: sfn.JsonPath.stringAt(
+          "$.IngestionJob.ingestionJob.knowledgeBaseId"
+        ),
+        ingestionJobId: sfn.JsonPath.stringAt(
+          "$.IngestionJob.ingestionJob.ingestionJobId"
+        ),
+      },
+      // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
+      iamResources: [
+        `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
+          Stack.of(this).account
+        }:knowledge-base/*`,
+      ],
+      resultPath: "$.IngestionJob",
+    });
+
+    const waitTaskForSharedKnowledgeBases = new sfn.Wait(this, "WaitSecondsForSharedKnowledgeBases", {
+      time: sfn.WaitTime.duration(Duration.seconds(3)),
+    });
+
+    const checkIngestionJobStatusForSharedKnowledgeBases = new sfn.Choice(this, "CheckIngestionJobStatusForSharedKnowledgeBases")
+      .when(
+        sfn.Condition.stringEquals(
+          "$.IngestionJob.ingestionJob.status",
+          "COMPLETE"
+        ),
+        new sfn.Pass(this, "IngestionJobCompletedForSharedKnowledgeBases")
+      )
+      .when(
+        sfn.Condition.stringEquals(
+          "$.IngestionJob.ingestionJob.status",
+          "FAILED"
+        ),
+        new sfn.Fail(this, "IngestionFailForSharedKnowledgeBases", {
+          cause: "Ingestion job failed",
+          error: "Ingestion job failed",
+        })
+        // new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForIngestion", {
+        //   lambdaFunction: this._updateSyncStatusHandler,
+        //   payload: sfn.TaskInput.fromObject({
+        //     pk: sfn.JsonPath.stringAt("$.PK"),
+        //     sk: sfn.JsonPath.stringAt("$.SK"),
+        //     ingestion_job: sfn.JsonPath.stringAt("$.IngestionJob"),
+        //   }),
+        //   resultPath: sfn.JsonPath.DISCARD,
+        // })
+        // .next(
+        //   new sfn.Fail(this, "IngestionFail", {
+        //     cause: "Ingestion job failed",
+        //     error: "Ingestion job failed",
+        //   })
+        // )
+      )
+      .otherwise(waitTaskForSharedKnowledgeBases.next(getIngestionJobForSharedKnowledgeBases));
+
+    const mapIngestionJobsForSharedKnowledgeBases = new sfn.Map(this, "MapIngestionJobsForSharedKnowledgeBases", {
+      inputPath: "$.StackOutput.DataSources",
+      resultPath: sfn.JsonPath.DISCARD,
+      maxConcurrency: 1,
+    }).itemProcessor(
+      startIngestionJobForSharedKnowledgeBases
+        .next(getIngestionJobForSharedKnowledgeBases)
+        .next(checkIngestionJobStatusForSharedKnowledgeBases)
+    );
+
+    const mapBots = new sfn.Map(this, "MapBots", {
+      itemsPath: "$.Bots",
+    });
+
+    const startCustomBotBuild = new tasks.CodeBuildStartBuild(
       this,
-      "StoreKnowledgeBaseId",
+      "StartCustomBotBuild",
       {
-        lambdaFunction: this._StoreKnowledgeBaseIdHandler,
-        payload: sfn.TaskInput.fromObject({
-          "pk.$": "$.dynamodb.NewImage.PK.S",
-          "sk.$": "$.dynamodb.NewImage.SK.S",
-          "stack_output.$": "$.StackOutput.Payload",
-        }),
-        resultPath: sfn.JsonPath.DISCARD,
+        project: props.bedrockCustomBotProject,
+        integrationPattern: sfn.IntegrationPattern.RUN_JOB,
+        environmentVariablesOverride: {
+          OWNER_USER_ID: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: sfn.JsonPath.stringAt("$.OwnerUserId"),
+          },
+          BOT_ID: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: sfn.JsonPath.stringAt("$.BotId"),
+          },
+          // Bucket name provisioned by the bedrock stack
+          BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: props.documentBucket.bucketName,
+          },
+          // Source info e.g. file names, URLs, etc.
+          KNOWLEDGE: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: sfn.JsonPath.stringAt(
+              "States.JsonToString($.Knowledge)"
+            ),
+          },
+          // Bedrock Knowledge Base configuration
+          KNOWLEDGE_BASE: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: sfn.JsonPath.stringAt(
+              "States.JsonToString($.KnowledgeBase)"
+            ),
+          },
+          GUARDRAILS: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: sfn.JsonPath.stringAt(
+              "States.JsonToString($.Guardrails)"
+            ),
+          },
+          ENABLE_RAG_REPLICAS: {
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+            value: props.enableRagReplicas.toString(),
+          },
+        },
+        resultPath: "$.Build",
       }
     );
-    storeKnowledgeBaseId.addCatch(fallback);
+    // startCustomBotBuild.addCatch(fallback);
 
-    const storeGuardrailArn = new tasks.LambdaInvoke(
-      this,
-      "StoreGuardrailArn",
-      {
-        lambdaFunction: this._StoreGuardrailArnHandler,
-        payload: sfn.TaskInput.fromObject({
-          "pk.$": "$.dynamodb.NewImage.PK.S",
-          "sk.$": "$.dynamodb.NewImage.SK.S",
-          "stack_output.$": "$.StackOutput.Payload",
-        }),
-        resultPath: sfn.JsonPath.DISCARD,
-      }
-    );
-    storeGuardrailArn.addCatch(fallback);
+    const finalizeCustomBotBuild = new tasks.LambdaInvoke(this, "FinalizeCustomBotBuild", {
+      lambdaFunction: this._finalizeCustomBotBuildHandler,
+      resultSelector: {
+        DataSources: sfn.JsonPath.objectAt("$.Payload.DataSources"),
+        Bots: sfn.JsonPath.objectAt("$.Payload.Bots"),
+      },
+      resultPath: "$.StackOutput",
+    });
+    // finalizeCustomBotBuild.addCatch(fallback);
 
     const startIngestionJob = new tasks.CallAwsServiceCrossRegion(
       this,
@@ -405,116 +499,60 @@ export class Embedding extends Construct {
           "$.IngestionJob.ingestionJob.status",
           "FAILED"
         ),
-        new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForIngestion", {
-          lambdaFunction: this._updateSyncStatusHandler,
-          payload: sfn.TaskInput.fromObject({
-            pk: sfn.JsonPath.stringAt("$.PK"),
-            sk: sfn.JsonPath.stringAt("$.SK"),
-            ingestion_job: sfn.JsonPath.stringAt("$.IngestionJob"),
-          }),
-          resultPath: sfn.JsonPath.DISCARD,
-        }).next(
-          new sfn.Fail(this, "IngestionFail", {
-            cause: "Ingestion job failed",
-            error: "Ingestion job failed",
-          })
-        )
+        new sfn.Fail(this, "IngestionFail", {
+          cause: "Ingestion job failed",
+          error: "Ingestion job failed",
+        })
+        // new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForIngestion", {
+        //   lambdaFunction: this._updateSyncStatusHandler,
+        //   payload: sfn.TaskInput.fromObject({
+        //     pk: sfn.JsonPath.stringAt("$.PK"),
+        //     sk: sfn.JsonPath.stringAt("$.SK"),
+        //     ingestion_job: sfn.JsonPath.stringAt("$.IngestionJob"),
+        //   }),
+        //   resultPath: sfn.JsonPath.DISCARD,
+        // })
+        // .next(
+        //   new sfn.Fail(this, "IngestionFail", {
+        //     cause: "Ingestion job failed",
+        //     error: "Ingestion job failed",
+        //   })
+        // )
       )
       .otherwise(waitTask.next(getIngestionJob));
 
     const mapIngestionJobs = new sfn.Map(this, "MapIngestionJobs", {
-      inputPath: "$.StackOutput.Payload.items",
+      inputPath: "$.StackOutput.DataSources",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(
       startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
     );
 
-    const definition = extractFirstElement
-      .next(updateSyncStatusRunning)
-      .next(startCustomBotBuild)
-      .next(fetchStackOutput)
-      .next(storeKnowledgeBaseId)
-      .next(storeGuardrailArn)
-      .next(mapIngestionJobs)
-      .next(updateSyncStatusSucceeded);
+    const definition = bootstrapStateMachine
+      .next(buildSharedKnowledgeBases)
+      .next(finalizeSharedKnowledgeBasesBuild)
+      .next(mapIngestionJobsForSharedKnowledgeBases)
+      .next(
+        mapBots.itemProcessor(
+          updateSyncStatusRunning
+            .next(startCustomBotBuild)
+            .next(finalizeCustomBotBuild)
+            .next(mapIngestionJobs)
+            .next(updateSyncStatusSucceeded)
+        )
+      )
+
+    // const definition = extractFirstElement
+    //   .next(updateSyncStatusRunning)
+    //   .next(startCustomBotBuild)
+    //   .next(finalizeCustomBotBuild)
+    //   .next(mapIngestionJobs)
+    //   .next(updateSyncStatusSucceeded);
 
     this._stateMachine = new sfn.StateMachine(this, "StateMachine", {
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
     });
-    return this;
-  }
-
-  private setupEventBridgePipe(props: EmbeddingProps): this {
-    if (!this._stateMachine) {
-      throw new Error(
-        "State machine must be set up before setting up the EventBridge pipe"
-      );
-    }
-
-    const pipeLogGroup = new logs.LogGroup(this, "PipeLogGroup", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      retention: logs.RetentionDays.ONE_WEEK,
-    });
-    this._pipeRole = new iam.Role(this, "PipeRole", {
-      assumedBy: new iam.ServicePrincipal("pipes.amazonaws.com"),
-    });
-    this._pipeRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "dynamodb:DescribeStream",
-          "dynamodb:GetRecords",
-          "dynamodb:GetShardIterator",
-          "dynamodb:ListStreams",
-        ],
-        resources: [props.database.botTable.tableStreamArn!],
-      })
-    );
-    this._pipeRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ["states:StartExecution"],
-        resources: [this._stateMachine.stateMachineArn],
-      })
-    );
-    this._pipeRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ["logs:CreateLogStream", "logs:PutLogEvents"],
-        resources: [pipeLogGroup.logGroupArn],
-      })
-    );
-
-    new CfnPipe(this, "Pipe", {
-      source: props.database.botTable.tableStreamArn!,
-      sourceParameters: {
-        dynamoDbStreamParameters: {
-          batchSize: 1,
-          startingPosition: "LATEST",
-          maximumRetryAttempts: 1,
-        },
-        filterCriteria: {
-          filters: [
-            {
-              pattern:
-                '{"dynamodb":{"NewImage":{"SyncStatus":{"S":[{"prefix":"QUEUED"}]}}}}',
-            },
-          ],
-        },
-      },
-      target: this._stateMachine.stateMachineArn,
-      targetParameters: {
-        stepFunctionStateMachineParameters: {
-          invocationType: "FIRE_AND_FORGET",
-        },
-      },
-      logConfiguration: {
-        cloudwatchLogsLogDestination: {
-          logGroupArn: pipeLogGroup.logGroupArn,
-        },
-        level: "INFO",
-      },
-      roleArn: this._pipeRole.roleArn,
-    });
-
     return this;
   }
 
@@ -623,8 +661,8 @@ export class Embedding extends Construct {
     lastExecIdPath?: string
   ): tasks.LambdaInvoke {
     const payload: { [key: string]: any } = {
-      "pk.$": "$.dynamodb.NewImage.PK.S",
-      "sk.$": "$.dynamodb.NewImage.SK.S",
+      "user_id.$": "$.OwnerUserId",
+      "bot_id.$": "$.BotId",
       sync_status: syncStatus,
       sync_status_reason: syncStatusReason || "",
     };

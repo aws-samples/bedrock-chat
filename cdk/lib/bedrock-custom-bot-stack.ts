@@ -84,7 +84,7 @@ export class BedrockCustomBotStack extends Stack {
 
     // if knowledge base arn does not exist
     if (props.existKnowledgeBaseId == undefined) {
-      if ((props.knowledgeBaseType == null || props.knowledgeBaseType === "dedicated")
+      if (props.knowledgeBaseType === "dedicated"
         && (docBucketsAndPrefixes.length > 0 || props.sourceUrls.length > 0)
       ) {
         const vectorCollection = new VectorCollection(this, "VectorCollection", {

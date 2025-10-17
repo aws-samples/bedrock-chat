@@ -91,6 +91,14 @@ export class Database extends Construct {
         type: AttributeType.STRING,
       },
     });
+    // GSI-5
+    botTable.addGlobalSecondaryIndex({
+      indexName: "SyncStatusIndex",
+      partitionKey: {
+        name: "SyncStatus",
+        type: AttributeType.STRING,
+      },
+    });
 
     const tableAccessRole = new Role(this, "TableAccessRole", {
       assumedBy: new AccountPrincipal(Stack.of(this).account),

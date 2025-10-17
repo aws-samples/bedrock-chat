@@ -98,7 +98,13 @@ def store_bot(custom_bot: BotModel):
             item["BedrockKnowledgeBaseHash"] = (
                 base64.b32encode(
                     md5(
-                        custom_bot.bedrock_knowledge_base.model_dump_json().encode()
+                        custom_bot.bedrock_knowledge_base.model_dump_json(
+                            exclude={
+                                "knowledge_base_id",
+                                "exist_knowledge_base_id",
+                                "data_source_ids",
+                            }
+                        ).encode()
                     ).digest()
                 )
                 .decode()
@@ -170,14 +176,11 @@ def update_bot(
         ":active_models": active_models.model_dump(),  # type: ignore[attr-defined]
     }
     if bedrock_knowledge_base:
-        if (
-            bedrock_knowledge_base.exist_knowledge_base_id is not None
-            or (
-                len(knowledge.source_urls) == 0
-                and len(knowledge.sitemap_urls) == 0
-                and len(knowledge.filenames) == 0
-                and len(knowledge.s3_urls) == 0
-            )
+        if bedrock_knowledge_base.exist_knowledge_base_id is not None or (
+            len(knowledge.source_urls) == 0
+            and len(knowledge.sitemap_urls) == 0
+            and len(knowledge.filenames) == 0
+            and len(knowledge.s3_urls) == 0
         ):
             bedrock_knowledge_base.type = None
             bedrock_knowledge_base.knowledge_base_id = None
@@ -200,7 +203,15 @@ def update_bot(
             )
             expression_attribute_values[":bedrock_knowledge_base_hash"] = (
                 base64.b32encode(
-                    md5(bedrock_knowledge_base.model_dump_json().encode()).digest()
+                    md5(
+                        bedrock_knowledge_base.model_dump_json(
+                            exclude={
+                                "knowledge_base_id",
+                                "exist_knowledge_base_id",
+                                "data_source_ids",
+                            }
+                        ).encode()
+                    ).digest()
                 )
                 .decode()
                 .rstrip("=")
@@ -733,83 +744,9 @@ def find_bot_by_id(bot_id: str) -> BotModel:
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Bot with id {bot_id} not found")
 
-    item = response["Items"][0]
+    items = response["Items"]
 
-    bot = BotModel(
-        id=item["BotId"],
-        owner_user_id=item["PK"],
-        title=item["Title"],
-        description=item["Description"],
-        instruction=item["Instruction"],
-        create_time=float(item["CreateTime"]),
-        last_used_time=float(item.get("LastUsedTime", item["CreateTime"])),
-        # Note: SharedScope is set to None for private shared_scope to use sparse index
-        shared_scope=item.get("SharedScope", "private"),
-        shared_status=item["SharedStatus"],
-        allowed_cognito_groups=item.get("AllowedCognitoGroups", []),
-        allowed_cognito_users=item.get("AllowedCognitoUsers", []),
-        # Note: IsStarred is set to False for non-starred bots to use sparse index
-        is_starred=item.get("IsStarred", False),
-        generation_params=GenerationParamsModel.model_validate(
-            {
-                **item.get("GenerationParams", DEFAULT_GENERATION_CONFIG),
-                # For backward compatibility
-                "reasoning_params": item.get("GenerationParams", {}).get(
-                    "reasoning_params",
-                    {
-                        "budget_tokens": DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"],  # type: ignore
-                    },
-                ),
-            }
-        ),
-        agent=(
-            AgentModel.model_validate(item["AgentData"])
-            if "AgentData" in item
-            else AgentModel(tools=[])
-        ),
-        knowledge=KnowledgeModel(
-            **{**item["Knowledge"], "s3_urls": item["Knowledge"].get("s3_urls", [])}
-        ),
-        prompt_caching_enabled=item.get("PromptCachingEnabled", True),
-        sync_status=item["SyncStatus"],
-        sync_status_reason=item["SyncStatusReason"],
-        sync_last_exec_id=item["LastExecId"],
-        published_api_stack_name=item.get("ApiPublishmentStackName", None),
-        published_api_datetime=item.get("ApiPublishedDatetime", None),
-        published_api_codebuild_id=item.get("ApiPublishCodeBuildId", None),
-        display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
-        conversation_quick_starters=item.get("ConversationQuickStarters", []),
-        bedrock_knowledge_base=(
-            BedrockKnowledgeBaseModel(
-                **{
-                    **item["BedrockKnowledgeBase"],
-                    "chunking_configuration": item["BedrockKnowledgeBase"].get(
-                        "chunking_configuration", None
-                    ),
-                    "parsing_model": item["BedrockKnowledgeBase"].get(
-                        "parsing_model", "disabled"
-                    ),
-                }
-            )
-            if "BedrockKnowledgeBase" in item
-            else None
-        ),
-        bedrock_guardrails=(
-            BedrockGuardrailsModel(**item["GuardrailsParams"])
-            if "GuardrailsParams" in item
-            else None
-        ),
-        active_models=(
-            ActiveModelsModel.model_validate(item.get("ActiveModels"))
-            if item.get("ActiveModels")
-            else default_active_models  # for backward compatibility
-        ),
-        usage_stats=(
-            UsageStatsModel.model_validate(item.get("UsageStats"))
-            if item.get("UsageStats")
-            else UsageStatsModel(usage_count=0)  # for backward compatibility
-        ),
-    )
+    bot = BotModel.from_dynamo_item(items[0])
 
     logger.info(f"Found bot: {bot}")
     return bot

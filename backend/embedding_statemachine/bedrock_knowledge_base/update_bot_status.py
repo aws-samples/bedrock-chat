@@ -1,10 +1,8 @@
 import json
 import logging
-import os
-from typing import Literal
 
 import boto3
-from app.repositories.common import compose_sk, decompose_sk, get_bot_table_client
+from app.repositories.common import compose_sk, get_bot_table_client
 from app.routes.schemas.bot import type_sync_status
 from reretry import retry
 
@@ -38,27 +36,33 @@ def update_sync_status(
 
 
 def extract_from_cause(cause_str: str) -> tuple:
-    logger.debug(f"Extracting PK and SK from cause: {cause_str}")
+    logger.debug(f"Extracting OWNER_USER_ID and BOT_ID from cause: {cause_str}")
     cause = json.loads(cause_str)
     logger.debug(f"Cause: {cause}")
     environment_variables = cause["Build"]["Environment"]["EnvironmentVariables"]
     logger.debug(f"Environment variables: {environment_variables}")
 
-    pk = next(
-        (item["Value"] for item in environment_variables if item["Name"] == "PK"), None
+    user_id = next(
+        (
+            item["Value"]
+            for item in environment_variables
+            if item["Name"] == "OWNER_USER_ID"
+        ),
+        None,
     )
-    sk = next(
-        (item["Value"] for item in environment_variables if item["Name"] == "SK"), None
+    bot_id = next(
+        (item["Value"] for item in environment_variables if item["Name"] == "BOT_ID"),
+        None,
     )
 
-    if not pk or not sk:
+    if not user_id or not bot_id:
         raise ValueError("PK or SK not found in cause.")
 
     build_arn = cause["Build"].get("Arn", "")
 
-    logger.debug(f"PK: {pk}, SK: {sk}, Build ARN: {build_arn}")
+    logger.debug(f"PK: {user_id}, SK: {bot_id}, Build ARN: {build_arn}")
 
-    return pk, sk, build_arn
+    return user_id, bot_id, build_arn
 
 
 def handler(event, context):
@@ -68,34 +72,31 @@ def handler(event, context):
         ingestion_job = event.get("ingestion_job", None)
 
         # Initialize variables
-        pk: str
-        sk: str
+        user_id: str
+        bot_id: str
         sync_status: type_sync_status
         sync_status_reason: str
         last_exec_id: str
 
         if cause:
             # UpdateSymcStatusFailed
-            pk, sk, build_arn = extract_from_cause(cause)
+            user_id, bot_id, build_arn = extract_from_cause(cause)
             sync_status = "FAILED"
             sync_status_reason = cause
             last_exec_id = build_arn
         elif ingestion_job:
             # UpdateSymcStatusFailedForIngestion
-            pk = event["pk"]
-            sk = event["sk"]
+            user_id = event["user_id"]
+            bot_id = event["bot_id"]
             sync_status = "FAILED"
             sync_status_reason = str(ingestion_job["ingestionJob"]["failureReasons"])
             last_exec_id = ingestion_job["ingestionJob"]["ingestionJobId"]
         else:
-            pk = event["pk"]
-            sk = event["sk"]
+            user_id = event["user_id"]
+            bot_id = event["bot_id"]
             sync_status = event["sync_status"]
             sync_status_reason = event.get("sync_status_reason", "")
             last_exec_id = event.get("last_exec_id", "")
-
-        user_id = pk
-        bot_id = decompose_sk(sk)
 
         logger.info(
             f"Updating sync status for bot {bot_id} of user {user_id} to {sync_status} with reason: {sync_status_reason}"

@@ -4,20 +4,17 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { NagSuppressions } from "cdk-nag";
 
-export interface BedrockCustomBotCodebuildProps {
+export interface BedrockSharedKnowledgeBasesCodebuildProps {
   readonly envName: string;
   readonly envPrefix: string;
   readonly bedrockRegion: string;
   readonly sourceBucket: s3.Bucket;
 }
 
-export class BedrockCustomBotCodebuild extends Construct {
+export class BedrockSharedKnowledgeBasesCodebuild extends Construct {
   public readonly project: codebuild.Project;
-  constructor(
-    scope: Construct,
-    id: string,
-    props: BedrockCustomBotCodebuildProps
-  ) {
+
+  constructor(scope: Construct, id: string, props: BedrockSharedKnowledgeBasesCodebuildProps) {
     super(scope, id);
 
     const sourceBucket = props.sourceBucket;
@@ -49,8 +46,8 @@ export class BedrockCustomBotCodebuild extends Construct {
               "cd cdk",
               "npm ci",
               // Replace cdk's entrypoint. This is a workaround to avoid the issue that cdk synthesize all stacks.
-              "sed -i 's|bin/bedrock-chat.ts|bin/bedrock-custom-bot.ts|' cdk.json",
-              `npx cdk deploy --require-approval never BrChatKbStack$BOT_ID`,
+              "sed -i 's|bin/bedrock-chat.ts|bin/bedrock-shared-knowledge-bases.ts|' cdk.json",
+              "npx cdk deploy --require-approval never BrChatSharedKbStack",
             ],
           },
         },

@@ -38,6 +38,7 @@ export interface ApiProps {
   readonly largeMessageBucket: IBucket;
   readonly apiPublishProject: codebuild.IProject;
   readonly bedrockCustomBotProject: codebuild.IProject;
+  readonly bedrockSharedKnowledgeBasesProject: codebuild.IProject;
   readonly usageAnalysis?: UsageAnalysis;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
@@ -85,6 +86,7 @@ export class Api extends Construct {
         resources: [
           props.apiPublishProject.projectArn,
           props.bedrockCustomBotProject.projectArn,
+          props.bedrockSharedKnowledgeBasesProject.projectArn,
         ],
       })
     );
@@ -108,6 +110,7 @@ export class Api extends Construct {
         resources: [
           props.apiPublishProject.projectArn,
           props.bedrockCustomBotProject.projectArn,
+          props.bedrockSharedKnowledgeBasesProject.projectArn,
         ],
       })
     );

@@ -447,14 +447,11 @@ class BotModel(BaseModel):
     @model_validator(mode="after")
     def validate_knowledge_base_type(self) -> Self:
         if self.bedrock_knowledge_base is not None:
-            if (
-                self.bedrock_knowledge_base.exist_knowledge_base_id is not None
-                or (
-                    len(self.knowledge.source_urls) == 0
-                    and len(self.knowledge.sitemap_urls) == 0
-                    and len(self.knowledge.filenames) == 0
-                    and len(self.knowledge.s3_urls) == 0
-                )
+            if self.bedrock_knowledge_base.exist_knowledge_base_id is not None or (
+                len(self.knowledge.source_urls) == 0
+                and len(self.knowledge.sitemap_urls) == 0
+                and len(self.knowledge.filenames) == 0
+                and len(self.knowledge.s3_urls) == 0
             ):
                 self.bedrock_knowledge_base.type = None
                 self.bedrock_knowledge_base.knowledge_base_id = None
@@ -632,6 +629,84 @@ class BotModel(BaseModel):
                 bot_input.active_models.model_dump()  # type: ignore
             ),
             usage_stats=UsageStatsModel(usage_count=0),
+        )
+
+    @classmethod
+    def from_dynamo_item(cls, item: dict) -> Self:
+        return BotModel(
+            id=item["BotId"],
+            owner_user_id=item["PK"],
+            title=item["Title"],
+            description=item["Description"],
+            instruction=item["Instruction"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item.get("LastUsedTime", item["CreateTime"])),
+            # Note: SharedScope is set to None for private shared_scope to use sparse index
+            shared_scope=item.get("SharedScope", "private"),
+            shared_status=item["SharedStatus"],
+            allowed_cognito_groups=item.get("AllowedCognitoGroups", []),
+            allowed_cognito_users=item.get("AllowedCognitoUsers", []),
+            # Note: IsStarred is set to False for non-starred bots to use sparse index
+            is_starred=item.get("IsStarred", False),
+            generation_params=GenerationParamsModel.model_validate(
+                {
+                    **item.get("GenerationParams", DEFAULT_GENERATION_CONFIG),
+                    # For backward compatibility
+                    "reasoning_params": item.get("GenerationParams", {}).get(
+                        "reasoning_params",
+                        {
+                            "budget_tokens": DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"],  # type: ignore
+                        },
+                    ),
+                }
+            ),
+            agent=(
+                AgentModel.model_validate(item["AgentData"])
+                if "AgentData" in item
+                else AgentModel(tools=[])
+            ),
+            knowledge=KnowledgeModel(
+                **{**item["Knowledge"], "s3_urls": item["Knowledge"].get("s3_urls", [])}
+            ),
+            prompt_caching_enabled=item.get("PromptCachingEnabled", True),
+            sync_status=item["SyncStatus"],
+            sync_status_reason=item["SyncStatusReason"],
+            sync_last_exec_id=item["LastExecId"],
+            published_api_stack_name=item.get("ApiPublishmentStackName", None),
+            published_api_datetime=item.get("ApiPublishedDatetime", None),
+            published_api_codebuild_id=item.get("ApiPublishCodeBuildId", None),
+            display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
+            conversation_quick_starters=item.get("ConversationQuickStarters", []),
+            bedrock_knowledge_base=(
+                BedrockKnowledgeBaseModel(
+                    **{
+                        **item["BedrockKnowledgeBase"],
+                        "chunking_configuration": item["BedrockKnowledgeBase"].get(
+                            "chunking_configuration", None
+                        ),
+                        "parsing_model": item["BedrockKnowledgeBase"].get(
+                            "parsing_model", "disabled"
+                        ),
+                    }
+                )
+                if "BedrockKnowledgeBase" in item
+                else None
+            ),
+            bedrock_guardrails=(
+                BedrockGuardrailsModel(**item["GuardrailsParams"])
+                if "GuardrailsParams" in item
+                else None
+            ),
+            active_models=(
+                ActiveModelsModel.model_validate(item.get("ActiveModels"))
+                if item.get("ActiveModels")
+                else default_active_models  # for backward compatibility
+            ),
+            usage_stats=(
+                UsageStatsModel.model_validate(item.get("UsageStats"))
+                if item.get("UsageStats")
+                else UsageStatsModel(usage_count=0)  # for backward compatibility
+            ),
         )
 
     def to_output(self) -> BotOutput:

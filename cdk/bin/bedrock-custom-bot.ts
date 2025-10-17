@@ -86,102 +86,95 @@ const baseConfig: BaseConfig = {
   envName: params.envName,
   envPrefix: params.envPrefix,
   bedrockRegion: params.bedrockRegion,
-  ownerUserId: params.pk,
-  botId: params.sk.split("#")[1],
+  ownerUserId: params.ownerUserId,
+  botId: params.botId,
   documentBucketName: params.documentBucketName,
   enableRagReplicas: params.enableRagReplicas === true,
 };
 
 const knowledgeConfig: KnowledgeConfig = {
   knowledgeBaseType: getKnowledgeBaseType(knowledgeBaseJson.type),
-  embeddingsModel: getEmbeddingModel(knowledgeBaseJson.embeddings_model.S),
-  parsingModel: getParsingModel(knowledgeBaseJson.parsing_model.S),
-  existKnowledgeBaseId: knowledgeBaseJson.exist_knowledge_base_id?.S,
-  existingS3Urls: knowledgeJson.s3_urls.L.map((s3Url: any) => s3Url.S),
-  filenames: knowledgeJson.filenames.L.map((filename: any) => filename.S),
-  sourceUrls: knowledgeJson.source_urls.L.map((sourceUrl: any) => sourceUrl.S),
-  instruction: knowledgeBaseJson.instruction?.S,
-  analyzer: knowledgeBaseJson.open_search.M.analyzer.M
-    ? getAnalyzer(knowledgeBaseJson.open_search.M.analyzer.M)
+  embeddingsModel: getEmbeddingModel(knowledgeBaseJson.embeddings_model),
+  parsingModel: getParsingModel(knowledgeBaseJson.parsing_model),
+  existKnowledgeBaseId: knowledgeBaseJson.exist_knowledge_base_id,
+  existingS3Urls: knowledgeJson.s3_urls.map((s3Url: any) => s3Url),
+  filenames: knowledgeJson.filenames.map((filename: any) => filename),
+  sourceUrls: knowledgeJson.source_urls.map((sourceUrl: any) => sourceUrl),
+  instruction: knowledgeBaseJson.instruction,
+  analyzer: knowledgeBaseJson.open_search?.analyzer
+    ? getAnalyzer(knowledgeBaseJson.open_search.analyzer)
     : undefined,
 };
 
 // Extract chunking configuration
 const chunkingParams = {
-  maxTokens: knowledgeBaseJson.chunking_configuration.M.max_tokens
-    ? Number(knowledgeBaseJson.chunking_configuration.M.max_tokens.N)
+  maxTokens: knowledgeBaseJson.chunking_configuration?.max_tokens
+    ? knowledgeBaseJson.chunking_configuration.max_tokens
     : undefined,
-  overlapPercentage: knowledgeBaseJson.chunking_configuration.M
-    .overlap_percentage
-    ? Number(knowledgeBaseJson.chunking_configuration.M.overlap_percentage.N)
+  overlapPercentage: knowledgeBaseJson.chunking_configuration?.overlap_percentage
+    ? knowledgeBaseJson.chunking_configuration.overlap_percentage
     : undefined,
-  overlapTokens: knowledgeBaseJson.chunking_configuration.M.overlap_tokens
-    ? Number(knowledgeBaseJson.chunking_configuration.M.overlap_tokens.N)
+  overlapTokens: knowledgeBaseJson.chunking_configuration?.overlap_tokens
+    ? knowledgeBaseJson.chunking_configuration.overlap_tokens
     : undefined,
-  maxParentTokenSize: knowledgeBaseJson.chunking_configuration.M
-    .max_parent_token_size
-    ? Number(knowledgeBaseJson.chunking_configuration.M.max_parent_token_size.N)
+  maxParentTokenSize: knowledgeBaseJson.chunking_configuration?.max_parent_token_size
+    ? knowledgeBaseJson.chunking_configuration.max_parent_token_size
     : undefined,
-  maxChildTokenSize: knowledgeBaseJson.chunking_configuration.M
-    .max_child_token_size
-    ? Number(knowledgeBaseJson.chunking_configuration.M.max_child_token_size.N)
+  maxChildTokenSize: knowledgeBaseJson.chunking_configuration?.max_child_token_size
+    ? knowledgeBaseJson.chunking_configuration.max_child_token_size
     : undefined,
-  bufferSize: knowledgeBaseJson.chunking_configuration.M.buffer_size
-    ? Number(knowledgeBaseJson.chunking_configuration.M.buffer_size.N)
+  bufferSize: knowledgeBaseJson.chunking_configuration?.buffer_size
+    ? knowledgeBaseJson.chunking_configuration.buffer_size
     : undefined,
-  breakpointPercentileThreshold: knowledgeBaseJson.chunking_configuration.M
-    .breakpoint_percentile_threshold
-    ? Number(
-        knowledgeBaseJson.chunking_configuration.M
-          .breakpoint_percentile_threshold.N
-      )
+  breakpointPercentileThreshold: knowledgeBaseJson.chunking_configuration?.breakpoint_percentile_threshold
+    ? knowledgeBaseJson.chunking_configuration.breakpoint_percentile_threshold
     : undefined,
 };
 
 const chunkingConfig: ChunkingConfig = {
   ...chunkingParams,
   chunkingStrategy: getChunkingStrategy(
-    knowledgeBaseJson.chunking_configuration.M.chunking_strategy.S,
-    knowledgeBaseJson.embeddings_model.S,
+    knowledgeBaseJson.chunking_configuration?.chunking_strategy,
+    knowledgeBaseJson.embeddings_model,
     chunkingParams
   ),
 };
 
 const crawlingConfig: CrawlingConfig = {
-  crawlingScope: getCrowlingScope(knowledgeBaseJson.web_crawling_scope.S),
-  crawlingFilters: getCrawlingFilters(knowledgeBaseJson.web_crawling_filters.M),
+  crawlingScope: getCrowlingScope(knowledgeBaseJson.web_crawling_scope),
+  crawlingFilters: getCrawlingFilters(knowledgeBaseJson.web_crawling_filters),
 };
 
 const guardrailConfig: GuardrailConfig = {
   is_guardrail_enabled: guardrailsJson.is_guardrail_enabled
-    ? Boolean(guardrailsJson.is_guardrail_enabled.BOOL)
+    ? guardrailsJson.is_guardrail_enabled
     : undefined,
   hateThreshold: guardrailsJson.hate_threshold
-    ? Number(guardrailsJson.hate_threshold.N)
+    ? guardrailsJson.hate_threshold
     : undefined,
   insultsThreshold: guardrailsJson.insults_threshold
-    ? Number(guardrailsJson.insults_threshold.N)
+    ? guardrailsJson.insults_threshold
     : undefined,
   sexualThreshold: guardrailsJson.sexual_threshold
-    ? Number(guardrailsJson.sexual_threshold.N)
+    ? guardrailsJson.sexual_threshold
     : undefined,
   violenceThreshold: guardrailsJson.violence_threshold
-    ? Number(guardrailsJson.violence_threshold.N)
+    ? guardrailsJson.violence_threshold
     : undefined,
   misconductThreshold: guardrailsJson.misconduct_threshold
-    ? Number(guardrailsJson.misconduct_threshold.N)
+    ? guardrailsJson.misconduct_threshold
     : undefined,
   groundingThreshold: guardrailsJson.grounding_threshold
-    ? Number(guardrailsJson.grounding_threshold.N)
+    ? guardrailsJson.grounding_threshold
     : undefined,
   relevanceThreshold: guardrailsJson.relevance_threshold
-    ? Number(guardrailsJson.relevance_threshold.N)
+    ? guardrailsJson.relevance_threshold
     : undefined,
   guardrailArn: guardrailsJson.guardrail_arn
-    ? Number(guardrailsJson.guardrail_arn.N)
+    ? guardrailsJson.guardrail_arn
     : undefined,
   guardrailVersion: guardrailsJson.guardrail_version
-    ? Number(guardrailsJson.guardrail_version.N)
+    ? guardrailsJson.guardrail_version
     : undefined,
 };
 
