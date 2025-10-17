@@ -279,7 +279,7 @@ export class BotStore extends Construct {
       region,
     });
 
-    new osis.CfnPipeline(this, "BotOsisPipeline", {
+    const botOsisPipeline = new osis.CfnPipeline(this, "BotOsisPipeline", {
       pipelineName: generatePhysicalName(
         this,
         `${props.envPrefix}BotOsisPipeline`,
@@ -300,6 +300,11 @@ export class BotStore extends Construct {
       pipelineConfigurationBody: JSON.stringify(botOsisPipelineConfig),
     });
 
+    // Ensure IAM policy is attached before creating the pipeline
+    botOsisPipeline.node.addDependency(osisPolicy);
+    botOsisPipeline.node.addDependency(dataAccessPolicy);
+    botOsisPipeline.node.addDependency(this.collection);
+
     const conversationOsisPipelineConfig = this._createConversationOsisPipelineConfig({
       botTable: props.botTable,
       conversationTable: props.conversationTable,
@@ -311,7 +316,7 @@ export class BotStore extends Construct {
       region,
     });
 
-    new osis.CfnPipeline(this, "ConversationOsisPipeline", {
+    const conversationOsisPipeline = new osis.CfnPipeline(this, "ConversationOsisPipeline", {
       pipelineName: generatePhysicalName(
         this,
         `${props.envPrefix}ConversationPipeline`,
@@ -330,6 +335,11 @@ export class BotStore extends Construct {
       },
       pipelineConfigurationBody: JSON.stringify(conversationOsisPipelineConfig),
     });
+
+    // Ensure IAM policy is attached before creating the pipeline
+    conversationOsisPipeline.node.addDependency(osisPolicy);
+    conversationOsisPipeline.node.addDependency(dataAccessPolicy);
+    conversationOsisPipeline.node.addDependency(this.collection);
 
     new CfnOutput(this, "OpenSearchEndpoint", {
       value: endpoint,
