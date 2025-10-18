@@ -1,12 +1,12 @@
-# Agente potenciado por LLM (ReAct)
+# Agente basado en LLM (ReAct)
 
 ## ¿Qué es el Agente (ReAct)?
 
 Un Agente es un sistema avanzado de IA que utiliza modelos de lenguaje grandes (LLMs) como su motor computacional central. Combina las capacidades de razonamiento de los LLMs con funcionalidades adicionales como la planificación y el uso de herramientas para realizar tareas complejas de forma autónoma. Los agentes pueden desglosar consultas complicadas, generar soluciones paso a paso e interactuar con herramientas externas o APIs para recopilar información o ejecutar subtareas.
 
-Este ejemplo implementa un Agente utilizando el enfoque [ReAct (Razonamiento + Actuación)](https://www.promptingguide.ai/techniques/react). ReAct permite al agente resolver tareas complejas combinando razonamiento y acciones en un bucle de retroalimentación iterativo. El agente pasa repetidamente por tres pasos clave: Pensamiento, Acción y Observación. Analiza la situación actual utilizando el LLM, decide la siguiente acción a tomar, ejecuta la acción utilizando herramientas o APIs disponibles, y aprende de los resultados observados. Este proceso continuo permite al agente adaptarse a entornos dinámicos, mejorar su precisión en la resolución de tareas y proporcionar soluciones contextualizadas.
+Esta muestra implementa un Agente utilizando el enfoque [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct permite al agente resolver tareas complejas combinando razonamiento y acciones en un bucle de retroalimentación iterativo. El agente pasa repetidamente por tres pasos clave: Pensamiento, Acción y Observación. Analiza la situación actual utilizando el LLM, decide la siguiente acción a tomar, ejecuta la acción utilizando herramientas o APIs disponibles, y aprende de los resultados observados. Este proceso continuo permite al agente adaptarse a entornos dinámicos, mejorar su precisión en la resolución de tareas y proporcionar soluciones contextualizadas.
 
-La implementación está impulsada por [Strands Agents](https://strandsagents.com/), un SDK de código abierto que adopta un enfoque basado en modelos para construir agentes de IA. Strands proporciona un marco ligero y flexible para crear herramientas personalizadas utilizando decoradores de Python y es compatible con múltiples proveedores de modelos, incluyendo Amazon Bedrock.
+La implementación está impulsada por [Strands Agents](https://strandsagents.com/), un SDK de código abierto que adopta un enfoque basado en modelos para construir agentes de IA. Strands proporciona un marco ligero y flexible para crear herramientas personalizadas utilizando decoradores de Python y admite múltiples proveedores de modelos, incluyendo Amazon Bedrock.
 
 ## Caso de Uso de Ejemplo
 
@@ -18,17 +18,17 @@ Un usuario solicita "las ventas totales del último trimestre". El Agente interp
 
 ### Previsión Financiera
 
-Un analista financiero necesita pronosticar los ingresos del próximo trimestre. El Agente recopila los datos relevantes, realiza los cálculos necesarios utilizando modelos financieros y genera un informe detallado de previsión, garantizando la precisión de las proyecciones.
+Un analista financiero necesita pronosticar los ingresos del próximo trimestre. El Agente recopila los datos relevantes, realiza los cálculos necesarios utilizando modelos financieros y genera un informe detallado de previsión, asegurando la precisión de las proyecciones.
 
 ## Para usar la función de Agente
 
-Para habilitar la funcionalidad de Agente en tu chatbot personalizado, sigue estos pasos:
+Para habilitar la funcionalidad de Agente para tu chatbot personalizado, sigue estos pasos:
 
 Hay dos formas de usar la función de Agente:
 
 ### Usando Herramientas
 
-Para habilitar la funcionalidad de Agente con Herramientas en tu chatbot personalizado, sigue estos pasos:
+Para habilitar la funcionalidad de Agente con Herramientas para tu chatbot personalizado, sigue estos pasos:
 
 1. Navega a la sección Agente en la pantalla del bot personalizado.
 
@@ -43,7 +43,7 @@ Para habilitar la funcionalidad de Agente con Herramientas en tu chatbot persona
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-5. Puedes desarrollar y añadir tus propias herramientas personalizadas para extender las capacidades del Agente. Consulta la sección [Cómo desarrollar tus propias herramientas](#how-to-develop-your-own-tools) para obtener más información sobre cómo crear e integrar herramientas personalizadas.
+5. Puedes desarrollar y añadir tus propias herramientas personalizadas para ampliar las capacidades del Agente. Consulta la sección [Cómo desarrollar tus propias herramientas](#how-to-develop-your-own-tools) para obtener más información sobre cómo crear e integrar herramientas personalizadas.
 
 ### Usando Bedrock Agent
 
@@ -59,7 +59,7 @@ Para desarrollar tus propias herramientas personalizadas para el Agente usando S
 
 ### Acerca de las Herramientas Strands
 
-Strands proporciona un decorador `@tool` simple que transforma funciones regulares de Python en herramientas para agentes de IA. El decorador extrae automáticamente información del docstring y las anotaciones de tipo de tu función para crear especificaciones de herramientas que el LLM puede entender y usar. Este enfoque aprovecha las características nativas de Python para una experiencia de desarrollo de herramientas limpia y funcional.
+Strands proporciona un decorador `@tool` simple que transforma funciones regulares de Python en herramientas para agentes de IA. El decorador extrae automáticamente información del docstring y las anotaciones de tipo de tu función para crear especificaciones de herramientas que el LLM puede entender y usar. Este enfoque aprovecha las características nativas de Python para una experiencia limpia y funcional en el desarrollo de herramientas.
 
 Para información detallada sobre las herramientas Strands, consulta la [documentación de Python Tools](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
@@ -73,7 +73,7 @@ from strands import tool
 @tool
 def calculator(expression: str) -> dict:
     """
-    Realizar cálculos matemáticos de forma segura.
+    Realiza cálculos matemáticos de forma segura.
 
     Args:
         expression: Expresión matemática a evaluar (ej., "2+2", "10*5", "sqrt(16)")
@@ -83,7 +83,7 @@ def calculator(expression: str) -> dict:
     """
     try:
         # Tu lógica de cálculo aquí
-        result = eval(expression)  # Nota: Usar evaluación segura en producción
+        result = eval(expression)  # Nota: Usa evaluación segura en producción
         return {
             "toolUseId": "placeholder",
             "status": "success",
@@ -106,12 +106,12 @@ from strands import tool
 from app.repositories.models.custom_bot import BotModel
 
 def create_calculator_tool(bot: BotModel | None = None):
-    """Crear herramienta calculadora con closure de contexto del bot."""
+    """Crea una herramienta calculadora con closure de contexto del bot."""
 
     @tool
     def calculator(expression: str) -> dict:
         """
-        Realizar cálculos matemáticos de forma segura.
+        Realiza cálculos matemáticos de forma segura.
 
         Args:
             expression: Expresión matemática a evaluar (ej., "2+2", "10*5", "sqrt(16)")
@@ -119,12 +119,12 @@ def create_calculator_tool(bot: BotModel | None = None):
         Returns:
             dict: Resultado en formato Strands con toolUseId, status y content
         """
-        # Acceder al contexto del bot dentro de la herramienta
+        # Accede al contexto del bot dentro de la herramienta
         if bot:
             print(f"Herramienta usada por el bot: {bot.id}")
 
         try:
-            result = eval(expression)  # Usar evaluación segura en producción
+            result = eval(expression)  # Usa evaluación segura en producción
             return {
                 "toolUseId": "placeholder",
                 "status": "success",
@@ -167,9 +167,9 @@ Todas las herramientas Strands deben devolver un diccionario con la siguiente es
 
 - Después de completar el desarrollo, coloca tu archivo de implementación en el directorio [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Luego abre [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) y edita `get_strands_registered_tools` para incluir tu nueva herramienta.
 
-- [Opcional] Añade nombres y descripciones claras para el frontend. Este paso es opcional, pero si no lo haces, se usarán el nombre y la descripción de tu función. Como estos son para consumo del LLM, se recomienda añadir explicaciones amigables para el usuario para una mejor experiencia de usuario.
+- [Opcional] Agrega nombres y descripciones claras para el frontend. Este paso es opcional, pero si no lo haces, se utilizarán el nombre y la descripción de tu función. Como estos son para consumo del LLM, se recomienda agregar explicaciones amigables para una mejor experiencia de usuario.
 
-  - Edita los archivos i18n. Abre [en/index.ts](../frontend/src/i18n/en/index.ts) y añade tu propio `name` y `description` en `agent.tools`.
+  - Edita los archivos i18n. Abre [en/index.ts](../frontend/src/i18n/en/index.ts) y agrega tu propio `name` y `description` en `agent.tools`.
   - Edita también `xx/index.ts`. Donde `xx` representa el código de país que desees.
 
 - Ejecuta `npx cdk deploy` para desplegar tus cambios. Esto hará que tu herramienta personalizada esté disponible en la pantalla de bot personalizado.

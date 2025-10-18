@@ -7,11 +7,11 @@ Questa guida delinea i passaggi per migrare i dati durante l'aggiornamento di Be
 
 ## Panoramica
 
-Il processo di migrazione prevede la scansione di tutti i bot e l'avvio di task ECS di embedding per ciascuno di essi. Questo approccio richiede il ricalcolo degli embedding, che può richiedere tempo e comportare costi aggiuntivi dovuti all'esecuzione dei task ECS e alle tariffe di utilizzo di Bedrock Cohere. Se preferisci evitare questi costi e requisiti di tempo, consulta le [opzioni alternative di migrazione](#alternative-migration-options) fornite più avanti in questa guida.
+Il processo di migrazione prevede la scansione di tutti i bot e l'avvio di task ECS di embedding per ciascuno di essi. Questo approccio richiede il ricalcolo degli embedding, operazione che può richiedere tempo e comportare costi aggiuntivi dovuti all'esecuzione dei task ECS e alle tariffe di utilizzo di Bedrock Cohere. Se preferisci evitare questi costi e requisiti temporali, consulta le [opzioni alternative di migrazione](#alternative-migration-options) fornite più avanti in questa guida.
 
-## Passaggi per la Migrazione
+## Passaggi di Migrazione
 
-- Dopo [npx cdk deploy](../README.md#deploy-using-cdk) con la sostituzione di Aurora, aprire lo script [migrate_v0_v1.py](./migrate_v0_v1.py) e aggiornare le seguenti variabili con i valori appropriati. I valori possono essere consultati nella scheda `CloudFormation` > `BedrockChatStack` > `Outputs`.
+- Dopo [npx cdk deploy](../README.md#deploy-using-cdk) con la sostituzione di Aurora, aprire lo script [migrate_v0_v1.py](./migrate_v0_v1.py) e aggiornare le seguenti variabili con i valori appropriati. I valori possono essere trovati nella scheda `CloudFormation` > `BedrockChatStack` > `Outputs`.
 
 ```py
 # Aprire lo stack CloudFormation nella Console di Gestione AWS e copiare i valori dalla scheda Outputs.
@@ -38,7 +38,7 @@ Se preferisci non utilizzare il metodo sopra indicato a causa delle implicazioni
 
 ### Ripristino da Snapshot e Migrazione DMS
 
-Prima di tutto, prendi nota della password per accedere al cluster Aurora attuale. Quindi esegui `npx cdk deploy`, che attiva la sostituzione del cluster. Successivamente, crea un database temporaneo ripristinandolo da uno snapshot del database originale.
+Innanzitutto, prendi nota della password per accedere al cluster Aurora attuale. Quindi esegui `npx cdk deploy`, che attiva la sostituzione del cluster. Successivamente, crea un database temporaneo ripristinandolo da uno snapshot del database originale.
 Utilizza [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/) per migrare i dati dal database temporaneo al nuovo cluster Aurora.
 
 Nota: Al 29 maggio 2024, DMS non supporta nativamente l'estensione pgvector. Tuttavia, puoi esplorare le seguenti opzioni per aggirare questa limitazione:

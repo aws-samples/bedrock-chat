@@ -1,12 +1,12 @@
 # Agente basato su LLM (ReAct)
 
-## Che cos'è l'Agente (ReAct)?
+## Che cos'è l'Agent (ReAct)?
 
-Un Agente è un sistema di IA avanzato che utilizza i modelli linguistici di grandi dimensioni (LLM) come motore computazionale centrale. Combina le capacità di ragionamento degli LLM con funzionalità aggiuntive come la pianificazione e l'uso di strumenti per eseguire autonomamente compiti complessi. Gli Agenti possono scomporre query complicate, generare soluzioni passo dopo passo e interagire con strumenti esterni o API per raccogliere informazioni o eseguire attività secondarie.
+Un Agent è un sistema di IA avanzato che utilizza i large language model (LLM) come motore computazionale centrale. Combina le capacità di ragionamento degli LLM con funzionalità aggiuntive come la pianificazione e l'uso di strumenti per eseguire autonomamente compiti complessi. Gli Agent possono scomporre query complicate, generare soluzioni passo dopo passo e interagire con strumenti esterni o API per raccogliere informazioni o eseguire sotto-attività.
 
-Questo esempio implementa un Agente utilizzando l'approccio [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct permette all'agente di risolvere compiti complessi combinando ragionamento e azioni in un ciclo di feedback iterativo. L'agente attraversa ripetutamente tre passaggi chiave: Pensiero, Azione e Osservazione. Analizza la situazione attuale utilizzando l'LLM, decide quale azione intraprendere successivamente, esegue l'azione utilizzando strumenti o API disponibili e apprende dai risultati osservati. Questo processo continuo permette all'agente di adattarsi a ambienti dinamici, migliorare la precisione nella risoluzione dei compiti e fornire soluzioni contestualizzate.
+Questo esempio implementa un Agent utilizzando l'approccio [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct permette all'agent di risolvere compiti complessi combinando ragionamento e azioni in un ciclo di feedback iterativo. L'agent attraversa ripetutamente tre passaggi chiave: Pensiero, Azione e Osservazione. Analizza la situazione attuale utilizzando l'LLM, decide quale azione intraprendere successivamente, esegue l'azione utilizzando strumenti o API disponibili e impara dai risultati osservati. Questo processo continuo permette all'agent di adattarsi a ambienti dinamici, migliorare la precisione nella risoluzione dei compiti e fornire soluzioni contestualizzate.
 
-L'implementazione è basata su [Strands Agents](https://strandsagents.com/), un SDK open-source che adotta un approccio model-driven per la costruzione di agenti IA. Strands fornisce un framework leggero e flessibile per creare strumenti personalizzati utilizzando i decoratori Python e supporta diversi provider di modelli, incluso Amazon Bedrock.
+L'implementazione è basata su [Strands Agents](https://strandsagents.com/), un SDK open-source che adotta un approccio model-driven per la creazione di agent IA. Strands fornisce un framework leggero e flessibile per creare strumenti personalizzati utilizzando i decoratori Python e supporta diversi provider di modelli, incluso Amazon Bedrock.
 
 ## Esempio di Caso d'Uso
 
@@ -26,11 +26,11 @@ Per abilitare la funzionalità Agent per il tuo chatbot personalizzato, segui qu
 
 Ci sono due modi per utilizzare la funzionalità Agent:
 
-### Utilizzo degli Strumenti (Tool Use)
+### Utilizzo di Tool Use
 
-Per abilitare la funzionalità Agent con l'utilizzo degli strumenti per il tuo chatbot personalizzato, segui questi passaggi:
+Per abilitare la funzionalità Agent con Tool Use per il tuo chatbot personalizzato, segui questi passaggi:
 
-1. Vai alla sezione Agent nella schermata del bot personalizzato.
+1. Naviga alla sezione Agent nella schermata del bot personalizzato.
 
 2. Nella sezione Agent, troverai un elenco di strumenti disponibili che possono essere utilizzati dall'Agent. Per impostazione predefinita, tutti gli strumenti sono disabilitati.
 
@@ -38,7 +38,7 @@ Per abilitare la funzionalità Agent con l'utilizzo degli strumenti per il tuo c
 
 ![](./imgs/agent_tools.png)
 
-4. Per esempio, lo strumento "Internet Search" permette all'Agent di recuperare informazioni da internet per rispondere alle domande degli utenti.
+4. Ad esempio, lo strumento "Internet Search" permette all'Agent di recuperare informazioni da internet per rispondere alle domande degli utenti.
 
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
@@ -59,7 +59,7 @@ Per sviluppare i tuoi strumenti personalizzati per l'Agent utilizzando Strands S
 
 ### Informazioni sugli Strumenti Strands
 
-Strands fornisce un semplice decoratore `@tool` che trasforma le normali funzioni Python in strumenti per l'agente AI. Il decoratore estrae automaticamente le informazioni dalla docstring della tua funzione e dai type hints per creare specifiche dello strumento che l'LLM può comprendere e utilizzare. Questo approccio sfrutta le funzionalità native di Python per un'esperienza di sviluppo degli strumenti pulita e funzionale.
+Strands fornisce un semplice decoratore `@tool` che trasforma le normali funzioni Python in strumenti per l'agente AI. Il decoratore estrae automaticamente le informazioni dalla docstring e dai type hint della tua funzione per creare specifiche degli strumenti che l'LLM può comprendere e utilizzare. Questo approccio sfrutta le funzionalità native di Python per un'esperienza di sviluppo degli strumenti pulita e funzionale.
 
 Per informazioni dettagliate sugli strumenti Strands, consulta la [documentazione Python Tools](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
@@ -119,7 +119,7 @@ def create_calculator_tool(bot: BotModel | None = None):
         Returns:
             dict: Risultato in formato Strands con toolUseId, status e content
         """
-        # Accedi al contesto del bot all'interno dello strumento
+        # Accedi al contesto bot all'interno dello strumento
         if bot:
             print(f"Tool used by bot: {bot.id}")
 
@@ -157,7 +157,7 @@ Tutti gli strumenti Strands devono restituire un dizionario con la seguente stru
 
 - Usa `{"text": "messaggio"}` per risposte testuali semplici
 - Usa `{"json": data}` per dati complessi che devono essere preservati come informazioni strutturate
-- Imposta sempre `status` su `"success"` o `"error"`
+- Imposta sempre `status` a `"success"` o `"error"`
 
 ### Linee Guida per l'Implementazione
 
@@ -165,11 +165,11 @@ Tutti gli strumenti Strands devono restituire un dizionario con la seguente stru
 
 - Fai riferimento all'implementazione di esempio di uno [strumento per il calcolo del BMI](../examples/agents/tools/bmi/bmi_strands.py). Questo esempio dimostra come creare uno strumento che calcola l'Indice di Massa Corporea (BMI) utilizzando il decoratore `@tool` di Strands e il pattern closure.
 
-- Dopo aver completato lo sviluppo, posiziona il tuo file di implementazione nella directory [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Quindi apri [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) e modifica `get_strands_registered_tools` per includere il tuo nuovo strumento.
+- Dopo aver completato lo sviluppo, posiziona il file di implementazione nella directory [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Quindi apri [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) e modifica `get_strands_registered_tools` per includere il tuo nuovo strumento.
 
-- [Opzionale] Aggiungi nomi e descrizioni chiari per il frontend. Questo passaggio è opzionale, ma se non lo fai, verranno utilizzati il nome e la descrizione della funzione. Poiché questi sono per il consumo dell'LLM, si raccomanda di aggiungere spiegazioni user-friendly per una migliore UX.
+- [Opzionale] Aggiungi nomi e descrizioni chiari per il frontend. Questo passaggio è opzionale, ma se non lo fai, verranno utilizzati il nome e la descrizione della funzione. Poiché questi sono per il consumo dell'LLM, si consiglia di aggiungere spiegazioni user-friendly per una migliore UX.
 
-  - Modifica i file i18n. Apri [en/index.ts](../frontend/src/i18n/en/index.ts) e aggiungi il tuo `name` e `description` su `agent.tools`.
+  - Modifica i file i18n. Apri [en/index.ts](../frontend/src/i18n/en/index.ts) e aggiungi il tuo `name` e `description` in `agent.tools`.
   - Modifica anche `xx/index.ts`. Dove `xx` rappresenta il codice paese che desideri.
 
-- Esegui `npx cdk deploy` per distribuire le tue modifiche. Questo renderà il tuo strumento personalizzato disponibile nella schermata dei bot personalizzati.
+- Esegui `npx cdk deploy` per distribuire le tue modifiche. Questo renderà il tuo strumento personalizzato disponibile nella schermata del bot personalizzato.

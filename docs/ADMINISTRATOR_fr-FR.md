@@ -2,7 +2,7 @@
 
 ## Prérequis
 
-L'utilisateur administrateur doit être membre d'un groupe appelé `Admin`, qui peut être configuré via la console de gestion > Amazon Cognito User pools ou l'interface aws cli. Notez que l'ID du groupe d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+L'utilisateur administrateur doit être membre d'un groupe appelé `Admin`, qui peut être configuré via la console de gestion > Amazon Cognito User pools ou l'interface en ligne de commande aws. Notez que l'ID du groupe d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
@@ -13,17 +13,17 @@ Les bots publics peuvent désormais être marqués comme "Essentiels" par les ad
 ### Exemples
 
 - Bot Assistant RH : Aide les employés pour les questions et tâches liées aux ressources humaines.
-- Bot Support Informatique : Fournit une assistance pour les problèmes techniques internes et la gestion des comptes.
-- Bot Guide des Politiques Internes : Répond aux questions fréquentes sur les règles de présence, les politiques de sécurité et autres règlements internes.
-- Bot d'Intégration des Nouveaux Employés : Guide les nouvelles recrues à travers les procédures et l'utilisation des systèmes lors de leur premier jour.
-- Bot d'Information sur les Avantages : Explique les programmes d'avantages sociaux et les services de bien-être de l'entreprise.
+- Bot Support informatique : Fournit une assistance pour les problèmes techniques internes et la gestion des comptes.
+- Bot Guide des politiques internes : Répond aux questions fréquentes sur les règles de présence, les politiques de sécurité et autres règlements internes.
+- Bot d'intégration des nouveaux employés : Guide les nouvelles recrues à travers les procédures et l'utilisation des systèmes lors de leur premier jour.
+- Bot d'information sur les avantages sociaux : Explique les programmes d'avantages sociaux et les services de l'entreprise.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## Boucle de rétroaction
 
-La sortie du LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Parfois, elle ne parvient pas à satisfaire les besoins de l'utilisateur. Pour "intégrer" efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Chat est équipé d'une fonction de rétroaction conçue pour permettre aux utilisateurs d'analyser l'origine de l'insatisfaction. Sur la base des résultats d'analyse, les utilisateurs peuvent ajuster les prompts, les sources de données RAG et les paramètres en conséquence.
+La sortie du LLM peut ne pas toujours répondre aux attentes de l'utilisateur. Parfois, elle ne satisfait pas les besoins de l'utilisateur. Pour "intégrer" efficacement les LLM dans les opérations commerciales et la vie quotidienne, la mise en place d'une boucle de rétroaction est essentielle. Bedrock Chat est équipé d'une fonction de rétroaction conçue pour permettre aux utilisateurs d'analyser l'origine de l'insatisfaction. Sur la base des résultats d'analyse, les utilisateurs peuvent ajuster les prompts, les sources de données RAG et les paramètres en conséquence.
 
 ![](./imgs/feedback_loop.png)
 
@@ -39,11 +39,11 @@ Fournit actuellement un aperçu de base de l'utilisation des chatbots et des uti
 
 ## Notes
 
-- Comme indiqué dans l'[architecture](../README.md#architecture), les fonctionnalités d'administration feront référence au bucket S3 exporté depuis DynamoDB. Veuillez noter que puisque l'export est effectué une fois par heure, les conversations les plus récentes peuvent ne pas être reflétées immédiatement.
+- Comme indiqué dans l'[architecture](../README.md#architecture), les fonctionnalités d'administration feront référence au bucket S3 exporté depuis DynamoDB. Veuillez noter que l'export étant effectué une fois par heure, les conversations les plus récentes peuvent ne pas être reflétées immédiatement.
 
-- Dans les utilisations des bots publics, les bots qui n'ont pas été utilisés du tout pendant la période spécifiée ne seront pas listés.
+- Dans les utilisations des bots publics, les bots qui n'ont pas du tout été utilisés pendant la période spécifiée ne seront pas listés.
 
-- Dans les utilisations des utilisateurs, les utilisateurs qui n'ont pas du tout utilisé le système pendant la période spécifiée ne seront pas listés.
+- Dans les utilisations par utilisateur, les utilisateurs qui n'ont pas du tout utilisé le système pendant la période spécifiée ne seront pas listés.
 
 > [!Important]
 > Si vous utilisez plusieurs environnements (dev, prod, etc.), le nom de la base de données Athena inclura le préfixe d'environnement. Au lieu de `bedrockchatstack_usage_analysis`, le nom de la base de données sera :
@@ -60,11 +60,11 @@ Fournit actuellement un aperçu de base de l'utilisation des chatbots et des uti
 
 ## Télécharger les données de conversation
 
-Vous pouvez interroger les journaux de conversation via Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'éditeur de requêtes Athena depuis la console de gestion et exécutez SQL. Voici quelques exemples de requêtes utiles pour analyser les cas d'utilisation. Les retours peuvent être consultés dans l'attribut `MessageMap`.
+Vous pouvez interroger les journaux de conversation via Athena, en utilisant SQL. Pour télécharger les journaux, ouvrez l'éditeur de requêtes Athena depuis la console de gestion et exécutez une requête SQL. Voici quelques exemples de requêtes utiles pour analyser les cas d'utilisation. Les retours peuvent être consultés dans l'attribut `MessageMap`.
 
 ### Requête par ID de Bot
 
-Modifiez `bot-id` et `datehour`. Le `bot-id` peut être consulté sur l'écran de gestion des bots, accessible depuis les API Bot Publish, affichées dans la barre latérale gauche. Notez la partie finale de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Modifiez `bot-id` et `datehour`. Le `bot-id` peut être consulté sur l'écran de gestion des bots, accessible depuis les APIs Bot Publish, affiché dans la barre latérale gauche. Notez la partie finale de l'URL comme `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT

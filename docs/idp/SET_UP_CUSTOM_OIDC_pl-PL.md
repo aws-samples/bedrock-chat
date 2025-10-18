@@ -2,7 +2,7 @@
 
 ## Krok 1: Utwórz klienta OIDC
 
-Postępuj zgodnie z procedurami dostawcy OIDC i zanotuj wartości identyfikatora klienta OIDC oraz sekretu. W kolejnych krokach wymagany będzie również adres URL wydawcy (issuer URL). Jeśli podczas procesu konfiguracji wymagany jest URI przekierowania, wprowadź tymczasową wartość, która zostanie zastąpiona po zakończeniu wdrożenia.
+Postępuj zgodnie z procedurami dla docelowego dostawcy OIDC i zanotuj wartości identyfikatora klienta OIDC oraz sekretu. URL wydawcy będzie również wymagany w kolejnych krokach. Jeśli podczas procesu konfiguracji wymagany jest URI przekierowania, wprowadź tymczasową wartość, która zostanie zastąpiona po zakończeniu wdrożenia.
 
 ## Krok 2: Przechowywanie poświadczeń w AWS Secrets Manager
 
@@ -15,16 +15,16 @@ Postępuj zgodnie z procedurami dostawcy OIDC i zanotuj wartości identyfikatora
    - Klucz: `clientSecret`, Wartość: <YOUR_GOOGLE_CLIENT_SECRET>
    - Klucz: `issuerUrl`, Wartość: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Postępuj zgodnie z instrukcjami, aby nazwać i opisać sekret. Zapamiętaj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Używana w kroku 3 jako nazwa zmiennej <YOUR_SECRET_NAME>).
+5. Postępuj zgodnie z instrukcjami, aby nazwać i opisać sekret. Zapamiętaj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Używana w zmiennej Kroku 3 <YOUR_SECRET_NAME>).
 6. Przejrzyj i zapisz sekret.
 
 ### Uwaga
 
 Nazwy kluczy muszą dokładnie odpowiadać ciągom znaków `clientId`, `clientSecret` i `issuerUrl`.
 
-## Krok 3: Aktualizacja cdk.json
+## Krok 3: Zaktualizuj cdk.json
 
-W pliku cdk.json dodaj ID Dostawcy i SecretName do pliku cdk.json.
+W pliku cdk.json dodaj ID Providera i SecretName do pliku cdk.json.
 
 w następujący sposób:
 
@@ -58,6 +58,6 @@ Wdróż swój stos CDK na AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Krok 5: Zaktualizuj klienta OIDC o adresy przekierowania Cognito
+## Krok 5: Zaktualizuj klienta OIDC o URI przekierowania Cognito
 
-Po wdrożeniu stosu, `AuthApprovedRedirectURI` jest wyświetlany w wynikach CloudFormation. Wróć do swojej konfiguracji OIDC i zaktualizuj ją o prawidłowe adresy URI przekierowania.
+Po wdrożeniu stosu, `AuthApprovedRedirectURI` jest wyświetlany w wynikach CloudFormation. Wróć do swojej konfiguracji OIDC i zaktualizuj ją o prawidłowe URI przekierowania.

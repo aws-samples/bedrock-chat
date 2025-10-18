@@ -2,7 +2,7 @@
 
 ## Langkah 1: Cipta Pelanggan OIDC
 
-Ikuti prosedur untuk penyedia OIDC sasaran, dan catatkan nilai-nilai ID pelanggan OIDC dan rahsia. URL pengeluar juga diperlukan pada langkah-langkah berikutnya. Jika URI lencongan diperlukan untuk proses persediaan, masukkan nilai dummy, yang akan digantikan selepas penempatan selesai.
+Ikuti prosedur untuk pembekal OIDC sasaran, dan ambil perhatian nilai-nilai ID pelanggan OIDC dan rahsia. URL pengeluar juga diperlukan untuk langkah-langkah seterusnya. Jika URI pengalihan diperlukan untuk proses persediaan, masukkan nilai dummy, yang akan digantikan selepas penggunaan selesai.
 
 ## Langkah 2: Simpan Kelayakan dalam AWS Secrets Manager
 
@@ -20,7 +20,7 @@ Ikuti prosedur untuk penyedia OIDC sasaran, dan catatkan nilai-nilai ID pelangga
 
 ### Perhatian
 
-Nama kunci mesti sepadan tepat dengan rentetan `clientId`, `clientSecret` dan `issuerUrl`.
+Nama kunci mesti sama tepat dengan rentetan `clientId`, `clientSecret` dan `issuerUrl`.
 
 ## Langkah 3: Kemas kini cdk.json
 
@@ -48,16 +48,16 @@ seperti berikut:
 
 #### Keunikan
 
-`userPoolDomainPrefix` mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang telah digunakan oleh akaun AWS yang lain, pembuatan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
+`userPoolDomainPrefix` mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang telah digunakan oleh akaun AWS yang lain, penciptaan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
 
-## Langkah 4: Gunakan Stack CDK Anda
+## Langkah 4: Melancarkan Tindanan CDK Anda
 
-Gunakan stack CDK anda ke AWS:
+Lancarkan tindanan CDK anda ke AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## Langkah 5: Kemas kini Pelanggan OIDC dengan URI Pengalihan Cognito
+## Langkah 5: Kemas kini Pelanggan OIDC dengan URI Ubah Hala Cognito
 
-Selepas menggunakan tindanan, `AuthApprovedRedirectURI` akan dipaparkan pada output CloudFormation. Kembali ke konfigurasi OIDC anda dan kemas kini dengan URI pengalihan yang betul.
+Selepas menggunakan tindanan, `AuthApprovedRedirectURI` akan dipaparkan pada output CloudFormation. Kembali ke konfigurasi OIDC anda dan kemas kini dengan URI ubah hala yang betul.

@@ -1,15 +1,15 @@
-# Guía de Migración (v2 a v3)
+# Guía de migración (v2 a v3)
 
 ## TL;DR
 
-- V3 introduce control de permisos granular y funcionalidad de Bot Store, requiriendo cambios en el esquema de DynamoDB
+- V3 introduce control de permisos detallado y funcionalidad de Bot Store, requiriendo cambios en el esquema de DynamoDB
 - **Haga una copia de seguridad de su tabla ConversationTable de DynamoDB antes de la migración**
 - Actualice la URL de su repositorio de `bedrock-claude-chat` a `bedrock-chat`
 - Ejecute el script de migración para convertir sus datos al nuevo esquema
 - Todos sus bots y conversaciones se conservarán con el nuevo modelo de permisos
 - **IMPORTANTE: Durante el proceso de migración, la aplicación no estará disponible para ningún usuario hasta que la migración se complete. Este proceso típicamente toma alrededor de 60 minutos, dependiendo de la cantidad de datos y el rendimiento de su entorno de desarrollo.**
 - **IMPORTANTE: Todas las APIs Publicadas deben ser eliminadas durante el proceso de migración.**
-- **ADVERTENCIA: El proceso de migración no puede garantizar un éxito del 100% para todos los bots. Por favor, documente sus configuraciones importantes de bots antes de la migración en caso de que necesite recrearlas manualmente**
+- **ADVERTENCIA: El proceso de migración no puede garantizar el 100% de éxito para todos los bots. Por favor documente sus configuraciones importantes de bots antes de la migración en caso de que necesite recrearlos manualmente**
 
 ## Introducción
 
@@ -19,25 +19,25 @@ V3 introduce mejoras significativas en Bedrock Chat:
 
 1. **Control de permisos detallado**: Controla el acceso a tus bots con permisos basados en grupos de usuarios
 2. **Tienda de Bots**: Comparte y descubre bots a través de un marketplace centralizado
-3. **Características administrativas**: Gestiona APIs, marca bots como esenciales y analiza el uso de los bots
+3. **Funciones administrativas**: Gestiona APIs, marca bots como esenciales y analiza el uso de los bots
 
-Estas nuevas funciones requirieron cambios en el esquema de DynamoDB, lo que hace necesario un proceso de migración para los usuarios existentes.
+Estas nuevas características requirieron cambios en el esquema de DynamoDB, lo que hace necesario un proceso de migración para los usuarios existentes.
 
-### Por qué es necesaria esta migración
+### Por Qué Es Necesaria Esta Migración
 
 El nuevo modelo de permisos y la funcionalidad de la Tienda de Bots requirieron reestructurar cómo se almacenan y acceden los datos de los bots. El proceso de migración convierte tus bots y conversaciones existentes al nuevo esquema mientras preserva todos tus datos.
 
 > [!WARNING]
-> Aviso de Interrupción del Servicio: **Durante el proceso de migración, la aplicación no estará disponible para ningún usuario.** Planifica realizar esta migración durante una ventana de mantenimiento cuando los usuarios no necesiten acceder al sistema. La aplicación solo volverá a estar disponible después de que el script de migración haya finalizado correctamente y todos los datos se hayan convertido adecuadamente al nuevo esquema. Este proceso típicamente tarda alrededor de 60 minutos, dependiendo de la cantidad de datos y el rendimiento de tu entorno de desarrollo.
+> Aviso de Interrupción del Servicio: **Durante el proceso de migración, la aplicación no estará disponible para ningún usuario.** Planifica realizar esta migración durante una ventana de mantenimiento cuando los usuarios no necesiten acceder al sistema. La aplicación solo volverá a estar disponible después de que el script de migración haya finalizado correctamente y todos los datos se hayan convertido adecuadamente al nuevo esquema. Este proceso típicamente toma alrededor de 60 minutos, dependiendo de la cantidad de datos y el rendimiento de tu entorno de desarrollo.
 
 > [!IMPORTANT]
 > Antes de proceder con la migración: **El proceso de migración no puede garantizar un éxito del 100% para todos los bots**, especialmente aquellos creados con versiones anteriores o con configuraciones personalizadas. Por favor, documenta las configuraciones importantes de tus bots (instrucciones, fuentes de conocimiento, ajustes) antes de iniciar el proceso de migración en caso de que necesites recrearlas manualmente.
 
 ## Proceso de Migración
 
-### Aviso Importante Sobre la Visibilidad de los Bots en V3
+### Aviso Importante Sobre la Visibilidad de Bots en V3
 
-En V3, **todos los bots v2 con compartición pública habilitada serán encontrables en la Tienda de Bots.** Si tienes bots que contienen información sensible que no quieres que sea descubrible, considera hacerlos privados antes de migrar a V3.
+En V3, **todos los bots v2 con compartición pública habilitada serán encontrables en la Tienda de Bots.** Si tienes bots que contienen información sensible que no quieres que sean descubribles, considera hacerlos privados antes de migrar a V3.
 
 ### Paso 1: Identificar el nombre de tu entorno
 
@@ -48,31 +48,31 @@ En este procedimiento, `{YOUR_ENV_PREFIX}` se especifica para identificar el nom
 El repositorio ha sido renombrado de `bedrock-claude-chat` a `bedrock-chat`. Actualiza tu repositorio local:
 
 ```bash
-# Comprueba tu URL remota actual
+# Check your current remote URL
 git remote -v
 
-# Actualiza la URL remota
+# Update the remote URL
 git remote set-url origin https://github.com/aws-samples/bedrock-chat.git
 
-# Verifica el cambio
+# Verify the change
 git remote -v
 ```
 
 ### Paso 3: Asegúrate de Estar en la Última Versión V2
 
 > [!WARNING]
-> DEBES actualizar a v2.10.0 antes de migrar a V3. **Saltarse este paso puede resultar en pérdida de datos durante la migración.**
+> DEBES actualizar a v2.10.0 antes de migrar a V3. **Saltar este paso puede resultar en pérdida de datos durante la migración.**
 
 Antes de comenzar la migración, asegúrate de estar ejecutando la última versión de V2 (**v2.10.0**). Esto garantiza que tienes todas las correcciones de errores y mejoras necesarias antes de actualizar a V3:
 
 ```bash
-# Obtén las últimas etiquetas
+# Fetch the latest tags
 git fetch --tags
 
-# Cambia a la última versión V2
+# Checkout the latest V2 version
 git checkout v2.10.0
 
-# Despliega la última versión V2
+# Deploy the latest V2 version
 cd cdk
 npm ci
 npx cdk deploy --all
@@ -80,10 +80,10 @@ npx cdk deploy --all
 
 ### Paso 4: Registra el Nombre de tu Tabla DynamoDB V2
 
-Obtén el nombre de la ConversationTable V2 de las salidas de CloudFormation:
+Obtén el nombre de la ConversationTable V2 desde las salidas de CloudFormation:
 
 ```bash
-# Obtén el nombre de la ConversationTable V2
+# Get the V2 ConversationTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='ConversationTableName'].OutputValue" \
@@ -97,13 +97,13 @@ Asegúrate de guardar este nombre de tabla en un lugar seguro, ya que lo necesit
 Antes de proceder, crea una copia de seguridad de tu ConversationTable de DynamoDB usando el nombre que acabas de registrar:
 
 ```bash
-# Crea una copia de seguridad de tu tabla V2
+# Create a backup of your V2 table
 aws dynamodb create-backup \
   --no-cli-pager \
   --backup-name "BedrockChatV2Backup-$(date +%Y%m%d)" \
   --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 
-# Verifica que el estado de la copia de seguridad está disponible
+# Check the backup status is available
 aws dynamodb describe-backup \
   --no-cli-pager \
   --query BackupDescription.BackupDetails \
@@ -122,9 +122,9 @@ aws dynamodb describe-backup \
 
 Puedes encontrar más información sobre la publicación y gestión de APIs en la documentación [PUBLISH_API.md](../PUBLISH_API_es-ES.md), [ADMINISTRATOR.md](../ADMINISTRATOR_es-ES.md) respectivamente.
 
-### Paso 7: Obtener V3 y Desplegar
+### Paso 7: Descargar V3 y Desplegar
 
-Obtén el último código V3 y despliégalo:
+Descarga el último código V3 y despliégalo:
 
 ```bash
 git fetch
@@ -139,16 +139,16 @@ npx cdk deploy --all
 
 ### Paso 8: Registrar los Nombres de tus Tablas DynamoDB V3
 
-Después de desplegar V3, necesitas obtener los nombres de la nueva ConversationTable y BotTable:
+Después de desplegar V3, necesitas obtener los nombres tanto de la nueva ConversationTable como de la BotTable:
 
 ```bash
-# Obtén el nombre de la ConversationTable V3
+# Get the V3 ConversationTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='ConversationTableNameV3'].OutputValue" \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 
-# Obtén el nombre de la BotTable V3
+# Get the V3 BotTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='BotTableNameV3'].OutputValue" \
@@ -163,12 +163,12 @@ aws cloudformation describe-stacks \
 El script de migración convertirá tus datos V2 al esquema V3. Primero, edita el script de migración `docs/migration/migrate_v2_v3.py` para establecer tus nombres de tabla y región:
 
 ```python
-# Región donde se encuentra dynamodb
-REGION = "ap-northeast-1" # Reemplaza con tu región
+# Region where dynamodb is located
+REGION = "ap-northeast-1" # Replace with your region
 
-V2_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableXXXX" # Reemplaza con tu valor registrado en el Paso 4
-V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Reemplaza con tu valor registrado en el Paso 8
-V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Reemplaza con tu valor registrado en el Paso 8
+V2_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableXXXX" # Replace with your  value recorded in Step 4
+V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Replace with your  value recorded in Step 8
+V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Replace with your  value recorded in Step 8
 ```
 
 Luego ejecuta el script usando Poetry desde el directorio backend:
@@ -177,19 +177,19 @@ Luego ejecuta el script usando Poetry desde el directorio backend:
 > La versión de requisitos de Python se cambió a 3.13.0 o posterior (Posiblemente cambiará en desarrollos futuros. Ver pyproject.toml). Si tienes venv instalado con una versión diferente de Python, necesitarás eliminarlo una vez.
 
 ```bash
-# Navega al directorio backend
+# Navigate to the backend directory
 cd backend
 
-# Instala las dependencias si aún no lo has hecho
+# Install dependencies if you haven't already
 poetry install
 
-# Ejecuta primero una prueba en seco para ver qué se migraría
+# Run a dry run first to see what would be migrated
 poetry run python ../docs/migration/migrate_v2_v3.py --dry-run
 
-# Si todo parece correcto, ejecuta la migración real
+# If everything looks good, run the actual migration
 poetry run python ../docs/migration/migrate_v2_v3.py
 
-# Verifica que la migración fue exitosa
+# Verify the migration was successful
 poetry run python ../docs/migration/migrate_v2_v3.py --verify-only
 ```
 
@@ -199,13 +199,13 @@ El script de migración generará un archivo de informe en tu directorio actual 
 
 Para entornos con usuarios intensivos o grandes cantidades de datos, considera estos enfoques:
 
-1. **Migrar usuarios individualmente**: Para usuarios con grandes volúmenes de datos, migrarlos uno a la vez:
+1. **Migrar usuarios individualmente**: Para usuarios con grandes volúmenes de datos, migra uno a la vez:
 
    ```bash
    poetry run python ../docs/migration/migrate_v2_v3.py --users user-id-1 user-id-2
    ```
 
-2. **Consideraciones de memoria**: El proceso de migración carga datos en memoria. Si encuentras errores de Falta de Memoria (OOM), intenta:
+2. **Consideraciones de memoria**: El proceso de migración carga datos en memoria. Si encuentras errores de Out-Of-Memory (OOM), intenta:
 
    - Migrar un usuario a la vez
    - Ejecutar la migración en una máquina con más memoria
@@ -223,15 +223,15 @@ Después de la migración, abre tu aplicación y verifica:
 
 ### Limpieza (Opcional)
 
-Después de confirmar que la migración fue exitosa y todos tus datos son accesibles correctamente en V3, puedes opcionalmente eliminar la tabla de conversaciones V2 para ahorrar costos:
+Después de confirmar que la migración fue exitosa y todos tus datos son accesibles correctamente en V3, puedes opcionalmente eliminar la tabla de conversación V2 para ahorrar costos:
 
 ```bash
-# Eliminar la tabla de conversaciones V2 (SOLO después de confirmar una migración exitosa)
+# Delete the V2 conversation table (ONLY after confirming successful migration)
 aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 ```
 
 > [!IMPORTANT]
-> Solo elimina la tabla V2 después de verificar minuciosamente que todos tus datos importantes se han migrado exitosamente a V3. Recomendamos mantener la copia de seguridad creada en el Paso 2 durante al menos algunas semanas después de la migración, incluso si eliminas la tabla original.
+> Solo elimina la tabla V2 después de verificar minuciosamente que todos tus datos importantes han sido migrados exitosamente a V3. Recomendamos mantener la copia de seguridad creada en el Paso 2 durante al menos algunas semanas después de la migración, incluso si eliminas la tabla original.
 
 ## FAQ de V3
 
@@ -240,8 +240,8 @@ aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 **P: ¿Qué sucede si se elimina un bot que estoy usando o se elimina mi permiso de acceso?**
 R: La autorización se verifica en el momento del chat, por lo que perderás el acceso inmediatamente.
 
-**P: ¿Qué sucede si se elimina un usuario (por ejemplo, un empleado que se va)?**
-R: Sus datos pueden eliminarse completamente borrando todos los elementos de DynamoDB que tengan su ID de usuario como clave de partición (PK).
+**P: ¿Qué sucede si se elimina un usuario (por ejemplo, si un empleado se va)?**
+R: Sus datos pueden eliminarse completamente borrando todos los elementos de DynamoDB con su ID de usuario como clave de partición (PK).
 
 **P: ¿Puedo desactivar el compartir para un bot público esencial?**
 R: No, el administrador debe marcar primero el bot como no esencial antes de desactivar el compartir.
@@ -284,7 +284,7 @@ R: No en la versión inicial.
 R:
 
 1. Abre la consola de Amazon Cognito y crea grupos de usuarios en el grupo de usuarios de BrChat
-2. Agrega usuarios a estos grupos según sea necesario
+2. Añade usuarios a estos grupos según sea necesario
 3. En BrChat, selecciona los grupos de usuarios a los que deseas permitir acceso al configurar los ajustes de compartir del bot
 
 Nota: Los cambios en la membresía de grupo requieren volver a iniciar sesión para que surtan efecto. Los cambios se reflejan en la actualización del token, pero no durante el período de validez del token ID (30 minutos por defecto en V3, configurable mediante `tokenValidMinutes` en `cdk.json` o `parameter.ts`).
@@ -295,4 +295,4 @@ R: No, la autorización se verifica usando el token JWT para evitar operaciones 
 ### Funcionalidad de Búsqueda
 
 **P: ¿La búsqueda de bots admite búsqueda semántica?**
-R: No, solo se admite coincidencia parcial de texto. La búsqueda semántica (por ejemplo, "automóvil" → "coche", "VE", "vehículo") no está disponible debido a las restricciones actuales de OpenSearch Serverless (marzo 2025).
+R: No, solo se admite la coincidencia parcial de texto. La búsqueda semántica (por ejemplo, "automóvil" → "coche", "VE", "vehículo") no está disponible debido a las restricciones actuales de OpenSearch Serverless (marzo 2025).

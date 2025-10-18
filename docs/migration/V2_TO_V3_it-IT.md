@@ -2,12 +2,12 @@
 
 ## TL;DR
 
-- V3 introduce il controllo dettagliato dei permessi e la funzionalità del Bot Store, richiedendo modifiche allo schema DynamoDB
+- V3 introduce il controllo dettagliato dei permessi e la funzionalità Bot Store, richiedendo modifiche allo schema DynamoDB
 - **Esegui il backup della tua DynamoDB ConversationTable prima della migrazione**
 - Aggiorna l'URL del repository da `bedrock-claude-chat` a `bedrock-chat`
 - Esegui lo script di migrazione per convertire i tuoi dati al nuovo schema
 - Tutti i tuoi bot e le conversazioni saranno preservati con il nuovo modello di permessi
-- **IMPORTANTE: Durante il processo di migrazione, l'applicazione non sarà disponibile per nessun utente fino al completamento della migrazione. Questo processo richiede tipicamente circa 60 minuti, a seconda della quantità di dati e delle prestazioni del tuo ambiente di sviluppo.**
+- **IMPORTANTE: Durante il processo di migrazione, l'applicazione non sarà disponibile per alcun utente fino al completamento della migrazione. Questo processo richiede tipicamente circa 60 minuti, a seconda della quantità di dati e delle prestazioni del tuo ambiente di sviluppo.**
 - **IMPORTANTE: Tutte le API Pubblicate devono essere eliminate durante il processo di migrazione.**
 - **ATTENZIONE: Il processo di migrazione non può garantire il successo al 100% per tutti i bot. Si prega di documentare le configurazioni importanti dei bot prima della migrazione nel caso sia necessario ricrearle manualmente**
 
@@ -25,25 +25,25 @@ Queste nuove funzionalità hanno richiesto modifiche allo schema DynamoDB, rende
 
 ### Perché Questa Migrazione È Necessaria
 
-Il nuovo modello di permessi e le funzionalità del Bot Store hanno richiesto una ristrutturazione del modo in cui i dati dei bot vengono archiviati e accessibili. Il processo di migrazione converte i tuoi bot e conversazioni esistenti nel nuovo schema mantenendo tutti i tuoi dati.
+Il nuovo modello di permessi e le funzionalità del Bot Store hanno richiesto una ristrutturazione del modo in cui i dati dei bot vengono memorizzati e accessibili. Il processo di migrazione converte i tuoi bot e le conversazioni esistenti nel nuovo schema mantenendo tutti i tuoi dati.
 
 > [!WARNING]
-> Avviso di Interruzione del Servizio: **Durante il processo di migrazione, l'applicazione non sarà disponibile per tutti gli utenti.** Pianifica di eseguire questa migrazione durante una finestra di manutenzione quando gli utenti non necessitano di accedere al sistema. L'applicazione tornerà disponibile solo dopo che lo script di migrazione sarà stato completato con successo e tutti i dati saranno stati correttamente convertiti nel nuovo schema. Questo processo richiede tipicamente circa 60 minuti, a seconda della quantità di dati e delle prestazioni del tuo ambiente di sviluppo.
+> Avviso di Interruzione del Servizio: **Durante il processo di migrazione, l'applicazione non sarà disponibile per tutti gli utenti.** Pianifica di eseguire questa migrazione durante una finestra di manutenzione quando gli utenti non necessitano di accesso al sistema. L'applicazione tornerà disponibile solo dopo che lo script di migrazione sarà stato completato con successo e tutti i dati saranno stati correttamente convertiti nel nuovo schema. Questo processo richiede tipicamente circa 60 minuti, a seconda della quantità di dati e delle prestazioni del tuo ambiente di sviluppo.
 
 > [!IMPORTANT]
-> Prima di procedere con la migrazione: **Il processo di migrazione non può garantire il 100% di successo per tutti i bot**, specialmente quelli creati con versioni precedenti o con configurazioni personalizzate. Si prega di documentare le configurazioni importanti dei bot (istruzioni, fonti di conoscenza, impostazioni) prima di iniziare il processo di migrazione nel caso sia necessario ricrearle manualmente.
+> Prima di procedere con la migrazione: **Il processo di migrazione non può garantire il successo al 100% per tutti i bot**, specialmente quelli creati con versioni precedenti o con configurazioni personalizzate. Si prega di documentare le configurazioni importanti dei bot (istruzioni, fonti di conoscenza, impostazioni) prima di iniziare il processo di migrazione nel caso sia necessario ricrearle manualmente.
 
 ## Processo di Migrazione
 
 ### Avviso Importante sulla Visibilità dei Bot in V3
 
-In V3, **tutti i bot v2 con condivisione pubblica abilitata saranno ricercabili nel Bot Store.** Se hai bot contenenti informazioni sensibili che non vuoi rendere individuabili, considera di renderli privati prima di migrare a V3.
+In V3, **tutti i bot v2 con condivisione pubblica abilitata saranno ricercabili nel Bot Store.** Se hai bot contenenti informazioni sensibili che non vuoi siano individuabili, considera di renderli privati prima di migrare a V3.
 
 ### Fase 1: Identificare il nome dell'ambiente
 
 In questa procedura, `{YOUR_ENV_PREFIX}` viene specificato per identificare il nome dei tuoi Stack CloudFormation. Se stai utilizzando la funzionalità [Deploying Multiple Environments](../../README.md#deploying-multiple-environments), sostituiscilo con il nome dell'ambiente da migrare. In caso contrario, sostituiscilo con una stringa vuota.
 
-### Fase 2: Aggiornare l'URL del Repository (Raccomandato)
+### Fase 2: Aggiornare l'URL del Repository (Consigliato)
 
 Il repository è stato rinominato da `bedrock-claude-chat` a `bedrock-chat`. Aggiorna il tuo repository locale:
 
@@ -61,7 +61,7 @@ git remote -v
 ### Fase 3: Assicurarsi di Essere sull'Ultima Versione V2
 
 > [!WARNING]
-> DEVI aggiornare alla versione v2.10.0 prima di migrare a V3. **Saltare questo passaggio potrebbe causare perdita di dati durante la migrazione.**
+> DEVI aggiornare alla v2.10.0 prima di migrare a V3. **Saltare questo passaggio potrebbe causare perdita di dati durante la migrazione.**
 
 Prima di iniziare la migrazione, assicurati di utilizzare l'ultima versione di V2 (**v2.10.0**). Questo garantisce di avere tutte le correzioni di bug e i miglioramenti necessari prima di passare a V3:
 
@@ -90,11 +90,11 @@ aws cloudformation describe-stacks \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 ```
 
-Assicurati di salvare questo nome della tabella in un luogo sicuro, poiché ti servirà per lo script di migrazione più tardi.
+Assicurati di salvare questo nome della tabella in un luogo sicuro, poiché ti servirà per lo script di migrazione successivamente.
 
 ### Fase 5: Backup della Tabella DynamoDB
 
-Prima di procedere, crea un backup della tua ConversationTable DynamoDB utilizzando il nome appena registrato:
+Prima di procedere, crea un backup della tua ConversationTable DynamoDB utilizzando il nome che hai appena registrato:
 
 ```bash
 # Create a backup of your V2 table
@@ -115,14 +115,14 @@ aws dynamodb describe-backup \
 > [!IMPORTANT]
 > Prima di distribuire V3, devi eliminare tutte le API pubblicate per evitare conflitti nei valori di output di CloudFormation durante il processo di aggiornamento.
 
-1. Accedi alla tua applicazione come amministratore
-2. Vai alla sezione Admin e seleziona "API Management"
+1. Accedi all'applicazione come amministratore
+2. Naviga nella sezione Admin e seleziona "API Management"
 3. Esamina l'elenco di tutte le API pubblicate
 4. Elimina ogni API pubblicata cliccando sul pulsante di eliminazione accanto ad essa
 
 Puoi trovare maggiori informazioni sulla pubblicazione e gestione delle API nella documentazione [PUBLISH_API.md](../PUBLISH_API_it-IT.md), [ADMINISTRATOR.md](../ADMINISTRATOR_it-IT.md).
 
-### Fase 7: Pull di V3 e Deploy
+### Fase 7: Pull di V3 e Distribuzione
 
 Scarica l'ultimo codice V3 e distribuiscilo:
 
@@ -171,7 +171,7 @@ V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Rep
 V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Replace with your  value recorded in Step 8
 ```
 
-Quindi esegui lo script utilizzando Poetry dalla directory backend:
+Quindi esegui lo script usando Poetry dalla directory backend:
 
 > [!NOTE]
 > La versione dei requisiti Python è stata modificata a 3.13.0 o successiva (Potrebbe cambiare in sviluppi futuri. Vedi pyproject.toml). Se hai installato venv con una versione Python diversa, dovrai rimuoverlo una volta.
@@ -199,17 +199,17 @@ Lo script di migrazione genererà un file di report nella tua directory corrente
 
 Per ambienti con utenti intensivi o grandi quantità di dati, considera questi approcci:
 
-1. **Migrare gli utenti individualmente**: Per utenti con grandi volumi di dati, migra uno alla volta:
+1. **Migrare gli utenti individualmente**: Per utenti con grandi volumi di dati, migrali uno alla volta:
 
    ```bash
    poetry run python ../docs/migration/migrate_v2_v3.py --users user-id-1 user-id-2
    ```
 
-2. **Considerazioni sulla memoria**: Il processo di migrazione carica i dati in memoria. Se incontri errori di Out-Of-Memory (OOM), prova:
+2. **Considerazioni sulla memoria**: Il processo di migrazione carica i dati in memoria. Se riscontri errori di Out-Of-Memory (OOM), prova a:
 
    - Migrare un utente alla volta
    - Eseguire la migrazione su una macchina con più memoria
-   - Suddividere la migrazione in lotti più piccoli di utenti
+   - Suddividere la migrazione in batch più piccoli di utenti
 
 3. **Monitorare la migrazione**: Controlla i file di report generati per assicurarti che tutti i dati siano migrati correttamente, specialmente per dataset di grandi dimensioni.
 
@@ -238,61 +238,61 @@ aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 ### Accesso e Permessi dei Bot
 
 **Q: Cosa succede se un bot che sto utilizzando viene eliminato o il mio permesso di accesso viene rimosso?**
-A: L'autorizzazione viene verificata al momento della chat, quindi perderai l'accesso immediatamente.
+R: L'autorizzazione viene verificata al momento della chat, quindi perderai l'accesso immediatamente.
 
 **Q: Cosa succede se un utente viene eliminato (es. un dipendente lascia l'azienda)?**
-A: I suoi dati possono essere completamente rimossi eliminando tutti gli elementi da DynamoDB con il suo ID utente come chiave di partizione (PK).
+R: I suoi dati possono essere completamente rimossi eliminando tutti gli elementi da DynamoDB con il suo ID utente come chiave di partizione (PK).
 
 **Q: Posso disattivare la condivisione per un bot pubblico essenziale?**
-A: No, l'amministratore deve prima contrassegnare il bot come non essenziale prima di poter disattivare la condivisione.
+R: No, l'amministratore deve prima contrassegnare il bot come non essenziale prima di disattivare la condivisione.
 
 **Q: Posso eliminare un bot pubblico essenziale?**
-A: No, l'amministratore deve prima contrassegnare il bot come non essenziale prima di poterlo eliminare.
+R: No, l'amministratore deve prima contrassegnare il bot come non essenziale prima di eliminarlo.
 
 ### Sicurezza e Implementazione
 
 **Q: È implementata la sicurezza a livello di riga (RLS) per la tabella dei bot?**
-A: No, considerando la diversità dei modelli di accesso. L'autorizzazione viene eseguita durante l'accesso ai bot, e il rischio di perdita di metadati è considerato minimo rispetto alla cronologia delle conversazioni.
+R: No, considerando la diversità dei pattern di accesso. L'autorizzazione viene eseguita quando si accede ai bot, e il rischio di perdita di metadati è considerato minimo rispetto alla cronologia delle conversazioni.
 
 **Q: Quali sono i requisiti per pubblicare un'API?**
-A: Il bot deve essere pubblico.
+R: Il bot deve essere pubblico.
 
 **Q: Ci sarà una schermata di gestione per tutti i bot privati?**
-A: Non nella release iniziale V3. Tuttavia, gli elementi possono ancora essere eliminati interrogando l'ID utente secondo necessità.
+R: Non nella release iniziale V3. Tuttavia, gli elementi possono ancora essere eliminati interrogando l'ID utente secondo necessità.
 
 **Q: Ci sarà una funzionalità di tagging dei bot per una migliore esperienza di ricerca?**
-A: Non nella release iniziale V3, ma il tagging automatico basato su LLM potrebbe essere aggiunto in futuri aggiornamenti.
+R: Non nella release iniziale V3, ma il tagging automatico basato su LLM potrebbe essere aggiunto in futuri aggiornamenti.
 
 ### Amministrazione
 
 **Q: Cosa possono fare gli amministratori?**
-A: Gli amministratori possono:
+R: Gli amministratori possono:
 
 - Gestire i bot pubblici (incluso il controllo dei bot ad alto costo)
 - Gestire le API
 - Contrassegnare i bot pubblici come essenziali
 
 **Q: Posso rendere essenziali i bot parzialmente condivisi?**
-A: No, è supportato solo per i bot pubblici.
+R: No, supporta solo i bot pubblici.
 
 **Q: Posso impostare una priorità per i bot fissati?**
-A: Non nella release iniziale.
+R: Nella release iniziale, no.
 
 ### Configurazione dell'Autorizzazione
 
 **Q: Come configuro l'autorizzazione?**
-A:
+R:
 
-1. Aprire la console Amazon Cognito e creare gruppi di utenti nel pool utenti BrChat
-2. Aggiungere gli utenti a questi gruppi secondo necessità
-3. In BrChat, selezionare i gruppi di utenti a cui si vuole consentire l'accesso durante la configurazione delle impostazioni di condivisione del bot
+1. Aprire la console Amazon Cognito e creare gruppi utente nel pool utenti BrChat
+2. Aggiungere utenti a questi gruppi secondo necessità
+3. In BrChat, selezionare i gruppi utente a cui si vuole consentire l'accesso durante la configurazione delle impostazioni di condivisione del bot
 
-Nota: Le modifiche all'appartenenza ai gruppi richiedono un nuovo accesso per avere effetto. Le modifiche si riflettono al rinnovo del token, ma non durante il periodo di validità del token ID (predefinito 30 minuti in V3, configurabile tramite `tokenValidMinutes` in `cdk.json` o `parameter.ts`).
+Nota: Le modifiche all'appartenenza ai gruppi richiedono un nuovo login per avere effetto. Le modifiche si riflettono al rinnovo del token, ma non durante il periodo di validità del token ID (predefinito 30 minuti in V3, configurabile tramite `tokenValidMinutes` in `cdk.json` o `parameter.ts`).
 
 **Q: Il sistema verifica con Cognito ogni volta che si accede a un bot?**
-A: No, l'autorizzazione viene verificata utilizzando il token JWT per evitare operazioni I/O non necessarie.
+R: No, l'autorizzazione viene verificata utilizzando il token JWT per evitare operazioni I/O non necessarie.
 
 ### Funzionalità di Ricerca
 
 **Q: La ricerca dei bot supporta la ricerca semantica?**
-A: No, è supportata solo la corrispondenza parziale del testo. La ricerca semantica (es. "automobile" → "auto", "VE", "veicolo") non è disponibile a causa degli attuali vincoli di OpenSearch Serverless (marzo 2025).
+R: No, è supportata solo la corrispondenza parziale del testo. La ricerca semantica (es. "automobile" → "auto", "VE", "veicolo") non è disponibile a causa degli attuali vincoli di OpenSearch Serverless (marzo 2025).

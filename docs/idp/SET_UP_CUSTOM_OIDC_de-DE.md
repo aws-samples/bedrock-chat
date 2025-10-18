@@ -1,15 +1,15 @@
 # Externen Identitätsanbieter einrichten
 
-## Schritt 1: Erstellen eines OIDC-Clients
+## Schritt 1: Einen OIDC-Client erstellen
 
-Folgen Sie den Verfahren für den gewünschten OIDC-Provider und notieren Sie sich die Werte für die OIDC-Client-ID und das Client-Secret. Außerdem wird die Issuer-URL für die folgenden Schritte benötigt. Falls während des Einrichtungsprozesses eine Redirect-URI erforderlich ist, geben Sie einen vorläufigen Wert ein, der nach Abschluss der Bereitstellung ersetzt wird.
+Folgen Sie den Verfahren für den gewünschten OIDC-Provider und notieren Sie sich die Werte für die OIDC-Client-ID und das Geheimnis. Außerdem wird die Issuer-URL für die folgenden Schritte benötigt. Falls während des Einrichtungsprozesses eine Redirect-URI erforderlich ist, geben Sie einen vorläufigen Wert ein, der nach Abschluss der Bereitstellung ersetzt wird.
 
-## Schritt 2: Anmeldedaten im AWS Secrets Manager speichern
+## Schritt 2: Anmeldeinformationen im AWS Secrets Manager speichern
 
 1. Öffnen Sie die AWS Management Console.
 2. Navigieren Sie zum Secrets Manager und wählen Sie "Neues Geheimnis speichern".
-3. Wählen Sie "Anderer Geheimnistyp".
-4. Geben Sie die Client-ID und das Client-Secret als Schlüssel-Wert-Paare ein.
+3. Wählen Sie "Andere Art von Geheimnissen".
+4. Geben Sie die Client-ID und das Client-Geheimnis als Schlüssel-Wert-Paare ein.
 
    - Schlüssel: `clientId`, Wert: <YOUR_GOOGLE_CLIENT_ID>
    - Schlüssel: `clientSecret`, Wert: <YOUR_GOOGLE_CLIENT_SECRET>
@@ -20,11 +20,11 @@ Folgen Sie den Verfahren für den gewünschten OIDC-Provider und notieren Sie si
 
 ### Achtung
 
-Die Schlüsselnamen müssen exakt mit den Zeichenketten `clientId`, `clientSecret` und `issuerUrl` übereinstimmen.
+Die Schlüsselnamen müssen exakt mit den Zeichenfolgen `clientId`, `clientSecret` und `issuerUrl` übereinstimmen.
 
-## Schritt 3: cdk.json aktualisieren
+## Schritt 3: Aktualisierung der cdk.json
 
-Fügen Sie in Ihrer cdk.json-Datei die ID Provider und SecretName zur cdk.json-Datei hinzu.
+Fügen Sie in Ihrer cdk.json-Datei die ID-Provider und den SecretName zur cdk.json-Datei hinzu.
 
 Wie folgt:
 
@@ -48,16 +48,16 @@ Wie folgt:
 
 #### Einzigartigkeit
 
-Der `userPoolDomainPrefix` muss global einzigartig unter allen Amazon Cognito-Benutzern sein. Wenn Sie einen Präfix wählen, der bereits von einem anderen AWS-Konto verwendet wird, wird die Erstellung der User Pool-Domain fehlschlagen. Es ist eine gute Praxis, Bezeichner, Projektnamen oder Umgebungsnamen in den Präfix aufzunehmen, um die Einzigartigkeit sicherzustellen.
+Der `userPoolDomainPrefix` muss global einzigartig über alle Amazon Cognito-Benutzer hinweg sein. Wenn Sie ein Präfix wählen, das bereits von einem anderen AWS-Konto verwendet wird, wird die Erstellung der User-Pool-Domain fehlschlagen. Es ist eine gute Praxis, Bezeichner, Projektnamen oder Umgebungsnamen in das Präfix aufzunehmen, um die Einzigartigkeit sicherzustellen.
 
-## Step 4: Deployen Sie Ihren CDK-Stack
+## Step 4: Bereitstellen Ihres CDK-Stacks
 
-Deployen Sie Ihren CDK-Stack in AWS:
+Stellen Sie Ihren CDK-Stack in AWS bereit:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## Step 5: OIDC-Client mit Cognito-Weiterleitungs-URIs aktualisieren
+## Step 5: Aktualisieren des OIDC-Clients mit Cognito Redirect-URIs
 
-Nach der Bereitstellung des Stacks wird `AuthApprovedRedirectURI` in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zu Ihrer OIDC-Konfiguration und aktualisieren Sie diese mit den korrekten Weiterleitungs-URIs.
+Nach dem Bereitstellen des Stacks wird `AuthApprovedRedirectURI` in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zu Ihrer OIDC-Konfiguration und aktualisieren Sie diese mit den korrekten Redirect-URIs.

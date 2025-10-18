@@ -1,12 +1,12 @@
-# Lokalne środowisko programistyczne
+# Lokalne programowanie
 
-## Rozwój Backendu
+## Rozwój Backend
 
 Zobacz [backend/README](../backend/README_pl-PL.md).
 
-## Rozwój Frontendu
+## Rozwój Frontend
 
-W tym przykładzie możesz lokalnie modyfikować i uruchamiać frontend wykorzystując zasoby AWS (`API Gateway`, `Cognito`, itp.), które zostały wdrożone za pomocą `npx cdk deploy`.
+W tym przykładzie możesz lokalnie modyfikować i uruchamiać frontend używając zasobów AWS (`API Gateway`, `Cognito`, itp.), które zostały wdrożone za pomocą `npx cdk deploy`.
 
 1. Zapoznaj się z [Deploy using CDK](../README.md#deploy-using-cdk), aby wdrożyć w środowisku AWS.
 2. Skopiuj `frontend/.env.template` i zapisz go jako `frontend/.env.local`.
@@ -19,15 +19,15 @@ cd frontend && npm ci && npm run dev
 
 ## (Opcjonalne, zalecane) Konfiguracja hooka pre-commit
 
-Wprowadziliśmy przepływy pracy GitHub do sprawdzania typów i lintingu. Są one wykonywane przy tworzeniu Pull Requesta, ale czekanie na zakończenie lintingu przed kontynuowaniem nie jest dobrym doświadczeniem programistycznym. Dlatego te zadania lintingu powinny być wykonywane automatycznie na etapie commita. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm do osiągnięcia tego celu. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie w celu zapewnienia efektywnego doświadczenia programistycznego. Dodatkowo, chociaż nie wymuszamy formatowania TypeScript za pomocą [Prettier](https://prettier.io/), docenilibyśmy jego stosowanie podczas wnoszenia wkładu, ponieważ pomaga to zapobiec niepotrzebnym różnicom podczas przeglądów kodu.
+Wprowadziliśmy przepływy pracy GitHub do sprawdzania typów i lintingu. Są one wykonywane przy tworzeniu Pull Requesta, ale czekanie na zakończenie lintingu przed kontynuowaniem pracy nie jest dobrym doświadczeniem programistycznym. Dlatego te zadania lintingu powinny być wykonywane automatycznie na etapie commita. Wprowadziliśmy [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) jako mechanizm do osiągnięcia tego celu. Nie jest to obowiązkowe, ale zalecamy jego przyjęcie w celu zapewnienia efektywnego doświadczenia programistycznego. Dodatkowo, chociaż nie wymuszamy formatowania TypeScript za pomocą [Prettier](https://prettier.io/), bylibyśmy wdzięczni, gdybyś mógł go używać podczas wnoszenia wkładu, ponieważ pomaga to uniknąć niepotrzebnych różnic podczas przeglądów kodu.
 
 ### Instalacja lefthook
 
-Zobacz [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli jesteś użytkownikiem maca i homebrew, wystarczy uruchomić `brew install lefthook`.
+Zobacz [tutaj](https://github.com/evilmartians/lefthook#install). Jeśli używasz maca i homebrew, wystarczy uruchomić `brew install lefthook`.
 
 ### Instalacja poetry
 
-Jest to wymagane, ponieważ linting kodu pythonowego zależy od `mypy` i `black`.
+Jest to wymagane, ponieważ linting kodu pythona zależy od `mypy` i `black`.
 
 ```sh
 cd backend
@@ -41,4 +41,4 @@ Aby uzyskać więcej szczegółów, sprawdź [backend README](../backend/README_
 
 ### Utworzenie hooka pre-commit
 
-Wystarczy uruchomić `lefthook install` w głównym katalogu tego projektu.
+Wystarczy uruchomić `lefthook install` w katalogu głównym tego projektu.

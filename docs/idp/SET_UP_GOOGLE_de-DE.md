@@ -1,16 +1,16 @@
 # Externen Identitätsanbieter für Google einrichten
 
-## Schritt 1: Erstellen eines Google OAuth 2.0 Clients
+## Step 1: Erstellen eines Google OAuth 2.0 Clients
 
 1. Gehen Sie zur Google Developer Console.
 2. Erstellen Sie ein neues Projekt oder wählen Sie ein bestehendes aus.
 3. Navigieren Sie zu "Anmeldedaten", klicken Sie dann auf "Anmeldedaten erstellen" und wählen Sie "OAuth-Client-ID".
 4. Konfigurieren Sie den Zustimmungsbildschirm, wenn Sie dazu aufgefordert werden.
 5. Wählen Sie als Anwendungstyp "Webanwendung" aus.
-6. Lassen Sie die Weiterleitungs-URI vorerst leer, um sie später einzurichten.[Siehe Schritt 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+6. Lassen Sie die Weiterleitungs-URI vorerst leer, um sie später einzurichten.[Siehe Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. Notieren Sie sich nach der Erstellung die Client-ID und das Client-Secret.
 
-Für Details besuchen Sie die [offizielle Google-Dokumentation](https://support.google.com/cloud/answer/6158849?hl=en)
+Für weitere Details besuchen Sie [Google's offizielles Dokument](https://support.google.com/cloud/answer/6158849?hl=en)
 
 ## Schritt 2: Google OAuth-Anmeldeinformationen im AWS Secrets Manager speichern
 
@@ -31,7 +31,7 @@ Die Schlüsselnamen müssen exakt mit den Zeichenfolgen 'clientId' und 'clientSe
 
 ## Schritt 3: cdk.json aktualisieren
 
-Fügen Sie in Ihrer cdk.json-Datei die ID Provider und SecretName zur cdk.json-Datei hinzu.
+Fügen Sie in Ihrer cdk.json-Datei die ID-Provider und den SecretName zur cdk.json-Datei hinzu.
 
 Wie folgt:
 
@@ -54,16 +54,16 @@ Wie folgt:
 
 #### Einzigartigkeit
 
-Der userPoolDomainPrefix muss global einzigartig über alle Amazon Cognito-Benutzer hinweg sein. Wenn Sie einen Präfix wählen, der bereits von einem anderen AWS-Konto verwendet wird, wird die Erstellung der User Pool-Domain fehlschlagen. Es ist eine gute Praxis, Identifikatoren, Projektnamen oder Umgebungsnamen in den Präfix einzubauen, um die Einzigartigkeit sicherzustellen.
+Der userPoolDomainPrefix muss global einzigartig über alle Amazon Cognito-Benutzer hinweg sein. Wenn Sie einen Präfix wählen, der bereits von einem anderen AWS-Konto verwendet wird, schlägt die Erstellung der Benutzer-Pool-Domain fehl. Es ist eine gute Praxis, Bezeichner, Projektnamen oder Umgebungsnamen in den Präfix aufzunehmen, um die Einzigartigkeit sicherzustellen.
 
 ## Step 4: Deployen Sie Ihren CDK-Stack
 
-Deployen Sie Ihren CDK-Stack in AWS:
+Deployen Sie Ihren CDK-Stack auf AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## Schritt 5: Aktualisierung des Google OAuth-Clients mit Cognito Redirect-URIs
+## Step 5: Google OAuth-Client mit Cognito-Weiterleitungs-URIs aktualisieren
 
-Nach der Bereitstellung des Stacks wird AuthApprovedRedirectURI in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zur Google Developer Console und aktualisieren Sie den OAuth-Client mit den korrekten Redirect-URIs.
+Nach dem Bereitstellen des Stacks wird AuthApprovedRedirectURI in den CloudFormation-Ausgaben angezeigt. Gehen Sie zurück zur Google Developer Console und aktualisieren Sie den OAuth-Client mit den korrekten Weiterleitungs-URIs.

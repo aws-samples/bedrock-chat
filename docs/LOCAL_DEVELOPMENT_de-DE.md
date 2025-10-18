@@ -6,7 +6,7 @@ Siehe [backend/README](../backend/README_de-DE.md).
 
 ## Frontend-Entwicklung
 
-In diesem Beispiel können Sie das Frontend lokal modifizieren und starten, wobei AWS-Ressourcen (`API Gateway`, `Cognito` etc.) verwendet werden, die mit `npx cdk deploy` bereitgestellt wurden.
+In diesem Beispiel können Sie das Frontend lokal modifizieren und starten, wobei AWS-Ressourcen (`API Gateway`, `Cognito`, etc.) verwendet werden, die mit `npx cdk deploy` bereitgestellt wurden.
 
 1. Informationen zur Bereitstellung in der AWS-Umgebung finden Sie unter [Deploy using CDK](../README.md#deploy-using-cdk).
 2. Kopieren Sie `frontend/.env.template` und speichern Sie es als `frontend/.env.local`.
@@ -17,17 +17,17 @@ In diesem Beispiel können Sie das Frontend lokal modifizieren und starten, wobe
 cd frontend && npm ci && npm run dev
 ```
 
-## (Optional, empfohlen) Einrichten des Pre-Commit-Hooks
+## (Optional, empfohlen) Einrichten eines Pre-Commit-Hooks
 
-Wir haben GitHub-Workflows für Typenprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber auf den Abschluss des Linting zu warten ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch in der Commit-Phase durchgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus dafür eingeführt. Es ist nicht verpflichtend, aber wir empfehlen die Nutzung für eine effiziente Entwicklungserfahrung. Zusätzlich erzwingen wir zwar keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), würden uns aber freuen, wenn Sie diese bei Ihren Beiträgen verwenden würden, da dies unnötige Unterschiede während Code-Reviews verhindert.
+Wir haben GitHub-Workflows für Typ-Überprüfung und Linting eingeführt. Diese werden ausgeführt, wenn ein Pull Request erstellt wird, aber auf den Abschluss des Linting zu warten ist keine gute Entwicklungserfahrung. Daher sollten diese Linting-Aufgaben automatisch beim Commit ausgeführt werden. Wir haben [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) als Mechanismus dafür eingeführt. Es ist nicht obligatorisch, aber wir empfehlen die Verwendung für eine effiziente Entwicklungserfahrung. Außerdem erzwingen wir zwar keine TypeScript-Formatierung mit [Prettier](https://prettier.io/), würden uns aber freuen, wenn Sie diese bei Ihren Beiträgen verwenden würden, da dies unnötige Unterschiede bei Code-Reviews verhindert.
 
 ### Lefthook installieren
 
-Siehe [hier](https://github.com/evilmartians/lefthook#install). Wenn Sie Mac und Homebrew-Nutzer sind, führen Sie einfach `brew install lefthook` aus.
+Siehe [hier](https://github.com/evilmartians/lefthook#install). Wenn Sie Mac und Homebrew-Benutzer sind, führen Sie einfach `brew install lefthook` aus.
 
 ### Poetry installieren
 
-Dies ist erforderlich, da die Python-Code-Linting von `mypy` und `black` abhängt.
+Dies ist erforderlich, da das Python-Code-Linting von `mypy` und `black` abhängt.
 
 ```sh
 cd backend

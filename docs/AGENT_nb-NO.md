@@ -2,25 +2,25 @@
 
 ## Hva er Agent (ReAct)?
 
-En Agent er et avansert AI-system som bruker store språkmodeller (LLMs) som sin sentrale prosesseringsenhet. Den kombinerer resonnerings-evnene til LLMs med ytterligere funksjoner som planlegging og bruk av verktøy for å selvstendig utføre komplekse oppgaver. Agenter kan bryte ned kompliserte spørsmål, generere trinnvise løsninger, og samhandle med eksterne verktøy eller API-er for å samle informasjon eller utføre deloppgaver.
+En Agent er et avansert KI-system som bruker store språkmodeller (LLM-er) som sin sentrale beregningsmotor. Den kombinerer resonneringsevnene til LLM-er med ytterligere funksjonalitet som planlegging og bruk av verktøy for å utføre komplekse oppgaver selvstendig. Agenter kan bryte ned kompliserte spørsmål, generere trinnvise løsninger og samhandle med eksterne verktøy eller API-er for å samle informasjon eller utføre deloppgaver.
 
-Dette eksempelet implementerer en Agent ved å bruke [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react)-tilnærmingen. ReAct gjør det mulig for agenten å løse komplekse oppgaver ved å kombinere resonnering og handlinger i en iterativ tilbakemeldingssløyfe. Agenten går gjentatte ganger gjennom tre nøkkeltrinn: Tanke, Handling og Observasjon. Den analyserer den nåværende situasjonen ved hjelp av LLM, bestemmer neste handling som skal tas, utfører handlingen ved hjelp av tilgjengelige verktøy eller API-er, og lærer av de observerte resultatene. Denne kontinuerlige prosessen gjør at agenten kan tilpasse seg dynamiske miljøer, forbedre nøyaktigheten i oppgaveløsning, og gi kontekstbevisste løsninger.
+Dette eksempelet implementerer en Agent ved hjelp av [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react)-tilnærmingen. ReAct gjør det mulig for agenten å løse komplekse oppgaver ved å kombinere resonnering og handlinger i en iterativ tilbakemeldingssløyfe. Agenten går gjentatte ganger gjennom tre nøkkeltrinn: Tanke, Handling og Observasjon. Den analyserer den nåværende situasjonen ved hjelp av LLM, bestemmer neste handling som skal tas, utfører handlingen ved hjelp av tilgjengelige verktøy eller API-er, og lærer av de observerte resultatene. Denne kontinuerlige prosessen gjør det mulig for agenten å tilpasse seg dynamiske miljøer, forbedre nøyaktigheten i oppgaveløsningen og gi kontekstbevisste løsninger.
 
-Implementeringen drives av [Strands Agents](https://strandsagents.com/), et åpen kildekode-SDK som tar en modelldrevet tilnærming til å bygge AI-agenter. Strands tilbyr et lettvindt, fleksibelt rammeverk for å lage tilpassede verktøy ved hjelp av Python-dekoratører og støtter flere modellleverandører, inkludert Amazon Bedrock.
+Implementeringen drives av [Strands Agents](https://strandsagents.com/), en åpen kildekode-SDK som tar en modelldrevet tilnærming til å bygge KI-agenter. Strands tilbyr et lettvindt, fleksibelt rammeverk for å lage tilpassede verktøy ved hjelp av Python-dekoratører og støtter flere modellleverandører, inkludert Amazon Bedrock.
 
 ## Eksempel på bruksområde
 
-En Agent som bruker ReAct kan anvendes i ulike scenarioer, og gir nøyaktige og effektive løsninger.
+En Agent som bruker ReAct kan anvendes i ulike scenarioer og gir nøyaktige og effektive løsninger.
 
 ### Tekst-til-SQL
 
-En bruker spør om "totalt salg for siste kvartal." Agenten tolker denne forespørselen, konverterer den til en SQL-spørring, kjører den mot databasen, og presenterer resultatene.
+En bruker spør om "totalt salg for siste kvartal." Agenten tolker denne forespørselen, konverterer den til en SQL-spørring, kjører den mot databasen og presenterer resultatene.
 
-### Økonomisk prognose
+### Finansiell prognose
 
-En finansanalytiker trenger å lage en prognose for neste kvartals inntekter. Agenten samler relevant data, utfører nødvendige beregninger ved hjelp av finansielle modeller, og genererer en detaljert prognoserapport, samtidig som den sikrer nøyaktigheten i fremskrivningene.
+En finansanalytiker trenger å lage en prognose for neste kvartals inntekter. Agenten samler relevant data, utfører nødvendige beregninger ved hjelp av finansielle modeller, og genererer en detaljert prognoserapport som sikrer nøyaktigheten i fremskrivningene.
 
-## For å bruke Agent-funksjonen
+## Slik bruker du Agent-funksjonen
 
 For å aktivere Agent-funksjonaliteten for din tilpassede chatbot, følg disse trinnene:
 
@@ -32,9 +32,9 @@ For å aktivere Agent-funksjonaliteten med verktøybruk for din tilpassede chatb
 
 1. Naviger til Agent-seksjonen i skjermbildet for tilpasset bot.
 
-2. I Agent-seksjonen vil du finne en liste over tilgjengelige verktøy som kan brukes av Agenten. Som standard er alle verktøy deaktivert.
+2. I Agent-seksjonen finner du en liste over tilgjengelige verktøy som kan brukes av Agenten. Som standard er alle verktøy deaktivert.
 
-3. For å aktivere et verktøy, slå på bryteren ved siden av det ønskede verktøyet. Når et verktøy er aktivert, vil Agenten ha tilgang til det og kan bruke det ved behandling av brukerforespørsler.
+3. For å aktivere et verktøy, slå på bryteren ved siden av ønsket verktøy. Når et verktøy er aktivert, vil Agenten ha tilgang til det og kan bruke det når den behandler brukerforespørsler.
 
 ![](./imgs/agent_tools.png)
 
@@ -43,13 +43,13 @@ For å aktivere Agent-funksjonaliteten med verktøybruk for din tilpassede chatb
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-5. Du kan utvikle og legge til dine egne tilpassede verktøy for å utvide Agentens kapasitet. Se seksjonen [Hvordan utvikle dine egne verktøy](#how-to-develop-your-own-tools) for mer informasjon om å lage og integrere tilpassede verktøy.
+5. Du kan utvikle og legge til dine egne tilpassede verktøy for å utvide Agentens muligheter. Se seksjonen [Hvordan utvikle dine egne verktøy](#how-to-develop-your-own-tools) for mer informasjon om å lage og integrere tilpassede verktøy.
 
 ### Bruke Bedrock Agent
 
-Du kan benytte en [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) opprettet i Amazon Bedrock.
+Du kan bruke en [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) opprettet i Amazon Bedrock.
 
-Først må du opprette en Agent i Bedrock (f.eks. via Management Console). Deretter spesifiserer du Agent-ID-en i innstillingsskjermbildet for tilpasset bot. Når dette er satt, vil chatboten din bruke Bedrock Agent til å behandle brukerforespørsler.
+Først må du opprette en Agent i Bedrock (f.eks. via Management Console). Deretter spesifiserer du Agent-ID-en i innstillingsskjermen for tilpasset bot. Når dette er satt, vil chatboten din bruke Bedrock Agent til å behandle brukerforespørsler.
 
 ![](./imgs/bedrock_agent_tool.png)
 
@@ -163,13 +163,13 @@ Alle Strands-verktøy må returnere en ordbok med følgende struktur:
 
 - Funksjonsnavnet og docstringen brukes når LLM vurderer hvilket verktøy som skal brukes. Docstringen er innebygd i prompten, så beskriv verktøyets formål og parametere presist.
 
-- Se på eksempelimplementasjonen av et [BMI-beregningsverktøy](../examples/agents/tools/bmi/bmi_strands.py). Dette eksempelet viser hvordan du lager et verktøy som beregner kroppsmasseindeks (BMI) ved hjelp av Strands `@tool`-dekoratøren og closure-mønsteret.
+- Se eksempelimplementeringen av et [BMI-kalkuleringsverktøy](../examples/agents/tools/bmi/bmi_strands.py). Dette eksempelet viser hvordan du lager et verktøy som beregner kroppsmasseindeks (BMI) ved hjelp av Strands `@tool`-dekoratøren og closure-mønsteret.
 
-- Etter at utviklingen er fullført, plasser implementasjonsfilen din i [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/) katalogen. Åpne deretter [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) og rediger `get_strands_registered_tools` for å inkludere ditt nye verktøy.
+- Etter at utviklingen er fullført, plasser implementasjonsfilen din i [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/)-katalogen. Åpne deretter [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) og rediger `get_strands_registered_tools` for å inkludere ditt nye verktøy.
 
-- [Valgfritt] Legg til tydelige navn og beskrivelser for frontend. Dette trinnet er valgfritt, men hvis du ikke gjør dette trinnet, vil verktøynavnet og beskrivelsen fra funksjonen din bli brukt. Siden disse er for LLM-forbruk, anbefales det å legge til brukervennlige forklaringer for bedre brukeropplevelse.
+- [Valgfritt] Legg til tydelige navn og beskrivelser for frontend. Dette trinnet er valgfritt, men hvis du ikke gjør dette, vil verktøynavnet og beskrivelsen fra funksjonen din bli brukt. Siden disse er for LLM-forbruk, anbefales det å legge til brukervennlige forklaringer for bedre brukeropplevelse.
 
   - Rediger i18n-filer. Åpne [en/index.ts](../frontend/src/i18n/en/index.ts) og legg til ditt eget `name` og `description` under `agent.tools`.
-  - Rediger også `xx/index.ts`. Der `xx` representerer landkoden du ønsker.
+  - Rediger også `xx/index.ts`. Der `xx` representerer landskoden du ønsker.
 
 - Kjør `npx cdk deploy` for å distribuere endringene dine. Dette vil gjøre ditt tilpassede verktøy tilgjengelig i skjermbildet for tilpassede boter.

@@ -8,13 +8,13 @@ O usuário administrador deve ser membro do grupo chamado `Admin`, que pode ser 
 
 ## Marcar bots públicos como Essenciais
 
-Agora os bots públicos podem ser marcados como "Essenciais" pelos administradores. Os bots marcados como Essenciais serão destacados na seção "Essenciais" da loja de bots, tornando-os facilmente acessíveis aos usuários. Isso permite que os administradores fixem bots importantes que desejam que todos os usuários utilizem.
+Agora os bots públicos podem ser marcados como "Essenciais" pelos administradores. Os bots marcados como Essenciais serão apresentados na seção "Essencial" da loja de bots, tornando-os facilmente acessíveis aos usuários. Isso permite que os administradores fixem bots importantes que desejam que todos os usuários utilizem.
 
 ### Exemplos
 
-- Bot Assistente de RH: Ajuda funcionários com questões e tarefas relacionadas a recursos humanos.
+- Bot Assistente de RH: Auxilia funcionários com questões e tarefas relacionadas a Recursos Humanos.
 - Bot de Suporte de TI: Fornece assistência para problemas técnicos internos e gerenciamento de contas.
-- Bot Guia de Políticas Internas: Responde perguntas frequentes sobre regras de presença, políticas de segurança e outros regulamentos internos.
+- Bot Guia de Políticas Internas: Responde a perguntas frequentes sobre regras de presença, políticas de segurança e outros regulamentos internos.
 - Bot de Integração de Novos Funcionários: Orienta novos contratados sobre procedimentos e uso de sistemas em seu primeiro dia.
 - Bot de Informações sobre Benefícios: Explica os programas de benefícios e serviços de bem-estar da empresa.
 
@@ -23,7 +23,7 @@ Agora os bots públicos podem ser marcados como "Essenciais" pelos administrador
 
 ## Loop de feedback
 
-A saída do LLM nem sempre pode atender às expectativas do usuário. Às vezes, ela falha em satisfazer as necessidades do usuário. Para "integrar" efetivamente os LLMs nas operações de negócios e na vida diária, é essencial implementar um loop de feedback. O Bedrock Chat está equipado com um recurso de feedback projetado para permitir que os usuários analisem por que surgiu a insatisfação. Com base nos resultados da análise, os usuários podem ajustar os prompts, as fontes de dados RAG e os parâmetros adequadamente.
+A saída do LLM nem sempre pode atender às expectativas do usuário. Às vezes, ela falha em satisfazer as necessidades do usuário. Para "integrar" efetivamente os LLMs nas operações comerciais e na vida diária, é essencial implementar um loop de feedback. O Bedrock Chat está equipado com um recurso de feedback projetado para permitir que os usuários analisem por que surgiu a insatisfação. Com base nos resultados da análise, os usuários podem ajustar os prompts, as fontes de dados RAG e os parâmetros adequadamente.
 
 ![](./imgs/feedback_loop.png)
 
@@ -31,17 +31,17 @@ A saída do LLM nem sempre pode atender às expectativas do usuário. Às vezes,
 
 Os analistas de dados podem acessar os logs de conversação usando o [Amazon Athena](https://aws.amazon.com/jp/athena/). Se eles quiserem analisar os dados usando [Jupyter Notebook](https://jupyter.org/), [este exemplo de notebook](../examples/notebooks/feedback_analysis_example.ipynb) pode servir como referência.
 
-## Painel de Controle
+## Painel
 
-Atualmente fornece uma visão geral básica do uso dos chatbots e usuários, focando na agregação de dados para cada bot e usuário durante períodos específicos e classificando os resultados por taxas de uso.
+Atualmente fornece uma visão geral básica do uso do chatbot e dos usuários, focando na agregação de dados para cada bot e usuário durante períodos específicos de tempo e ordenando os resultados por taxas de uso.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Notas
 
-- Como indicado na [arquitetura](../README.md#architecture), os recursos administrativos farão referência ao bucket S3 exportado do DynamoDB. Por favor, observe que como a exportação é realizada uma vez por hora, as conversas mais recentes podem não ser refletidas imediatamente.
+- Conforme indicado na [arquitetura](../README.md#architecture), os recursos administrativos farão referência ao bucket S3 exportado do DynamoDB. Observe que, como a exportação é realizada uma vez por hora, as conversas mais recentes podem não ser refletidas imediatamente.
 
-- Nos usos públicos do bot, os bots que não foram utilizados durante o período especificado não serão listados.
+- Nos usos de bots públicos, os bots que não foram utilizados durante o período especificado não serão listados.
 
 - Nos usos por usuário, os usuários que não utilizaram o sistema durante o período especificado não serão listados.
 
@@ -56,11 +56,11 @@ Atualmente fornece uma visão geral básica do uso dos chatbots e usuários, foc
 > - Para ambiente padrão: `ddb_export`
 > - Para ambientes nomeados: `<env-prefix>_ddb_export` (ex: `dev_ddb_export`)
 >
-> Certifique-se de ajustar suas consultas adequadamente quando trabalhar com múltiplos ambientes.
+> Certifique-se de ajustar suas consultas adequadamente ao trabalhar com múltiplos ambientes.
 
-## Download dos dados de conversação
+## Baixar dados de conversas
 
-Você pode consultar os logs de conversação usando Athena, através de SQL. Para baixar os logs, abra o Editor de Consultas do Athena no console de gerenciamento e execute SQL. A seguir estão alguns exemplos de consultas úteis para analisar casos de uso. O feedback pode ser consultado no atributo `MessageMap`.
+Você pode consultar os logs de conversas usando Athena, com SQL. Para baixar os logs, abra o Editor de Consultas do Athena no console de gerenciamento e execute SQL. A seguir estão alguns exemplos de consultas úteis para analisar casos de uso. O feedback pode ser consultado no atributo `MessageMap`.
 
 ### Consulta por ID do Bot
 
@@ -87,14 +87,14 @@ ORDER BY
 ```
 
 > [!Note]
-> Se estiver usando um ambiente nomeado (ex: "dev"), substitua `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` na consulta acima.
+> Se estiver usando um ambiente nomeado (por exemplo, "dev"), substitua `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` na consulta acima.
 
 ### Consulta por ID do Usuário
 
 Edite `user-id` e `datehour`. O `user-id` pode ser consultado na tela de Gerenciamento de Bot.
 
 > [!Note]
-> Análise de uso por usuário em breve.
+> Análise de uso por usuário estará disponível em breve.
 
 ```sql
 SELECT
@@ -117,4 +117,4 @@ ORDER BY
 ```
 
 > [!Note]
-> Se estiver usando um ambiente nomeado (ex: "dev"), substitua `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` na consulta acima.
+> Se estiver usando um ambiente nomeado (por exemplo, "dev"), substitua `bedrockchatstack_usage_analysis.ddb_export` por `dev_bedrockchatstack_usage_analysis.dev_ddb_export` na consulta acima.

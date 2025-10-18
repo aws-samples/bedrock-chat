@@ -1,13 +1,13 @@
 # Configurar provedor de identidade externo para o Google
 
-## Passo 1: Criar um Cliente OAuth 2.0 do Google
+## Etapa 1: Criar um Cliente OAuth 2.0 do Google
 
 1. Acesse o Console de Desenvolvedor do Google.
 2. Crie um novo projeto ou selecione um existente.
 3. Navegue até "Credenciais", clique em "Criar Credenciais" e escolha "ID do cliente OAuth".
-4. Configure a tela de consentimento se solicitado.
+4. Configure a tela de consentimento, se solicitado.
 5. Para o tipo de aplicação, selecione "Aplicação Web".
-6. Deixe o URI de redirecionamento em branco por enquanto para configurá-lo depois.[Veja o Passo 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+6. Deixe o URI de redirecionamento em branco por enquanto para configurá-lo depois, e salve temporariamente.[Veja Etapa 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. Após criar, anote o ID do Cliente e o Segredo do Cliente.
 
 Para mais detalhes, visite [documento oficial do Google](https://support.google.com/cloud/answer/6158849?hl=en)
@@ -22,7 +22,7 @@ Para mais detalhes, visite [documento oficial do Google](https://support.google.
    1. Chave: clientId, Valor: <YOUR_GOOGLE_CLIENT_ID>
    2. Chave: clientSecret, Valor: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Siga as instruções para nomear e descrever o segredo. Anote o nome do segredo, pois você precisará dele no seu código CDK. Por exemplo, googleOAuthCredentials. (Use na Etapa 3 o nome da variável <YOUR_SECRET_NAME>)
+5. Siga as instruções para nomear e descrever o segredo. Anote o nome do segredo, pois você precisará dele no seu código CDK. Por exemplo, googleOAuthCredentials.(Use na Etapa 3 o nome da variável <YOUR_SECRET_NAME>)
 6. Revise e armazene o segredo.
 
 ### Atenção
@@ -54,9 +54,9 @@ desta forma:
 
 #### Exclusividade
 
-O userPoolDomainPrefix deve ser globalmente único entre todos os usuários do Amazon Cognito. Se você escolher um prefixo que já está em uso por outra conta AWS, a criação do domínio do grupo de usuários falhará. É uma boa prática incluir identificadores, nomes de projetos ou nomes de ambiente no prefixo para garantir a exclusividade.
+O userPoolDomainPrefix deve ser globalmente único entre todos os usuários do Amazon Cognito. Se você escolher um prefixo que já está em uso por outra conta AWS, a criação do domínio do pool de usuários falhará. É uma boa prática incluir identificadores, nomes de projetos ou nomes de ambiente no prefixo para garantir a exclusividade.
 
-## Etapa 4: Implante Sua Stack CDK
+## Passo 4: Implantar Sua Stack CDK
 
 Implante sua stack CDK na AWS:
 

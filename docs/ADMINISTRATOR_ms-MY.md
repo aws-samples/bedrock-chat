@@ -2,7 +2,7 @@
 
 ## Prasyarat
 
-Pengguna admin mestilah menjadi ahli kumpulan yang dipanggil `Admin`, yang boleh disediakan melalui konsol pengurusan > Amazon Cognito User pools atau aws cli. Ambil perhatian bahawa id kumpulan pengguna boleh dirujuk dengan mengakses CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Pengguna admin mestilah menjadi ahli kumpulan yang dipanggil `Admin`, yang boleh disediakan melalui konsol pengurusan > Amazon Cognito User pools atau aws cli. Perlu diingat bahawa id kumpulan pengguna boleh dirujuk dengan mengakses CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
@@ -12,10 +12,10 @@ Bot awam kini boleh ditandakan sebagai "Penting" oleh pentadbir. Bot yang ditand
 
 ### Contoh
 
-- Bot Pembantu HR: Membantu pekerja dengan soalan dan tugas berkaitan HR.
-- Bot Sokongan IT: Menyediakan bantuan untuk isu teknikal dalaman dan pengurusan akaun.
-- Bot Panduan Polisi Dalaman: Menjawab soalan lazim tentang peraturan kehadiran, polisi keselamatan, dan peraturan dalaman lain.
-- Bot Pembiasaan Pekerja Baharu: Membimbing pekerja baharu melalui prosedur dan penggunaan sistem pada hari pertama mereka.
+- Bot Pembantu HR: Membantu pekerja dengan soalan dan tugasan berkaitan HR.
+- Bot Sokongan IT: Memberikan bantuan untuk isu teknikal dalaman dan pengurusan akaun.
+- Bot Panduan Dasar Dalaman: Menjawab soalan lazim tentang peraturan kehadiran, dasar keselamatan, dan peraturan dalaman lain.
+- Bot Orientasi Pekerja Baharu: Membimbing pekerja baharu melalui prosedur dan penggunaan sistem pada hari pertama mereka.
 - Bot Maklumat Faedah: Menerangkan program faedah syarikat dan perkhidmatan kebajikan.
 
 ![](./imgs/admin_bot_menue.png)
@@ -33,25 +33,25 @@ Penganalisis data boleh mengakses log perbualan menggunakan [Amazon Athena](http
 
 ## Papan Pemuka
 
-Pada masa ini menyediakan gambaran asas tentang penggunaan bot perbualan dan pengguna, dengan fokus kepada pengumpulan data bagi setiap bot dan pengguna dalam tempoh masa yang ditetapkan dan menyusun hasil mengikut yuran penggunaan.
+Pada masa ini menyediakan gambaran asas tentang penggunaan bot perbualan dan pengguna, dengan fokus pada pengagregatan data untuk setiap bot dan pengguna dalam tempoh masa tertentu dan menyusun keputusan mengikut yuran penggunaan.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Nota
 
-- Seperti yang dinyatakan dalam [arkitektur](../README.md#architecture), ciri-ciri pentadbir akan merujuk kepada bucket S3 yang dieksport dari DynamoDB. Sila ambil perhatian bahawa memandangkan eksport dilakukan sekali setiap jam, perbualan terkini mungkin tidak dapat dilihat dengan serta-merta.
+- Seperti yang dinyatakan dalam [arkitektur](../README.md#architecture), ciri-ciri pentadbir akan merujuk kepada bucket S3 yang dieksport dari DynamoDB. Sila ambil perhatian bahawa oleh kerana eksport dilakukan sekali setiap jam, perbualan terkini mungkin tidak akan dikemas kini dengan serta-merta.
 
 - Dalam penggunaan bot awam, bot yang langsung tidak digunakan dalam tempoh yang ditetapkan tidak akan disenaraikan.
 
 - Dalam penggunaan pengguna, pengguna yang langsung tidak menggunakan sistem dalam tempoh yang ditetapkan tidak akan disenaraikan.
 
 > [!Important]
-> Jika anda menggunakan pelbagai persekitaran (dev, prod, dsb.), nama pangkalan data Athena akan merangkumi awalan persekitaran. Selain daripada `bedrockchatstack_usage_analysis`, nama pangkalan data akan menjadi:
+> Jika anda menggunakan pelbagai persekitaran (dev, prod, dsb.), nama pangkalan data Athena akan termasuk awalan persekitaran. Selain daripada `bedrockchatstack_usage_analysis`, nama pangkalan data akan menjadi:
 >
 > - Untuk persekitaran lalai: `bedrockchatstack_usage_analysis`
 > - Untuk persekitaran bernama: `<env-prefix>_bedrockchatstack_usage_analysis` (contoh: `dev_bedrockchatstack_usage_analysis`)
 >
-> Tambahan pula, nama jadual akan merangkumi awalan persekitaran:
+> Tambahan pula, nama jadual akan termasuk awalan persekitaran:
 >
 > - Untuk persekitaran lalai: `ddb_export`
 > - Untuk persekitaran bernama: `<env-prefix>_ddb_export` (contoh: `dev_ddb_export`)
@@ -64,7 +64,7 @@ Anda boleh membuat pertanyaan log perbualan menggunakan Athena dengan SQL. Untuk
 
 ### Pertanyaan mengikut ID Bot
 
-Sunting `bot-id` dan `datehour`. `bot-id` boleh dirujuk pada skrin Pengurusan Bot, yang boleh diakses dari API Bot Publish, yang ditunjukkan pada bar sisi kiri. Perhatikan bahagian akhir URL seperti `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edit `bot-id` dan `datehour`. `bot-id` boleh dirujuk pada skrin Pengurusan Bot, yang boleh diakses dari API Penerbitan Bot, yang ditunjukkan pada bar sisi kiri. Perhatikan bahagian akhir URL seperti `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -91,7 +91,7 @@ ORDER BY
 
 ### Pertanyaan mengikut ID Pengguna
 
-Sunting `user-id` dan `datehour`. `user-id` boleh dirujuk pada skrin Pengurusan Bot.
+Edit `user-id` dan `datehour`. `user-id` boleh dirujuk pada skrin Pengurusan Bot.
 
 > [!Note]
 > Analisis penggunaan pengguna akan datang tidak lama lagi.

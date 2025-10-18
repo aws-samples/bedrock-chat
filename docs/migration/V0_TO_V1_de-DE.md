@@ -18,7 +18,7 @@ Lesen Sie den [Database Migration Guide](./DATABASE_MIGRATION_de-DE.md) und best
 ### Vector-Store-Migration
 
 - Öffnen Sie Ihr Terminal und navigieren Sie zum Projektverzeichnis
-- Pullen Sie den Branch, den Sie deployen möchten. Im Folgenden zum gewünschten Branch (in diesem Fall `v1`) und pullen Sie die neuesten Änderungen:
+- Pullen Sie den Branch, den Sie deployen möchten. Im Folgenden zum gewünschten Branch (in diesem Fall `v1`) wechseln und die neuesten Änderungen pullen:
 
 ```sh
 git fetch
@@ -26,14 +26,14 @@ git checkout v1
 git pull origin v1
 ```
 
-- Wenn Sie Elemente mit DMS wiederherstellen möchten, VERGESSEN SIE NICHT die Passwortrotation zu deaktivieren und notieren Sie sich das Passwort für den Datenbankzugriff. Bei der Wiederherstellung mit dem Migrationsskript ([migrate_v0_v1.py](./migrate_v0_v1.py)) müssen Sie sich das Passwort nicht notieren.
+- Wenn Sie Elemente mit DMS wiederherstellen möchten, VERGESSEN SIE NICHT die Passwortrotation zu deaktivieren und notieren Sie sich das Passwort für den Datenbankzugriff. Wenn Sie mit dem Migrationsskript ([migrate_v0_v1.py](./migrate_v0_v1.py)) wiederherstellen, müssen Sie sich das Passwort nicht notieren.
 - Entfernen Sie alle [veröffentlichten APIs](../PUBLISH_API_de-DE.md), damit CloudFormation den bestehenden Aurora-Cluster entfernen kann.
-- Die Ausführung von [npx cdk deploy](../README.md#deploy-using-cdk) löst den Austausch des Aurora-Clusters aus und LÖSCHT ALLE VECTOR-ELEMENTE.
+- Führen Sie [npx cdk deploy](../README.md#deploy-using-cdk) aus, was den Aurora-Cluster-Austausch auslöst und ALLE VECTOR-ELEMENTE LÖSCHT.
 - Folgen Sie der [Datenbank-Migrationsanleitung](./DATABASE_MIGRATION_de-DE.md), um Vector-Elemente wiederherzustellen.
 - Überprüfen Sie, ob Benutzer existierende Bots mit Wissen (z.B. RAG-Bots) verwenden können.
 
 ### CreatingBotAllowed-Berechtigung hinzufügen
 
 - Nach dem Deployment können alle Benutzer keine neuen Bots mehr erstellen.
-- Wenn Sie möchten, dass bestimmte Benutzer Bots erstellen können, fügen Sie diese Benutzer über die Management-Konsole oder CLI der Gruppe `CreatingBotAllowed` hinzu.
-- Überprüfen Sie, ob der Benutzer einen Bot erstellen kann. Beachten Sie, dass sich die Benutzer neu anmelden müssen.
+- Wenn Sie möchten, dass bestimmte Benutzer Bots erstellen können, fügen Sie diese Benutzer über die Management-Konsole oder CLI zur Gruppe `CreatingBotAllowed` hinzu.
+- Überprüfen Sie, ob der Benutzer einen Bot erstellen kann. Beachten Sie, dass sich die Benutzer erneut anmelden müssen.

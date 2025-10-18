@@ -1,13 +1,13 @@
 # Datenbank-Migrations-Leitfaden
 
 > [!Warning]
-> Dieser Leitfaden gilt für die Migration von v0 auf v1.
+> Dieser Leitfaden ist für v0 bis v1.
 
-Dieser Leitfaden beschreibt die Schritte zur Datenmigration bei der Durchführung eines Updates von Bedrock Chat, das einen Aurora-Cluster-Austausch beinhaltet. Das folgende Verfahren gewährleistet einen reibungslosen Übergang bei minimaler Ausfallzeit und minimalem Datenverlust.
+Dieser Leitfaden beschreibt die Schritte zur Datenmigration bei der Durchführung eines Updates von Bedrock Chat, das einen Aurora-Cluster-Austausch beinhaltet. Das folgende Verfahren gewährleistet einen reibungslosen Übergang bei minimaler Ausfallzeit und Datenverlust.
 
 ## Überblick
 
-Der Migrationsprozess umfasst das Scannen aller Bots und das Starten von Embedding-ECS-Tasks für jeden von ihnen. Dieser Ansatz erfordert eine Neuberechnung der Embeddings, was zeitaufwändig sein kann und zusätzliche Kosten durch die Ausführung von ECS-Tasks und Bedrock Cohere-Nutzungsgebühren verursacht. Wenn Sie diese Kosten und den zeitlichen Aufwand vermeiden möchten, lesen Sie bitte die [alternativen Migrationsoptionen](#alternative-migration-options), die später in diesem Leitfaden beschrieben werden.
+Der Migrationsprozess umfasst das Scannen aller Bots und das Starten von Embedding-ECS-Tasks für jeden von ihnen. Dieser Ansatz erfordert eine Neuberechnung der Embeddings, was zeitaufwändig sein kann und zusätzliche Kosten durch die Ausführung von ECS-Tasks und Bedrock Cohere-Nutzungsgebühren verursacht. Wenn Sie diese Kosten und den zeitlichen Aufwand vermeiden möchten, finden Sie später in diesem Leitfaden weitere [alternative Migrationsoptionen](#alternative-migration-options).
 
 ## Migrationsschritte
 
@@ -39,10 +39,10 @@ Wenn Sie die oben genannte Methode aufgrund der damit verbundenen Zeit- und Kost
 ### Snapshot-Wiederherstellung und DMS-Migration
 
 Notieren Sie sich zunächst das Passwort für den Zugriff auf den aktuellen Aurora-Cluster. Führen Sie dann `npx cdk deploy` aus, was den Austausch des Clusters auslöst. Erstellen Sie danach eine temporäre Datenbank durch Wiederherstellung aus einem Snapshot der ursprünglichen Datenbank.
-Nutzen Sie den [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/), um Daten von der temporären Datenbank in den neuen Aurora-Cluster zu migrieren.
+Verwenden Sie den [AWS Database Migration Service (DMS)](https://aws.amazon.com/dms/), um Daten von der temporären Datenbank in den neuen Aurora-Cluster zu migrieren.
 
 Hinweis: Stand 29. Mai 2024 unterstützt DMS die pgvector-Erweiterung nicht nativ. Sie können jedoch die folgenden Optionen erkunden, um diese Einschränkung zu umgehen:
 
-Verwenden Sie die [DMS homogene Migration](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), die native logische Replikation nutzt. In diesem Fall müssen sowohl die Quell- als auch die Zieldatenbank PostgreSQL sein. DMS kann die native logische Replikation für diesen Zweck nutzen.
+Verwenden Sie die [DMS homogene Migration](https://docs.aws.amazon.com/dms/latest/userguide/dm-migrating-data.html), die die native logische Replikation nutzt. In diesem Fall müssen sowohl die Quell- als auch die Zieldatenbank PostgreSQL sein. DMS kann die native logische Replikation für diesen Zweck nutzen.
 
 Berücksichtigen Sie die spezifischen Anforderungen und Einschränkungen Ihres Projekts bei der Auswahl des am besten geeigneten Migrationsansatzes.

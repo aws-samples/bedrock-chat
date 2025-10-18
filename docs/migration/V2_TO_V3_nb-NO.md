@@ -1,15 +1,15 @@
-# Migrasjonsguide (v2 til v3)
+# Migrasjonsveiledning (v2 til v3)
 
 ## TL;DR
 
-- V3 introduserer finkornede tilgangskontroller og Bot Store-funksjonalitet, som krever endringer i DynamoDB-skjemaet
-- **Sikkerhetskopier DynamoDB ConversationTable før migrering**
+- V3 introduserer finkornet tilgangskontroll og Bot Store-funksjonalitet, som krever endringer i DynamoDB-skjemaet
+- **Ta backup av DynamoDB ConversationTable før migrering**
 - Oppdater repository-URL-en din fra `bedrock-claude-chat` til `bedrock-chat`
 - Kjør migreringsscriptet for å konvertere dataene dine til det nye skjemaet
 - Alle botene og samtalene dine vil bli bevart med den nye tilgangsmodellen
-- **VIKTIG: Under migreringsprosessen vil applikasjonen være utilgjengelig for alle brukere til migreringen er fullført. Denne prosessen tar vanligvis rundt 60 minutter, avhengig av datamengden og ytelsen til utviklingsmiljøet ditt.**
+- **VIKTIG: Under migreringsprosessen vil applikasjonen være utilgjengelig for alle brukere til migreringen er fullført. Denne prosessen tar vanligvis rundt 60 minutter, avhengig av datamengden og ytelsen i utviklingsmiljøet ditt.**
 - **VIKTIG: Alle publiserte API-er må slettes under migreringsprosessen.**
-- **ADVARSEL: Migreringsprosessen kan ikke garantere 100% suksess for alle boter. Vennligst dokumenter dine viktige bot-konfigurasjoner før migrering i tilfelle du må opprette dem på nytt manuelt**
+- **ADVARSEL: Migreringsprosessen kan ikke garantere 100% suksess for alle boter. Vennligst dokumenter dine viktige bot-konfigurasjoner før migrering i tilfelle du må gjenskape dem manuelt**
 
 ## Introduksjon
 
@@ -17,25 +17,25 @@
 
 V3 introduserer betydelige forbedringer til Bedrock Chat:
 
-1. **Finjustert tilgangskontroll**: Kontroller tilgang til botene dine med gruppebaserte tillatelser
+1. **Finkornet tilgangskontroll**: Kontroller tilgang til botene dine med gruppebaserte tillatelser
 2. **Bot-butikk**: Del og oppdag boter gjennom en sentralisert markedsplass
 3. **Administrative funksjoner**: Administrer API-er, merk boter som essensielle, og analyser bot-bruk
 
-Disse nye funksjonene krevde endringer i DynamoDB-skjemaet, noe som nødvendiggjør en migrasjonsprosess for eksisterende brukere.
+Disse nye funksjonene krevde endringer i DynamoDB-skjemaet, noe som gjør det nødvendig med en migrasjonsprosess for eksisterende brukere.
 
 ### Hvorfor denne migrasjonen er nødvendig
 
-Den nye tilgangsmodellen og Bot-butikk-funksjonaliteten krevde restrukturering av hvordan bot-data lagres og aksesseres. Migrasjonsprosessen konverterer dine eksisterende boter og samtaler til det nye skjemaet mens alle dataene dine bevares.
+Den nye tilgangsmodellen og Bot-butikk-funksjonaliteten krevde en restrukturering av hvordan botdata lagres og aksesseres. Migrasjonsprosessen konverterer dine eksisterende boter og samtaler til det nye skjemaet mens all dataen din bevares.
 
 > [!WARNING]
-> Varsel om tjenesteavbrudd: **Under migrasjonsprosessen vil applikasjonen være utilgjengelig for alle brukere.** Planlegg å utføre denne migrasjonen i et vedlikeholdsvindu når brukere ikke trenger tilgang til systemet. Applikasjonen vil først bli tilgjengelig igjen etter at migrasjonsskriptet er fullført og alle data er korrekt konvertert til det nye skjemaet. Denne prosessen tar vanligvis rundt 60 minutter, avhengig av datamengden og ytelsen i utviklingsmiljøet ditt.
+> Varsel om tjenesteavbrudd: **Under migrasjonsprosessen vil applikasjonen være utilgjengelig for alle brukere.** Planlegg å utføre denne migrasjonen i et vedlikeholdsvindu når brukere ikke trenger tilgang til systemet. Applikasjonen vil først bli tilgjengelig igjen etter at migrasjonsskriptet har fullført vellykket og all data har blitt korrekt konvertert til det nye skjemaet. Denne prosessen tar vanligvis rundt 60 minutter, avhengig av datamengden og ytelsen til utviklingsmiljøet ditt.
 
 > [!IMPORTANT]
 > Før du fortsetter med migrasjonen: **Migrasjonsprosessen kan ikke garantere 100% suksess for alle boter**, spesielt de som ble opprettet med eldre versjoner eller med tilpassede konfigurasjoner. Vennligst dokumenter dine viktige bot-konfigurasjoner (instruksjoner, kunnskapskilder, innstillinger) før du starter migrasjonsprosessen i tilfelle du må gjenskape dem manuelt.
 
 ## Migrasjonsprosess
 
-### Viktig merknad om bot-synlighet i V3
+### Viktig merknad om Bot-synlighet i V3
 
 I V3 vil **alle v2-boter med offentlig deling aktivert være søkbare i Bot Store.** Hvis du har boter som inneholder sensitiv informasjon som du ikke ønsker skal være synlige, bør du vurdere å gjøre dem private før du migrerer til V3.
 
@@ -61,7 +61,7 @@ git remote -v
 ### Trinn 3: Sørg for at du har den nyeste V2-versjonen
 
 > [!WARNING]
-> Du MÅ oppdatere til v2.10.0 før migrering til V3. **Å hoppe over dette trinnet kan føre til tap av data under migreringen.**
+> Du MÅ oppdatere til v2.10.0 før du migrerer til V3. **Å hoppe over dette trinnet kan føre til tap av data under migrering.**
 
 Før du starter migreringen, sørg for at du kjører den nyeste versjonen av V2 (**v2.10.0**). Dette sikrer at du har alle nødvendige feilrettinger og forbedringer før oppgradering til V3:
 
@@ -78,7 +78,7 @@ npm ci
 npx cdk deploy --all
 ```
 
-### Trinn 4: Noter ned V2 DynamoDB-tabellnavnet ditt
+### Trinn 4: Noter ned navnet på V2 DynamoDB-tabellen
 
 Hent V2 ConversationTable-navnet fra CloudFormation-outputs:
 
@@ -118,7 +118,7 @@ aws dynamodb describe-backup \
 1. Logg inn i applikasjonen din som administrator
 2. Naviger til Admin-seksjonen og velg "API Management"
 3. Gjennomgå listen over alle publiserte API-er
-4. Slett hver publiserte API ved å klikke på sletteknappen ved siden av den
+4. Slett hver publiserte API ved å klikke på slett-knappen ved siden av den
 
 Du kan finne mer informasjon om API-publisering og administrasjon i henholdsvis [PUBLISH_API.md](../PUBLISH_API_nb-NO.md), [ADMINISTRATOR.md](../ADMINISTRATOR_nb-NO.md) dokumentasjonen.
 
@@ -139,7 +139,7 @@ npx cdk deploy --all
 
 ### Trinn 8: Noter ned V3 DynamoDB-tabellnavnene dine
 
-Etter distribusjon av V3 må du hente både det nye ConversationTable- og BotTable-navnet:
+Etter distribusjon av V3 må du hente både det nye ConversationTable og BotTable-navnet:
 
 ```bash
 # Get the V3 ConversationTable name
@@ -160,7 +160,7 @@ aws cloudformation describe-stacks \
 
 ### Trinn 9: Kjør migreringsscriptet
 
-Migreringsscriptet vil konvertere V2-dataene dine til V3-skjemaet. Først, rediger migreringsscriptet `docs/migration/migrate_v2_v3.py` for å sette tabellnavnene og regionen din:
+Migreringsscriptet vil konvertere V2-dataene dine til V3-skjemaet. Først, rediger migreringsscriptet `docs/migration/migrate_v2_v3.py` for å sette dine tabellnavn og region:
 
 ```python
 # Region where dynamodb is located
@@ -223,7 +223,7 @@ Etter migrering, åpne applikasjonen din og verifiser:
 
 ### Opprydding (Valgfritt)
 
-Etter å ha bekreftet at migreringen var vellykket og alle dataene dine er riktig tilgjengelige i V3, kan du valgfritt slette V2-samtaletabellen for å spare kostnader:
+Etter å ha bekreftet at migreringen var vellykket og alle dataene dine er riktig tilgjengelige i V3, kan du eventuelt slette V2-samtaletabellen for å spare kostnader:
 
 ```bash
 # Delete the V2 conversation table (ONLY after confirming successful migration)
@@ -231,23 +231,23 @@ aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 ```
 
 > [!IMPORTANT]
-> Slett bare V2-tabellen etter grundig verifisering av at alle viktige data har blitt vellykket migrert til V3. Vi anbefaler å beholde backupen som ble opprettet i Trinn 2 i minst noen uker etter migreringen, selv om du sletter den originale tabellen.
+> Slett kun V2-tabellen etter grundig verifisering av at alle viktige data har blitt vellykket migrert til V3. Vi anbefaler å beholde backup-en som ble opprettet i Trinn 2 i minst noen uker etter migrering, selv om du sletter den originale tabellen.
 
 ## V3 FAQ
 
 ### Bot-tilgang og tillatelser
 
-**Q: Hva skjer hvis en bot jeg bruker blir slettet eller tilgangstillatelsen min fjernes?**
-A: Autorisasjon sjekkes ved chattid, så du vil miste tilgangen umiddelbart.
+**Q: Hva skjer hvis en bot jeg bruker blir slettet eller tilgangsrettigheten min blir fjernet?**
+A: Autorisasjon sjekkes ved chattetidspunktet, så du vil miste tilgangen umiddelbart.
 
-**Q: Hva skjer hvis en bruker slettes (f.eks. når en ansatt slutter)?**
-A: Dataene deres kan fjernes fullstendig ved å slette alle elementer fra DynamoDB med deres bruker-ID som partisjonsnøkkel (PK).
+**Q: Hva skjer hvis en bruker blir slettet (f.eks. når en ansatt slutter)?**
+A: Dataene deres kan fjernes fullstendig ved å slette alle elementer fra DynamoDB med deres bruker-ID som partisjons-nøkkel (PK).
 
 **Q: Kan jeg slå av deling for en essensiell offentlig bot?**
-A: Nei, administrator må først merke boten som ikke-essensiell før deling kan slås av.
+A: Nei, admin må først markere boten som ikke-essensiell før deling kan slås av.
 
 **Q: Kan jeg slette en essensiell offentlig bot?**
-A: Nei, administrator må først merke boten som ikke-essensiell før den kan slettes.
+A: Nei, admin må først markere boten som ikke-essensiell før den kan slettes.
 
 ### Sikkerhet og implementering
 
@@ -270,7 +270,7 @@ A: Administratorer kan:
 
 - Administrere offentlige boter (inkludert sjekking av høykostnads-boter)
 - Administrere API-er
-- Merke offentlige boter som essensielle
+- Markere offentlige boter som essensielle
 
 **Q: Kan jeg gjøre delvis delte boter essensielle?**
 A: Nei, støtter kun offentlige boter.
@@ -289,10 +289,10 @@ A:
 
 Merk: Endringer i gruppemedlemskap krever ny innlogging for å tre i kraft. Endringer reflekteres ved token-fornyelse, men ikke under ID-tokenets gyldighetsperiode (standard 30 minutter i V3, konfigurerbar via `tokenValidMinutes` i `cdk.json` eller `parameter.ts`).
 
-**Q: Sjekker systemet med Cognito hver gang en bot aksesseres?**
+**Q: Sjekker systemet med Cognito hver gang en bot åpnes?**
 A: Nei, autorisasjon sjekkes ved hjelp av JWT-tokenet for å unngå unødvendige I/O-operasjoner.
 
 ### Søkefunksjonalitet
 
 **Q: Støtter bot-søk semantisk søk?**
-A: Nei, kun delvis tekstmatching støttes. Semantisk søk (f.eks. "automobil" → "bil", "EV", "kjøretøy") er ikke tilgjengelig på grunn av nåværende OpenSearch Serverless-begrensninger (mars 2025).
+A: Nei, kun delvis tekstmatch støttes. Semantisk søk (f.eks. "automobil" → "bil", "EV", "kjøretøy") er ikke tilgjengelig på grunn av nåværende OpenSearch Serverless-begrensninger (mars 2025).

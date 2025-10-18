@@ -21,9 +21,9 @@ Los bots públicos ahora pueden ser marcados como "Esenciales" por los administr
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
-## Ciclo de retroalimentación
+## Bucle de retroalimentación
 
-La salida del LLM no siempre puede cumplir con las expectativas del usuario. A veces no logra satisfacer las necesidades del usuario. Para "integrar" efectivamente los LLMs en las operaciones comerciales y la vida diaria, es esencial implementar un ciclo de retroalimentación. Bedrock Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los prompts, las fuentes de datos RAG y los parámetros según corresponda.
+La salida del LLM puede no siempre cumplir con las expectativas del usuario. A veces no logra satisfacer las necesidades del usuario. Para "integrar" efectivamente los LLMs en las operaciones comerciales y la vida diaria, es esencial implementar un bucle de retroalimentación. Bedrock Chat está equipado con una función de retroalimentación diseñada para permitir a los usuarios analizar por qué surgió la insatisfacción. Basándose en los resultados del análisis, los usuarios pueden ajustar los prompts, las fuentes de datos RAG y los parámetros según corresponda.
 
 ![](./imgs/feedback_loop.png)
 
@@ -33,13 +33,13 @@ Los analistas de datos pueden acceder a los registros de conversación utilizand
 
 ## Panel de control
 
-Actualmente proporciona una visión general básica del uso del chatbot y los usuarios, centrándose en agregar datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados por tarifas de uso.
+Actualmente proporciona una visión general básica del uso de chatbots y usuarios, centrándose en la agregación de datos para cada bot y usuario durante períodos de tiempo específicos y ordenando los resultados según las tarifas de uso.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Notas
 
-- Como se indica en la [arquitectura](../README.md#architecture), las funciones de administración harán referencia al bucket S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza una vez cada hora, es posible que las conversaciones más recientes no se reflejen inmediatamente.
+- Como se indica en la [arquitectura](../README.md#architecture), las funciones de administración harán referencia al bucket S3 exportado desde DynamoDB. Tenga en cuenta que, dado que la exportación se realiza una vez cada hora, es posible que las últimas conversaciones no se reflejen inmediatamente.
 
 - En los usos de bots públicos, los bots que no se hayan utilizado en absoluto durante el período especificado no aparecerán en la lista.
 
@@ -56,15 +56,15 @@ Actualmente proporciona una visión general básica del uso del chatbot y los us
 > - Para el entorno predeterminado: `ddb_export`
 > - Para entornos con nombre: `<env-prefix>_ddb_export` (por ejemplo, `dev_ddb_export`)
 >
-> Asegúrese de ajustar sus consultas en consecuencia cuando trabaje con múltiples entornos.
+> Asegúrese de ajustar sus consultas según corresponda cuando trabaje con múltiples entornos.
 
 ## Descargar datos de conversación
 
-Puede consultar los registros de conversación mediante Athena, usando SQL. Para descargar los registros, abra el Editor de consultas de Athena desde la consola de administración y ejecute SQL. A continuación se muestran algunos ejemplos de consultas útiles para analizar casos de uso. Los comentarios se pueden consultar en el atributo `MessageMap`.
+Puede consultar los registros de conversación mediante Athena, usando SQL. Para descargar los registros, abra el Editor de consultas de Athena desde la consola de administración y ejecute SQL. A continuación se muestran algunas consultas de ejemplo que son útiles para analizar casos de uso. Los comentarios se pueden consultar en el atributo `MessageMap`.
 
 ### Consulta por ID de Bot
 
-Edite `bot-id` y `datehour`. El `bot-id` se puede consultar en la pantalla de Gestión de Bots, a la que se puede acceder desde las APIs de Publicación de Bots, que se muestran en la barra lateral izquierda. Observe la parte final de la URL como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edite `bot-id` y `datehour`. El `bot-id` se puede consultar en la pantalla de Gestión de Bot, a la que se puede acceder desde las APIs de Bot Publish, que se muestran en la barra lateral izquierda. Observe la parte final de la URL como `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -91,10 +91,10 @@ ORDER BY
 
 ### Consulta por ID de Usuario
 
-Edite `user-id` y `datehour`. El `user-id` se puede consultar en la pantalla de Gestión de Bots.
+Edite `user-id` y `datehour`. El `user-id` se puede consultar en la pantalla de Gestión de Bot.
 
 > [!Note]
-> El análisis de uso por usuario estará disponible próximamente.
+> Las analíticas de uso por usuario estarán disponibles próximamente.
 
 ```sql
 SELECT

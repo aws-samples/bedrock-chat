@@ -2,19 +2,19 @@
 
 ## Was ist der Agent (ReAct)?
 
-Ein Agent ist ein fortschrittliches KI-System, das große Sprachmodelle (LLMs) als zentrale Recheneinheit nutzt. Er kombiniert die Reasoning-Fähigkeiten von LLMs mit zusätzlichen Funktionen wie Planung und Werkzeugnutzung, um eigenständig komplexe Aufgaben auszuführen. Agenten können komplizierte Anfragen aufschlüsseln, schrittweise Lösungen generieren und mit externen Tools oder APIs interagieren, um Informationen zu sammeln oder Teilaufgaben auszuführen.
+Ein Agent ist ein fortschrittliches KI-System, das große Sprachmodelle (LLMs) als zentrale Recheneinheit nutzt. Er kombiniert die Schlussfolgerungsfähigkeiten von LLMs mit zusätzlichen Funktionen wie Planung und Werkzeugnutzung, um eigenständig komplexe Aufgaben auszuführen. Agenten können komplizierte Anfragen aufschlüsseln, schrittweise Lösungen generieren und mit externen Werkzeugen oder APIs interagieren, um Informationen zu sammeln oder Teilaufgaben auszuführen.
 
-Dieses Beispiel implementiert einen Agenten unter Verwendung des [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react) Ansatzes. ReAct ermöglicht es dem Agenten, komplexe Aufgaben durch die Kombination von Reasoning und Aktionen in einer iterativen Feedback-Schleife zu lösen. Der Agent durchläuft wiederholt drei wichtige Schritte: Thought (Denken), Action (Handeln) und Observation (Beobachten). Er analysiert die aktuelle Situation mithilfe des LLM, entscheidet über die nächste auszuführende Aktion, führt die Aktion mit verfügbaren Tools oder APIs aus und lernt aus den beobachteten Ergebnissen. Dieser kontinuierliche Prozess ermöglicht es dem Agenten, sich an dynamische Umgebungen anzupassen, seine Problemlösungsgenauigkeit zu verbessern und kontextbezogene Lösungen anzubieten.
+Dieses Beispiel implementiert einen Agenten unter Verwendung des [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react) Ansatzes. ReAct ermöglicht es dem Agenten, komplexe Aufgaben durch die Kombination von Schlussfolgerung und Handlung in einer iterativen Feedbackschleife zu lösen. Der Agent durchläuft wiederholt drei Hauptschritte: Gedanke, Handlung und Beobachtung. Er analysiert die aktuelle Situation mithilfe des LLM, entscheidet über die nächste auszuführende Aktion, führt die Aktion mit verfügbaren Werkzeugen oder APIs aus und lernt aus den beobachteten Ergebnissen. Dieser kontinuierliche Prozess ermöglicht es dem Agenten, sich an dynamische Umgebungen anzupassen, seine Aufgabenlösungsgenauigkeit zu verbessern und kontextbezogene Lösungen anzubieten.
 
-Die Implementierung basiert auf [Strands Agents](https://strandsagents.com/), einem Open-Source-SDK, das einen modellgetriebenen Ansatz zum Aufbau von KI-Agenten verfolgt. Strands bietet ein leichtgewichtiges, flexibles Framework für die Erstellung benutzerdefinierter Tools mithilfe von Python-Dekoratoren und unterstützt mehrere Modellanbieter, einschließlich Amazon Bedrock.
+Die Implementierung basiert auf [Strands Agents](https://strandsagents.com/), einem Open-Source-SDK, das einen modellgetriebenen Ansatz zum Aufbau von KI-Agenten verfolgt. Strands bietet ein leichtgewichtiges, flexibles Framework zur Erstellung benutzerdefinierter Werkzeuge mittels Python-Dekoratoren und unterstützt mehrere Modellanbieter, einschließlich Amazon Bedrock.
 
-## Anwendungsbeispiel
+## Beispiel-Anwendungsfall
 
 Ein Agent, der ReAct verwendet, kann in verschiedenen Szenarien eingesetzt werden und bietet präzise und effiziente Lösungen.
 
 ### Text-zu-SQL
 
-Ein Benutzer fragt nach "dem Gesamtumsatz des letzten Quartals". Der Agent interpretiert diese Anfrage, wandelt sie in eine SQL-Abfrage um, führt diese in der Datenbank aus und präsentiert die Ergebnisse.
+Ein Benutzer fragt nach "den Gesamtverkäufen des letzten Quartals". Der Agent interpretiert diese Anfrage, wandelt sie in eine SQL-Abfrage um, führt diese in der Datenbank aus und präsentiert die Ergebnisse.
 
 ### Finanzprognosen
 
@@ -30,9 +30,9 @@ Es gibt zwei Möglichkeiten, die Agent-Funktion zu nutzen:
 
 Um die Agent-Funktionalität mit Tool Use für Ihren angepassten Chatbot zu aktivieren, folgen Sie diesen Schritten:
 
-1. Navigieren Sie zum Agent-Bereich im Bildschirm des benutzerdefinierten Bots.
+1. Navigieren Sie zum Agent-Bereich im Custom-Bot-Bildschirm.
 
-2. Im Agent-Bereich finden Sie eine Liste der verfügbaren Tools, die vom Agent genutzt werden können. Standardmäßig sind alle Tools deaktiviert.
+2. Im Agent-Bereich finden Sie eine Liste verfügbarer Tools, die vom Agent genutzt werden können. Standardmäßig sind alle Tools deaktiviert.
 
 3. Um ein Tool zu aktivieren, schalten Sie einfach den Schalter neben dem gewünschten Tool um. Sobald ein Tool aktiviert ist, hat der Agent Zugriff darauf und kann es bei der Verarbeitung von Benutzeranfragen nutzen.
 
@@ -47,25 +47,25 @@ Um die Agent-Funktionalität mit Tool Use für Ihren angepassten Chatbot zu akti
 
 ### Verwendung von Bedrock Agent
 
-Sie können einen [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) verwenden, der in Amazon Bedrock erstellt wurde.
+Sie können einen [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) nutzen, der in Amazon Bedrock erstellt wurde.
 
-Erstellen Sie zunächst einen Agent in Bedrock (z.B. über die Management Console). Geben Sie dann die Agent-ID im Einstellungsbildschirm des benutzerdefinierten Bots an. Sobald dies eingerichtet ist, wird Ihr Chatbot den Bedrock Agent nutzen, um Benutzeranfragen zu verarbeiten.
+Erstellen Sie zunächst einen Agent in Bedrock (z.B. über die Management Console). Geben Sie dann die Agent-ID im Einstellungsbildschirm des benutzerdefinierten Bots an. Sobald dies eingerichtet ist, wird Ihr Chatbot den Bedrock Agent zur Verarbeitung von Benutzeranfragen nutzen.
 
 ![](./imgs/bedrock_agent_tool.png)
 
-## So entwickeln Sie Ihre eigenen Tools
+## Entwicklung eigener Tools
 
 Um eigene benutzerdefinierte Tools für den Agent mit dem Strands SDK zu entwickeln, befolgen Sie diese Richtlinien:
 
 ### Über Strands Tools
 
-Strands bietet einen einfachen `@tool` Decorator, der reguläre Python-Funktionen in AI-Agent-Tools umwandelt. Der Decorator extrahiert automatisch Informationen aus dem Docstring und den Type-Hints Ihrer Funktion, um Tool-Spezifikationen zu erstellen, die das LLM verstehen und nutzen kann. Dieser Ansatz nutzt die nativen Python-Funktionen für eine saubere, funktionale Tool-Entwicklungserfahrung.
+Strands bietet einen einfachen `@tool` Dekorator, der reguläre Python-Funktionen in AI-Agent-Tools umwandelt. Der Dekorator extrahiert automatisch Informationen aus dem Docstring und den Type Hints Ihrer Funktion, um Tool-Spezifikationen zu erstellen, die das LLM verstehen und nutzen kann. Dieser Ansatz nutzt die nativen Python-Funktionen für eine saubere, funktionale Tool-Entwicklungserfahrung.
 
 Detaillierte Informationen zu Strands Tools finden Sie in der [Python Tools Dokumentation](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
 ### Grundlegende Tool-Erstellung
 
-Erstellen Sie eine neue Funktion, die mit dem `@tool` Decorator von Strands versehen ist:
+Erstellen Sie eine neue Funktion mit dem `@tool` Dekorator von Strands:
 
 ```python
 from strands import tool
@@ -83,7 +83,7 @@ def calculator(expression: str) -> dict:
     """
     try:
         # Ihre Berechnungslogik hier
-        result = eval(expression)  # Hinweis: Verwenden Sie sichere Auswertung in Produktion
+        result = eval(expression)  # Hinweis: In Produktion sichere Auswertung verwenden
         return {
             "toolUseId": "placeholder",
             "status": "success",
@@ -97,9 +97,9 @@ def calculator(expression: str) -> dict:
         }
 ```
 
-### Tools mit Bot-Kontext (Closure-Pattern)
+### Tools mit Bot-Kontext (Closure-Muster)
 
-Um auf Bot-Informationen (BotModel) zuzugreifen, verwenden Sie ein Closure-Pattern, das den Bot-Kontext erfasst:
+Um auf Bot-Informationen (BotModel) zuzugreifen, verwenden Sie ein Closure-Muster, das den Bot-Kontext erfasst:
 
 ```python
 from strands import tool
@@ -121,10 +121,10 @@ def create_calculator_tool(bot: BotModel | None = None):
         """
         # Zugriff auf Bot-Kontext innerhalb des Tools
         if bot:
-            print(f"Tool used by bot: {bot.id}")
+            print(f"Tool verwendet von Bot: {bot.id}")
 
         try:
-            result = eval(expression)  # Verwenden Sie sichere Auswertung in Produktion
+            result = eval(expression)  # In Produktion sichere Auswertung verwenden
             return {
                 "toolUseId": "placeholder",
                 "status": "success",
@@ -140,9 +140,9 @@ def create_calculator_tool(bot: BotModel | None = None):
     return calculator
 ```
 
-### Anforderungen an das Rückgabeformat
+### Rückgabeformat-Anforderungen
 
-Alle Strands Tools müssen ein Dictionary mit folgender Struktur zurückgeben:
+Alle Strands Tools müssen ein Wörterbuch mit folgender Struktur zurückgeben:
 
 ```python
 {
@@ -163,7 +163,7 @@ Alle Strands Tools müssen ein Dictionary mit folgender Struktur zurückgeben:
 
 - Der Funktionsname und Docstring werden verwendet, wenn das LLM entscheidet, welches Tool zu verwenden ist. Der Docstring wird in den Prompt eingebettet, beschreiben Sie daher den Zweck und die Parameter des Tools präzise.
 
-- Siehe die Beispielimplementierung eines [BMI-Berechnungstools](../examples/agents/tools/bmi/bmi_strands.py). Dieses Beispiel zeigt, wie man ein Tool erstellt, das den Body Mass Index (BMI) mit dem Strands `@tool` Decorator und Closure-Pattern berechnet.
+- Siehe die Beispielimplementierung eines [BMI-Berechnungstools](../examples/agents/tools/bmi/bmi_strands.py). Dieses Beispiel zeigt, wie man ein Tool erstellt, das den Body Mass Index (BMI) mit dem Strands `@tool` Dekorator und Closure-Muster berechnet.
 
 - Nach Abschluss der Entwicklung platzieren Sie Ihre Implementierungsdatei im Verzeichnis [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Öffnen Sie dann [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) und bearbeiten Sie `get_strands_registered_tools`, um Ihr neues Tool einzubinden.
 
@@ -172,4 +172,4 @@ Alle Strands Tools müssen ein Dictionary mit folgender Struktur zurückgeben:
   - Bearbeiten Sie i18n-Dateien. Öffnen Sie [en/index.ts](../frontend/src/i18n/en/index.ts) und fügen Sie Ihren eigenen `name` und `description` unter `agent.tools` hinzu.
   - Bearbeiten Sie auch `xx/index.ts`. Wobei `xx` für den gewünschten Ländercode steht.
 
-- Führen Sie `npx cdk deploy` aus, um Ihre Änderungen zu deployen. Dadurch wird Ihr benutzerdefiniertes Tool im Custom-Bot-Bildschirm verfügbar.
+- Führen Sie `npx cdk deploy` aus, um Ihre Änderungen zu deployen. Dadurch wird Ihr benutzerdefiniertes Tool im Custom Bot Screen verfügbar.

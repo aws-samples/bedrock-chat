@@ -15,16 +15,16 @@
    - 键：`clientSecret`，值：<YOUR_GOOGLE_CLIENT_SECRET>
    - 键：`issuerUrl`，值：<ISSUER_URL_OF_THE_PROVIDER>
 
-5. 按照提示为密钥命名并添加描述。请记下密钥名称，因为您将在 CDK 代码中需要它（在步骤 3 中用作变量名 <YOUR_SECRET_NAME>）。
+5. 按照提示为密钥命名和添加描述。请记下密钥名称，因为您将在 CDK 代码中需要它（在步骤 3 中用作变量名 <YOUR_SECRET_NAME>）。
 6. 检查并存储密钥。
 
 ### 注意
 
 键名必须与字符串 `clientId`、`clientSecret` 和 `issuerUrl` 完全匹配。
 
-## 步骤 3：更新 cdk.json
+## 步骤3：更新cdk.json
 
-在您的 cdk.json 文件中，添加身份提供商（ID Provider）和密钥名称（SecretName）。
+在您的cdk.json文件中，将身份提供商ID和密钥名称添加到cdk.json文件中。
 
 如下所示：
 
@@ -48,7 +48,7 @@
 
 #### 唯一性
 
-`userPoolDomainPrefix` 必须在所有 Amazon Cognito 用户中保持全局唯一性。如果您选择的前缀已被其他 AWS 账户使用，用户池域名的创建将会失败。建议在前缀中包含标识符、项目名称或环境名称，以确保唯一性。
+`userPoolDomainPrefix`在所有Amazon Cognito用户中必须是全局唯一的。如果您选择的前缀已被其他AWS账户使用，用户池域名的创建将会失败。建议在前缀中包含标识符、项目名称或环境名称，以确保唯一性。
 
 ## 步骤4：部署您的CDK堆栈
 
@@ -58,6 +58,6 @@
 npx cdk deploy --require-approval never --all
 ```
 
-## 步骤5：使用 Cognito 重定向 URI 更新 OIDC 客户端
+## 第5步：使用Cognito重定向URI更新OIDC客户端
 
-部署堆栈后，`AuthApprovedRedirectURI` 将显示在 CloudFormation 输出中。返回您的 OIDC 配置并使用正确的重定向 URI 进行更新。
+部署堆栈后，`AuthApprovedRedirectURI`将显示在CloudFormation输出中。返回您的OIDC配置并使用正确的重定向URI进行更新。

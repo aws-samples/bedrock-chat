@@ -2,7 +2,7 @@
 
 ## Paso 1: Crear un Cliente OIDC
 
-Sigue los procedimientos para el proveedor OIDC objetivo, y anota los valores del ID de cliente OIDC y el secreto. La URL del emisor también es necesaria en los siguientes pasos. Si se necesita una URI de redirección durante el proceso de configuración, introduce un valor temporal, que será reemplazado una vez que se complete la implementación.
+Sigue los procedimientos del proveedor OIDC objetivo, y anota los valores del ID de cliente OIDC y el secreto. La URL del emisor también es necesaria en los siguientes pasos. Si se necesita una URI de redirección durante el proceso de configuración, introduce un valor temporal, que será reemplazado una vez completado el despliegue.
 
 ## Paso 2: Almacenar Credenciales en AWS Secrets Manager
 
@@ -60,4 +60,4 @@ npx cdk deploy --require-approval never --all
 
 ## Paso 5: Actualizar el Cliente OIDC con las URIs de Redirección de Cognito
 
-Después de desplegar el stack, `AuthApprovedRedirectURI` se muestra en las salidas de CloudFormation. Vuelve a tu configuración de OIDC y actualiza con las URIs de redirección correctas.
+Después de desplegar el stack, `AuthApprovedRedirectURI` se muestra en las salidas de CloudFormation. Vuelve a tu configuración OIDC y actualiza con las URIs de redirección correctas.

@@ -2,10 +2,10 @@
 
 ## TL;DR
 
-- **Para usuários da v1.2 ou anterior**: Atualize para v1.4 e recrie seus bots usando Knowledge Base (KB). Após um período de transição, depois de confirmar que tudo funciona como esperado com KB, prossiga com a atualização para v2.
+- **Para usuários da v1.2 ou anterior**: Atualize para v1.4 e recrie seus bots usando Knowledge Base (KB). Após um período de transição, quando confirmar que tudo funciona como esperado com KB, prossiga com a atualização para v2.
 - **Para usuários da v1.3**: Mesmo se você já estiver usando KB, é **fortemente recomendado** atualizar para v1.4 e recriar seus bots. Se você ainda estiver usando pgvector, migre recriando seus bots usando KB na v1.4.
-- **Para usuários que desejam continuar usando pgvector**: A atualização para v2 não é recomendada se você planeja continuar usando pgvector. A atualização para v2 removerá todos os recursos relacionados ao pgvector, e o suporte futuro não estará mais disponível. Continue usando v1 neste caso.
-- Observe que **a atualização para v2 resultará na exclusão de todos os recursos relacionados ao Aurora.** As atualizações futuras serão focadas exclusivamente na v2, com a v1 sendo descontinuada.
+- **Para usuários que desejam continuar usando pgvector**: A atualização para v2 não é recomendada se você planeja continuar usando pgvector. A atualização para v2 removerá todos os recursos relacionados ao pgvector, e suporte futuro não estará mais disponível. Continue usando v1 neste caso.
+- Observe que **a atualização para v2 resultará na exclusão de todos os recursos relacionados ao Aurora.** Atualizações futuras serão focadas exclusivamente na v2, com a v1 sendo descontinuada.
 
 ## Introdução
 
@@ -17,15 +17,15 @@ A atualização v2 introduz uma mudança importante ao substituir o pgvector no 
 
 Existem várias razões para esta mudança:
 
-#### Melhor Precisão do RAG
+#### Melhor Precisão no RAG
 
-- Knowledge Bases usa OpenSearch Serverless como backend, permitindo buscas híbridas com pesquisa tanto textual quanto vetorial. Isso leva a uma melhor precisão ao responder perguntas que incluem substantivos próprios, com os quais o pgvector tinha dificuldades.
-- Também suporta mais opções para melhorar a precisão do RAG, como chunking e análise avançados.
-- Knowledge Bases está disponível para uso geral há quase um ano desde outubro de 2024, com recursos como rastreamento web já adicionados. Atualizações futuras são esperadas, tornando mais fácil adotar funcionalidades avançadas a longo prazo. Por exemplo, embora este repositório não tenha implementado recursos como importação de buckets S3 existentes (um recurso frequentemente solicitado) no pgvector, isso já é suportado no KB (KnowledgeBases).
+- Knowledge Bases usa o OpenSearch Serverless como backend, permitindo buscas híbridas com pesquisa tanto textual quanto vetorial. Isso leva a uma melhor precisão ao responder perguntas que incluem substantivos próprios, com os quais o pgvector tinha dificuldades.
+- Também suporta mais opções para melhorar a precisão do RAG, como chunking e parsing avançados.
+- Knowledge Bases está disponível de forma geral há quase um ano desde outubro de 2024, com recursos como rastreamento web já adicionados. Atualizações futuras são esperadas, tornando mais fácil adotar funcionalidades avançadas a longo prazo. Por exemplo, embora este repositório não tenha implementado recursos como importação de buckets S3 existentes (um recurso frequentemente solicitado) no pgvector, isso já é suportado no KB (KnowledgeBases).
 
 #### Manutenção
 
-- A configuração atual de ECS + Aurora depende de várias bibliotecas, incluindo aquelas para análise de PDF, rastreamento web e extração de transcrições do YouTube. Em comparação, soluções gerenciadas como Knowledge Bases reduzem a carga de manutenção tanto para usuários quanto para a equipe de desenvolvimento do repositório.
+- A configuração atual de ECS + Aurora depende de várias bibliotecas, incluindo aquelas para análise de PDF, rastreamento web e extração de transcrições do YouTube. Em comparação, soluções gerenciadas como Knowledge Bases reduzem a carga de manutenção tanto para os usuários quanto para a equipe de desenvolvimento do repositório.
 
 ## Processo de Migração (Resumo)
 
@@ -47,9 +47,9 @@ Os passos diferem dependendo se você está usando v1.2 ou anterior, ou v1.3.
 
 1. **Faça backup do seu bucket de documentos existente (opcional mas recomendado).** Se seu sistema já está em operação, recomendamos fortemente este passo. Faça backup do bucket chamado `bedrockchatstack-documentbucketxxxx-yyyy`. Por exemplo, podemos usar o [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html).
 
-2. **Atualize para v1.4**: Busque a tag mais recente v1.4, modifique o `cdk.json` e faça o deploy. Siga estes passos:
+2. **Atualize para v1.4**: Busque a última tag v1.4, modifique o `cdk.json` e faça o deploy. Siga estes passos:
 
-   1. Busque a tag mais recente:
+   1. Busque a última tag:
       ```bash
       git fetch --tags
       git checkout tags/v1.4.0
@@ -67,13 +67,13 @@ Os passos diferem dependendo se você está usando v1.2 ou anterior, ou v1.3.
       npx cdk deploy
       ```
 
-3. **Recrie seus bots**: Recrie seus bots no Knowledge Base com as mesmas definições (documentos, tamanho de chunk, etc.) dos bots pgvector. Se você tiver um grande volume de documentos, restaurar do backup do passo 1 tornará este processo mais fácil. Para restaurar, podemos usar a restauração de cópias entre regiões. Para mais detalhes, visite [aqui](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Para especificar o bucket restaurado, configure a seção `S3 Data Source` como a seguir. A estrutura do caminho é `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. Você pode verificar o id do usuário no pool de usuários do Cognito e o id do bot na barra de endereço na tela de criação do bot.
+3. **Recrie seus bots**: Recrie seus bots no Knowledge Base com as mesmas definições (documentos, tamanho de chunk, etc.) dos bots pgvector. Se você tiver um grande volume de documentos, restaurar do backup do passo 1 tornará este processo mais fácil. Para restaurar, podemos usar a restauração de cópias entre regiões. Para mais detalhes, visite [aqui](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Para especificar o bucket restaurado, configure a seção `S3 Data Source` como a seguir. A estrutura do caminho é `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. Você pode verificar o ID do usuário no pool de usuários do Cognito e o ID do bot na barra de endereço na tela de criação do bot.
 
 ![](../imgs/v1_to_v2_KB_s3_source.png)
 
-**Note que alguns recursos não estão disponíveis no Knowledge Bases, como web crawling e suporte a transcrição do YouTube (Planejamento para suportar web crawler ([issue](https://github.com/aws-samples/bedrock-chat/issues/557))).** Além disso, lembre-se que usar o Knowledge Bases incorrerá em cobranças tanto para Aurora quanto para Knowledge Bases durante a transição.
+**Observe que alguns recursos não estão disponíveis no Knowledge Bases, como rastreamento web e suporte a transcrição do YouTube (Planejando suportar rastreador web ([issue](https://github.com/aws-samples/bedrock-chat/issues/557))).** Além disso, lembre-se que usar o Knowledge Bases incorrerá em cobranças tanto para Aurora quanto para Knowledge Bases durante a transição.
 
-4. **Remova APIs publicadas**: Todas as APIs previamente publicadas precisarão ser republicadas antes de fazer o deploy da v2 devido à exclusão da VPC. Para isso, você precisará primeiro excluir as APIs existentes. Usar o [recurso de Gerenciamento de API do administrador](../ADMINISTRATOR_pt-BR.md) pode simplificar este processo. Uma vez que a exclusão de todas as stacks CloudFormation `APIPublishmentStackXXXX` estiver completa, o ambiente estará pronto.
+4. **Remova APIs publicadas**: Todas as APIs previamente publicadas precisarão ser republicadas antes de fazer o deploy da v2 devido à exclusão da VPC. Para isso, você precisará excluir as APIs existentes primeiro. Usar o [recurso de Gerenciamento de API do administrador](../ADMINISTRATOR_pt-BR.md) pode simplificar este processo. Uma vez que a exclusão de todas as stacks CloudFormation `APIPublishmentStackXXXX` esteja concluída, o ambiente estará pronto.
 
 5. **Faça deploy da v2**: Após o lançamento da v2, busque o código fonte com tag e faça o deploy da seguinte forma (isso será possível após o lançamento):
    ```bash

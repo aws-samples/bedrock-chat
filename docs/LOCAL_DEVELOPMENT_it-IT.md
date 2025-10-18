@@ -10,7 +10,7 @@ In questo esempio, puoi modificare e avviare localmente il frontend utilizzando 
 
 1. Fai riferimento a [Deploy using CDK](../README.md#deploy-using-cdk) per la distribuzione nell'ambiente AWS.
 2. Copia `frontend/.env.template` e salvalo come `frontend/.env.local`.
-3. Compila i contenuti di `.env.local` basandoti sui risultati dell'output di `npx cdk deploy` (come `BedrockChatStack.AuthUserPoolClientIdXXXXX`).
+3. Compila il contenuto di `.env.local` basandoti sui risultati dell'output di `npx cdk deploy` (come `BedrockChatStack.AuthUserPoolClientIdXXXXX`).
 4. Esegui il seguente comando:
 
 ```zsh

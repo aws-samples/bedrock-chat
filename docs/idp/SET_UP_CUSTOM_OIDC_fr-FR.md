@@ -2,11 +2,11 @@
 
 ## Étape 1 : Créer un client OIDC
 
-Suivez les procédures du fournisseur OIDC cible, et notez les valeurs de l'ID client OIDC et du secret. L'URL de l'émetteur est également requise pour les étapes suivantes. Si une URI de redirection est nécessaire pour le processus de configuration, saisissez une valeur temporaire, qui sera remplacée une fois le déploiement terminé.
+Suivez les procédures du fournisseur OIDC cible et notez les valeurs de l'ID client OIDC et du secret. L'URL de l'émetteur est également requise pour les étapes suivantes. Si une URI de redirection est nécessaire pour le processus de configuration, saisissez une valeur temporaire, qui sera remplacée une fois le déploiement terminé.
 
 ## Étape 2 : Stocker les identifiants dans AWS Secrets Manager
 
-1. Accédez à la Console de gestion AWS.
+1. Accédez à la Console de Gestion AWS.
 2. Naviguez vers Secrets Manager et choisissez "Stocker un nouveau secret".
 3. Sélectionnez "Autre type de secrets".
 4. Saisissez l'ID client et le secret client sous forme de paires clé-valeur.
@@ -35,7 +35,7 @@ comme ceci :
     "identityProviders": [
       {
         "service": "oidc", // Ne pas modifier
-        "serviceName": "<YOUR_SERVICE_NAME>", // Définissez la valeur que vous souhaitez
+        "serviceName": "<YOUR_SERVICE_NAME>", // Définissez la valeur de votre choix
         "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
@@ -48,11 +48,11 @@ comme ceci :
 
 #### Unicité
 
-Le `userPoolDomainPrefix` doit être globalement unique parmi tous les utilisateurs d'Amazon Cognito. Si vous choisissez un préfixe qui est déjà utilisé par un autre compte AWS, la création du domaine du groupe d'utilisateurs échouera. Il est recommandé d'inclure des identifiants, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
+Le `userPoolDomainPrefix` doit être globalement unique pour tous les utilisateurs d'Amazon Cognito. Si vous choisissez un préfixe qui est déjà utilisé par un autre compte AWS, la création du domaine du groupe d'utilisateurs échouera. Il est recommandé d'inclure des identifiants, des noms de projet ou des noms d'environnement dans le préfixe pour garantir son unicité.
 
-## Étape 4 : Déployer votre pile CDK
+## Étape 4 : Déployer votre Stack CDK
 
-Déployez votre pile CDK sur AWS :
+Déployez votre stack CDK sur AWS :
 
 ```sh
 npx cdk deploy --require-approval never --all

@@ -21,7 +21,7 @@ Il y a plusieurs raisons à ce changement :
 
 - Knowledge Bases utilise OpenSearch Serverless comme backend, permettant des recherches hybrides combinant recherche plein texte et recherche vectorielle. Cela conduit à une meilleure précision dans les réponses aux questions incluant des noms propres, avec lesquels pgvector avait des difficultés.
 - Il offre également plus d'options pour améliorer la précision RAG, comme le découpage et l'analyse avancés.
-- Knowledge Bases est généralement disponible depuis près d'un an en octobre 2024, avec des fonctionnalités déjà ajoutées comme le crawling web. D'autres mises à jour sont attendues, facilitant l'adoption de fonctionnalités avancées sur le long terme. Par exemple, bien que ce dépôt n'ait pas implémenté des fonctionnalités comme l'importation depuis des buckets S3 existants (une fonctionnalité fréquemment demandée) dans pgvector, celle-ci est déjà prise en charge dans KB (KnowledgeBases).
+- Knowledge Bases est généralement disponible depuis presque un an en octobre 2024, avec des fonctionnalités comme le crawling web déjà ajoutées. Des mises à jour futures sont attendues, facilitant l'adoption de fonctionnalités avancées sur le long terme. Par exemple, bien que ce dépôt n'ait pas implémenté des fonctionnalités comme l'importation depuis des buckets S3 existants (une fonctionnalité fréquemment demandée) dans pgvector, celle-ci est déjà prise en charge dans KB (KnowledgeBases).
 
 #### Maintenance
 
@@ -29,17 +29,17 @@ Il y a plusieurs raisons à ce changement :
 
 ## Processus de Migration (Résumé)
 
-Nous recommandons vivement de passer à la v1.4 avant de migrer vers la v2. Dans la v1.4, vous pouvez utiliser à la fois pgvector et les robots Knowledge Base, permettant une période de transition pour recréer vos robots pgvector existants dans Knowledge Base et vérifier qu'ils fonctionnent comme prévu. Même si les documents RAG restent identiques, notez que les changements backend vers OpenSearch peuvent produire des résultats légèrement différents, bien que généralement similaires, en raison de différences comme les algorithmes k-NN.
+Nous recommandons fortement de passer à la v1.4 avant de migrer vers la v2. Dans la v1.4, vous pouvez utiliser à la fois pgvector et les bots Knowledge Base, permettant une période de transition pour recréer vos bots pgvector existants dans Knowledge Base et vérifier qu'ils fonctionnent comme prévu. Même si les documents RAG restent identiques, notez que les changements backend vers OpenSearch peuvent produire des résultats légèrement différents, bien que généralement similaires, en raison de différences comme les algorithmes k-NN.
 
-En définissant `useBedrockKnowledgeBasesForRag` sur true dans `cdk.json`, vous pouvez créer des robots utilisant Knowledge Bases. Cependant, les robots pgvector deviendront en lecture seule, empêchant la création ou la modification de nouveaux robots pgvector.
+En définissant `useBedrockKnowledgeBasesForRag` sur true dans `cdk.json`, vous pouvez créer des bots utilisant Knowledge Bases. Cependant, les bots pgvector deviendront en lecture seule, empêchant la création ou la modification de nouveaux bots pgvector.
 
 ![](../imgs/v1_to_v2_readonly_bot.png)
 
-Dans la v1.4, les [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guardrails/) sont également introduits. En raison des restrictions régionales de Knowledge Bases, le bucket S3 pour le téléchargement des documents doit être dans la même région que `bedrockRegion`. Nous recommandons de sauvegarder les buckets de documents existants avant la mise à jour, pour éviter d'avoir à télécharger manuellement un grand nombre de documents ultérieurement (car la fonctionnalité d'importation de bucket S3 est disponible).
+Dans la v1.4, [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guardrails/) est également introduit. En raison des restrictions régionales de Knowledge Bases, le bucket S3 pour le téléchargement des documents doit être dans la même région que `bedrockRegion`. Nous recommandons de sauvegarder les buckets de documents existants avant la mise à jour, pour éviter d'avoir à télécharger manuellement un grand nombre de documents plus tard (car la fonctionnalité d'importation de bucket S3 est disponible).
 
 ## Processus de Migration (Détail)
 
-Les étapes diffèrent selon que vous utilisez la v1.2 ou antérieure, ou la v1.3.
+Les étapes diffèrent selon que vous utilisez v1.2 ou antérieure, ou v1.3.
 
 ![](../imgs/v1_to_v2_arch.png)
 
@@ -47,7 +47,7 @@ Les étapes diffèrent selon que vous utilisez la v1.2 ou antérieure, ou la v1.
 
 1. **Sauvegardez votre bucket de documents existant (optionnel mais recommandé).** Si votre système est déjà en production, nous recommandons fortement cette étape. Sauvegardez le bucket nommé `bedrockchatstack-documentbucketxxxx-yyyy`. Par exemple, nous pouvons utiliser [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html).
 
-2. **Mise à jour vers v1.4**: Récupérez le dernier tag v1.4, modifiez `cdk.json`, et déployez. Suivez ces étapes:
+2. **Mise à jour vers v1.4**: Récupérez le dernier tag v1.4, modifiez `cdk.json` et déployez. Suivez ces étapes:
 
    1. Récupérez le dernier tag:
       ```bash
@@ -67,7 +67,7 @@ Les étapes diffèrent selon que vous utilisez la v1.2 ou antérieure, ou la v1.
       npx cdk deploy
       ```
 
-3. **Recréez vos bots**: Recréez vos bots sur Knowledge Base avec les mêmes définitions (documents, taille de fragments, etc.) que les bots pgvector. Si vous avez un grand volume de documents, la restauration à partir de la sauvegarde de l'étape 1 facilitera ce processus. Pour restaurer, nous pouvons utiliser la restauration de copies inter-régions. Pour plus de détails, visitez [ici](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Pour spécifier le bucket restauré, configurez la section `S3 Data Source` comme suit. La structure du chemin est `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. Vous pouvez vérifier l'ID utilisateur dans le pool d'utilisateurs Cognito et l'ID du bot dans la barre d'adresse sur l'écran de création du bot.
+3. **Recréez vos bots**: Recréez vos bots sur Knowledge Base avec les mêmes définitions (documents, taille de chunk, etc.) que les bots pgvector. Si vous avez un grand volume de documents, la restauration depuis la sauvegarde de l'étape 1 facilitera ce processus. Pour restaurer, nous pouvons utiliser la restauration de copies inter-régions. Pour plus de détails, visitez [ici](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Pour spécifier le bucket restauré, configurez la section `S3 Data Source` comme suit. La structure du chemin est `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. Vous pouvez vérifier l'ID utilisateur dans le pool d'utilisateurs Cognito et l'ID du bot dans la barre d'adresse sur l'écran de création du bot.
 
 ![](../imgs/v1_to_v2_KB_s3_source.png)
 

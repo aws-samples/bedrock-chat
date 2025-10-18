@@ -2,20 +2,20 @@
 
 ## Voraussetzungen
 
-Der Admin-Benutzer muss Mitglied einer Gruppe namens `Admin` sein, die über die Management-Konsole > Amazon Cognito User pools oder aws cli eingerichtet werden kann. Beachten Sie, dass die User Pool ID über CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` abgerufen werden kann.
+Der Admin-Benutzer muss Mitglied einer Gruppe namens `Admin` sein, die über die Management-Konsole > Amazon Cognito Benutzerpools oder aws cli eingerichtet werden kann. Beachten Sie, dass die Benutzer-Pool-ID über CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` abgerufen werden kann.
 
 ![](./imgs/group_membership_admin.png)
 
-## Öffentliche Bots als "Essentiell" markieren
+## Öffentliche Bots als "Essenziell" markieren
 
-Öffentliche Bots können jetzt von Administratoren als "Essentiell" markiert werden. Als essentiell markierte Bots werden im Bereich "Essentiell" des Bot-Stores angezeigt, wodurch sie für Benutzer leicht zugänglich sind. Dies ermöglicht es Administratoren, wichtige Bots hervorzuheben, die von allen Benutzern verwendet werden sollen.
+Öffentliche Bots können jetzt von Administratoren als "Essenziell" markiert werden. Als essenziell markierte Bots werden im Bereich "Essenziell" des Bot-Stores hervorgehoben, wodurch sie für Benutzer leicht zugänglich sind. Dies ermöglicht es Administratoren, wichtige Bots zu pinnen, die von allen Benutzern verwendet werden sollen.
 
 ### Beispiele
 
 - HR Assistant Bot: Unterstützt Mitarbeiter bei HR-bezogenen Fragen und Aufgaben.
 - IT Support Bot: Bietet Unterstützung bei internen technischen Problemen und Kontoverwaltung.
 - Internal Policy Guide Bot: Beantwortet häufig gestellte Fragen zu Anwesenheitsregeln, Sicherheitsrichtlinien und anderen internen Vorschriften.
-- New Employee Onboarding Bot: Führt neue Mitarbeiter durch Prozesse und Systemnutzung an ihrem ersten Tag.
+- New Employee Onboarding Bot: Führt neue Mitarbeiter durch Verfahren und Systemnutzung an ihrem ersten Tag.
 - Benefits Information Bot: Erklärt betriebliche Vorsorgeprogramme und Sozialleistungen.
 
 ![](./imgs/admin_bot_menue.png)
@@ -39,19 +39,19 @@ Bietet derzeit einen grundlegenden Überblick über die Nutzung von Chatbots und
 
 ## Hinweise
 
-- Wie in der [Architektur](../README.md#architecture) beschrieben, greifen die Admin-Funktionen auf den aus DynamoDB exportierten S3-Bucket zu. Bitte beachten Sie, dass der Export nur einmal pro Stunde durchgeführt wird, weshalb die neuesten Konversationen möglicherweise nicht sofort sichtbar sind.
+- Wie in der [Architektur](../README.md#architecture) beschrieben, greifen die Admin-Funktionen auf den S3-Bucket zu, der aus DynamoDB exportiert wird. Bitte beachten Sie, dass der Export einmal pro Stunde durchgeführt wird und die neuesten Konversationen daher möglicherweise nicht sofort sichtbar sind.
 
-- Bei der öffentlichen Bot-Nutzung werden Bots, die während des angegebenen Zeitraums überhaupt nicht verwendet wurden, nicht aufgelistet.
+- Bei der öffentlichen Bot-Nutzung werden Bots, die während des angegebenen Zeitraums gar nicht genutzt wurden, nicht aufgelistet.
 
-- Bei der Benutzernutzung werden Benutzer, die das System während des angegebenen Zeitraums überhaupt nicht genutzt haben, nicht aufgelistet.
+- Bei der Benutzernutzung werden Benutzer, die das System während des angegebenen Zeitraums gar nicht genutzt haben, nicht aufgelistet.
 
 > [!Important]
-> Wenn Sie mehrere Umgebungen verwenden (dev, prod, etc.), wird der Athena-Datenbankname das Umgebungspräfix enthalten. Statt `bedrockchatstack_usage_analysis` lautet der Datenbankname:
+> Wenn Sie mehrere Umgebungen verwenden (dev, prod, etc.), enthält der Athena-Datenbankname das Umgebungspräfix. Statt `bedrockchatstack_usage_analysis` lautet der Datenbankname:
 >
 > - Für Standardumgebung: `bedrockchatstack_usage_analysis`
 > - Für benannte Umgebungen: `<env-prefix>_bedrockchatstack_usage_analysis` (z.B. `dev_bedrockchatstack_usage_analysis`)
 >
-> Zusätzlich wird der Tabellenname das Umgebungspräfix enthalten:
+> Zusätzlich enthält der Tabellenname das Umgebungspräfix:
 >
 > - Für Standardumgebung: `ddb_export`
 > - Für benannte Umgebungen: `<env-prefix>_ddb_export` (z.B. `dev_ddb_export`)
@@ -64,7 +64,7 @@ Sie können die Gesprächsprotokolle mit Athena über SQL abfragen. Um Protokoll
 
 ### Abfrage nach Bot-ID
 
-Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` kann im Bot Management Bildschirm eingesehen werden, der über die Bot Publish APIs in der linken Seitenleiste zugänglich ist. Beachten Sie den letzten Teil der URL wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Bearbeiten Sie `bot-id` und `datehour`. Die `bot-id` finden Sie auf dem Bot Management Bildschirm, der über die Bot Publish APIs in der linken Seitenleiste zugänglich ist. Beachten Sie den letzten Teil der URL wie `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -87,11 +87,11 @@ ORDER BY
 ```
 
 > [!Note]
-> Bei Verwendung einer benannten Umgebung (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
+> Wenn Sie eine benannte Umgebung verwenden (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
 
 ### Abfrage nach Benutzer-ID
 
-Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann im Bot Management Bildschirm eingesehen werden.
+Bearbeiten Sie `user-id` und `datehour`. Die `user-id` kann auf dem Bot Management Bildschirm eingesehen werden.
 
 > [!Note]
 > Benutzernutzungsanalysen werden in Kürze verfügbar sein.
@@ -117,4 +117,4 @@ ORDER BY
 ```
 
 > [!Note]
-> Bei Verwendung einer benannten Umgebung (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.
+> Wenn Sie eine benannte Umgebung verwenden (z.B. "dev"), ersetzen Sie `bedrockchatstack_usage_analysis.ddb_export` durch `dev_bedrockchatstack_usage_analysis.dev_ddb_export` in der obigen Abfrage.

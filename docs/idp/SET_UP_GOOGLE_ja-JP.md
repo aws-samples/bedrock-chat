@@ -3,10 +3,10 @@
 ## Step 1: Google OAuth 2.0クライアントの作成
 
 1. Google Developer Consoleにアクセスします。
-2. 新しいプロジェクトを作成するか、既存のプロジェクトを選択します。
+2. 新規プロジェクトを作成するか、既存のプロジェクトを選択します。
 3. 「認証情報」に移動し、「認証情報を作成」をクリックして「OAuthクライアントID」を選択します。
 4. 要求された場合は、同意画面を設定します。
-5. アプリケーションの種類で「ウェブアプリケーション」を選択します。
+5. アプリケーションタイプで「ウェブアプリケーション」を選択します。
 6. リダイレクトURIは後で設定するため、一時的に空白のままにしておきます。[Step5を参照](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. 作成後、クライアントIDとクライアントシークレットをメモしておきます。
 
@@ -14,7 +14,7 @@
 
 ## ステップ2：Google OAuth認証情報をAWS Secrets Managerに保存する
 
-1. AWSマネジメントコンソールにアクセスします。
+1. AWS Management Consoleにアクセスします。
 2. Secrets Managerに移動し、「新しいシークレットの保存」を選択します。
 3. 「その他のシークレットタイプ」を選択します。
 4. Google OAuthのclientIdとclientSecretをキーと値のペアとして入力します。
@@ -22,12 +22,12 @@
    1. キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
    2. キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. プロンプトに従ってシークレットに名前と説明を付けます。CDKコードで必要となるため、シークレット名を控えておいてください。例：googleOAuthCredentials（ステップ3の変数名<YOUR_SECRET_NAME>で使用）
+5. プロンプトに従ってシークレットに名前と説明を付けます。CDKコードで必要になるため、シークレット名を記録しておいてください。例：googleOAuthCredentials（ステップ3の変数名<YOUR_SECRET_NAME>で使用します）
 6. シークレットを確認して保存します。
 
 ### 注意
 
-キー名は'clientId'と'clientSecret'に正確に一致している必要があります。
+キー名は正確に'clientId'と'clientSecret'に一致する必要があります。
 
 ## ステップ3：cdk.jsonの更新
 
@@ -50,7 +50,7 @@ cdk.jsonファイルに、IDプロバイダーとSecretNameを追加します。
 }
 ```
 
-### 注意事項
+### 注意
 
 #### 一意性
 
@@ -64,6 +64,6 @@ CDKスタックをAWSにデプロイします：
 npx cdk deploy --require-approval never --all
 ```
 
-## Step 5: Google OAuthクライアントをCognitoリダイレクトURIで更新する
+## Step 5: CognitoリダイレクトURIでGoogle OAuthクライアントを更新する
 
-スタックのデプロイ後、CloudFormationの出力にAuthApprovedRedirectURIが表示されます。Google Developer Consoleに戻り、OAuthクライアントに正しいリダイレクトURIを更新してください。
+スタックをデプロイした後、CloudFormationの出力にAuthApprovedRedirectURIが表示されます。Google Developer Consoleに戻り、正しいリダイレクトURIでOAuthクライアントを更新してください。

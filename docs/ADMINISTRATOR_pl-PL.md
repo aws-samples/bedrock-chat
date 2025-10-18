@@ -2,7 +2,7 @@
 
 ## Wymagania wstępne
 
-Użytkownik administracyjny musi być członkiem grupy o nazwie `Admin`, którą można skonfigurować poprzez konsolę zarządzania > Amazon Cognito User pools lub aws cli. Należy pamiętać, że identyfikator puli użytkowników można sprawdzić poprzez CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Użytkownik administracyjny musi być członkiem grupy o nazwie `Admin`, którą można skonfigurować przez konsolę zarządzania > Amazon Cognito User pools lub aws cli. Pamiętaj, że identyfikator puli użytkowników można znaleźć w CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
@@ -14,8 +14,8 @@ Administratorzy mogą teraz oznaczać boty publiczne jako "Niezbędne". Boty ozn
 
 - Bot Asystent HR: Pomaga pracownikom w kwestiach i zadaniach związanych z HR.
 - Bot Wsparcia IT: Zapewnia pomoc w wewnętrznych kwestiach technicznych i zarządzaniu kontami.
-- Bot Przewodnika po Zasadach Wewnętrznych: Odpowiada na często zadawane pytania dotyczące zasad obecności, polityki bezpieczeństwa i innych regulacji wewnętrznych.
-- Bot Wdrażający Nowych Pracowników: Przeprowadza nowych pracowników przez procedury i obsługę systemów w ich pierwszym dniu pracy.
+- Bot Przewodnik po Polityce Wewnętrznej: Odpowiada na często zadawane pytania dotyczące zasad obecności, polityki bezpieczeństwa i innych regulacji wewnętrznych.
+- Bot Wdrażający Nowych Pracowników: Przeprowadza nowych pracowników przez procedury i użytkowanie systemów w pierwszym dniu pracy.
 - Bot Informacji o Świadczeniach: Wyjaśnia programy świadczeń pracowniczych i usługi socjalne.
 
 ![](./imgs/admin_bot_menue.png)
@@ -23,23 +23,23 @@ Administratorzy mogą teraz oznaczać boty publiczne jako "Niezbędne". Boty ozn
 
 ## Pętla informacji zwrotnej
 
-Wynik z LLM może nie zawsze spełniać oczekiwania użytkownika. Czasami nie zaspokaja potrzeb użytkownika. Aby skutecznie "zintegrować" LLM z działalnością biznesową i codziennym życiem, niezbędne jest wdrożenie pętli informacji zwrotnej. Bedrock Chat jest wyposażony w funkcję feedbacku zaprojektowaną tak, aby umożliwić użytkownikom analizę przyczyn niezadowolenia. Na podstawie wyników analizy użytkownicy mogą odpowiednio dostosować prompty, źródła danych RAG i parametry.
+Wyniki generowane przez LLM nie zawsze mogą spełniać oczekiwania użytkownika. Czasami nie zaspokajają one potrzeb użytkownika. Aby skutecznie "zintegrować" modele LLM z działalnością biznesową i codziennym życiem, niezbędne jest wdrożenie pętli informacji zwrotnej. Bedrock Chat jest wyposażony w funkcję przekazywania informacji zwrotnej, zaprojektowaną tak, aby umożliwić użytkownikom analizę przyczyn niezadowolenia. Na podstawie wyników analizy użytkownicy mogą odpowiednio dostosować polecenia, źródła danych RAG i parametry.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Analitycy danych mogą uzyskać dostęp do logów konwersacji za pomocą [Amazon Athena](https://aws.amazon.com/jp/athena/). Jeśli chcą analizować dane przy użyciu [Jupyter Notebook](https://jupyter.org/), [ten przykładowy notebook](../examples/notebooks/feedback_analysis_example.ipynb) może służyć jako punkt odniesienia.
+Analitycy danych mogą uzyskać dostęp do logów konwersacji za pomocą [Amazon Athena](https://aws.amazon.com/jp/athena/). Jeśli chcą analizować dane za pomocą [Jupyter Notebook](https://jupyter.org/), [ten przykładowy notebook](../examples/notebooks/feedback_analysis_example.ipynb) może służyć jako punkt odniesienia.
 
-## Panel główny
+## Panel kontrolny
 
-Aktualnie zapewnia podstawowy przegląd wykorzystania chatbotów i użytkowników, koncentrując się na agregowaniu danych dla każdego bota i użytkownika w określonych przedziałach czasowych oraz sortowaniu wyników według opłat za użytkowanie.
+Aktualnie zapewnia podstawowy przegląd wykorzystania chatbotów i użytkowników, koncentrując się na agregacji danych dla każdego bota i użytkownika w określonych okresach czasu oraz sortowaniu wyników według opłat za użytkowanie.
 
 ![](./imgs/admin_bot_analytics.png)
 
 ## Uwagi
 
-- Jak określono w [architekturze](../README.md#architecture), funkcje administracyjne będą odwoływać się do bucketu S3 wyeksportowanego z DynamoDB. Należy pamiętać, że ponieważ eksport jest wykonywany raz na godzinę, najnowsze rozmowy mogą nie być widoczne natychmiast.
+- Jak określono w [architekturze](../README.md#architecture), funkcje administracyjne będą odnosić się do bucketu S3 wyeksportowanego z DynamoDB. Należy pamiętać, że ponieważ eksport jest wykonywany raz na godzinę, najnowsze rozmowy mogą nie być widoczne od razu.
 
 - W przypadku publicznego wykorzystania botów, boty które nie były w ogóle używane w określonym okresie nie będą wyświetlane na liście.
 
@@ -62,9 +62,9 @@ Aktualnie zapewnia podstawowy przegląd wykorzystania chatbotów i użytkownikó
 
 Możesz przeszukiwać logi konwersacji za pomocą Atheny, używając SQL. Aby pobrać logi, otwórz Edytor Zapytań Athena z konsoli zarządzania i uruchom zapytanie SQL. Poniżej znajdują się przykładowe zapytania przydatne do analizy przypadków użycia. Informacje zwrotne można znaleźć w atrybucie `MessageMap`.
 
-### Zapytanie według ID bota
+### Zapytanie według ID Bota
 
-Edytuj `bot-id` i `datehour`. `bot-id` można znaleźć na ekranie Bot Management, do którego można uzyskać dostęp z Bot Publish APIs, wyświetlanych na lewym pasku bocznym. Zwróć uwagę na końcową część adresu URL, np. `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Edytuj `bot-id` i `datehour`. `bot-id` można znaleźć na ekranie Zarządzania Botem, do którego można uzyskać dostęp z Bot Publish APIs, wyświetlanych w lewym pasku bocznym. Zwróć uwagę na końcową część adresu URL, np. `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -87,11 +87,11 @@ ORDER BY
 ```
 
 > [!Note]
-> Jeśli używasz nazwanego środowiska (np. "dev"), zamień `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
+> Jeśli używasz nazwanego środowiska (np. "dev"), zastąp `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
 
-### Zapytanie według ID użytkownika
+### Zapytanie według ID Użytkownika
 
-Edytuj `user-id` i `datehour`. `user-id` można znaleźć na ekranie Bot Management.
+Edytuj `user-id` i `datehour`. `user-id` można znaleźć na ekranie Zarządzania Botem.
 
 > [!Note]
 > Analityka użytkowania użytkowników będzie dostępna wkrótce.
@@ -117,4 +117,4 @@ ORDER BY
 ```
 
 > [!Note]
-> Jeśli używasz nazwanego środowiska (np. "dev"), zamień `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.
+> Jeśli używasz nazwanego środowiska (np. "dev"), zastąp `bedrockchatstack_usage_analysis.ddb_export` na `dev_bedrockchatstack_usage_analysis.dev_ddb_export` w powyższym zapytaniu.

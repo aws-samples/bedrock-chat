@@ -6,7 +6,7 @@ Se [backend/README](../backend/README_nb-NO.md).
 
 ## Frontend-utvikling
 
-I dette eksempelet kan du lokalt endre og starte frontend ved å bruke AWS-ressurser (`API Gateway`, `Cognito`, osv.) som har blitt distribuert med `npx cdk deploy`.
+I dette eksempelet kan du lokalt modifisere og starte frontend-en ved hjelp av AWS-ressurser (`API Gateway`, `Cognito`, osv.) som har blitt distribuert med `npx cdk deploy`.
 
 1. Se [Deploy using CDK](../README.md#deploy-using-cdk) for distribusjon i AWS-miljøet.
 2. Kopier `frontend/.env.template` og lagre den som `frontend/.env.local`.
@@ -17,9 +17,9 @@ I dette eksempelet kan du lokalt endre og starte frontend ved å bruke AWS-ressu
 cd frontend && npm ci && npm run dev
 ```
 
-## (Valgfritt, anbefalt) Oppsett av pre-commit hook
+## (Valgfritt, anbefalt) Konfigurer pre-commit hook
 
-Vi har innført GitHub-arbeidsflyter for typekontroll og linting. Disse kjøres når en Pull Request opprettes, men å vente på at lintingen skal fullføres før man går videre gir ikke en god utvikleropplevelse. Derfor bør disse linting-oppgavene utføres automatisk på commit-stadiet. Vi har innført [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) som en mekanisme for å oppnå dette. Det er ikke obligatorisk, men vi anbefaler å ta det i bruk for en effektiv utvikleropplevelse. I tillegg, selv om vi ikke håndhever TypeScript-formatering med [Prettier](https://prettier.io/), ville vi sette pris på om du kunne bruke det når du bidrar, da det bidrar til å forhindre unødvendige forskjeller under kodegjennomganger.
+Vi har innført GitHub-arbeidsflyter for typekontroll og linting. Disse kjøres når en Pull Request opprettes, men å vente på at lintingen skal fullføres før man går videre er ikke en god utvikleropplevelse. Derfor bør disse linting-oppgavene utføres automatisk på commit-stadiet. Vi har innført [Lefthook](https://github.com/evilmartians/lefthook?tab=readme-ov-file#install) som en mekanisme for å oppnå dette. Det er ikke obligatorisk, men vi anbefaler å ta det i bruk for en effektiv utvikleropplevelse. I tillegg, selv om vi ikke håndhever TypeScript-formatering med [Prettier](https://prettier.io/), ville vi sette pris på om du kunne bruke det når du bidrar, da det hjelper med å forhindre unødvendige forskjeller under kodegjennomganger.
 
 ### Installer lefthook
 
@@ -37,7 +37,7 @@ pip install poetry
 poetry install
 ```
 
-For mer informasjon, vennligst sjekk [backend README](../backend/README_nb-NO.md).
+For mer informasjon, se [backend README](../backend/README_nb-NO.md).
 
 ### Opprett en pre-commit hook
 

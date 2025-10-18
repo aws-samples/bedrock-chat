@@ -4,7 +4,7 @@
 
 1. Ve a la Consola de Desarrolladores de Google.
 2. Crea un nuevo proyecto o selecciona uno existente.
-3. Navega a "Credenciales", luego haz clic en "Crear credenciales" y elige "ID de cliente OAuth".
+3. Navega a "Credenciales", luego haz clic en "Crear Credenciales" y elige "ID de cliente OAuth".
 4. Configura la pantalla de consentimiento si se te solicita.
 5. Para el tipo de aplicación, selecciona "Aplicación web".
 6. Deja el URI de redirección en blanco por ahora para configurarlo más tarde, y guarda temporalmente.[Ver Paso 5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
@@ -52,11 +52,11 @@ de esta manera:
 
 ### Atención
 
-#### Unicidad
+#### Exclusividad
 
-El userPoolDomainPrefix debe ser globalmente único entre todos los usuarios de Amazon Cognito. Si eliges un prefijo que ya está en uso por otra cuenta de AWS, la creación del dominio del grupo de usuarios fallará. Es una buena práctica incluir identificadores, nombres de proyecto o nombres de entorno en el prefijo para garantizar la unicidad.
+El userPoolDomainPrefix debe ser globalmente único entre todos los usuarios de Amazon Cognito. Si eliges un prefijo que ya está en uso por otra cuenta de AWS, la creación del dominio del grupo de usuarios fallará. Es una buena práctica incluir identificadores, nombres de proyectos o nombres de entorno en el prefijo para garantizar la exclusividad.
 
-## Paso 4: Desplegar Tu Stack de CDK
+## Paso 4: Desplegar tu Stack de CDK
 
 Despliega tu stack de CDK en AWS:
 

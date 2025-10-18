@@ -13,17 +13,17 @@
 
 
 Una plataforma de IA generativa multilingüe impulsada por [Amazon Bedrock](https://aws.amazon.com/bedrock/).
-Admite chat, bots personalizados con conocimiento (RAG), compartición de bots a través de una tienda de bots y automatización de tareas mediante agentes.
+Soporta chat, bots personalizados con conocimiento (RAG), compartición de bots a través de una tienda de bots y automatización de tareas usando agentes.
 
 ![](./imgs/demo.gif)
 
 > [!Warning]
 >
-> **V3 lanzada. Para actualizar, por favor revise cuidadosamente la [guía de migración](./migration/V2_TO_V3_es-ES.md).** Sin el debido cuidado, **LOS BOTS DE V2 QUEDARÁN INUTILIZABLES.**
+> **V3 lanzada. Para actualizar, por favor revisa cuidadosamente la [guía de migración](./migration/V2_TO_V3_es-ES.md).** Sin el debido cuidado, **LOS BOTS DE V2 QUEDARÁN INUTILIZABLES.**
 
 ### Personalización de Bots / Tienda de bots
 
-Añade tus propias instrucciones y conocimiento (también conocido como [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). El bot puede compartirse entre los usuarios de la aplicación a través del mercado de la tienda de bots. El bot personalizado también puede publicarse como una API independiente (Ver los [detalles](./PUBLISH_API_es-ES.md)).
+Añade tus propias instrucciones y conocimiento (también conocido como [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). El bot puede ser compartido entre los usuarios de la aplicación a través del mercado de la tienda de bots. El bot personalizado también puede ser publicado como una API independiente (Ver los [detalles](./PUBLISH_API_es-ES.md)).
 
 <details>
 <summary>Capturas de pantalla</summary>
@@ -81,7 +81,7 @@ Mediante el uso de la [funcionalidad de Agente](./AGENT_es-ES.md), tu chatbot pu
 
 ### Regiones soportadas
 
-Asegúrate de implementar Bedrock Chat en una región [donde OpenSearch Serverless y las APIs de Ingestion estén disponibles](https://docs.aws.amazon.com/general/latest/gr/opensearch-service.html), si deseas usar bots y crear bases de conocimiento (OpenSearch Serverless es la opción predeterminada). A partir de agosto de 2025, las siguientes regiones están soportadas: us-east-1, us-east-2, us-west-1, us-west-2, ap-south-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ca-central-1, eu-central-1, eu-west-1, eu-west-2, eu-south-2, eu-north-1, sa-east-1
+Asegúrate de implementar Bedrock Chat en una región [donde OpenSearch Serverless y las APIs de Ingestion estén disponibles](https://docs.aws.amazon.com/general/latest/gr/opensearch-service.html), si deseas usar bots y crear bases de conocimiento (OpenSearch Serverless es la opción predeterminada). A partir de agosto de 2025, las siguientes regiones son compatibles: us-east-1, us-east-2, us-west-1, us-west-2, ap-south-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ca-central-1, eu-central-1, eu-west-1, eu-west-2, eu-south-2, eu-north-1, sa-east-1
 
 Para el parámetro **bedrock-region** necesitas elegir una región [donde Bedrock esté disponible](https://docs.aws.amazon.com/general/latest/gr/bedrock.html).
 
@@ -95,18 +95,18 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- Se te preguntará si eres un usuario nuevo o si estás usando v3. Si no eres un usuario que continúa desde v0, ingresa `y`.
+- Se te preguntará si eres un nuevo usuario o si usas v3. Si no eres un usuario que continúa desde v0, ingresa `y`.
 
 ### Parámetros Opcionales
 
 Puedes especificar los siguientes parámetros durante la implementación para mejorar la seguridad y personalización:
 
-- **--disable-self-register**: Deshabilita el auto-registro (habilitado por defecto). Si se establece esta bandera, necesitarás crear todos los usuarios en cognito y no permitirá que los usuarios auto-registren sus cuentas.
+- **--disable-self-register**: Deshabilita el auto-registro (habilitado por defecto). Si se establece esta bandera, necesitarás crear todos los usuarios en cognito y no permitirá que los usuarios registren sus cuentas por sí mismos.
 - **--enable-lambda-snapstart**: Habilita [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (deshabilitado por defecto). Si se establece esta bandera, mejora los tiempos de inicio en frío para las funciones Lambda, proporcionando tiempos de respuesta más rápidos para una mejor experiencia de usuario.
 - **--ipv4-ranges**: Lista separada por comas de rangos IPv4 permitidos. (por defecto: permite todas las direcciones ipv4)
 - **--ipv6-ranges**: Lista separada por comas de rangos IPv6 permitidos. (por defecto: permite todas las direcciones ipv6)
 - **--disable-ipv6**: Deshabilita las conexiones a través de IPv6. (habilitado por defecto)
-- **--allowed-signup-email-domains**: Lista separada por comas de dominios de correo electrónico permitidos para registro. (por defecto: sin restricción de dominio)
+- **--allowed-signup-email-domains**: Lista separada por comas de dominios de correo electrónico permitidos para el registro. (por defecto: sin restricción de dominio)
 - **--bedrock-region**: Define la región donde Bedrock está disponible. (por defecto: us-east-1)
 - **--repo-url**: El repositorio personalizado de Bedrock Chat a implementar, si está bifurcado o tiene control de fuente personalizado. (por defecto: https://github.com/aws-samples/bedrock-chat.git)
 - **--version**: La versión de Bedrock Chat a implementar. (por defecto: última versión en desarrollo)
@@ -149,7 +149,7 @@ La anulación JSON debe seguir la misma estructura que cdk.json. Puedes sobrescr
 - Y otros valores de contexto definidos en cdk.json
 
 > [!Note]
-> Los valores de anulación se combinarán con la configuración existente de cdk.json durante el tiempo de implementación en AWS code build. Los valores especificados en la anulación tendrán prioridad sobre los valores en cdk.json.
+> Los valores de anulación se fusionarán con la configuración existente de cdk.json durante el tiempo de implementación en AWS code build. Los valores especificados en la anulación tendrán prioridad sobre los valores en cdk.json.
 
 #### Ejemplo de comando con parámetros:
 
@@ -179,21 +179,21 @@ Es una arquitectura construida sobre servicios gestionados de AWS, eliminando la
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): Base de datos NoSQL para almacenamiento del historial de conversaciones
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Punto de conexión de API backend ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
-- [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Entrega de aplicación frontend ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
+- [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Entrega de aplicaciones frontend ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): Restricción de direcciones IP
 - [Amazon Cognito](https://aws.amazon.com/cognito/): Autenticación de usuarios
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Servicio gestionado para utilizar modelos fundamentales a través de APIs
 - [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Proporciona una interfaz gestionada para la Generación Aumentada por Recuperación ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), ofreciendo servicios para incrustar y analizar documentos
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Recepción de eventos desde el flujo de DynamoDB y lanzamiento de Step Functions para incorporar conocimiento externo
-- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orquestación del pipeline de ingesta para incorporar conocimiento externo en Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Sirve como base de datos backend para Bedrock Knowledge Bases, proporcionando búsqueda de texto completo y búsqueda vectorial, permitiendo una recuperación precisa de información relevante
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Recepción de eventos desde el flujo de DynamoDB y lanzamiento de Step Functions para incrustar conocimiento externo
+- [AWS Step Functions](https://aws.amazon.com/step-functions/): Orquestación del pipeline de ingesta para incrustar conocimiento externo en Bedrock Knowledge Bases
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Funciona como la base de datos backend para Bedrock Knowledge Bases, proporcionando búsqueda de texto completo y búsqueda vectorial, permitiendo la recuperación precisa de información relevante
 - [Amazon Athena](https://aws.amazon.com/athena/): Servicio de consultas para analizar buckets S3
 
 ![](./imgs/arch.png)
 
 ## Despliegue usando CDK
 
-El despliegue super fácil utiliza [AWS CodeBuild](https://aws.amazon.com/codebuild/) para realizar el despliegue mediante CDK internamente. Esta sección describe el procedimiento para desplegar directamente con CDK.
+El despliegue súper fácil utiliza [AWS CodeBuild](https://aws.amazon.com/codebuild/) para realizar el despliegue mediante CDK internamente. Esta sección describe el procedimiento para desplegar directamente con CDK.
 
 - Por favor, tenga UNIX, Docker y un entorno de ejecución Node.js.
 
@@ -221,7 +221,7 @@ npm ci
   - `enableLambdaSnapStart`: Por defecto es true. Establecer en false si se despliega en una [región que no soporta Lambda SnapStart para funciones Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
   - `globalAvailableModels`: Por defecto son todos. Si se establece (lista de IDs de modelos), permite controlar globalmente qué modelos aparecen en los menús desplegables en todos los chats para todos los usuarios y durante la creación de bots en la aplicación Bedrock Chat.
   - `logoPath`: Ruta relativa bajo `frontend/public` que apunta a la imagen mostrada en la parte superior del cajón de la aplicación.
-Los siguientes IDs de modelos son soportados (asegúrese de que también estén habilitados en la consola de Bedrock bajo Model access en su región de despliegue):
+Los siguientes IDs de modelos son soportados (asegúrese de que también estén habilitados en la consola de Bedrock bajo Acceso a modelos en su región de despliegue):
 - **Modelos Claude:** `claude-v4-opus`, `claude-v4.1-opus`, `claude-v4-sonnet`, `claude-v3.5-sonnet`, `claude-v3.5-sonnet-v2`, `claude-v3.7-sonnet`, `claude-v3.5-haiku`, `claude-v3-haiku`, `claude-v3-opus`
 - **Modelos Amazon Nova:** `amazon-nova-pro`, `amazon-nova-lite`, `amazon-nova-micro`
 - **Modelos Mistral:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
@@ -323,9 +323,9 @@ bedrockChatParams.set("prod", {
 
 ### Desplegando Múltiples Entornos
 
-Puede desplegar múltiples entornos desde el mismo código base usando el archivo `parameter.ts` y la opción `-c envName`.
+Puede desplegar múltiples entornos desde la misma base de código usando el archivo `parameter.ts` y la opción `-c envName`.
 
-#### Prerequisitos
+#### Prerrequisitos
 
 1. Defina sus entornos en `parameter.ts` como se mostró anteriormente
 2. Cada entorno tendrá su propio conjunto de recursos con prefijos específicos del entorno
@@ -342,7 +342,7 @@ npx cdk deploy --all -c envName=dev
 npx cdk deploy --all -c envName=prod
 ```
 
-Si no se especifica un entorno, se usa el entorno "default":
+Si no se especifica ningún entorno, se usa el entorno "default":
 
 ```bash
 # Desplegar el entorno predeterminado
@@ -353,15 +353,15 @@ npx cdk deploy --all
 
 1. **Nomenclatura de Stacks**:
 
-   - Los stacks principales para cada entorno tendrán el prefijo del nombre del entorno (ej., `dev-BedrockChatStack`, `prod-BedrockChatStack`)
+   - Los stacks principales para cada entorno tendrán el prefijo del nombre del entorno (por ejemplo, `dev-BedrockChatStack`, `prod-BedrockChatStack`)
    - Sin embargo, los stacks de bots personalizados (`BrChatKbStack*`) y los stacks de publicación de API (`ApiPublishmentStack*`) no reciben prefijos de entorno ya que se crean dinámicamente en tiempo de ejecución
 
 2. **Nomenclatura de Recursos**:
 
-   - Solo algunos recursos reciben prefijos de entorno en sus nombres (ej., `dev_ddb_export` tabla, `dev-FrontendWebAcl`)
+   - Solo algunos recursos reciben prefijos de entorno en sus nombres (por ejemplo, tabla `dev_ddb_export`, `dev-FrontendWebAcl`)
    - La mayoría de los recursos mantienen sus nombres originales pero están aislados al estar en diferentes stacks
 
-3. **Identificación del Entorno**:
+3. **Identificación de Entorno**:
 
    - Todos los recursos están etiquetados con una etiqueta `CDKEnvironment` que contiene el nombre del entorno
    - Puede usar esta etiqueta para identificar a qué entorno pertenece un recurso
@@ -369,7 +369,7 @@ npx cdk deploy --all
 
 4. **Anulación del Entorno Predeterminado**: Si define un entorno "default" en `parameter.ts`, anulará la configuración en `cdk.json`. Para continuar usando `cdk.json`, no defina un entorno "default" en `parameter.ts`.
 
-5. **Requisitos del Entorno**: Para crear entornos diferentes al "default", debe usar `parameter.ts`. La opción `-c envName` por sí sola no es suficiente sin las definiciones de entorno correspondientes.
+5. **Requisitos de Entorno**: Para crear entornos diferentes al "default", debe usar `parameter.ts`. La opción `-c envName` por sí sola no es suficiente sin las definiciones de entorno correspondientes.
 
 6. **Aislamiento de Recursos**: Cada entorno crea su propio conjunto de recursos, permitiéndole tener entornos de desarrollo, prueba y producción en la misma cuenta de AWS sin conflictos.
 
@@ -379,7 +379,7 @@ Puedes definir parámetros para tu despliegue de dos formas: usando `cdk.json` o
 
 #### Usando cdk.json (Método Tradicional)
 
-La forma tradicional de configurar parámetros es editando el archivo `cdk.json`. Este enfoque es simple pero carece de verificación de tipos:
+La forma tradicional de configurar parámetros es editando el archivo `cdk.json`. Este enfoque es simple pero carece de comprobación de tipos:
 
 ```json
 {
@@ -420,7 +420,7 @@ bedrockChatParams.set("prod", {
 ```
 
 > [!Note]
-> Los usuarios existentes pueden continuar usando `cdk.json` sin cambios. El enfoque de `parameter.ts` se recomienda para nuevos despliegues o cuando necesites gestionar múltiples entornos.
+> Los usuarios existentes pueden continuar usando `cdk.json` sin cambios. El enfoque de `parameter.ts` se recomienda para nuevos despliegues o cuando necesitas gestionar múltiples entornos.
 
 ### Desplegando Múltiples Entornos
 
@@ -428,7 +428,7 @@ Puedes desplegar múltiples entornos desde el mismo código base usando el archi
 
 #### Requisitos Previos
 
-1. Define tus entornos en `parameter.ts` como se mostró arriba
+1. Define tus entornos en `parameter.ts` como se mostró anteriormente
 2. Cada entorno tendrá su propio conjunto de recursos con prefijos específicos del entorno
 
 #### Comandos de Despliegue
@@ -455,7 +455,7 @@ npx cdk deploy --all
 1. **Nomenclatura de Stacks**:
 
    - Los stacks principales para cada entorno tendrán el prefijo del nombre del entorno (ej., `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - Sin embargo, los stacks de bot personalizados (`BrChatKbStack*`) y los stacks de publicación de API (`ApiPublishmentStack*`) no reciben prefijos de entorno ya que se crean dinámicamente en tiempo de ejecución
+   - Sin embargo, los stacks de bots personalizados (`BrChatKbStack*`) y los stacks de publicación de API (`ApiPublishmentStack*`) no reciben prefijos de entorno ya que se crean dinámicamente en tiempo de ejecución
 
 2. **Nomenclatura de Recursos**:
 
@@ -470,7 +470,7 @@ npx cdk deploy --all
 
 4. **Anulación del Entorno por Defecto**: Si defines un entorno "default" en `parameter.ts`, anulará la configuración en `cdk.json`. Para seguir usando `cdk.json`, no definas un entorno "default" en `parameter.ts`.
 
-5. **Requisitos de Entorno**: Para crear entornos distintos al "default", debes usar `parameter.ts`. La opción `-c envName` por sí sola no es suficiente sin las definiciones de entorno correspondientes.
+5. **Requisitos de Entorno**: Para crear entornos diferentes al "default", debes usar `parameter.ts`. La opción `-c envName` por sí sola no es suficiente sin las definiciones de entorno correspondientes.
 
 6. **Aislamiento de Recursos**: Cada entorno crea su propio conjunto de recursos, permitiéndote tener entornos de desarrollo, pruebas y producción en la misma cuenta de AWS sin conflictos.
 
@@ -478,17 +478,17 @@ npx cdk deploy --all
 
 ### Eliminar recursos
 
-Si está utilizando cli y CDK, por favor ejecute `npx cdk destroy`. Si no, acceda a [CloudFormation](https://console.aws.amazon.com/cloudformation/home) y elimine manualmente `BedrockChatStack` y `FrontendWafStack`. Tenga en cuenta que `FrontendWafStack` está en la región `us-east-1`.
+Si está usando cli y CDK, por favor ejecute `npx cdk destroy`. Si no, acceda a [CloudFormation](https://console.aws.amazon.com/cloudformation/home) y elimine manualmente `BedrockChatStack` y `FrontendWafStack`. Tenga en cuenta que `FrontendWafStack` está en la región `us-east-1`.
 
 ### Configuración de idioma
 
-Este recurso detecta automáticamente el idioma usando [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Puede cambiar de idioma desde el menú de la aplicación. Alternativamente, puede usar Query String para establecer el idioma como se muestra a continuación.
+Este recurso detecta automáticamente el idioma usando [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). Puede cambiar el idioma desde el menú de la aplicación. Alternativamente, puede usar Query String para establecer el idioma como se muestra a continuación.
 
 > `https://example.com?lng=ja`
 
 ### Deshabilitar el registro automático
 
-Esta muestra tiene el registro automático habilitado por defecto. Para deshabilitarlo, abra [cdk.json](./cdk/cdk.json) y cambie `selfSignUpEnabled` a `false`. Si configura un [proveedor de identidad externo](#external-identity-provider), este valor será ignorado y deshabilitado automáticamente.
+Esta muestra tiene el registro automático habilitado por defecto. Para deshabilitarlo, abra [cdk.json](./cdk/cdk.json) y cambie `selfSignUpEnabled` a `false`. Si configura un [proveedor de identidad externo](#external-identity-provider), este valor será ignorado y automáticamente deshabilitado.
 
 ### Restringir dominios para direcciones de correo electrónico de registro
 
@@ -504,11 +504,11 @@ Esta muestra admite proveedores de identidad externos. Actualmente soportamos [G
 
 ### WAF Frontend opcional
 
-Para las distribuciones de CloudFront, los WebACLs de AWS WAF deben crearse en la región us-east-1. En algunas organizaciones, la creación de recursos fuera de la región principal está restringida por políticas. En tales entornos, el despliegue de CDK puede fallar al intentar aprovisionar el WAF Frontend en us-east-1.
+Para las distribuciones de CloudFront, los WebACLs de AWS WAF deben crearse en la región us-east-1. En algunas organizaciones, la creación de recursos fuera de la región principal está restringida por políticas. En tales entornos, la implementación de CDK puede fallar al intentar aprovisionar el WAF Frontend en us-east-1.
 
-Para adaptarse a estas restricciones, el stack del WAF Frontend es opcional. Cuando está deshabilitado, la distribución de CloudFront se despliega sin WebACL. Esto significa que no tendrá controles de permitir/denegar IP en el frontend edge. La autenticación y todos los demás controles de la aplicación siguen funcionando como de costumbre. Tenga en cuenta que esta configuración solo afecta al WAF Frontend (ámbito de CloudFront); el WAF de la API Publicada (regional) no se ve afectado.
+Para acomodar estas restricciones, el stack de WAF Frontend es opcional. Cuando está deshabilitado, la distribución de CloudFront se implementa sin WebACL. Esto significa que no tendrá controles de permitir/denegar IP en el frontend. La autenticación y todos los demás controles de la aplicación siguen funcionando normalmente. Tenga en cuenta que esta configuración solo afecta al WAF Frontend (alcance CloudFront); el WAF de API Publicada (regional) no se ve afectado.
 
-Para deshabilitar el WAF Frontend, establezca lo siguiente en `parameter.ts` (Método recomendado con seguridad de tipos):
+Para deshabilitar el WAF Frontend establezca lo siguiente en `parameter.ts` (Método recomendado con seguridad de tipos):
 
 ```ts
 bedrockChatParams.set("default", {
@@ -516,13 +516,13 @@ bedrockChatParams.set("default", {
 });
 ```
 
-O si usa el legacy `cdk/cdk.json` establezca lo siguiente:
+O si usa el `cdk/cdk.json` heredado, establezca lo siguiente:
 
 ```json
 "enableFrontendWaf": false
 ```
 
-### Añadir nuevos usuarios a grupos automáticamente
+### Agregar nuevos usuarios a grupos automáticamente
 
 Esta muestra tiene los siguientes grupos para dar permisos a los usuarios:
 
@@ -551,9 +551,9 @@ Esta es una configuración a nivel de cuenta/región, que afecta a toda la aplic
 > [!Note]
 > A partir de junio de 2024, Amazon OpenSearch Serverless admite 0.5 OCU, reduciendo los costos de entrada para cargas de trabajo a pequeña escala. Las implementaciones de producción pueden comenzar con 2 OCUs, mientras que las cargas de trabajo de desarrollo/prueba pueden usar 1 OCU. OpenSearch Serverless escala automáticamente según las demandas de carga de trabajo. Para más detalles, visite el [anuncio](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/).
 
-### Configurar Bot Store
+### Configurar la tienda de bots
 
-La función de bot store permite a los usuarios compartir y descubrir bots personalizados. Puede configurar la bot store a través de las siguientes configuraciones en [cdk.json](./cdk/cdk.json):
+La función de tienda de bots permite a los usuarios compartir y descubrir bots personalizados. Puede configurar la tienda de bots a través de las siguientes configuraciones en [cdk.json](./cdk/cdk.json):
 
 ```json
 {
@@ -565,22 +565,31 @@ La función de bot store permite a los usuarios compartir y descubrir bots perso
 }
 ```
 
-- **enableBotStore**: Controla si la función de bot store está habilitada (por defecto: `true`)
-- **botStoreLanguage**: Establece el idioma principal para la búsqueda y descubrimiento de bots (por defecto: `"en"`). Esto afecta cómo se indexan y buscan los bots en la bot store, optimizando el análisis de texto para el idioma especificado.
-- **enableBotStoreReplicas**: Controla si las réplicas en espera están habilitadas para la colección OpenSearch Serverless utilizada por la bot store (por defecto: `false`). Establecerlo en `true` mejora la disponibilidad pero aumenta los costos, mientras que `false` reduce los costos pero puede afectar la disponibilidad.
+- **enableBotStore**: Controla si la función de tienda de bots está habilitada (por defecto: `true`)
+- **botStoreLanguage**: Establece el idioma principal para la búsqueda y descubrimiento de bots (por defecto: `"en"`). Esto afecta cómo se indexan y buscan los bots en la tienda, optimizando el análisis de texto para el idioma especificado.
+- **enableBotStoreReplicas**: Controla si las réplicas en espera están habilitadas para la colección OpenSearch Serverless utilizada por la tienda de bots (por defecto: `false`). Establecerlo en `true` mejora la disponibilidad pero aumenta los costos, mientras que `false` reduce los costos pero puede afectar la disponibilidad.
   > **Importante**: No puede actualizar esta propiedad después de que la colección ya esté creada. Si intenta modificar esta propiedad, la colección continuará usando el valor original.
 
-### Inferencia entre regiones
+### Inferencia entre regiones y global
 
-La [inferencia entre regiones](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) permite que Amazon Bedrock enrute dinámicamente las solicitudes de inferencia de modelos a través de múltiples regiones de AWS, mejorando el rendimiento y la resistencia durante períodos de alta demanda. Para configurar, edite `cdk.json`.
+[La inferencia entre regiones y global](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html)
+permite que Amazon Bedrock enrute dinámicamente las solicitudes de inferencia de modelos a través de
+múltiples regiones de AWS, mejorando el rendimiento y la resistencia durante períodos de alta demanda.
+La inferencia global enruta las solicitudes a la región óptima basándose en la latencia y disponibilidad
+en cualquier parte del mundo, mientras que la inferencia entre regiones enruta las solicitudes dentro de
+la misma región de AWS, por ejemplo, dentro de EE.UU. Algunos SCPs pueden restringir una u otra o ambas,
+por lo tanto, puede configurarlas independientemente. Por defecto, ambas están habilitadas.
+
+Para configurar, cambie las siguientes configuraciones en `cdk.json` o `parameters.ts`:
 
 ```json
-"enableBedrockCrossRegionInference": true
+"enableBedrockGlobalInference": false,
+"enableBedrockCrossRegionInference": false,
 ```
 
 ### Lambda SnapStart
 
-[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) mejora los tiempos de inicio en frío para las funciones Lambda, proporcionando tiempos de respuesta más rápidos para una mejor experiencia de usuario. Por otro lado, para funciones Python, hay un [cargo dependiendo del tamaño de la caché](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) y [no está disponible en algunas regiones](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) actualmente. Para deshabilitar SnapStart, edite `cdk.json`.
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) mejora los tiempos de inicio en frío de las funciones Lambda, proporcionando tiempos de respuesta más rápidos para una mejor experiencia de usuario. Por otro lado, para funciones Python, hay un [cargo dependiendo del tamaño del caché](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) y [no está disponible en algunas regiones](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) actualmente. Para deshabilitar SnapStart, edite `cdk.json`.
 
 ```json
 "enableLambdaSnapStart": false
@@ -598,16 +607,16 @@ Puede configurar un dominio personalizado para la distribución de CloudFront es
 ```
 
 - `alternateDomainName`: El nombre de dominio personalizado para su aplicación de chat (ej., chat.example.com)
-- `hostedZoneId`: El ID de su zona alojada en Route 53 donde se crearán los registros DNS
+- `hostedZoneId`: El ID de su zona alojada en Route 53 donde se crearán los registros de dominio
 
-Cuando se proporcionan estos parámetros, el despliegue automáticamente:
+Cuando se proporcionan estos parámetros, la implementación automáticamente:
 
 - Creará un certificado ACM con validación DNS en la región us-east-1
 - Creará los registros DNS necesarios en su zona alojada de Route 53
 - Configurará CloudFront para usar su dominio personalizado
 
 > [!Note]
-> El dominio debe estar gestionado por Route 53 en su cuenta de AWS. El ID de la zona alojada se puede encontrar en la consola de Route 53.
+> El dominio debe ser gestionado por Route 53 en su cuenta de AWS. El ID de la zona alojada se puede encontrar en la consola de Route 53.
 
 ### Configurar países permitidos (restricción geográfica)
 
@@ -643,13 +652,13 @@ Si se deja sin establecer, el soporte IPv6 estará habilitado por defecto.
 
 ### Desarrollo local
 
-Ver [LOCAL DEVELOPMENT](./LOCAL_DEVELOPMENT_es-ES.md).
+Vea [LOCAL DEVELOPMENT](./LOCAL_DEVELOPMENT_es-ES.md).
 
 ### Contribución
 
 ¡Gracias por considerar contribuir a este repositorio! Damos la bienvenida a correcciones de errores, traducciones de idiomas (i18n), mejoras de funcionalidades, [herramientas de agente](./docs/AGENT.md#how-to-develop-your-own-tools), y otras mejoras.
 
-Para mejoras de funcionalidades y otras mejoras, **antes de crear un Pull Request, agradeceríamos mucho si pudiera crear un Issue de Solicitud de Funcionalidad para discutir el enfoque de implementación y los detalles. Para correcciones de errores y traducciones de idiomas (i18n), proceda a crear un Pull Request directamente.**
+Para mejoras de funcionalidades y otras mejoras, **antes de crear un Pull Request, agradeceríamos mucho si pudiera crear un Issue de Solicitud de Funcionalidad para discutir el enfoque de implementación y los detalles. Para correcciones de errores y traducciones de idiomas (i18n), proceda directamente con la creación de un Pull Request.**
 
 Por favor, también revise las siguientes pautas antes de contribuir:
 
@@ -662,15 +671,15 @@ Por favor, también revise las siguientes pautas antes de contribuir:
 - [Yusuke Wada](https://github.com/wadabee)
 - [Yukinobu Mine](https://github.com/Yukinobu-Mine)
 
-## 🏆 Contribuyentes Destacados
+## 🏆 Contribuidores Destacados
 
 - [fsatsuki](https://github.com/fsatsuki)
 - [k70suK3-k06a7ash1](https://github.com/k70suK3-k06a7ash1)
 
 ## Colaboradores
 
-[![bedrock chat contributors](https://contrib.rocks/image?repo=aws-samples/bedrock-chat&max=1000)](https://github.com/aws-samples/bedrock-chat/graphs/contributors)
+[![contribuidores de bedrock chat](https://contrib.rocks/image?repo=aws-samples/bedrock-chat&max=1000)](https://github.com/aws-samples/bedrock-chat/graphs/contributors)
 
 ## Licencia
 
-Esta biblioteca está licenciada bajo la Licencia MIT-0. Consulte [el archivo LICENSE](./LICENSE).
+Esta biblioteca está bajo la licencia MIT-0. Consulte [el archivo LICENSE](./LICENSE).

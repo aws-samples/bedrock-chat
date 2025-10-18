@@ -1,9 +1,9 @@
-# Guida alla migrazione (da v1 a v2)
+# Guida alla Migrazione (da v1 a v2)
 
 ## TL;DR
 
 - **Per gli utenti di v1.2 o precedenti**: Aggiornare alla v1.4 e ricreare i bot utilizzando Knowledge Base (KB). Dopo un periodo di transizione, una volta verificato che tutto funzioni come previsto con KB, procedere con l'aggiornamento alla v2.
-- **Per gli utenti della v1.3**: Anche se si sta già utilizzando KB, è **fortemente consigliato** aggiornare alla v1.4 e ricreare i bot. Se si sta ancora utilizzando pgvector, migrare ricreando i bot utilizzando KB nella v1.4.
+- **Per gli utenti della v1.3**: Anche se si sta già utilizzando KB, è **fortemente consigliato** aggiornare alla v1.4 e ricreare i bot. Se si sta ancora utilizzando pgvector, effettuare la migrazione ricreando i bot utilizzando KB nella v1.4.
 - **Per gli utenti che desiderano continuare a utilizzare pgvector**: L'aggiornamento alla v2 non è consigliato se si prevede di continuare a utilizzare pgvector. L'aggiornamento alla v2 rimuoverà tutte le risorse relative a pgvector e il supporto futuro non sarà più disponibile. In questo caso, continuare a utilizzare la v1.
 - Si noti che **l'aggiornamento alla v2 comporterà l'eliminazione di tutte le risorse relative ad Aurora.** Gli aggiornamenti futuri si concentreranno esclusivamente sulla v2, con la v1 che verrà deprecata.
 
@@ -17,9 +17,9 @@ L'aggiornamento v2 introduce un cambiamento importante sostituendo pgvector su A
 
 Ci sono diverse ragioni per questo cambiamento:
 
-#### Migliore accuratezza RAG
+#### Miglioramento dell'accuratezza RAG
 
-- Knowledge Bases utilizza OpenSearch Serverless come backend, consentendo ricerche ibride sia full-text che vettoriali. Questo porta a una migliore accuratezza nel rispondere a domande che includono nomi propri, con cui pgvector aveva difficoltà.
+- Knowledge Bases utilizza OpenSearch Serverless come backend, consentendo ricerche ibride sia full-text che vettoriali. Questo porta a una maggiore accuratezza nel rispondere a domande che includono nomi propri, con cui pgvector aveva difficoltà.
 - Supporta anche più opzioni per migliorare l'accuratezza RAG, come il chunking e il parsing avanzati.
 - Knowledge Bases è generalmente disponibile da quasi un anno a ottobre 2024, con funzionalità già aggiunte come il web crawling. Sono previsti aggiornamenti futuri, rendendo più facile adottare funzionalità avanzate nel lungo termine. Ad esempio, mentre questo repository non ha implementato funzionalità come l'importazione da bucket S3 esistenti (una funzionalità frequentemente richiesta) in pgvector, questa è già supportata in KB (KnowledgeBases).
 
@@ -29,13 +29,13 @@ Ci sono diverse ragioni per questo cambiamento:
 
 ## Processo di Migrazione (Riepilogo)
 
-Raccomandiamo vivamente di effettuare l'aggiornamento alla v1.4 prima di passare alla v2. Nella v1.4, è possibile utilizzare sia pgvector che i bot Knowledge Base, consentendo un periodo di transizione per ricreare i bot pgvector esistenti in Knowledge Base e verificare che funzionino come previsto. Anche se i documenti RAG rimangono identici, nota che le modifiche backend a OpenSearch potrebbero produrre risultati leggermente diversi, anche se generalmente simili, a causa di differenze come gli algoritmi k-NN.
+Raccomandiamo vivamente di aggiornare alla v1.4 prima di passare alla v2. Nella v1.4, è possibile utilizzare sia pgvector che i bot Knowledge Base, permettendo un periodo di transizione per ricreare i bot pgvector esistenti in Knowledge Base e verificare che funzionino come previsto. Anche se i documenti RAG rimangono identici, nota che i cambiamenti del backend a OpenSearch potrebbero produrre risultati leggermente diversi, sebbene generalmente simili, a causa di differenze come gli algoritmi k-NN.
 
-Impostando `useBedrockKnowledgeBasesForRag` su true in `cdk.json`, è possibile creare bot utilizzando Knowledge Bases. Tuttavia, i bot pgvector diventeranno di sola lettura, impedendo la creazione o la modifica di nuovi bot pgvector.
+Impostando `useBedrockKnowledgeBasesForRag` su true nel `cdk.json`, è possibile creare bot utilizzando Knowledge Bases. Tuttavia, i bot pgvector diventeranno di sola lettura, impedendo la creazione o la modifica di nuovi bot pgvector.
 
 ![](../imgs/v1_to_v2_readonly_bot.png)
 
-Nella v1.4, vengono introdotti anche i [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guardrails/). A causa delle restrizioni regionali di Knowledge Bases, il bucket S3 per il caricamento dei documenti deve trovarsi nella stessa regione di `bedrockRegion`. Consigliamo di effettuare il backup dei bucket dei documenti esistenti prima dell'aggiornamento, per evitare di dover caricare manualmente un grande numero di documenti in seguito (poiché è disponibile la funzionalità di importazione del bucket S3).
+Nella v1.4, vengono introdotti anche i [Guardrails for Amazon Bedrock](https://aws.amazon.com/jp/bedrock/guardrails/). A causa delle restrizioni regionali di Knowledge Bases, il bucket S3 per il caricamento dei documenti deve trovarsi nella stessa regione di `bedrockRegion`. Consigliamo di eseguire il backup dei bucket dei documenti esistenti prima dell'aggiornamento, per evitare di dover caricare manualmente un gran numero di documenti in seguito (poiché è disponibile la funzionalità di importazione del bucket S3).
 
 ## Processo di Migrazione (Dettaglio)
 
@@ -45,7 +45,7 @@ I passaggi differiscono a seconda che si stia utilizzando la v1.2 o precedenti, 
 
 ### Passaggi per gli utenti della v1.2 o precedenti
 
-1. **Backup del bucket documenti esistente (opzionale ma consigliato).** Se il sistema è già in funzione, raccomandiamo fortemente questo passaggio. Eseguire il backup del bucket denominato `bedrockchatstack-documentbucketxxxx-yyyy`. Ad esempio, possiamo utilizzare [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html).
+1. **Backup del bucket documenti esistente (opzionale ma consigliato).** Se il sistema è già in funzione, raccomandiamo vivamente questo passaggio. Eseguire il backup del bucket denominato `bedrockchatstack-documentbucketxxxx-yyyy`. Per esempio, possiamo utilizzare [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html).
 
 2. **Aggiornamento alla v1.4**: Recuperare l'ultimo tag v1.4, modificare `cdk.json` ed eseguire il deploy. Seguire questi passaggi:
 
@@ -67,13 +67,13 @@ I passaggi differiscono a seconda che si stia utilizzando la v1.2 o precedenti, 
       npx cdk deploy
       ```
 
-3. **Ricreare i bot**: Ricreare i bot su Knowledge Base con le stesse definizioni (documenti, dimensione dei chunk, ecc.) dei bot pgvector. Se si ha un grande volume di documenti, il ripristino dal backup del passaggio 1 renderà questo processo più semplice. Per il ripristino, possiamo utilizzare il ripristino delle copie cross-region. Per maggiori dettagli, visitare [questo link](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Per specificare il bucket ripristinato, impostare la sezione `S3 Data Source` come segue. La struttura del percorso è `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. È possibile verificare l'ID utente nel pool di utenti Cognito e l'ID del bot nella barra degli indirizzi nella schermata di creazione del bot.
+3. **Ricreare i bot**: Ricreare i bot su Knowledge Base con le stesse definizioni (documenti, dimensione dei chunk, ecc.) dei bot pgvector. Se si ha un grande volume di documenti, il ripristino dal backup del passaggio 1 renderà questo processo più semplice. Per il ripristino, possiamo utilizzare il ripristino delle copie cross-region. Per maggiori dettagli, visitare [qui](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-s3.html). Per specificare il bucket ripristinato, impostare la sezione `S3 Data Source` come segue. La struttura del percorso è `s3://<bucket-name>/<user-id>/<bot-id>/documents/`. È possibile controllare l'ID utente nel pool di utenti Cognito e l'ID bot nella barra degli indirizzi nella schermata di creazione del bot.
 
 ![](../imgs/v1_to_v2_KB_s3_source.png)
 
-**Nota che alcune funzionalità non sono disponibili su Knowledge Bases, come il web crawling e il supporto per le trascrizioni YouTube (È pianificato il supporto per il web crawler ([issue](https://github.com/aws-samples/bedrock-chat/issues/557))).** Inoltre, tenere presente che l'utilizzo di Knowledge Bases comporterà costi sia per Aurora che per Knowledge Bases durante la transizione.
+**Notare che alcune funzionalità non sono disponibili su Knowledge Bases, come il web crawling e il supporto per le trascrizioni YouTube (Pianificato il supporto per web crawler ([issue](https://github.com/aws-samples/bedrock-chat/issues/557))).** Inoltre, tenere presente che l'utilizzo di Knowledge Bases comporterà addebiti sia per Aurora che per Knowledge Bases durante la transizione.
 
-4. **Rimuovere le API pubblicate**: Tutte le API precedentemente pubblicate dovranno essere ripubblicate prima di distribuire la v2 a causa dell'eliminazione della VPC. Per farlo, sarà necessario eliminare prima le API esistenti. L'utilizzo della [funzionalità di gestione API dell'amministratore](../ADMINISTRATOR_it-IT.md) può semplificare questo processo. Una volta completata l'eliminazione di tutti gli stack CloudFormation `APIPublishmentStackXXXX`, l'ambiente sarà pronto.
+4. **Rimuovere le API pubblicate**: Tutte le API precedentemente pubblicate dovranno essere ripubblicate prima di distribuire la v2 a causa dell'eliminazione del VPC. Per fare ciò, sarà necessario eliminare prima le API esistenti. L'utilizzo della [funzionalità di gestione API dell'amministratore](../ADMINISTRATOR_it-IT.md) può semplificare questo processo. Una volta completata l'eliminazione di tutti gli stack CloudFormation `APIPublishmentStackXXXX`, l'ambiente sarà pronto.
 
 5. **Distribuire la v2**: Dopo il rilascio della v2, recuperare il codice sorgente taggato ed eseguire il deploy come segue (sarà possibile una volta rilasciato):
    ```bash
@@ -83,11 +83,11 @@ I passaggi differiscono a seconda che si stia utilizzando la v1.2 o precedenti, 
    ```
 
 > [!Warning]
-> Dopo il deploy della v2, **TUTTI I BOT CON IL PREFISSO [Unsupported, Read-only] SARANNO NASCOSTI.** Assicurarsi di ricreare i bot necessari prima dell'aggiornamento per evitare qualsiasi perdita di accesso.
+> Dopo il deploy della v2, **TUTTI I BOT CON IL PREFISSO [Unsupported, Read-only] VERRANNO NASCOSTI.** Assicurarsi di ricreare i bot necessari prima dell'aggiornamento per evitare qualsiasi perdita di accesso.
 
 > [!Tip]
-> Durante gli aggiornamenti dello stack, potresti incontrare messaggi ripetuti come: Resource handler returned message: "The subnet 'subnet-xxx' has dependencies and cannot be deleted." In questi casi, vai su Management Console > EC2 > Network Interfaces e cerca BedrockChatStack. Elimina le interfacce visualizzate associate a questo nome per garantire un processo di deployment più fluido.
+> Durante gli aggiornamenti dello stack, potresti incontrare messaggi ripetuti come: Resource handler returned message: "The subnet 'subnet-xxx' has dependencies and cannot be deleted." In questi casi, vai alla Console di Gestione > EC2 > Interfacce di Rete e cerca BedrockChatStack. Elimina le interfacce visualizzate associate a questo nome per garantire un processo di deployment più fluido.
 
 ### Passaggi per gli utenti della v1.3
 
-Come menzionato in precedenza, nella v1.4, Knowledge Bases deve essere creato nella bedrockRegion a causa delle restrizioni regionali. Pertanto, sarà necessario ricreare il KB. Se hai già testato KB nella v1.3, ricrea il bot nella v1.4 con le stesse definizioni. Segui i passaggi indicati per gli utenti della v1.2.
+Come menzionato in precedenza, nella v1.4, Knowledge Bases deve essere creato nella bedrockRegion a causa delle restrizioni regionali. Pertanto, sarà necessario ricreare il KB. Se hai già testato KB nella v1.3, ricrea il bot nella v1.4 con le stesse definizioni. Segui i passaggi descritti per gli utenti della v1.2.

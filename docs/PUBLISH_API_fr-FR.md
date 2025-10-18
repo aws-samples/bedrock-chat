@@ -1,4 +1,4 @@
-# Publication d'API
+# Publication de l'API
 
 ## Vue d'ensemble
 
@@ -6,13 +6,13 @@ Cet exemple inclut une fonctionnalité de publication d'APIs. Bien qu'une interf
 
 ## Sécurité
 
-L'utilisation unique d'une clé API n'est pas recommandée comme décrit dans : [AWS API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html). Par conséquent, cet exemple implémente une restriction simple d'adresses IP via AWS WAF. La règle WAF est appliquée de manière commune à l'ensemble de l'application pour des raisons de coût, en partant du principe que les sources que l'on souhaite restreindre sont probablement les mêmes pour toutes les API émises. **Veuillez respecter la politique de sécurité de votre organisation pour l'implémentation réelle.** Consultez également la section [Architecture](#architecture).
+L'utilisation exclusive d'une clé API n'est pas recommandée comme décrit dans : [AWS API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html). Par conséquent, cet exemple implémente une restriction simple des adresses IP via AWS WAF. La règle WAF est appliquée de manière commune à l'ensemble de l'application pour des raisons de coût, en supposant que les sources que l'on souhaite restreindre sont probablement les mêmes pour toutes les API émises. **Veuillez respecter la politique de sécurité de votre organisation pour l'implémentation réelle.** Voir également la section [Architecture](#architecture).
 
 ## Comment publier une API de bot personnalisée
 
 ### Prérequis
 
-Pour des raisons de gouvernance, seuls certains utilisateurs peuvent publier des bots. Avant la publication, l'utilisateur doit être membre du groupe `PublishAllowed`, qui peut être configuré via la console de gestion > Amazon Cognito User pools ou via l'aws cli. Notez que l'ID du pool d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Pour des raisons de gouvernance, seuls des utilisateurs limités peuvent publier des bots. Avant la publication, l'utilisateur doit être membre du groupe appelé `PublishAllowed`, qui peut être configuré via la console de gestion > Amazon Cognito User pools ou via l'interface aws cli. Notez que l'ID du groupe d'utilisateurs peut être consulté en accédant à CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_publish_allowed.png)
 
@@ -24,7 +24,7 @@ Après s'être connecté en tant qu'utilisateur `PublishedAllowed` et avoir cré
 Sur l'écran suivant, nous pouvons configurer plusieurs paramètres concernant la limitation du débit. Pour plus de détails, consultez également : [Throttle API requests for better throughput](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html).
 ![](./imgs/bot_api_publish_screenshot2.png)
 
-Après le déploiement, l'écran suivant apparaîtra où vous pourrez obtenir l'URL du point de terminaison et une clé API. Nous pouvons également ajouter et supprimer des clés API.
+Après le déploiement, l'écran suivant apparaîtra où vous pourrez obtenir l'URL du point de terminaison et une clé d'API. Nous pouvons également ajouter et supprimer des clés d'API.
 
 ![](./imgs/bot_api_publish_screenshot3.png)
 
@@ -36,7 +36,7 @@ L'API est publiée selon le diagramme suivant :
 
 Le WAF est utilisé pour la restriction des adresses IP. L'adresse peut être configurée en définissant les paramètres `publishedApiAllowedIpV4AddressRanges` et `publishedApiAllowedIpV6AddressRanges` dans `cdk.json`.
 
-Lorsqu'un utilisateur clique pour publier le bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) lance une tâche de déploiement CDK pour provisionner la pile API (Voir aussi : [Définition CDK](../cdk/lib/api-publishment-stack.ts)) qui contient API Gateway, Lambda et SQS. SQS est utilisé pour découpler la requête utilisateur et l'opération LLM car la génération de la sortie peut dépasser 30 secondes, qui est la limite du quota API Gateway. Pour récupérer la sortie, il faut accéder à l'API de manière asynchrone. Pour plus de détails, voir la [Spécification de l'API](#api-specification).
+Lorsqu'un utilisateur clique pour publier le bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) lance une tâche de déploiement CDK pour provisionner la pile API (Voir aussi : [Définition CDK](../cdk/lib/api-publishment-stack.ts)) qui contient API Gateway, Lambda et SQS. SQS est utilisé pour découpler la requête utilisateur et l'opération LLM car la génération de sortie peut dépasser 30 secondes, qui est la limite du quota d'API Gateway. Pour récupérer la sortie, il faut accéder à l'API de manière asynchrone. Pour plus de détails, voir [Spécification de l'API](#api-specification).
 
 Le client doit définir `x-api-key` dans l'en-tête de la requête.
 

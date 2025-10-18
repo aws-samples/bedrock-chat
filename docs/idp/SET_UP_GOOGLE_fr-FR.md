@@ -1,8 +1,8 @@
 # Configurer un fournisseur d'identité externe pour Google
 
-## Étape 1 : Créer un Client OAuth 2.0 Google
+## Étape 1 : Créer un client OAuth 2.0 Google
 
-1. Accédez à la Console Développeur Google.
+1. Accédez à la Console Google Developer.
 2. Créez un nouveau projet ou sélectionnez un projet existant.
 3. Naviguez vers "Identifiants", puis cliquez sur "Créer des identifiants" et choisissez "ID client OAuth".
 4. Configurez l'écran de consentement si demandé.
@@ -31,7 +31,7 @@ Les noms des clés doivent correspondre exactement aux chaînes 'clientId' et 'c
 
 ## Étape 3 : Mettre à jour cdk.json
 
-Dans votre fichier cdk.json, ajoutez l'ID du fournisseur et le SecretName au fichier cdk.json.
+Dans votre fichier cdk.json, ajoutez l'ID Provider et SecretName au fichier cdk.json.
 
 comme ceci :
 
@@ -56,7 +56,7 @@ comme ceci :
 
 Le userPoolDomainPrefix doit être globalement unique pour tous les utilisateurs d'Amazon Cognito. Si vous choisissez un préfixe qui est déjà utilisé par un autre compte AWS, la création du domaine du groupe d'utilisateurs échouera. Il est recommandé d'inclure des identifiants, des noms de projet ou des noms d'environnement dans le préfixe pour garantir l'unicité.
 
-## Étape 4 : Déployer Votre Stack CDK
+## Étape 4 : Déployer votre stack CDK
 
 Déployez votre stack CDK sur AWS :
 
@@ -66,4 +66,4 @@ npx cdk deploy --require-approval never --all
 
 ## Étape 5 : Mettre à jour le client OAuth Google avec les URI de redirection Cognito
 
-Après le déploiement de la pile, l'AuthApprovedRedirectURI s'affiche dans les sorties CloudFormation. Retournez dans la Console Google Developer et mettez à jour le client OAuth avec les URI de redirection corrects.
+Après le déploiement de la pile, AuthApprovedRedirectURI s'affiche dans les sorties CloudFormation. Retournez dans la Console Google Developer et mettez à jour le client OAuth avec les URI de redirection corrects.

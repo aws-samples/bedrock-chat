@@ -12,14 +12,14 @@
 [English](https://github.com/aws-samples/bedrock-chat/blob/v3/README.md) | [日本語](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ja-JP.md) | [한국어](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ko-KR.md) | [中文](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_zh-CN.md) | [Français](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_fr-FR.md) | [Deutsch](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_de-DE.md) | [Español](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_es-ES.md) | [Italian](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_it-IT.md) | [Norsk](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_nb-NO.md) | [ไทย](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_th-TH.md) | [Bahasa Indonesia](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_id-ID.md) | [Bahasa Melayu](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ms-MY.md) | [Tiếng Việt](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_vi-VN.md) | [Polski](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_pl-PL.md) | [Português Brasil](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_pt-BR.md)
 
 
-แพลตฟอร์ม AI สร้างเนื้อหาหลายภาษาที่ขับเคลื่อนโดย [Amazon Bedrock](https://aws.amazon.com/bedrock/)
+แพลตฟอร์ม AI สร้างเนื้อหาแบบหลายภาษาที่ขับเคลื่อนโดย [Amazon Bedrock](https://aws.amazon.com/bedrock/)
 รองรับการแชท บอทที่กำหนดเองพร้อมความรู้ (RAG) การแบ่งปันบอทผ่านร้านค้าบอท และการทำงานอัตโนมัติโดยใช้เอเจนต์
 
 ![](./imgs/demo.gif)
 
 > [!Warning]
 >
-> **เวอร์ชัน V3 ได้เปิดตัวแล้ว โปรดอ่าน [คู่มือการย้าย](./migration/V2_TO_V3_th-TH.md) อย่างละเอียดเพื่ออัปเดต** หากไม่ระมัดระวัง **บอทจากเวอร์ชัน V2 จะไม่สามารถใช้งานได้**
+> **เวอร์ชัน V3 ได้รับการเผยแพร่แล้ว โปรดตรวจสอบ [คู่มือการย้าย](./migration/V2_TO_V3_th-TH.md) อย่างละเอียดเพื่อการอัปเดต** หากไม่ระมัดระวัง **บอทจากเวอร์ชัน V2 จะไม่สามารถใช้งานได้**
 
 ### การปรับแต่งบอท / ร้านค้าบอท
 
@@ -33,18 +33,18 @@
 ![](./imgs/bot_store.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
-คุณยังสามารถนำเข้า [Amazon Bedrock's KnowledgeBase](https://aws.amazon.com/bedrock/knowledge-bases/) ที่มีอยู่แล้วได้
+คุณยังสามารถนำเข้า [Amazon Bedrock's KnowledgeBase](https://aws.amazon.com/bedrock/knowledge-bases/) ที่มีอยู่ได้
 
 ![](./imgs/import_existing_kb.png)
 
 </details>
 
 > [!Important]
-> เพื่อเหตุผลด้านการกำกับดูแล เฉพาะผู้ใช้ที่ได้รับอนุญาตเท่านั้นที่สามารถสร้างบอทที่กำหนดเองได้ เพื่อให้สามารถสร้างบอทที่กำหนดเองได้ ผู้ใช้ต้องเป็นสมาชิกของกลุ่มที่เรียกว่า `CreatingBotAllowed` ซึ่งสามารถตั้งค่าได้ผ่านคอนโซลการจัดการ > Amazon Cognito User pools หรือ aws cli โปรดทราบว่าสามารถอ้างอิง user pool id ได้โดยเข้าถึง CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`
+> เพื่อเหตุผลด้านการกำกับดูแล เฉพาะผู้ใช้ที่ได้รับอนุญาตเท่านั้นที่สามารถสร้างบอทที่กำหนดเองได้ เพื่อให้สามารถสร้างบอทที่กำหนดเองได้ ผู้ใช้ต้องเป็นสมาชิกของกลุ่มที่เรียกว่า `CreatingBotAllowed` ซึ่งสามารถตั้งค่าได้ผ่าน management console > Amazon Cognito User pools หรือ aws cli โปรดทราบว่าสามารถอ้างอิง user pool id ได้โดยเข้าถึง CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`
 
 ### คุณสมบัติการจัดการ
 
-การจัดการ API การทำเครื่องหมายบอทว่าจำเป็น วิเคราะห์การใช้งานสำหรับบอท [รายละเอียด](./ADMINISTRATOR_th-TH.md)
+การจัดการ API การทำเครื่องหมายบอทว่าจำเป็น การวิเคราะห์การใช้งานสำหรับบอท [รายละเอียด](./ADMINISTRATOR_th-TH.md)
 
 <details>
 <summary>ภาพหน้าจอ</summary>
@@ -58,7 +58,7 @@
 
 ### เอเจนต์
 
-โดยใช้[ฟังก์ชันเอเจนต์](./AGENT_th-TH.md) แชทบอทของคุณสามารถจัดการงานที่ซับซ้อนได้โดยอัตโนมัติ ตัวอย่างเช่น เพื่อตอบคำถามของผู้ใช้ เอเจนต์สามารถดึงข้อมูลที่จำเป็นจากเครื่องมือภายนอกหรือแบ่งงานออกเป็นหลายขั้นตอนสำหรับการประมวลผล
+โดยใช้[ฟังก์ชันเอเจนต์](./AGENT_th-TH.md) แชทบอทของคุณสามารถจัดการงานที่ซับซ้อนได้โดยอัตโนมัติ ตัวอย่างเช่น เพื่อตอบคำถามของผู้ใช้ เอเจนต์สามารถดึงข้อมูลที่จำเป็นจากเครื่องมือภายนอกหรือแยกงานออกเป็นหลายขั้นตอนเพื่อประมวลผล
 
 <details>
 <summary>ภาพหน้าจอ</summary>
@@ -81,9 +81,9 @@
 
 ### ภูมิภาคที่รองรับ
 
-โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้ง Bedrock Chat ในภูมิภาค[ที่มี OpenSearch Serverless และ Ingestion APIs พร้อมใช้งาน](https://docs.aws.amazon.com/general/latest/gr/opensearch-service.html) หากคุณต้องการใช้บอทและสร้างฐานความรู้ (OpenSearch Serverless เป็นตัวเลือกเริ่มต้น) ณ เดือนสิงหาคม 2025 รองรับภูมิภาคต่อไปนี้: us-east-1, us-east-2, us-west-1, us-west-2, ap-south-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ca-central-1, eu-central-1, eu-west-1, eu-west-2, eu-south-2, eu-north-1, sa-east-1
+โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้ง Bedrock Chat ในภูมิภาค[ที่มี OpenSearch Serverless และ Ingestion APIs](https://docs.aws.amazon.com/general/latest/gr/opensearch-service.html) หากคุณต้องการใช้บอทและสร้างฐานความรู้ (OpenSearch Serverless เป็นตัวเลือกเริ่มต้น) ณ เดือนสิงหาคม 2025 รองรับภูมิภาคต่อไปนี้: us-east-1, us-east-2, us-west-1, us-west-2, ap-south-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ca-central-1, eu-central-1, eu-west-1, eu-west-2, eu-south-2, eu-north-1, sa-east-1
 
-สำหรับพารามิเตอร์ **bedrock-region** คุณต้องเลือกภูมิภาค[ที่มี Bedrock พร้อมใช้งาน](https://docs.aws.amazon.com/general/latest/gr/bedrock.html)
+สำหรับพารามิเตอร์ **bedrock-region** คุณต้องเลือกภูมิภาค[ที่มี Bedrock ให้บริการ](https://docs.aws.amazon.com/general/latest/gr/bedrock.html)
 
 - เปิด [CloudShell](https://console.aws.amazon.com/cloudshell/home) ในภูมิภาคที่คุณต้องการติดตั้ง
 - รันการติดตั้งด้วยคำสั่งต่อไปนี้ หากคุณต้องการระบุเวอร์ชันที่จะติดตั้งหรือต้องการใช้นโยบายความปลอดภัย โปรดระบุพารามิเตอร์ที่เหมาะสมจาก [พารามิเตอร์เสริม](#optional-parameters)
@@ -102,15 +102,15 @@ chmod +x bin.sh
 คุณสามารถระบุพารามิเตอร์ต่อไปนี้ระหว่างการติดตั้งเพื่อเพิ่มความปลอดภัยและการปรับแต่ง:
 
 - **--disable-self-register**: ปิดการลงทะเบียนด้วยตนเอง (ค่าเริ่มต้น: เปิดใช้งาน) หากตั้งค่านี้ คุณจะต้องสร้างผู้ใช้ทั้งหมดบน cognito และจะไม่อนุญาตให้ผู้ใช้ลงทะเบียนบัญชีด้วยตนเอง
-- **--enable-lambda-snapstart**: เปิดใช้งาน [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (ค่าเริ่มต้น: ปิดใช้งาน) หากตั้งค่านี้ จะช่วยปรับปรุงเวลาเริ่มต้นเย็นของฟังก์ชัน Lambda ให้ตอบสนองได้เร็วขึ้นเพื่อประสบการณ์ผู้ใช้ที่ดีขึ้น
+- **--enable-lambda-snapstart**: เปิดใช้งาน [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) (ค่าเริ่มต้น: ปิดใช้งาน) หากตั้งค่านี้ จะช่วยปรับปรุงเวลาเริ่มต้นแบบเย็นสำหรับฟังก์ชัน Lambda ให้ตอบสนองเร็วขึ้นเพื่อประสบการณ์ผู้ใช้ที่ดีขึ้น
 - **--ipv4-ranges**: รายการช่วง IPv4 ที่อนุญาต คั่นด้วยเครื่องหมายจุลภาค (ค่าเริ่มต้น: อนุญาตทุกที่อยู่ ipv4)
 - **--ipv6-ranges**: รายการช่วง IPv6 ที่อนุญาต คั่นด้วยเครื่องหมายจุลภาค (ค่าเริ่มต้น: อนุญาตทุกที่อยู่ ipv6)
 - **--disable-ipv6**: ปิดการเชื่อมต่อผ่าน IPv6 (ค่าเริ่มต้น: เปิดใช้งาน)
 - **--allowed-signup-email-domains**: รายการโดเมนอีเมลที่อนุญาตสำหรับการลงทะเบียน คั่นด้วยเครื่องหมายจุลภาค (ค่าเริ่มต้น: ไม่จำกัดโดเมน)
-- **--bedrock-region**: กำหนดภูมิภาคที่มี bedrock พร้อมใช้งาน (ค่าเริ่มต้น: us-east-1)
+- **--bedrock-region**: กำหนดภูมิภาคที่มี bedrock ให้บริการ (ค่าเริ่มต้น: us-east-1)
 - **--repo-url**: ที่เก็บที่กำหนดเองของ Bedrock Chat ที่จะติดตั้ง หากมีการ fork หรือใช้การควบคุมซอร์สโค้ดที่กำหนดเอง (ค่าเริ่มต้น: https://github.com/aws-samples/bedrock-chat.git)
-- **--version**: เวอร์ชันของ Bedrock Chat ที่จะติดตั้ง (ค่าเริ่มต้น: เวอร์ชันล่าสุดในการพัฒนา)
-- **--cdk-json-override**: คุณสามารถแทนที่ค่าบริบท CDK ใดๆ ระหว่างการติดตั้งโดยใช้บล็อก JSON แทนที่ ซึ่งช่วยให้คุณแก้ไขการกำหนดค่าได้โดยไม่ต้องแก้ไขไฟล์ cdk.json โดยตรง
+- **--version**: เวอร์ชันของ Bedrock Chat ที่จะติดตั้ง (ค่าเริ่มต้น: เวอร์ชันล่าสุดที่กำลังพัฒนา)
+- **--cdk-json-override**: คุณสามารถแทนที่ค่าบริบท CDK ใดๆ ระหว่างการติดตั้งโดยใช้บล็อก JSON แทนที่ ซึ่งช่วยให้คุณแก้ไขการกำหนดค่าโดยไม่ต้องแก้ไขไฟล์ cdk.json โดยตรง
 
 ตัวอย่างการใช้งาน:
 
@@ -145,7 +145,7 @@ JSON ที่แทนที่ต้องเป็นไปตามโคร
 - `enableRagReplicas`
 - `enableBedrockCrossRegionInference`
 - `globalAvailableModels`: รับรายการ ID โมเดลที่จะเปิดใช้งาน ค่าเริ่มต้นคือรายการว่าง ซึ่งจะเปิดใช้งานโมเดลทั้งหมด
-- `logoPath`: เส้นทางสัมพัทธ์ไปยังไฟล์โลโก้ในไดเรกทอรี `public/` ของฟรอนต์เอนด์ที่ปรากฏที่ด้านบนของลิ้นชักนำทาง
+- `logoPath`: เส้นทางสัมพัทธ์ไปยังไฟล์โลโก้ในไดเรกทอรี `public/` ของ frontend ที่จะปรากฏที่ด้านบนของลิ้นชักนำทาง
 - และค่าบริบทอื่นๆ ที่กำหนดใน cdk.json
 
 > [!Note]
@@ -168,14 +168,14 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 หน้าจอลงทะเบียนจะปรากฏดังแสดงด้านบน ซึ่งคุณสามารถลงทะเบียนอีเมลและเข้าสู่ระบบได้
 
 > [!Important]
-> หากไม่ตั้งค่าพารามิเตอร์เสริม วิธีการติดตั้งนี้จะอนุญาตให้ทุกคนที่รู้ URL สามารถลงทะเบียนได้ สำหรับการใช้งานในการผลิต แนะนำอย่างยิ่งให้เพิ่มข้อจำกัดที่อยู่ IP และปิดการลงทะเบียนด้วยตนเองเพื่อลดความเสี่ยงด้านความปลอดภัย (คุณสามารถกำหนด allowed-signup-email-domains เพื่อจำกัดผู้ใช้ให้เฉพาะที่อยู่อีเมลจากโดเมนของบริษัทคุณเท่านั้นที่สามารถลงทะเบียนได้) ใช้ทั้ง ipv4-ranges และ ipv6-ranges สำหรับข้อจำกัดที่อยู่ IP และปิดการลงทะเบียนด้วยตนเองโดยใช้ disable-self-register เมื่อรัน ./bin
+> หากไม่ตั้งค่าพารามิเตอร์เสริม วิธีการติดตั้งนี้จะอนุญาตให้ทุกคนที่รู้ URL สามารถลงทะเบียนได้ สำหรับการใช้งานในการผลิต แนะนำอย่างยิ่งให้เพิ่มการจำกัด IP address และปิดการลงทะเบียนด้วยตนเองเพื่อลดความเสี่ยงด้านความปลอดภัย (คุณสามารถกำหนด allowed-signup-email-domains เพื่อจำกัดผู้ใช้ให้เฉพาะที่อยู่อีเมลจากโดเมนของบริษัทคุณเท่านั้นที่สามารถลงทะเบียนได้) ใช้ทั้ง ipv4-ranges และ ipv6-ranges สำหรับการจำกัด IP address และปิดการลงทะเบียนด้วยตนเองโดยใช้ disable-self-register เมื่อรัน ./bin
 
 > [!TIP]
 > หาก `Frontend URL` ไม่ปรากฏหรือ Bedrock Chat ทำงานไม่ถูกต้อง อาจเป็นปัญหาจากเวอร์ชันล่าสุด ในกรณีนี้ โปรดเพิ่ม `--version "v3.0.0"` ในพารามิเตอร์และลองติดตั้งอีกครั้ง
 
 ## สถาปัตยกรรม
 
-เป็นสถาปัตยกรรมที่สร้างขึ้นบนบริการที่จัดการโดย AWS ซึ่งช่วยขจัดความจำเป็นในการจัดการโครงสร้างพื้นฐาน ด้วยการใช้ Amazon Bedrock จึงไม่จำเป็นต้องติดต่อกับ API ภายนอก AWS ทำให้สามารถปรับใช้แอปพลิเคชันที่ขยายขนาดได้ เชื่อถือได้ และปลอดภัย
+เป็นสถาปัตยกรรมที่สร้างขึ้นบนบริการที่จัดการโดย AWS ซึ่งช่วยขจัดความจำเป็นในการจัดการโครงสร้างพื้นฐาน ด้วยการใช้ Amazon Bedrock จึงไม่จำเป็นต้องสื่อสารกับ API ภายนอก AWS ทำให้สามารถปรับใช้แอปพลิเคชันที่ขยายขนาดได้ เชื่อถือได้ และปลอดภัย
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): ฐานข้อมูล NoSQL สำหรับจัดเก็บประวัติการสนทนา
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): จุดเชื่อมต่อ API แบ็กเอนด์ ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
@@ -183,22 +183,22 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 - [AWS WAF](https://aws.amazon.com/waf/): การจำกัดที่อยู่ IP
 - [Amazon Cognito](https://aws.amazon.com/cognito/): การยืนยันตัวตนผู้ใช้
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): บริการที่จัดการเพื่อใช้โมเดลพื้นฐานผ่าน API
-- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): ให้บริการอินเตอร์เฟซที่จัดการสำหรับ Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)) โดยให้บริการสำหรับการฝังและแยกวิเคราะห์เอกสาร
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): รับอีเวนต์จาก DynamoDB stream และเริ่มการทำงานของ Step Functions เพื่อฝังความรู้ภายนอก
+- [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): ให้บริการอินเทอร์เฟซที่จัดการสำหรับ Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)) โดยนำเสนอบริการสำหรับการฝังและการแยกวิเคราะห์เอกสาร
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): รับอีเวนต์จาก DynamoDB stream และเริ่มต้น Step Functions เพื่อฝังความรู้ภายนอก
 - [AWS Step Functions](https://aws.amazon.com/step-functions/): จัดการไปป์ไลน์การนำเข้าเพื่อฝังความรู้ภายนอกลงใน Bedrock Knowledge Bases
-- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): ทำหน้าที่เป็นฐานข้อมูลแบ็กเอนด์สำหรับ Bedrock Knowledge Bases โดยให้ความสามารถในการค้นหาแบบเต็มรูปแบบและการค้นหาแบบเวกเตอร์ ช่วยให้สามารถค้นคืนข้อมูลที่เกี่ยวข้องได้อย่างแม่นยำ
+- [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): ทำหน้าที่เป็นฐานข้อมูลแบ็กเอนด์สำหรับ Bedrock Knowledge Bases โดยให้บริการค้นหาแบบเต็มข้อความและการค้นหาแบบเวกเตอร์ ช่วยให้สามารถค้นคืนข้อมูลที่เกี่ยวข้องได้อย่างแม่นยำ
 - [Amazon Athena](https://aws.amazon.com/athena/): บริการสืบค้นเพื่อวิเคราะห์ S3 bucket
 
 ![](./imgs/arch.png)
 
-## การ Deploy โดยใช้ CDK
+## การปรับใช้งานด้วย CDK
 
-การ Deploy แบบง่ายใช้ [AWS CodeBuild](https://aws.amazon.com/codebuild/) เพื่อดำเนินการ deploy ด้วย CDK ภายใน ส่วนนี้จะอธิบายขั้นตอนการ deploy โดยตรงด้วย CDK
+การปรับใช้งานแบบง่ายใช้ [AWS CodeBuild](https://aws.amazon.com/codebuild/) เพื่อดำเนินการปรับใช้งานด้วย CDK ภายใน ส่วนนี้อธิบายขั้นตอนการปรับใช้งานโดยตรงด้วย CDK
 
-- กรุณาเตรียม UNIX, Docker และสภาพแวดล้อมรันไทม์ Node.js ให้พร้อม
+- กรุณาเตรียมสภาพแวดล้อม UNIX, Docker และ Node.js runtime
 
 > [!Important]
-> หากพื้นที่เก็บข้อมูลในสภาพแวดล้อมท้องถิ่นไม่เพียงพอระหว่างการ deploy การ bootstrap CDK อาจเกิดข้อผิดพลาด เราแนะนำให้ขยายขนาดโวลุ่มของอินสแตนซ์ก่อนทำการ deploy
+> หากมีพื้นที่จัดเก็บไม่เพียงพอในสภาพแวดล้อมเครื่องในระหว่างการปรับใช้งาน การ bootstrap CDK อาจเกิดข้อผิดพลาด เราแนะนำให้เพิ่มขนาดพื้นที่จัดเก็บของ instance ก่อนการปรับใช้งาน
 
 - โคลนที่เก็บนี้
 
@@ -218,25 +218,25 @@ npm ci
 
   - `bedrockRegion`: ภูมิภาคที่มี Bedrock ให้บริการ **หมายเหตุ: Bedrock ยังไม่รองรับทุกภูมิภาคในขณะนี้**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: ช่วง IP Address ที่อนุญาต
-  - `enableLambdaSnapStart`: ค่าเริ่มต้นคือ true ตั้งค่าเป็น false หากกำลัง deploy ไปยัง[ภูมิภาคที่ไม่รองรับ Lambda SnapStart สำหรับฟังก์ชัน Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)
-  - `globalAvailableModels`: ค่าเริ่มต้นคือทั้งหมด หากตั้งค่า (รายการ model ID) จะควบคุมโมเดลที่ปรากฏในเมนูแบบเลื่อนลงทั่วทั้งการแชทสำหรับผู้ใช้ทุกคนและระหว่างการสร้างบอทในแอปพลิเคชัน Bedrock Chat
-  - `logoPath`: เส้นทางสัมพันธ์ภายใต้ `frontend/public` ที่ชี้ไปยังรูปภาพที่แสดงที่ด้านบนของลิ้นชักแอปพลิเคชัน
-รองรับ model ID ต่อไปนี้ (โปรดตรวจสอบว่าได้เปิดใช้งานในคอนโซล Bedrock ภายใต้ Model access ในภูมิภาคที่คุณ deploy):
-- **Claude Models:** `claude-v4-opus`, `claude-v4.1-opus`, `claude-v4-sonnet`, `claude-v3.5-sonnet`, `claude-v3.5-sonnet-v2`, `claude-v3.7-sonnet`, `claude-v3.5-haiku`, `claude-v3-haiku`, `claude-v3-opus`
-- **Amazon Nova Models:** `amazon-nova-pro`, `amazon-nova-lite`, `amazon-nova-micro`
-- **Mistral Models:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
-- **DeepSeek Models:** `deepseek-r1`
-- **Meta Llama Models:** `llama3-3-70b-instruct`, `llama3-2-1b-instruct`, `llama3-2-3b-instruct`, `llama3-2-11b-instruct`, `llama3-2-90b-instruct`
+  - `enableLambdaSnapStart`: ค่าเริ่มต้นคือ true ตั้งค่าเป็น false หากปรับใช้งานใน[ภูมิภาคที่ไม่รองรับ Lambda SnapStart สำหรับฟังก์ชัน Python](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)
+  - `globalAvailableModels`: ค่าเริ่มต้นคือทั้งหมด หากกำหนด (รายการ ID โมเดล) จะควบคุมโมเดลที่ปรากฏในเมนูแบบเลื่อนลงทั่วการแชททั้งหมดสำหรับผู้ใช้ทุกคนและระหว่างการสร้างบอทในแอปพลิเคชัน Bedrock Chat
+  - `logoPath`: เส้นทางสัมพัทธ์ภายใต้ `frontend/public` ที่ชี้ไปยังรูปภาพที่แสดงที่ด้านบนของลิ้นชักแอปพลิเคชัน
+รองรับ ID โมเดลต่อไปนี้ (โปรดตรวจสอบว่าเปิดใช้งานในคอนโซล Bedrock ภายใต้ Model access ในภูมิภาคที่คุณปรับใช้งาน):
+- **โมเดล Claude:** `claude-v4-opus`, `claude-v4.1-opus`, `claude-v4-sonnet`, `claude-v3.5-sonnet`, `claude-v3.5-sonnet-v2`, `claude-v3.7-sonnet`, `claude-v3.5-haiku`, `claude-v3-haiku`, `claude-v3-opus`
+- **โมเดล Amazon Nova:** `amazon-nova-pro`, `amazon-nova-lite`, `amazon-nova-micro`
+- **โมเดล Mistral:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
+- **โมเดล DeepSeek:** `deepseek-r1`
+- **โมเดล Meta Llama:** `llama3-3-70b-instruct`, `llama3-2-1b-instruct`, `llama3-2-3b-instruct`, `llama3-2-11b-instruct`, `llama3-2-90b-instruct`
 
 รายการทั้งหมดสามารถพบได้ใน [index.ts](./frontend/src/constants/index.ts)
 
-- ก่อนที่จะ deploy CDK คุณจะต้องทำการ Bootstrap หนึ่งครั้งสำหรับภูมิภาคที่คุณจะ deploy
+- ก่อนปรับใช้งาน CDK คุณจะต้องทำ Bootstrap หนึ่งครั้งสำหรับภูมิภาคที่คุณกำลังปรับใช้งาน
 
 ```
 npx cdk bootstrap
 ```
 
-- Deploy โปรเจ็กต์ตัวอย่างนี้
+- ปรับใช้งานโครงการตัวอย่างนี้
 
 ```
 npx cdk deploy --require-approval never --all
@@ -258,7 +258,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### การกำหนดพารามิเตอร์
 
-คุณสามารถกำหนดพารามิเตอร์สำหรับการ deploy ได้สองวิธี: ใช้ `cdk.json` หรือใช้ไฟล์ `parameter.ts` ที่มีการตรวจสอบประเภท
+คุณสามารถกำหนดพารามิเตอร์สำหรับการปรับใช้งานได้สองวิธี: ใช้ `cdk.json` หรือใช้ไฟล์ `parameter.ts` ที่ปลอดภัยด้วยการตรวจสอบประเภท
 
 #### การใช้ cdk.json (วิธีแบบดั้งเดิม)
 
@@ -275,16 +275,16 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
       "claude-v3.7-sonnet",
       "claude-v3.5-sonnet",
       "amazon-nova-pro",
-      "amazon-nova-lite", 
+      "amazon-nova-lite",
       "llama3-3-70b-instruct"
     ],
   }
 }
 ```
 
-#### การใช้ parameter.ts (วิธีที่แนะนำที่มีการตรวจสอบประเภท)
+#### การใช้ parameter.ts (วิธีที่แนะนำที่ปลอดภัยด้วยการตรวจสอบประเภท)
 
-สำหรับการตรวจสอบประเภทและประสบการณ์นักพัฒนาที่ดีขึ้น คุณสามารถใช้ไฟล์ `parameter.ts` เพื่อกำหนดพารามิเตอร์ของคุณ:
+สำหรับความปลอดภัยด้านประเภทและประสบการณ์นักพัฒนาที่ดีขึ้น คุณสามารถใช้ไฟล์ `parameter.ts` เพื่อกำหนดพารามิเตอร์ของคุณ:
 
 ```typescript
 // กำหนดพารามิเตอร์สำหรับสภาพแวดล้อมเริ่มต้น
@@ -319,47 +319,47 @@ bedrockChatParams.set("prod", {
 ```
 
 > [!Note]
-> ผู้ใช้ที่มีอยู่สามารถใช้ `cdk.json` ต่อไปได้โดยไม่ต้องเปลี่ยนแปลงใดๆ แนะนำให้ใช้วิธี `parameter.ts` สำหรับการ deploy ใหม่หรือเมื่อคุณต้องจัดการหลายสภาพแวดล้อม
+> ผู้ใช้ที่มีอยู่สามารถใช้ `cdk.json` ต่อไปได้โดยไม่ต้องเปลี่ยนแปลง แนะนำวิธี `parameter.ts` สำหรับการปรับใช้งานใหม่หรือเมื่อคุณต้องจัดการหลายสภาพแวดล้อม
 
-### การ Deploy หลายสภาพแวดล้อม
+### การปรับใช้งานหลายสภาพแวดล้อม
 
-คุณสามารถ deploy หลายสภาพแวดล้อมจากโค้ดเดียวกันโดยใช้ไฟล์ `parameter.ts` และตัวเลือก `-c envName`
+คุณสามารถปรับใช้งานหลายสภาพแวดล้อมจากรหัสต้นฉบับเดียวกันโดยใช้ไฟล์ `parameter.ts` และตัวเลือก `-c envName`
 
 #### ข้อกำหนดเบื้องต้น
 
 1. กำหนดสภาพแวดล้อมของคุณใน `parameter.ts` ตามที่แสดงด้านบน
 2. แต่ละสภาพแวดล้อมจะมีทรัพยากรของตัวเองพร้อมคำนำหน้าเฉพาะสภาพแวดล้อม
 
-#### คำสั่ง Deploy
+#### คำสั่งปรับใช้งาน
 
-เพื่อ deploy สภาพแวดล้อมเฉพาะ:
+เพื่อปรับใช้งานสภาพแวดล้อมเฉพาะ:
 
 ```bash
-# Deploy สภาพแวดล้อมการพัฒนา
+# ปรับใช้งานสภาพแวดล้อมการพัฒนา
 npx cdk deploy --all -c envName=dev
 
-# Deploy สภาพแวดล้อมการผลิต
+# ปรับใช้งานสภาพแวดล้อมการผลิต
 npx cdk deploy --all -c envName=prod
 ```
 
-หากไม่ได้ระบุสภาพแวดล้อม จะใช้สภาพแวดล้อม "default":
+หากไม่ระบุสภาพแวดล้อม จะใช้สภาพแวดล้อม "default":
 
 ```bash
-# Deploy สภาพแวดล้อมเริ่มต้น
+# ปรับใช้งานสภาพแวดล้อมเริ่มต้น
 npx cdk deploy --all
 ```
 
 #### หมายเหตุสำคัญ
 
-1. **การตั้งชื่อสแต็ก**:
+1. **การตั้งชื่อสแตก**:
 
-   - สแต็กหลักสำหรับแต่ละสภาพแวดล้อมจะมีคำนำหน้าด้วยชื่อสภาพแวดล้อม (เช่น `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - อย่างไรก็ตาม สแต็กบอทที่กำหนดเอง (`BrChatKbStack*`) และสแต็กการเผยแพร่ API (`ApiPublishmentStack*`) ไม่ได้รับคำนำหน้าสภาพแวดล้อมเนื่องจากถูกสร้างขึ้นแบบไดนามิกในขณะรันไทม์
+   - สแตกหลักสำหรับแต่ละสภาพแวดล้อมจะมีคำนำหน้าด้วยชื่อสภาพแวดล้อม (เช่น `dev-BedrockChatStack`, `prod-BedrockChatStack`)
+   - อย่างไรก็ตาม สแตกบอทที่กำหนดเอง (`BrChatKbStack*`) และสแตกการเผยแพร่ API (`ApiPublishmentStack*`) ไม่ได้รับคำนำหน้าสภาพแวดล้อมเนื่องจากถูกสร้างขึ้นแบบไดนามิกในเวลาทำงาน
 
 2. **การตั้งชื่อทรัพยากร**:
 
-   - ทรัพยากรบางอย่างเท่านั้นที่ได้รับคำนำหน้าสภาพแวดล้อมในชื่อ (เช่น ตาราง `dev_ddb_export`, `dev-FrontendWebAcl`)
-   - ทรัพยากรส่วนใหญ่คงชื่อเดิมไว้แต่ถูกแยกโดยอยู่ในสแต็กที่แตกต่างกัน
+   - มีเพียงบางทรัพยากรเท่านั้นที่ได้รับคำนำหน้าสภาพแวดล้อมในชื่อ (เช่น ตาราง `dev_ddb_export`, `dev-FrontendWebAcl`)
+   - ทรัพยากรส่วนใหญ่คงชื่อเดิมแต่แยกกันโดยอยู่ในสแตกที่ต่างกัน
 
 3. **การระบุสภาพแวดล้อม**:
 
@@ -369,9 +369,7 @@ npx cdk deploy --all
 
 4. **การแทนที่สภาพแวดล้อมเริ่มต้น**: หากคุณกำหนดสภาพแวดล้อม "default" ใน `parameter.ts` มันจะแทนที่การตั้งค่าใน `cdk.json` หากต้องการใช้ `cdk.json` ต่อไป อย่ากำหนดสภาพแวดล้อม "default" ใน `parameter.ts`
 
-5. **ข้อกำหนดสภาพแวดล้อม**: ในการสร้างสภาพแวดล้อมอื่นนอกเหนือจาก "default" คุณต้องใช้ `parameter.ts` ตัวเลือก `-c envName` เพียงอย่างเดียวไม่เพียงพอหากไม่มีการกำหนดสภาพแวดล้อมที่สอดคล้องกัน
-
-6. **การแยกทรัพ
+5. **ข้อกำหนดสภาพแวดล้อม**: ในการสร้างสภาพแว
 
 ## อื่นๆ
 
@@ -379,7 +377,7 @@ npx cdk deploy --all
 
 #### การใช้ cdk.json (วิธีแบบดั้งเดิม)
 
-วิธีดั้งเดิมในการกำหนดค่าพารามิเตอร์คือการแก้ไขไฟล์ `cdk.json` วิธีนี้ง่ายแต่ขาดการตรวจสอบประเภทข้อมูล:
+วิธีดั้งเดิมในการกำหนดค่าพารามิเตอร์คือการแก้ไขไฟล์ `cdk.json` วิธีนี้ง่ายแต่ไม่มีการตรวจสอบประเภทข้อมูล:
 
 ```json
 {
@@ -394,7 +392,7 @@ npx cdk deploy --all
 
 #### การใช้ parameter.ts (วิธีที่แนะนำที่มีการตรวจสอบประเภทข้อมูล)
 
-เพื่อการตรวจสอบประเภทข้อมูลที่ดีขึ้นและประสบการณ์การพัฒนาที่ดีกว่า คุณสามารถใช้ไฟล์ `parameter.ts` เพื่อกำหนดพารามิเตอร์ของคุณ:
+เพื่อความปลอดภัยของประเภทข้อมูลและประสบการณ์ที่ดีขึ้นสำหรับนักพัฒนา คุณสามารถใช้ไฟล์ `parameter.ts` เพื่อกำหนดพารามิเตอร์ของคุณ:
 
 ```typescript
 // กำหนดพารามิเตอร์สำหรับสภาพแวดล้อมเริ่มต้น
@@ -420,7 +418,7 @@ bedrockChatParams.set("prod", {
 ```
 
 > [!Note]
-> ผู้ใช้ที่มีอยู่สามารถใช้ `cdk.json` ต่อไปได้โดยไม่ต้องมีการเปลี่ยนแปลง วิธีการใช้ `parameter.ts` แนะนำสำหรับการ deploy ใหม่หรือเมื่อคุณต้องจัดการหลายสภาพแวดล้อม
+> ผู้ใช้ที่มีอยู่สามารถใช้ `cdk.json` ต่อไปได้โดยไม่ต้องเปลี่ยนแปลงใดๆ แนะนำให้ใช้วิธี `parameter.ts` สำหรับการ deploy ใหม่หรือเมื่อคุณต้องจัดการหลายสภาพแวดล้อม
 
 ### การ Deploy หลายสภาพแวดล้อม
 
@@ -455,44 +453,44 @@ npx cdk deploy --all
 1. **การตั้งชื่อ Stack**:
 
    - Stack หลักสำหรับแต่ละสภาพแวดล้อมจะมีคำนำหน้าด้วยชื่อสภาพแวดล้อม (เช่น `dev-BedrockChatStack`, `prod-BedrockChatStack`)
-   - อย่างไรก็ตาม stack บอทที่กำหนดเอง (`BrChatKbStack*`) และ stack การเผยแพร่ API (`ApiPublishmentStack*`) จะไม่ได้รับคำนำหน้าสภาพแวดล้อมเนื่องจากถูกสร้างขึ้นแบบไดนามิกในขณะรันไทม์
+   - อย่างไรก็ตาม stack บอทที่กำหนดเอง (`BrChatKbStack*`) และ stack การเผยแพร่ API (`ApiPublishmentStack*`) จะไม่ได้รับคำนำหน้าสภาพแวดล้อมเนื่องจากถูกสร้างขึ้นแบบไดนามิกในระหว่างการทำงาน
 
 2. **การตั้งชื่อทรัพยากร**:
 
    - ทรัพยากรบางอย่างเท่านั้นที่จะได้รับคำนำหน้าสภาพแวดล้อมในชื่อ (เช่น ตาราง `dev_ddb_export`, `dev-FrontendWebAcl`)
-   - ทรัพยากรส่วนใหญ่ยังคงใช้ชื่อเดิมแต่ถูกแยกโดยอยู่ใน stack ที่แตกต่างกัน
+   - ทรัพยากรส่วนใหญ่ยังคงใช้ชื่อเดิมแต่แยกกันโดยอยู่ใน stack ที่แตกต่างกัน
 
 3. **การระบุสภาพแวดล้อม**:
 
-   - ทรัพยากรทั้งหมดจะถูกติดแท็กด้วยแท็ก `CDKEnvironment` ที่มีชื่อสภาพแวดล้อม
+   - ทรัพยากรทั้งหมดจะถูกแท็กด้วยแท็ก `CDKEnvironment` ที่มีชื่อสภาพแวดล้อม
    - คุณสามารถใช้แท็กนี้เพื่อระบุว่าทรัพยากรนั้นเป็นของสภาพแวดล้อมใด
    - ตัวอย่าง: `CDKEnvironment: dev` หรือ `CDKEnvironment: prod`
 
 4. **การแทนที่สภาพแวดล้อมเริ่มต้น**: หากคุณกำหนดสภาพแวดล้อม "default" ใน `parameter.ts` มันจะแทนที่การตั้งค่าใน `cdk.json` หากต้องการใช้ `cdk.json` ต่อไป อย่ากำหนดสภาพแวดล้อม "default" ใน `parameter.ts`
 
-5. **ข้อกำหนดของสภาพแวดล้อม**: ในการสร้างสภาพแวดล้อมอื่นนอกเหนือจาก "default" คุณต้องใช้ `parameter.ts` การใช้ตัวเลือก `-c envName` เพียงอย่างเดียวไม่เพียงพอหากไม่มีการกำหนดสภาพแวดล้อมที่เกี่ยวข้อง
+5. **ข้อกำหนดสภาพแวดล้อม**: ในการสร้างสภาพแวดล้อมอื่นนอกเหนือจาก "default" คุณต้องใช้ `parameter.ts` การใช้ตัวเลือก `-c envName` เพียงอย่างเดียวไม่เพียงพอหากไม่มีการกำหนดสภาพแวดล้อมที่เกี่ยวข้อง
 
-6. **การแยกทรัพยากร**: แต่ละสภาพแวดล้อมจะสร้างชุดทรัพยากรของตัวเอง ทำให้คุณสามารถมีสภาพแวดล้อมสำหรับการพัฒนา การทดสอบ และการผลิตในบัญชี AWS เดียวกันโดยไม่มีความขัดแย้ง
+6. **การแยกทรัพยากร**: แต่ละสภาพแวดล้อมจะสร้างชุดทรัพยากรของตัวเอง ทำให้คุณสามารถมีสภาพแวดล้อมสำหรับการพัฒนา การทดสอบ และการผลิตในบัญชี AWS เดียวกันได้โดยไม่มีความขัดแย้ง
 
 ## อื่นๆ
 
-### การลบทรัพยากร
+### ลบทรัพยากร
 
-หากใช้ cli และ CDK กรุณาใช้คำสั่ง `npx cdk destroy` หากไม่ได้ใช้ ให้เข้าไปที่ [CloudFormation](https://console.aws.amazon.com/cloudformation/home) จากนั้นลบ `BedrockChatStack` และ `FrontendWafStack` ด้วยตนเอง โปรดทราบว่า `FrontendWafStack` อยู่ในภูมิภาค `us-east-1`
+หากใช้ cli และ CDK โปรดใช้คำสั่ง `npx cdk destroy` หากไม่ได้ใช้ ให้เข้าถึง [CloudFormation](https://console.aws.amazon.com/cloudformation/home) จากนั้นลบ `BedrockChatStack` และ `FrontendWafStack` ด้วยตนเอง โปรดทราบว่า `FrontendWafStack` อยู่ในภูมิภาค `us-east-1`
 
-### การตั้งค่าภาษา 
+### การตั้งค่าภาษา
 
-แอสเซทนี้ตรวจจับภาษาโดยอัตโนมัติโดยใช้ [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) คุณสามารถเปลี่ยนภาษาได้จากเมนูแอปพลิเคชัน หรือใช้ Query String เพื่อตั้งค่าภาษาดังตัวอย่างด้านล่าง
+ทรัพยากรนี้ตรวจจับภาษาโดยอัตโนมัติโดยใช้ [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) คุณสามารถเปลี่ยนภาษาได้จากเมนูแอปพลิเคชัน หรือคุณสามารถใช้ Query String เพื่อตั้งค่าภาษาได้ดังที่แสดงด้านล่าง
 
 > `https://example.com?lng=ja`
 
 ### ปิดการลงทะเบียนด้วยตนเอง
 
-ตัวอย่างนี้เปิดใช้งานการลงทะเบียนด้วยตนเองโดยค่าเริ่มต้น หากต้องการปิดการลงทะเบียนด้วยตนเอง ให้เปิดไฟล์ [cdk.json](./cdk/cdk.json) และเปลี่ยน `selfSignUpEnabled` เป็น `false` หากคุณกำหนดค่า [ผู้ให้บริการตัวตนภายนอก](#external-identity-provider) ค่านี้จะถูกละเว้นและปิดใช้งานโดยอัตโนมัติ
+ตัวอย่างนี้เปิดใช้งานการลงทะเบียนด้วยตนเองโดยค่าเริ่มต้น หากต้องการปิดการลงทะเบียนด้วยตนเอง ให้เปิด [cdk.json](./cdk/cdk.json) และเปลี่ยน `selfSignUpEnabled` เป็น `false` หากคุณกำหนดค่า [ผู้ให้บริการตัวตนภายนอก](#external-identity-provider) ค่านี้จะถูกละเว้นและปิดใช้งานโดยอัตโนมัติ
 
 ### จำกัดโดเมนสำหรับอีเมลที่ใช้ลงทะเบียน
 
-โดยค่าเริ่มต้น ตัวอย่างนี้ไม่จำกัดโดเมนสำหรับอีเมลที่ใช้ลงทะเบียน หากต้องการอนุญาตการลงทะเบียนเฉพาะจากโดเมนที่กำหนด ให้เปิดไฟล์ `cdk.json` และระบุโดเมนเป็นรายการใน `allowedSignUpEmailDomains`
+โดยค่าเริ่มต้น ตัวอย่างนี้ไม่จำกัดโดเมนสำหรับอีเมลที่ใช้ลงทะเบียน หากต้องการอนุญาตการลงทะเบียนเฉพาะจากโดเมนที่กำหนด ให้เปิด `cdk.json` และระบุโดเมนเป็นรายการใน `allowedSignUpEmailDomains`
 
 ```ts
 "allowedSignUpEmailDomains": ["example.com"],
@@ -504,11 +502,11 @@ npx cdk deploy --all
 
 ### WAF ส่วนหน้าแบบทางเลือก
 
-สำหรับการกระจาย CloudFront WebACLs ของ AWS WAF ต้องถูกสร้างในภูมิภาค us-east-1 ในบางองค์กร การสร้างทรัพยากรนอกภูมิภาคหลักถูกจำกัดโดยนโยบาย ในสภาพแวดล้อมดังกล่าว การปรับใช้ CDK อาจล้มเหลวเมื่อพยายามจัดเตรียม Frontend WAF ใน us-east-1
+สำหรับการกระจาย CloudFront, AWS WAF WebACLs ต้องถูกสร้างในภูมิภาค us-east-1 ในบางองค์กร การสร้างทรัพยากรนอกภูมิภาคหลักถูกจำกัดโดยนโยบาย ในสภาพแวดล้อมดังกล่าว การปรับใช้ CDK อาจล้มเหลวเมื่อพยายามจัดเตรียม Frontend WAF ใน us-east-1
 
-เพื่อรองรับข้อจำกัดเหล่านี้ สแต็ก Frontend WAF จึงเป็นทางเลือก เมื่อปิดใช้งาน การกระจาย CloudFront จะถูกปรับใช้โดยไม่มี WebACL ซึ่งหมายความว่าคุณจะไม่มีการควบคุมการอนุญาต/ปฏิเสธ IP ที่ขอบส่วนหน้า การยืนยันตัวตนและการควบคุมแอปพลิเคชันอื่นๆ ทั้งหมดยังคงทำงานตามปกติ โปรดทราบว่าการตั้งค่านี้มีผลเฉพาะกับ Frontend WAF (ขอบเขต CloudFront) WAF ของ Published API (ระดับภูมิภาค) ยังคงไม่ได้รับผลกระทบ
+เพื่อรองรับข้อจำกัดเหล่านี้ สแตก Frontend WAF จึงเป็นทางเลือก เมื่อปิดใช้งาน การกระจาย CloudFront จะถูกปรับใช้โดยไม่มี WebACL นั่นหมายความว่าคุณจะไม่มีการควบคุมการอนุญาต/ปฏิเสธ IP ที่ขอบส่วนหน้า การรับรองความถูกต้องและการควบคุมแอปพลิเคชันอื่นๆ ทั้งหมดยังคงทำงานตามปกติ โปรดทราบว่าการตั้งค่านี้มีผลเฉพาะกับ Frontend WAF (ขอบเขต CloudFront) WAF ของ Published API (ระดับภูมิภาค) ยังคงไม่ได้รับผลกระทบ
 
-หากต้องการปิดการใช้งาน Frontend WAF ให้ตั้งค่าต่อไปนี้ใน `parameter.ts` (วิธีที่แนะนำแบบ Type-Safe):
+หากต้องการปิดใช้งาน Frontend WAF ให้ตั้งค่าต่อไปนี้ใน `parameter.ts` (วิธีที่แนะนำแบบ Type-Safe):
 
 ```ts
 bedrockChatParams.set("default", {
@@ -516,7 +514,7 @@ bedrockChatParams.set("default", {
 });
 ```
 
-หรือหากใช้ `cdk/cdk.json` แบบเดิม ให้ตั้งค่าต่อไปนี้:
+หรือหากใช้ `cdk/cdk.json` แบบเก่า ให้ตั้งค่าต่อไปนี้:
 
 ```json
 "enableFrontendWaf": false
@@ -540,20 +538,20 @@ bedrockChatParams.set("default", {
 
 ### กำหนดค่า RAG Replicas
 
-`enableRagReplicas` เป็นตัวเลือกใน [cdk.json](./cdk/cdk.json) ที่ควบคุมการตั้งค่าเรพลิก้าสำหรับฐานข้อมูล RAG โดยเฉพาะ Knowledge Bases ที่ใช้ Amazon OpenSearch Serverless
+`enableRagReplicas` เป็นตัวเลือกใน [cdk.json](./cdk/cdk.json) ที่ควบคุมการตั้งค่าการทำซ้ำสำหรับฐานข้อมูล RAG โดยเฉพาะ Knowledge Bases ที่ใช้ Amazon OpenSearch Serverless
 
 - **ค่าเริ่มต้น**: true
-- **true**: เพิ่มความพร้อมใช้งานโดยเปิดใช้งานเรพลิก้าเพิ่มเติม เหมาะสำหรับสภาพแวดล้อมการผลิตแต่เพิ่มค่าใช้จ่าย
-- **false**: ลดค่าใช้จ่ายโดยใช้เรพลิก้าน้อยลง เหมาะสำหรับการพัฒนาและทดสอบ
+- **true**: เพิ่มความพร้อมใช้งานโดยเปิดใช้งานการทำซ้ำเพิ่มเติม เหมาะสำหรับสภาพแวดล้อมการผลิตแต่เพิ่มค่าใช้จ่าย
+- **false**: ลดค่าใช้จ่ายโดยใช้การทำซ้ำน้อยลง เหมาะสำหรับการพัฒนาและทดสอบ
 
-นี่เป็นการตั้งค่าระดับบัญชี/ภูมิภาค ที่มีผลต่อแอปพลิเคชันทั้งหมดแทนที่จะเป็นบอทแต่ละตัว
+นี่เป็นการตั้งค่าระดับบัญชี/ภูมิภาค ซึ่งมีผลกับแอปพลิเคชันทั้งหมดแทนที่จะเป็นบอทแต่ละตัว
 
 > [!Note]
-> ตั้งแต่มิถุนายน 2024 Amazon OpenSearch Serverless รองรับ 0.5 OCU ช่วยลดค่าใช้จ่ายเริ่มต้นสำหรับงานขนาดเล็ก การปรับใช้ในการผลิตสามารถเริ่มต้นด้วย 2 OCUs ในขณะที่งานพัฒนา/ทดสอบสามารถใช้ 1 OCU OpenSearch Serverless ปรับขนาดอัตโนมัติตามความต้องการของงาน สำหรับรายละเอียดเพิ่มเติม เยี่ยมชม [ประกาศ](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/)
+> ตั้งแต่เดือนมิถุนายน 2024 Amazon OpenSearch Serverless รองรับ 0.5 OCU ซึ่งลดค่าใช้จ่ายเริ่มต้นสำหรับงานขนาดเล็ก การปรับใช้งานในการผลิตสามารถเริ่มต้นด้วย 2 OCUs ในขณะที่งานพัฒนา/ทดสอบสามารถใช้ 1 OCU OpenSearch Serverless ปรับขนาดโดยอัตโนมัติตามความต้องการของงาน สำหรับรายละเอียดเพิ่มเติม เยี่ยมชม [ประกาศ](https://aws.amazon.com/jp/about-aws/whats-new/2024/06/amazon-opensearch-serverless-entry-cost-half-collection-types/)
 
 ### กำหนดค่า Bot Store
 
-คุณลักษณะ bot store ช่วยให้ผู้ใช้สามารถแชร์และค้นพบบอทที่กำหนดเอง คุณสามารถกำหนดค่า bot store ผ่านการตั้งค่าต่อไปนี้ใน [cdk.json](./cdk/cdk.json):
+คุณลักษณะ bot store ช่วยให้ผู้ใช้สามารถแบ่งปันและค้นพบบอทที่กำหนดเอง คุณสามารถกำหนดค่า bot store ผ่านการตั้งค่าต่อไปนี้ใน [cdk.json](./cdk/cdk.json):
 
 ```json
 {
@@ -566,41 +564,31 @@ bedrockChatParams.set("default", {
 ```
 
 - **enableBotStore**: ควบคุมว่าจะเปิดใช้งานคุณลักษณะ bot store หรือไม่ (ค่าเริ่มต้น: `true`)
-- **botStoreLanguage**: กำหนดภาษาหลักสำหรับการค้นหาและค้นพบบอท (ค่าเริ่มต้น: `"en"`) ส่งผลต่อวิธีการทำดัชนีและค้นหาบอทใน bot store โดยปรับการวิเคราะห์ข้อความให้เหมาะสมกับภาษาที่ระบุ
-- **enableBotStoreReplicas**: ควบคุมว่าจะเปิดใช้งานเรพลิก้าสแตนด์บายสำหรับคอลเลกชัน OpenSearch Serverless ที่ใช้โดย bot store หรือไม่ (ค่าเริ่มต้น: `false`) การตั้งค่าเป็น `true` จะช่วยเพิ่มความพร้อมใช้งานแต่เพิ่มค่าใช้จ่าย ในขณะที่ `false` จะลดค่าใช้จ่ายแต่อาจส่งผลต่อความพร้อมใช้งาน
-  > **สำคัญ**: คุณไม่สามารถอัปเดตคุณสมบัตินี้หลังจากที่สร้างคอลเลกชันแล้ว หากคุณพยายามแก้ไขคุณสมบัตินี้ คอลเลกชันจะยังคงใช้ค่าเดิม
+- **botStoreLanguage**: กำหนดภาษาหลักสำหรับการค้นหาและค้นพบบอท (ค่าเริ่มต้น: `"en"`) สิ่งนี้มีผลต่อวิธีการจัดทำดัชนีและค้นหาบอทใน bot store โดยปรับการวิเคราะห์ข้อความให้เหมาะสมกับภาษาที่ระบุ
+- **enableBotStoreReplicas**: ควบคุมว่าจะเปิดใช้งานการทำซ้ำสำรองสำหรับคอลเลกชัน OpenSearch Serverless ที่ใช้โดย bot store หรือไม่ (ค่าเริ่มต้น: `false`) การตั้งค่าเป็น `true` จะปรับปรุงความพร้อมใช้งานแต่เพิ่มค่าใช้จ่าย ในขณะที่ `false` ลดค่าใช้จ่ายแต่อาจส่งผลต่อความพร้อมใช้งาน
+  > **สำคัญ**: คุณไม่สามารถอัปเดตคุณสมบัตินี้หลังจากที่คอลเลกชันถูกสร้างแล้ว หากคุณพยายามแก้ไขคุณสมบัตินี้ คอลเลกชันจะยังคงใช้ค่าเดิม
 
-### การอนุมานข้ามภูมิภาค
+### การอนุมานข้ามภูมิภาคและทั่วโลก
 
-[การอนุมานข้ามภูมิภาค](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) ช่วยให้ Amazon Bedrock สามารถกำหนดเส้นทางคำขออนุมานโมเดลข้ามภูมิภาค AWS หลายภูมิภาคแบบไดนามิก เพื่อเพิ่มประสิทธิภาพและความยืดหยุ่นในช่วงที่มีความต้องการสูง หากต้องการกำหนดค่า ให้แก้ไข `cdk.json`
+[การอนุมานข้ามภูมิภาคและทั่วโลก](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) 
+ช่วยให้ Amazon Bedrock สามารถกำหนดเส้นทางคำขออนุมานโมเดลแบบไดนามิกข้าม
+หลายภูมิภาค AWS เพื่อเพิ่มประสิทธิภาพและความยืดหยุ่นในช่วงที่มีความต้องการสูง
+การอนุมานทั่วโลกจะกำหนดเส้นทางคำขอไปยังภูมิภาคที่เหมาะสมที่สุดตามความล่าช้า
+และความพร้อมใช้งานทั่วโลก ในขณะที่การอนุมานข้ามภูมิภาคจะกำหนดเส้นทางคำขอ
+ภายในภูมิภาค AWS เดียวกัน เช่น ภายใน US บาง SCPs อาจจำกัดอย่างใดอย่างหนึ่ง
+หรือทั้งสองอย่าง ดังนั้นคุณสามารถกำหนดค่าแยกกันได้ โดยค่าเริ่มต้นทั้งสองอย่าง
+จะถูกเปิดใช้งาน
+
+หากต้องการกำหนดค่า ให้เปลี่ยนการตั้งค่าต่อไปนี้ใน `cdk.json` หรือ `parameters.ts`:
 
 ```json
-"enableBedrockCrossRegionInference": true
+"enableBedrockGlobalInference": false,
+"enableBedrockCrossRegionInference": false,
 ```
 
 ### Lambda SnapStart
 
-[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) ช่วยปรับปรุงเวลาเริ่มต้นเย็นสำหรับฟังก์ชัน Lambda ให้ตอบสนองได้เร็วขึ้นเพื่อประสบการณ์ผู้ใช้ที่ดีขึ้น ในทางกลับกัน สำหรับฟังก์ชัน Python จะมี[ค่าใช้จ่ายขึ้นอยู่กับขนาดแคช](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) และ[ไม่พร้อมใช้งานในบางภูมิภาค](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) ในปัจจุบัน หากต้องการปิดการใช้งาน SnapStart ให้แก้ไข `cdk.json`
-
-```json
-"enableLambdaSnapStart": false
-```
-
-### กำหนดค่าโดเมนแบบกำหนดเอง
-
-คุณสามารถกำหนดค่าโดเมนแบบกำหนดเองสำหรับการกระจาย CloudFront โดยตั้งค่าพารามิเตอร์ต่อไปนี้ใน [cdk.json](./cdk/cdk.json):
-
-```json
-{
-  "alternateDomainName": "chat.example.com",
-  "hostedZoneId": "Z0123456789ABCDEF"
-}
-```
-
-- `alternateDomainName`: ชื่อโดเมนแบบกำหนดเองสำหรับแอปพลิเคชันแชทของคุณ (เช่น chat.example.com)
-- `hostedZoneId`: ID ของโซนโฮสต์ Route 53 ที่จะสร้างเรคอร์ดโดเมน
-
-เม
+[Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) ปรับปรุงเวลาเริ่มต้นเย็นสำหรับฟังก์ชัน Lambda ให้มีเวลาตอบสนองที่เร็วขึ้นเพื่อประสบการณ์ผู้ใช้ที่ดีขึ้น ในทางกลับกัน สำหรับฟังก์ชัน Python จะมี[ค่าใช้จ่ายขึ้นอยู่กับขนาดแคช](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) และ[ไม่พร้อมใช้งานในบางภูมิภาค](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions)
 
 ## ติดต่อ
 
@@ -617,6 +605,6 @@ bedrockChatParams.set("default", {
 
 [![bedrock chat contributors](https://contrib.rocks/image?repo=aws-samples/bedrock-chat&max=1000)](https://github.com/aws-samples/bedrock-chat/graphs/contributors)
 
-## การอนุญาตใช้งาน
+## สัญญาอนุญาต
 
-ไลบรารีนี้ได้รับอนุญาตภายใต้สัญญาอนุญาต MIT-0 โปรดดู[ไฟล์การอนุญาตใช้งาน](./LICENSE)
+ไลบรารีนี้ได้รับอนุญาตภายใต้สัญญาอนุญาต MIT-0 โปรดดู[ไฟล์สัญญาอนุญาต](./LICENSE)

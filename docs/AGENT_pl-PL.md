@@ -1,40 +1,40 @@
-# Agent oparty na LLM (ReAct)
+# Agent zasilany LLM (ReAct)
 
 ## Czym jest Agent (ReAct)?
 
-Agent to zaawansowany system AI wykorzystujący duże modele językowe (LLM) jako główny silnik obliczeniowy. Łączy on możliwości rozumowania LLM z dodatkowymi funkcjonalnościami, takimi jak planowanie i używanie narzędzi, aby autonomicznie wykonywać złożone zadania. Agenty potrafią rozkładać skomplikowane zapytania na części, generować rozwiązania krok po kroku oraz wchodzić w interakcję z zewnętrznymi narzędziami lub API w celu gromadzenia informacji lub wykonywania podzadań.
+Agent to zaawansowany system AI wykorzystujący duże modele językowe (LLM) jako główny silnik obliczeniowy. Łączy on możliwości rozumowania LLM z dodatkowymi funkcjonalnościami, takimi jak planowanie i wykorzystanie narzędzi, aby autonomicznie wykonywać złożone zadania. Agenci potrafią rozkładać skomplikowane zapytania na części, generować rozwiązania krok po kroku oraz wchodzić w interakcję z zewnętrznymi narzędziami lub API w celu zbierania informacji lub wykonywania podzadań.
 
-Ten przykład implementuje Agenta wykorzystując podejście [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct umożliwia agentowi rozwiązywanie złożonych zadań poprzez łączenie rozumowania i działań w iteracyjnej pętli sprzężenia zwrotnego. Agent wielokrotnie przechodzi przez trzy kluczowe etapy: Myślenie, Działanie i Obserwację. Analizuje bieżącą sytuację przy użyciu LLM, decyduje o następnym działaniu do podjęcia, wykonuje działanie przy użyciu dostępnych narzędzi lub API i uczy się z zaobserwowanych wyników. Ten ciągły proces pozwala agentowi adaptować się do dynamicznych środowisk, poprawiać dokładność rozwiązywania zadań i dostarczać rozwiązania dostosowane do kontekstu.
+Ten przykład implementuje Agenta przy użyciu podejścia [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct umożliwia agentowi rozwiązywanie złożonych zadań poprzez połączenie rozumowania i działań w iteracyjnej pętli sprzężenia zwrotnego. Agent wielokrotnie przechodzi przez trzy kluczowe etapy: Myślenie, Działanie i Obserwację. Analizuje bieżącą sytuację przy użyciu LLM, decyduje o następnym działaniu do podjęcia, wykonuje działanie przy użyciu dostępnych narzędzi lub API i uczy się na podstawie zaobserwowanych wyników. Ten ciągły proces pozwala agentowi adaptować się do dynamicznych środowisk, poprawiać dokładność rozwiązywania zadań i dostarczać rozwiązania dostosowane do kontekstu.
 
 Implementacja jest oparta na [Strands Agents](https://strandsagents.com/), open-source'owym SDK, które przyjmuje podejście oparte na modelach do budowania agentów AI. Strands zapewnia lekki, elastyczny framework do tworzenia niestandardowych narzędzi przy użyciu dekoratorów Pythona i wspiera wielu dostawców modeli, w tym Amazon Bedrock.
 
-## Przykład Zastosowania
+## Przykład Przypadku Użycia
 
 Agent wykorzystujący ReAct może być stosowany w różnych scenariuszach, zapewniając dokładne i wydajne rozwiązania.
 
 ### Text-to-SQL
 
-Użytkownik pyta o "całkowitą sprzedaż z ostatniego kwartału." Agent interpretuje to zapytanie, przekształca je w zapytanie SQL, wykonuje je w bazie danych i przedstawia wyniki.
+Użytkownik pyta o "całkowitą sprzedaż z ostatniego kwartału." Agent interpretuje to żądanie, przekształca je w zapytanie SQL, wykonuje je w bazie danych i przedstawia wyniki.
 
 ### Prognozowanie Finansowe
 
 Analityk finansowy potrzebuje prognozować przychody na następny kwartał. Agent zbiera odpowiednie dane, wykonuje niezbędne obliczenia przy użyciu modeli finansowych i generuje szczegółowy raport prognozy, zapewniając dokładność przewidywań.
 
-## Korzystanie z funkcji Agent
+## Aby używać funkcji Agenta
 
 Aby włączyć funkcjonalność Agenta dla swojego spersonalizowanego chatbota, wykonaj następujące kroki:
 
-Istnieją dwa sposoby korzystania z funkcji Agent:
+Istnieją dwa sposoby korzystania z funkcji Agenta:
 
-### Korzystanie z narzędzi
+### Korzystanie z Narzędzi
 
-Aby włączyć funkcjonalność Agenta z wykorzystaniem narzędzi dla swojego spersonalizowanego chatbota, wykonaj następujące kroki:
+Aby włączyć funkcjonalność Agenta z Narzędziami dla swojego spersonalizowanego chatbota, wykonaj następujące kroki:
 
 1. Przejdź do sekcji Agent na ekranie konfiguracji bota.
 
 2. W sekcji Agent znajdziesz listę dostępnych narzędzi, które mogą być używane przez Agenta. Domyślnie wszystkie narzędzia są wyłączone.
 
-3. Aby aktywować narzędzie, po prostu przełącz przełącznik obok wybranego narzędzia. Po włączeniu narzędzia Agent będzie miał do niego dostęp i będzie mógł z niego korzystać podczas przetwarzania zapytań użytkownika.
+3. Aby aktywować narzędzie, po prostu przełącz przełącznik obok wybranego narzędzia. Po włączeniu narzędzia Agent będzie miał do niego dostęp i może z niego korzystać podczas przetwarzania zapytań użytkownika.
 
 ![](./imgs/agent_tools.png)
 
@@ -59,7 +59,7 @@ Aby stworzyć własne narzędzia dla Agenta przy użyciu Strands SDK, postępuj 
 
 ### O narzędziach Strands
 
-Strands dostarcza prosty dekorator `@tool`, który przekształca zwykłe funkcje Pythona w narzędzia agenta AI. Dekorator automatycznie wyodrębnia informacje z docstringa i podpowiedzi typów Twojej funkcji, aby stworzyć specyfikacje narzędzi, które LLM może zrozumieć i wykorzystać. To podejście wykorzystuje natywne funkcje Pythona dla przejrzystego, funkcjonalnego doświadczenia w tworzeniu narzędzi.
+Strands udostępnia prosty dekorator `@tool`, który przekształca zwykłe funkcje Pythona w narzędzia agenta AI. Dekorator automatycznie wyodrębnia informacje z docstringa i podpowiedzi typów Twojej funkcji, aby utworzyć specyfikacje narzędzi, które LLM może zrozumieć i wykorzystać. To podejście wykorzystuje natywne funkcje Pythona dla przejrzystego, funkcjonalnego doświadczenia w tworzeniu narzędzi.
 
 Szczegółowe informacje o narzędziach Strands znajdziesz w [dokumentacji Python Tools](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
@@ -140,7 +140,7 @@ def create_calculator_tool(bot: BotModel | None = None):
     return calculator
 ```
 
-### Wymagania dotyczące formatu zwracanego
+### Wymagania dotyczące formatu zwracanych danych
 
 Wszystkie narzędzia Strands muszą zwracać słownik o następującej strukturze:
 
@@ -156,18 +156,18 @@ Wszystkie narzędzia Strands muszą zwracać słownik o następującej strukturz
 ```
 
 - Użyj `{"text": "wiadomość"}` dla prostych odpowiedzi tekstowych
-- Użyj `{"json": data}` dla złożonych danych, które powinny zachować strukturę
+- Użyj `{"json": data}` dla złożonych danych, które powinny zostać zachowane jako ustrukturyzowane informacje
 - Zawsze ustawiaj `status` na `"success"` lub `"error"`
 
-### Wytyczne implementacji
+### Wytyczne implementacyjne
 
-- Nazwa funkcji i docstring są używane, gdy LLM rozważa, którego narzędzia użyć. Docstring jest osadzony w promptcie, więc dokładnie opisz cel i parametry narzędzia.
+- Nazwa funkcji i docstring są używane, gdy LLM rozważa, którego narzędzia użyć. Docstring jest osadzony w prompcie, więc dokładnie opisz cel i parametry narzędzia.
 
-- Zapoznaj się z przykładową implementacją [narzędzia do obliczania BMI](../examples/agents/tools/bmi/bmi_strands.py). Ten przykład pokazuje, jak stworzyć narzędzie obliczające Wskaźnik Masy Ciała (BMI) przy użyciu dekoratora `@tool` i wzorca domknięcia Strands.
+- Zapoznaj się z przykładową implementacją [narzędzia do obliczania BMI](../examples/agents/tools/bmi/bmi_strands.py). Ten przykład pokazuje, jak stworzyć narzędzie obliczające wskaźnik masy ciała (BMI) przy użyciu dekoratora `@tool` i wzorca domknięcia Strands.
 
-- Po zakończeniu tworzenia umieść plik implementacji w katalogu [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Następnie otwórz [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) i edytuj `get_strands_registered_tools`, aby dodać swoje nowe narzędzie.
+- Po zakończeniu programowania umieść plik implementacji w katalogu [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Następnie otwórz [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) i edytuj `get_strands_registered_tools`, aby uwzględnić nowe narzędzie.
 
-- [Opcjonalnie] Dodaj czytelne nazwy i opisy dla frontendu. Ten krok jest opcjonalny, ale jeśli go nie wykonasz, zostanie użyta nazwa i opis funkcji. Ponieważ są one przeznaczone dla LLM, zaleca się dodanie przyjaznych dla użytkownika objaśnień dla lepszego UX.
+- [Opcjonalnie] Dodaj przejrzyste nazwy i opisy dla frontendu. Ten krok jest opcjonalny, ale jeśli go nie wykonasz, zostanie użyta nazwa i opis narzędzia z Twojej funkcji. Ponieważ są one przeznaczone do użytku przez LLM, zaleca się dodanie przyjaznych dla użytkownika objaśnień dla lepszego UX.
 
   - Edytuj pliki i18n. Otwórz [en/index.ts](../frontend/src/i18n/en/index.ts) i dodaj własną `name` i `description` w `agent.tools`.
   - Edytuj również `xx/index.ts`. Gdzie `xx` reprezentuje kod kraju, który chcesz.

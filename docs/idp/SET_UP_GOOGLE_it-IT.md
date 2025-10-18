@@ -2,9 +2,9 @@
 
 ## Step 1: Creare un Client OAuth 2.0 di Google
 
-1. Vai alla Console per Sviluppatori Google.
-2. Crea un nuovo progetto o seleziona uno esistente.
-3. Naviga su "Credenziali", poi clicca su "Crea credenziali" e scegli "ID client OAuth".
+1. Accedi alla Console per Sviluppatori Google.
+2. Crea un nuovo progetto o selezionane uno esistente.
+3. Vai su "Credenziali", poi clicca su "Crea credenziali" e scegli "ID client OAuth".
 4. Configura la schermata di consenso se richiesto.
 5. Per il tipo di applicazione, seleziona "Applicazione web".
 6. Lascia l'URI di reindirizzamento vuoto per ora per impostarlo successivamente.[Vedi Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
@@ -19,11 +19,11 @@ Per i dettagli, visita il [documento ufficiale di Google](https://support.google
 3. Seleziona "Other type of secrets".
 4. Inserisci il clientId e clientSecret di Google OAuth come coppie chiave-valore.
 
-   1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
-   2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. Chiave: clientId, Valore: <YOUR_GOOGLE_CLIENT_ID>
+   2. Chiave: clientSecret, Valore: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Segui le istruzioni per assegnare un nome e descrivere il segreto. Prendi nota del nome del segreto poiché ti servirà nel codice CDK. Per esempio, googleOAuthCredentials. (Da usare nello Step 3 come variabile <YOUR_SECRET_NAME>)
-6. Rivedi e salva il segreto.
+5. Segui le istruzioni per nominare e descrivere il segreto. Prendi nota del nome del segreto poiché ti servirà nel codice CDK. Per esempio, googleOAuthCredentials. (Da usare nello Step 3 come nome variabile <YOUR_SECRET_NAME>)
+6. Rivedi e memorizza il segreto.
 
 ### Attenzione
 
@@ -54,7 +54,7 @@ in questo modo:
 
 #### Unicità
 
-Il userPoolDomainPrefix deve essere globalmente unico tra tutti gli utenti di Amazon Cognito. Se scegli un prefisso che è già in uso da un altro account AWS, la creazione del dominio del pool di utenti fallirà. È una buona pratica includere identificatori, nomi di progetti o nomi di ambiente nel prefisso per garantirne l'unicità.
+Il userPoolDomainPrefix deve essere globalmente unico tra tutti gli utenti di Amazon Cognito. Se scegli un prefisso già in uso da un altro account AWS, la creazione del dominio del pool di utenti fallirà. È una buona pratica includere identificatori, nomi di progetto o nomi di ambiente nel prefisso per garantirne l'unicità.
 
 ## Step 4: Distribuisci il tuo Stack CDK
 

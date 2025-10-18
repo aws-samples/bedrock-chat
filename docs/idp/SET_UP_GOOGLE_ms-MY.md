@@ -8,9 +8,9 @@
 4. Konfigurasikan skrin persetujuan jika diminta.
 5. Untuk jenis aplikasi, pilih "Web application".
 6. Biarkan URI pengalihan kosong buat masa ini untuk ditetapkan kemudian.[Lihat Langkah5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
-7. Setelah dicipta, catat ID Klien dan Rahsia Klien.
+7. Setelah dicipta, catatkan ID Klien dan Rahsia Klien.
 
-Untuk maklumat lanjut, layari [dokumen rasmi Google](https://support.google.com/cloud/answer/6158849?hl=en)
+Untuk maklumat lanjut, lawati [dokumen rasmi Google](https://support.google.com/cloud/answer/6158849?hl=en)
 
 ## Langkah 2: Simpan Kelayakan Google OAuth dalam AWS Secrets Manager
 
@@ -22,16 +22,16 @@ Untuk maklumat lanjut, layari [dokumen rasmi Google](https://support.google.com/
    1. Kunci: clientId, Nilai: <YOUR_GOOGLE_CLIENT_ID>
    2. Kunci: clientSecret, Nilai: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Ikuti arahan untuk menamakan dan menerangkan rahsia tersebut. Ambil perhatian nama rahsia kerana anda akan memerlukannya dalam kod CDK anda. Contohnya, googleOAuthCredentials.(Gunakan dalam Langkah 3 nama pembolehubah <YOUR_SECRET_NAME>)
+5. Ikuti arahan untuk menamakan dan menerangkan rahsia tersebut. Ambil perhatian pada nama rahsia kerana anda akan memerlukannya dalam kod CDK anda. Contohnya, googleOAuthCredentials.(Gunakan dalam Langkah 3 nama pembolehubah <YOUR_SECRET_NAME>)
 6. Semak dan simpan rahsia tersebut.
 
 ### Perhatian
 
-Nama kunci mesti sepadan tepat dengan rentetan 'clientId' dan 'clientSecret'.
+Nama kunci mesti sepadan dengan tepat dengan rentetan 'clientId' dan 'clientSecret'.
 
 ## Langkah 3: Kemas kini cdk.json
 
-Dalam fail cdk.json anda, tambah ID Provider dan SecretName ke dalam fail cdk.json.
+Dalam fail cdk.json anda, tambahkan ID Provider dan SecretName ke dalam fail cdk.json.
 
 seperti berikut:
 
@@ -54,7 +54,7 @@ seperti berikut:
 
 #### Keunikan
 
-Prefix userPoolDomain mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih prefix yang telah digunakan oleh akaun AWS yang lain, penciptaan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam prefix untuk memastikan keunikan.
+userPoolDomainPrefix mestilah unik secara global merentasi semua pengguna Amazon Cognito. Jika anda memilih awalan yang telah digunakan oleh akaun AWS yang lain, pembuatan domain kumpulan pengguna akan gagal. Adalah amalan yang baik untuk memasukkan pengecam, nama projek, atau nama persekitaran dalam awalan untuk memastikan keunikan.
 
 ## Langkah 4: Melancarkan Tindanan CDK Anda
 
@@ -64,6 +64,6 @@ Lancarkan tindanan CDK anda ke AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Langkah 5: Kemas Kini Klien OAuth Google dengan URI Pengalihan Cognito
+## Langkah 5: Kemas Kini Klien OAuth Google dengan URI Lencongan Cognito
 
-Selepas menggunakan tindanan, AuthApprovedRedirectURI akan dipaparkan pada output CloudFormation. Kembali ke Konsol Pembangun Google dan kemas kini klien OAuth dengan URI pengalihan yang betul.
+Selepas menggunakan tindanan, AuthApprovedRedirectURI akan dipaparkan pada output CloudFormation. Kembali ke Konsol Pembangun Google dan kemas kini klien OAuth dengan URI lencongan yang betul.

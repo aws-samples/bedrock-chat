@@ -2,7 +2,7 @@
 
 ## Forutsetninger
 
-Admin-brukeren må være medlem av en gruppe kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at bruker-pool-ID-en kan refereres ved å gå til CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Adminbrukeren må være medlem av en gruppe kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at brukergruppe-ID-en kan refereres til ved å gå til CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
@@ -13,17 +13,17 @@ Offentlige boter kan nå merkes som "Essensielle" av administratorer. Boter som 
 ### Eksempler
 
 - HR Assistent Bot: Hjelper ansatte med HR-relaterte spørsmål og oppgaver.
-- IT Support Bot: Gir assistanse for interne tekniske problemer og kontoadministrasjon.
+- IT Support Bot: Gir assistanse med interne tekniske problemer og kontoadministrasjon.
 - Intern Policy Guide Bot: Svarer på vanlige spørsmål om oppmøteregler, sikkerhetspolicyer og andre interne forskrifter.
 - Onboarding Bot for Nyansatte: Veileder nyansatte gjennom prosedyrer og systembruk på deres første dag.
-- Personalfordel Informasjons Bot: Forklarer bedriftens fordelsordninger og velferdstjenester.
+- Personalfordeler Bot: Forklarer bedriftens fordelsordninger og velferdstjenester.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## Tilbakemeldingssløyfe
 
-Resultatet fra LLM møter ikke alltid brukerens forventninger. Noen ganger klarer det ikke å tilfredsstille brukerens behov. For å effektivt "integrere" LLMer i forretningsdrift og dagligliv, er det essensielt å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppsto. Basert på analyseresultatene kan brukere justere prompts, RAG-datakilder og parametere tilsvarende.
+Resultatet fra LLM møter ikke alltid brukerens forventninger. Noen ganger klarer det ikke å tilfredsstille brukerens behov. For å effektivt "integrere" LLMer i forretningsdrift og dagligliv, er det essensielt å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppstod. Basert på analyseresultatene kan brukere justere promptene, RAG-datakildene og parametrene tilsvarende.
 
 ![](./imgs/feedback_loop.png)
 
@@ -37,13 +37,13 @@ Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med f
 
 ![](./imgs/admin_bot_analytics.png)
 
-## Merknader
+## Notater
 
-- Som angitt i [arkitekturen](../README.md#architecture), vil administratorfunksjonene henvise til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres én gang i timen, vil de nyeste samtalene kanskje ikke gjenspeiles umiddelbart.
+- Som nevnt i [arkitekturen](../README.md#architecture), vil admin-funksjonene referere til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres én gang i timen, vil de nyeste samtalene ikke nødvendigvis gjenspeiles umiddelbart.
 
-- I offentlig bot-bruk vil bots som ikke har vært brukt i det hele tatt i den angitte perioden ikke bli listet.
+- I offentlig bot-bruk vil ikke bots som ikke har blitt brukt i det hele tatt i den angitte perioden bli listet.
 
-- I brukerstatistikken vil brukere som ikke har brukt systemet i det hele tatt i den angitte perioden ikke bli listet.
+- I brukerstatistikk vil ikke brukere som ikke har brukt systemet i det hele tatt i den angitte perioden bli listet.
 
 > [!Important]
 > Hvis du bruker flere miljøer (dev, prod, osv.), vil Athena-databasenavnet inkludere miljøprefikset. I stedet for `bedrockchatstack_usage_analysis`, vil databasenavnet være:
@@ -60,11 +60,11 @@ Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med f
 
 ## Last ned samtaledata
 
-Du kan spørre samtaleloggene med Athena ved hjelp av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemeldinger kan refereres i `MessageMap`-attributtet.
+Du kan spørre samtaleloggene ved hjelp av Athena, med SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemeldinger kan refereres i `MessageMap`-attributtet.
 
-### Spørring per Bot-ID 
+### Spørring per Bot-ID
 
-Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, som vises i venstre sidepanel. Merk slutten av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, som vises i venstre sidepanel. Merk slutten av URLen som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
