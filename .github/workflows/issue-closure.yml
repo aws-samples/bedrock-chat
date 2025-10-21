@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: 0 1 * * *
 
+permissions:
+  issues: write
+
 jobs:
   close-issues:
     runs-on: ubuntu-latest
