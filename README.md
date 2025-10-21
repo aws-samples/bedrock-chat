@@ -11,7 +11,6 @@
 
 [English](https://github.com/aws-samples/bedrock-chat/blob/v3/README.md) | [日本語](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ja-JP.md) | [한국어](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ko-KR.md) | [中文](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_zh-CN.md) | [Français](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_fr-FR.md) | [Deutsch](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_de-DE.md) | [Español](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_es-ES.md) | [Italian](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_it-IT.md) | [Norsk](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_nb-NO.md) | [ไทย](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_th-TH.md) | [Bahasa Indonesia](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_id-ID.md) | [Bahasa Melayu](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_ms-MY.md) | [Tiếng Việt](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_vi-VN.md) | [Polski](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_pl-PL.md) | [Português Brasil](https://github.com/aws-samples/bedrock-chat/blob/v3/docs/README_pt-BR.md)
 
-
 A multilingual generative AI platform powered by [Amazon Bedrock](https://aws.amazon.com/bedrock/).
 Supports chat, custom bots with knowledge (RAG), bot sharing via a bot store, and task automation using agents.
 
@@ -65,6 +64,17 @@ By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatica
 
 ![](./docs/imgs/agent1.png)
 ![](./docs/imgs/agent2.png)
+
+</details>
+
+## 🎓Workshop
+
+A comprehensive workshop is available [here](https://catalog.us-east-1.prod.workshops.aws/workshops/4bf8d30b-f7c9-440a-a853-9394a41909d2/en-US).
+
+<details>
+<summary>Screenshot</summary>
+
+![](./docs/imgs/workshop.png)
 
 </details>
 
@@ -219,9 +229,10 @@ npm ci
   - `bedrockRegion`: Region where Bedrock is available. **NOTE: Bedrock does NOT support all regions for now.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Allowed IP Address range.
   - `enableLambdaSnapStart`: Defaults to true. Set to false if deploying to a [region that doesn't support Lambda SnapStart for Python functions](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions).
-  - `globalAvailableModels`: Defaults to all. If set (list of model IDs), allows to globally control which models appear in dropdown menus across chats for all users and during bot creation in the Bedrock Chat application. 
+  - `globalAvailableModels`: Defaults to all. If set (list of model IDs), allows to globally control which models appear in dropdown menus across chats for all users and during bot creation in the Bedrock Chat application.
   - `logoPath`: Relative path under `frontend/public` that points to the image displayed at the top of the application drawer.
-The following model IDs are supported (please make sure that they are also enabled in the Bedrock console under Model access in your deployment region):
+    The following model IDs are supported (please make sure that they are also enabled in the Bedrock console under Model access in your deployment region):
+
 - **Claude Models:** `claude-v4-opus`, `claude-v4.1-opus`, `claude-v4-sonnet`, `claude-v3.5-sonnet`, `claude-v3.5-sonnet-v2`, `claude-v3.7-sonnet`, `claude-v3.5-haiku`, `claude-v3-haiku`, `claude-v3-opus`
 - **Amazon Nova Models:** `amazon-nova-pro`, `amazon-nova-lite`, `amazon-nova-micro`
 - **Mistral Models:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
@@ -277,7 +288,7 @@ The traditional way to configure parameters is by editing the `cdk.json` file. T
       "amazon-nova-pro",
       "amazon-nova-lite",
       "llama3-3-70b-instruct"
-    ],
+    ]
   }
 }
 ```
@@ -293,12 +304,12 @@ bedrockChatParams.set("default", {
   allowedIpV4AddressRanges: ["192.168.0.0/16"],
   selfSignUpEnabled: true,
   globalAvailableModels: [
-      "claude-v3.7-sonnet",
-      "claude-v3.5-sonnet",
-      "amazon-nova-pro",
-      "amazon-nova-lite",
-      "llama3-3-70b-instruct"
-    ],
+    "claude-v3.7-sonnet",
+    "claude-v3.5-sonnet",
+    "amazon-nova-pro",
+    "amazon-nova-lite",
+    "llama3-3-70b-instruct",
+  ],
 });
 
 // Define parameters for additional environments
@@ -512,7 +523,7 @@ To disable the Frontend WAF set the following in `parameter.ts` (Recommended Typ
 
 ```ts
 bedrockChatParams.set("default", {
-  enableFrontendWaf: false
+  enableFrontendWaf: false,
 });
 ```
 
@@ -520,7 +531,7 @@ Or if using the legacy `cdk/cdk.json` set the following:
 
 ```json
 "enableFrontendWaf": false
-``` 
+```
 
 ### Add new users to groups automatically
 
