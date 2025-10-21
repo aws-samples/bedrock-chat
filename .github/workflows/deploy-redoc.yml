@@ -6,6 +6,10 @@ on:
       - main
       - v1
       - v3
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
