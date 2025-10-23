@@ -28,25 +28,24 @@ export interface EmbeddingProps {
 }
 
 export class Embedding extends Construct {
+  readonly stateMachine: sfn.StateMachine;
   readonly removalHandler: IFunction;
+
   private _updateSyncStatusHandler: IFunction;
   private _bootstrapStateMachineHandler: IFunction;
   private _finalizeCustomBotBuildHandler: IFunction;
   private _finalizeSharedKnowledgeBasesBuildHandler: IFunction;
-  private _stateMachine: sfn.StateMachine;
-  private _removalHandler: IFunction;
+  private _synchronizeDataSourceHandler: IFunction;
 
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
-    this.setupStateMachineHandlers(props)
-      .setupStateMachine(props)
-      .setupRemovalHandler(props);
-
-    this.removalHandler = this._removalHandler;
+    this.setupStateMachineHandlers(props);
+    this.stateMachine = this.setupStateMachine(props)
+    this.removalHandler = this.setupRemovalHandler(props);
   }
 
-  private setupStateMachineHandlers(props: EmbeddingProps): this {
+  private setupStateMachineHandlers(props: EmbeddingProps) {
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -199,14 +198,34 @@ export class Embedding extends Construct {
         logRetention: logs.RetentionDays.THREE_MONTHS,
       }
     );
-    return this;
+
+    this._synchronizeDataSourceHandler = new DockerImageFunction(this, "SynchronizeDataSourceHandler", {
+      code: DockerImageCode.fromImageAsset(path.join(__dirname, "../../../backend"), {
+        platform: Platform.LINUX_AMD64,
+        file: "lambda.Dockerfile",
+        cmd: [
+          "embedding_statemachine.bedrock_knowledge_base.synchronize_data_source.handler",
+        ],
+        exclude: [...excludeDockerImage],
+      }),
+      memorySize: 512,
+      timeout: Duration.minutes(15),
+      environment: {
+        ACCOUNT: Stack.of(this).account,
+        REGION: Stack.of(this).region,
+        BEDROCK_REGION: props.bedrockRegion,
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
+      },
+      role: handlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
+    });
   }
 
-  private setupStateMachine(props: EmbeddingProps): this {
+  private setupStateMachine(props: EmbeddingProps): sfn.StateMachine {
     const bootstrapStateMachine = new tasks.LambdaInvoke(this, "BootstrapStateMachine", {
       lambdaFunction: this._bootstrapStateMachineHandler,
       resultSelector: {
-        Bots: sfn.JsonPath.objectAt("$.Payload.Bots"),
+        QueuedBots: sfn.JsonPath.objectAt("$.Payload.QueuedBots"),
         SharedKnowledgeBases: sfn.JsonPath.objectAt("$.Payload.SharedKnowledgeBases"),
       },
     });
@@ -217,7 +236,7 @@ export class Embedding extends Construct {
       environmentVariablesOverride: {
         SHARED_KNOWLEDGE_BASES: {
           type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-          value: sfn.JsonPath.stringAt("States.JsonToString($.SharedKnowledgeBases)"),
+          value: sfn.JsonPath.stringAt("States.JsonToString($.SharedKnowledgeBases.KnowledgeBases)"),
         },
         // Bucket name provisioned by the bedrock stack
         BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
@@ -231,6 +250,7 @@ export class Embedding extends Construct {
       },
       resultPath: "$.Build",
     });
+    // buildSharedKnowledgeBases.addCatch(fallback);
 
     const updateSyncStatusRunning = this.createUpdateSyncStatusTask(
       "UpdateSyncStatusRunning",
@@ -243,26 +263,6 @@ export class Embedding extends Construct {
       "Knowledge base sync succeeded"
     );
 
-    // const updateSyncStatusFailed = new tasks.LambdaInvoke(
-    //   this,
-    //   "UpdateSyncStatusFailed",
-    //   {
-    //     lambdaFunction: this._updateSyncStatusHandler,
-    //     payload: sfn.TaskInput.fromObject({
-    //       "cause.$": "$.Cause",
-    //     }),
-    //     resultPath: sfn.JsonPath.DISCARD,
-    //   }
-    // );
-
-    // const fallback = updateSyncStatusFailed.next(
-    //   new sfn.Fail(this, "Fail", {
-    //     cause: "Knowledge base sync failed",
-    //     error: "Knowledge base sync failed",
-    //   })
-    // );
-    // buildSharedKnowledgeBases.addCatch(fallback);
-
     const finalizeSharedKnowledgeBasesBuild = new tasks.LambdaInvoke(this, "FinalizeSharedKnowledgeBasesBuild", {
       lambdaFunction: this._finalizeSharedKnowledgeBasesBuildHandler,
       resultSelector: {
@@ -272,100 +272,26 @@ export class Embedding extends Construct {
     });
     // finalizeSharedKnowledgeBasesBuild.addCatch(fallback);
 
-    const startIngestionJobForSharedKnowledgeBases = new tasks.CallAwsServiceCrossRegion(this, "StartIngestionJobstartIngestionJobForSharedKnowledgeBases", {
-      service: "bedrock-agent",
-      action: "startIngestionJob",
-      iamAction: "bedrock:StartIngestionJob",
-      region: props.bedrockRegion,
-      parameters: {
-        dataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
-        knowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
-      },
-      // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
-      iamResources: [
-        `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
-          Stack.of(this).account
-        }:knowledge-base/*`,
-      ],
-      resultPath: "$.IngestionJob",
-    });
-
-    const getIngestionJobForSharedKnowledgeBases = new tasks.CallAwsServiceCrossRegion(this, "GetIngestionJobForSharedKnowledgeBases", {
-      service: "bedrock-agent",
-      action: "getIngestionJob",
-      iamAction: "bedrock:GetIngestionJob",
-      region: props.bedrockRegion,
-      parameters: {
-        dataSourceId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.dataSourceId"
-        ),
-        knowledgeBaseId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.knowledgeBaseId"
-        ),
-        ingestionJobId: sfn.JsonPath.stringAt(
-          "$.IngestionJob.ingestionJob.ingestionJobId"
-        ),
-      },
-      // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
-      iamResources: [
-        `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
-          Stack.of(this).account
-        }:knowledge-base/*`,
-      ],
-      resultPath: "$.IngestionJob",
-    });
-
-    const waitTaskForSharedKnowledgeBases = new sfn.Wait(this, "WaitSecondsForSharedKnowledgeBases", {
-      time: sfn.WaitTime.duration(Duration.seconds(3)),
-    });
-
-    const checkIngestionJobStatusForSharedKnowledgeBases = new sfn.Choice(this, "CheckIngestionJobStatusForSharedKnowledgeBases")
-      .when(
-        sfn.Condition.stringEquals(
-          "$.IngestionJob.ingestionJob.status",
-          "COMPLETE"
-        ),
-        new sfn.Pass(this, "IngestionJobCompletedForSharedKnowledgeBases")
-      )
-      .when(
-        sfn.Condition.stringEquals(
-          "$.IngestionJob.ingestionJob.status",
-          "FAILED"
-        ),
-        new sfn.Fail(this, "IngestionFailForSharedKnowledgeBases", {
-          cause: "Ingestion job failed",
-          error: "Ingestion job failed",
-        })
-        // new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForIngestion", {
-        //   lambdaFunction: this._updateSyncStatusHandler,
-        //   payload: sfn.TaskInput.fromObject({
-        //     pk: sfn.JsonPath.stringAt("$.PK"),
-        //     sk: sfn.JsonPath.stringAt("$.SK"),
-        //     ingestion_job: sfn.JsonPath.stringAt("$.IngestionJob"),
-        //   }),
-        //   resultPath: sfn.JsonPath.DISCARD,
-        // })
-        // .next(
-        //   new sfn.Fail(this, "IngestionFail", {
-        //     cause: "Ingestion job failed",
-        //     error: "Ingestion job failed",
-        //   })
-        // )
-      )
-      .otherwise(waitTaskForSharedKnowledgeBases.next(getIngestionJobForSharedKnowledgeBases));
+    const dataSourceSynchronizationForSharedKnowledgeBases = this.createDataSourceSynchronizationTask("Shared");
 
     const mapIngestionJobsForSharedKnowledgeBases = new sfn.Map(this, "MapIngestionJobsForSharedKnowledgeBases", {
       inputPath: "$.StackOutput.DataSources",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(
-      startIngestionJobForSharedKnowledgeBases
-        .next(getIngestionJobForSharedKnowledgeBases)
-        .next(checkIngestionJobStatusForSharedKnowledgeBases)
+      dataSourceSynchronizationForSharedKnowledgeBases
     );
 
-    const mapBots = new sfn.Map(this, "MapBots", {
-      itemsPath: "$.Bots",
+    const mapQueuedBots = new sfn.Map(this, "MapQueuedBots", {
+      itemsPath: "$.QueuedBots",
+    });
+
+    const updateSyncStatusFailedForDedicated = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForDedicated", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        cause: sfn.JsonPath.stringAt("$.Cause"),
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
     });
 
     const startCustomBotBuild = new tasks.CodeBuildStartBuild(
@@ -416,7 +342,7 @@ export class Embedding extends Construct {
         resultPath: "$.Build",
       }
     );
-    // startCustomBotBuild.addCatch(fallback);
+    startCustomBotBuild.addCatch(updateSyncStatusFailedForDedicated);
 
     const finalizeCustomBotBuild = new tasks.LambdaInvoke(this, "FinalizeCustomBotBuild", {
       lambdaFunction: this._finalizeCustomBotBuildHandler,
@@ -426,107 +352,16 @@ export class Embedding extends Construct {
       },
       resultPath: "$.StackOutput",
     });
-    // finalizeCustomBotBuild.addCatch(fallback);
+    finalizeCustomBotBuild.addCatch(updateSyncStatusFailedForDedicated);
 
-    const startIngestionJob = new tasks.CallAwsServiceCrossRegion(
-      this,
-      "StartIngestionJob",
-      {
-        service: "bedrock-agent",
-        action: "startIngestionJob",
-        iamAction: "bedrock:StartIngestionJob",
-        region: props.bedrockRegion,
-        parameters: {
-          dataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
-          knowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
-        },
-        // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
-        iamResources: [
-          `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
-            Stack.of(this).account
-          }:knowledge-base/*`,
-        ],
-        resultPath: "$.IngestionJob",
-      }
-    );
-
-    const getIngestionJob = new tasks.CallAwsServiceCrossRegion(
-      this,
-      "GetIngestionJob",
-      {
-        service: "bedrock-agent",
-        action: "getIngestionJob",
-        iamAction: "bedrock:GetIngestionJob",
-        region: props.bedrockRegion,
-        parameters: {
-          dataSourceId: sfn.JsonPath.stringAt(
-            "$.IngestionJob.ingestionJob.dataSourceId"
-          ),
-          knowledgeBaseId: sfn.JsonPath.stringAt(
-            "$.IngestionJob.ingestionJob.knowledgeBaseId"
-          ),
-          ingestionJobId: sfn.JsonPath.stringAt(
-            "$.IngestionJob.ingestionJob.ingestionJobId"
-          ),
-        },
-        // Ref: https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrock.html#amazonbedrock-knowledge-base
-        iamResources: [
-          `arn:${Stack.of(this).partition}:bedrock:${props.bedrockRegion}:${
-            Stack.of(this).account
-          }:knowledge-base/*`,
-        ],
-        resultPath: "$.IngestionJob",
-      }
-    );
-
-    const waitTask = new sfn.Wait(this, "WaitSeconds", {
-      time: sfn.WaitTime.duration(Duration.seconds(3)),
-    });
-
-    const checkIngestionJobStatus = new sfn.Choice(
-      this,
-      "CheckIngestionJobStatus"
-    )
-      .when(
-        sfn.Condition.stringEquals(
-          "$.IngestionJob.ingestionJob.status",
-          "COMPLETE"
-        ),
-        new sfn.Pass(this, "IngestionJobCompleted")
-      )
-      .when(
-        sfn.Condition.stringEquals(
-          "$.IngestionJob.ingestionJob.status",
-          "FAILED"
-        ),
-        new sfn.Fail(this, "IngestionFail", {
-          cause: "Ingestion job failed",
-          error: "Ingestion job failed",
-        })
-        // new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForIngestion", {
-        //   lambdaFunction: this._updateSyncStatusHandler,
-        //   payload: sfn.TaskInput.fromObject({
-        //     pk: sfn.JsonPath.stringAt("$.PK"),
-        //     sk: sfn.JsonPath.stringAt("$.SK"),
-        //     ingestion_job: sfn.JsonPath.stringAt("$.IngestionJob"),
-        //   }),
-        //   resultPath: sfn.JsonPath.DISCARD,
-        // })
-        // .next(
-        //   new sfn.Fail(this, "IngestionFail", {
-        //     cause: "Ingestion job failed",
-        //     error: "Ingestion job failed",
-        //   })
-        // )
-      )
-      .otherwise(waitTask.next(getIngestionJob));
+    const dataSourceSynchronizationForDedicatedKnowledgeBases = this.createDataSourceSynchronizationTask("Dedicated");
 
     const mapIngestionJobs = new sfn.Map(this, "MapIngestionJobs", {
       inputPath: "$.StackOutput.DataSources",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     }).itemProcessor(
-      startIngestionJob.next(getIngestionJob).next(checkIngestionJobStatus)
+      dataSourceSynchronizationForDedicatedKnowledgeBases
     );
 
     const definition = bootstrapStateMachine
@@ -534,7 +369,7 @@ export class Embedding extends Construct {
       .next(finalizeSharedKnowledgeBasesBuild)
       .next(mapIngestionJobsForSharedKnowledgeBases)
       .next(
-        mapBots.itemProcessor(
+        mapQueuedBots.itemProcessor(
           updateSyncStatusRunning
             .next(startCustomBotBuild)
             .next(finalizeCustomBotBuild)
@@ -543,20 +378,12 @@ export class Embedding extends Construct {
         )
       )
 
-    // const definition = extractFirstElement
-    //   .next(updateSyncStatusRunning)
-    //   .next(startCustomBotBuild)
-    //   .next(finalizeCustomBotBuild)
-    //   .next(mapIngestionJobs)
-    //   .next(updateSyncStatusSucceeded);
-
-    this._stateMachine = new sfn.StateMachine(this, "StateMachine", {
+    return new sfn.StateMachine(this, "StateMachine", {
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
     });
-    return this;
   }
 
-  private setupRemovalHandler(props: EmbeddingProps): this {
+  private setupRemovalHandler(props: EmbeddingProps) {
     const removeHandlerRole = new iam.Role(this, "RemovalHandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -615,7 +442,7 @@ export class Embedding extends Construct {
     props.database.botTable.grantStreamRead(removeHandlerRole);
     props.documentBucket.grantReadWrite(removeHandlerRole);
 
-    this._removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
+    const removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
       code: DockerImageCode.fromImageAsset(
         path.join(__dirname, "../../../backend"),
         {
@@ -638,7 +465,7 @@ export class Embedding extends Construct {
       role: removeHandlerRole,
       logRetention: logs.RetentionDays.THREE_MONTHS,
     });
-    this._removalHandler.addEventSource(
+    removalHandler.addEventSource(
       new DynamoEventSource(props.database.botTable, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
         batchSize: 1,
@@ -651,7 +478,7 @@ export class Embedding extends Construct {
       })
     );
 
-    return this;
+    return removalHandler;
   }
 
   private createUpdateSyncStatusTask(
@@ -676,5 +503,48 @@ export class Embedding extends Construct {
       payload: sfn.TaskInput.fromObject(payload),
       resultPath: sfn.JsonPath.DISCARD,
     });
+  }
+
+  private createDataSourceSynchronizationTask(name: string): sfn.IChainable {
+    const startIngestionJob = new tasks.LambdaInvoke(this, `StartIngestionJob${name}`, {
+      lambdaFunction: this._synchronizeDataSourceHandler,
+      payload: sfn.TaskInput.fromObject({
+        Action: "Ingest",
+        KnowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
+        DataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
+        Files: sfn.JsonPath.objectAt("$.Files"),
+      }),
+      resultSelector: {
+        KnowledgeBaseId: sfn.JsonPath.stringAt("$.Payload.KnowledgeBaseId"),
+        DataSourceId: sfn.JsonPath.stringAt("$.Payload.DataSourceId"),
+        Files: sfn.JsonPath.objectAt("$.Payload.Files"),
+        IngestionJobId: sfn.JsonPath.stringAt("$.Payload.IngestionJobId"),
+      },
+      resultPath: "$.IngestionJob",
+    });
+
+    const checkIngestionJob = new tasks.LambdaInvoke(this, `CheckIngestionJob${name}`, {
+      lambdaFunction: this._synchronizeDataSourceHandler,
+      payload: sfn.TaskInput.fromObject({
+        Action: "Check",
+        IngestionJob: sfn.JsonPath.objectAt("$.IngestionJob"),
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+
+    const ingestionComplete = new sfn.Pass(this, `IngestionComplete${name}`);
+    return startIngestionJob
+      .next(
+        checkIngestionJob.addRetry({
+          interval: Duration.seconds(15),
+          maxAttempts: 12 * 60 * 60 / 15,
+          backoffRate: 1,
+          errors: [
+            'RetryException',
+          ],
+        }).addCatch(ingestionComplete, {
+          resultPath: sfn.JsonPath.stringAt('$.Error'),
+        })
+      ).next(ingestionComplete)
   }
 }

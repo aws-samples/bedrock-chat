@@ -1,5 +1,4 @@
 import base64
-from hashlib import md5
 import json
 import logging
 from decimal import Decimal as decimal
@@ -93,23 +92,6 @@ def store_bot(custom_bot: BotModel):
         item["IsStarred"] = "TRUE"
     if custom_bot.bedrock_knowledge_base:
         item["BedrockKnowledgeBase"] = custom_bot.bedrock_knowledge_base.model_dump()
-        if custom_bot.bedrock_knowledge_base.type is not None:
-            item["BedrockKnowledgeBaseType"] = custom_bot.bedrock_knowledge_base.type
-            item["BedrockKnowledgeBaseHash"] = (
-                base64.b32encode(
-                    md5(
-                        custom_bot.bedrock_knowledge_base.model_dump_json(
-                            exclude={
-                                "knowledge_base_id",
-                                "exist_knowledge_base_id",
-                                "data_source_ids",
-                            }
-                        ).encode()
-                    ).digest()
-                )
-                .decode()
-                .rstrip("=")
-            )
 
     if custom_bot.bedrock_guardrails:
         item["GuardrailsParams"] = custom_bot.bedrock_guardrails.model_dump()
@@ -192,34 +174,6 @@ def update_bot(
         expression_attribute_values[":bedrock_knowledge_base"] = (
             bedrock_knowledge_base.model_dump()
         )
-
-        if bedrock_knowledge_base.type is not None:
-            update_expression += (
-                ", BedrockKnowledgeBaseType = :bedrock_knowledge_base_type"
-                ", BedrockKnowledgeBaseHash = :bedrock_knowledge_base_hash"
-            )
-            expression_attribute_values[":bedrock_knowledge_base_type"] = (
-                bedrock_knowledge_base.type
-            )
-            expression_attribute_values[":bedrock_knowledge_base_hash"] = (
-                base64.b32encode(
-                    md5(
-                        bedrock_knowledge_base.model_dump_json(
-                            exclude={
-                                "knowledge_base_id",
-                                "exist_knowledge_base_id",
-                                "data_source_ids",
-                            }
-                        ).encode()
-                    ).digest()
-                )
-                .decode()
-                .rstrip("=")
-            )
-
-        else:
-            remove_attributes.append("BedrockKnowledgeBaseType")
-            remove_attributes.append("BedrockKnowledgeBaseHash")
 
     if bedrock_guardrails:
         if not bedrock_guardrails.is_guardrail_enabled:
@@ -750,6 +704,28 @@ def find_bot_by_id(bot_id: str) -> BotModel:
 
     logger.info(f"Found bot: {bot}")
     return bot
+
+
+def find_queued_bots() -> list[BotModel]:
+    """Find all 'QUEUED' bots."""
+    bot_table = get_bot_table_client()
+    bots: list[BotModel] = []
+    query_params = {
+        "IndexName": "SyncStatusIndex",
+        "KeyConditionExpression": Key("SyncStatus").eq("QUEUED"),
+    }
+    while True:
+        response = bot_table.query(**query_params)
+        items = response["Items"]
+        bots.extend(BotModel.from_dynamo_item(item) for item in items)
+
+        last_evaluated_key = response.get("LastEvaluatedKey")
+        if last_evaluated_key is None:
+            break
+
+        query_params["ExclusiveStartKey"] = last_evaluated_key
+
+    return bots
 
 
 def find_pinned_public_bots() -> list[BotMeta]:

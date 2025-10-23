@@ -81,18 +81,6 @@ export class Database extends Construct {
     });
     // GSI-4
     botTable.addGlobalSecondaryIndex({
-      indexName: "KnowledgeBaseTypeIndex",
-      partitionKey: {
-        name: "BedrockKnowledgeBaseType",
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: "BedrockKnowledgeBaseHash",
-        type: AttributeType.STRING,
-      },
-    });
-    // GSI-5
-    botTable.addGlobalSecondaryIndex({
       indexName: "SyncStatusIndex",
       partitionKey: {
         name: "SyncStatus",

@@ -1,3 +1,6 @@
+import base64
+from hashlib import md5
+
 from app.routes.schemas.bot_kb import (
     type_kb_chunking_strategy,
     type_kb_embeddings_model,
@@ -93,4 +96,22 @@ class BedrockKnowledgeBaseModel(BaseModel):
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
     web_crawling_filters: WebCrawlingFiltersModel = WebCrawlingFiltersModel(
         exclude_patterns=[], include_patterns=[]
+    )
+
+
+def calc_knowledge_base_hash(knowledge_base: BedrockKnowledgeBaseModel) -> str:
+    return (
+        base64.b32encode(
+            md5(
+                knowledge_base.model_dump_json(
+                    exclude={
+                        "knowledge_base_id",
+                        "exist_knowledge_base_id",
+                        "data_source_ids",
+                    }
+                ).encode()
+            ).digest()
+        )
+        .decode()
+        .rstrip("=")
     )

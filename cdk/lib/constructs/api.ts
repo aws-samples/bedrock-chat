@@ -22,6 +22,7 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
+import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import { UsageAnalysis } from "./usage-analysis";
 import { excludeDockerImage } from "../constants/docker";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
@@ -39,6 +40,7 @@ export interface ApiProps {
   readonly apiPublishProject: codebuild.IProject;
   readonly bedrockCustomBotProject: codebuild.IProject;
   readonly bedrockSharedKnowledgeBasesProject: codebuild.IProject;
+  readonly embeddingStateMachine: sfn.IStateMachine;
   readonly usageAnalysis?: UsageAnalysis;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
@@ -90,6 +92,7 @@ export class Api extends Construct {
         ],
       })
     );
+    props.embeddingStateMachine.grantStartExecution(handlerRole);
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -257,8 +260,7 @@ export class Api extends Construct {
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
-        // KNOWLEDGE_BASE_CODEBUILD_PROJECT_NAME:
-        //   props.bedrockCustomBotProject.projectName,
+        EMBEDDING_STATE_MACHINE_ARN: props.embeddingStateMachine.stateMachineArn,
         USAGE_ANALYSIS_DATABASE:
           props.usageAnalysis?.database.databaseName || "",
         USAGE_ANALYSIS_TABLE:

@@ -220,6 +220,15 @@ export class BedrockChatStack extends cdk.Stack {
       sourceDatabase: database,
     });
 
+    const embedding = new Embedding(this, "Embedding", {
+      bedrockRegion: props.bedrockRegion,
+      database,
+      documentBucket: props.documentBucket,
+      bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
+      bedrockSharedKnowledgeBasesProject: bedrockSharedKnowledgeBasesCodebuild.project,
+      enableRagReplicas: props.enableRagReplicas,
+    });
+
     const backendApi = new Api(this, "BackendApi", {
       envName: props.envName,
       envPrefix: props.envPrefix,
@@ -230,6 +239,7 @@ export class BedrockChatStack extends cdk.Stack {
       apiPublishProject: apiPublishCodebuild.project,
       bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
       bedrockSharedKnowledgeBasesProject: bedrockSharedKnowledgeBasesCodebuild.project,
+      embeddingStateMachine: embedding.stateMachine,
       usageAnalysis,
       largeMessageBucket,
       enableBedrockCrossRegionInference:
@@ -304,15 +314,6 @@ export class BedrockChatStack extends cdk.Stack {
       ],
       allowedHeaders: ["*"],
       maxAge: 3000,
-    });
-
-    const embedding = new Embedding(this, "Embedding", {
-      bedrockRegion: props.bedrockRegion,
-      database,
-      documentBucket: props.documentBucket,
-      bedrockCustomBotProject: bedrockCustomBotCodebuild.project,
-      bedrockSharedKnowledgeBasesProject: bedrockSharedKnowledgeBasesCodebuild.project,
-      enableRagReplicas: props.enableRagReplicas,
     });
 
     // WebAcl for published API

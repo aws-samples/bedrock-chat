@@ -129,7 +129,7 @@ const BotKbEditPage: React.FC = () => {
   >(null);
   const [knowledgeBaseType, setKnowledgeBaseType] = useState<
     'new' | 'shared' | 'existing'
-  >('new');
+  >('shared');
 
   const bedrockKnowledgeBaseType = useMemo<BedrockKnowledgeBaseType>(() => {
     if (existKnowledgeBaseId != null) {
@@ -516,8 +516,17 @@ const BotKbEditPage: React.FC = () => {
           setS3Urls(
             bot.knowledge.s3Urls.length === 0 ? [''] : bot.knowledge.s3Urls
           );
-          if (bot.bedrockKnowledgeBase.type === 'shared') {
-            setKnowledgeBaseType('shared');
+          switch (bot.bedrockKnowledgeBase.type) {
+            case 'dedicated':
+              setKnowledgeBaseType('new');
+              break;
+
+            case 'shared':
+              setKnowledgeBaseType('shared');
+              break;
+
+            default:
+              break;
           }
           setFiles(
             bot.knowledge.filenames.map((filename) => ({
@@ -1359,6 +1368,7 @@ const BotKbEditPage: React.FC = () => {
     promptCachingEnabled,
     conversationQuickStarters,
     navigate,
+    bedrockKnowledgeBaseType,
     knowledgeBaseId,
     existKnowledgeBaseId,
     embeddingsModel,
@@ -1367,6 +1377,7 @@ const BotKbEditPage: React.FC = () => {
     hierarchicalParams,
     semanticParams,
     openSearchParams,
+    isGuardrailEnabled,
     hateThreshold,
     insultsThreshold,
     sexualThreshold,
@@ -1488,6 +1499,7 @@ const BotKbEditPage: React.FC = () => {
     promptCachingEnabled,
     conversationQuickStarters,
     navigate,
+    bedrockKnowledgeBaseType,
     knowledgeBaseId,
     existKnowledgeBaseId,
     embeddingsModel,
@@ -1496,6 +1508,7 @@ const BotKbEditPage: React.FC = () => {
     hierarchicalParams,
     semanticParams,
     openSearchParams,
+    isGuardrailEnabled,
     hateThreshold,
     insultsThreshold,
     sexualThreshold,
@@ -1593,6 +1606,7 @@ const BotKbEditPage: React.FC = () => {
                       'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.createNewKb.label'
                     )}
                     onChange={() => setKnowledgeBaseType('new')}
+                    disabled
                   />
                   <RadioButton
                     name="knowledgeBaseType"

@@ -80,9 +80,8 @@ from app.utils import (
     delete_file_from_s3,
     delete_files_with_prefix_from_s3,
     generate_presigned_url,
-    get_current_time,
     move_file_in_s3,
-    store_api_key_to_secret_manager,
+    start_embedding_state_machine,
 )
 
 logger = logging.getLogger(__name__)
@@ -145,6 +144,14 @@ def create_new_bot(user: User, bot_input: BotInput) -> BotOutput:
     new_bot = BotModel.from_input(bot_input, owner_user_id=user.id, knowledge=knowledge)
     store_bot(new_bot)
 
+    if new_bot.sync_status == "QUEUED":
+        start_embedding_state_machine(
+            user_id=user.id,
+            bot_id=new_bot.id,
+            added_filenames=[],
+            deleted_filenames=[],
+        )
+
     return new_bot.to_output()
 
 
@@ -163,29 +170,31 @@ def modify_owned_bot(
     sitemap_urls = []
     filenames = []
     s3_urls = []
-    sync_status: type_sync_status = "QUEUED"
+    added_filenames = []
+    unchanged_filenames = []
+    deleted_filenames = []
 
     if modify_input.knowledge:
         source_urls = modify_input.knowledge.source_urls
         sitemap_urls = modify_input.knowledge.sitemap_urls
         s3_urls = modify_input.knowledge.s3_urls
+        added_filenames = modify_input.knowledge.added_filenames
+        unchanged_filenames = modify_input.knowledge.unchanged_filenames
+        deleted_filenames = modify_input.knowledge.deleted_filenames
 
         # Commit changes to S3
         _update_s3_documents_by_diff(
             user.id,
             bot_id,
-            modify_input.knowledge.added_filenames,
-            modify_input.knowledge.deleted_filenames,
+            added_filenames,
+            deleted_filenames,
         )
         # Delete files from upload temp directory
         delete_files_with_prefix_from_s3(
             DOCUMENT_BUCKET, compose_upload_temp_s3_prefix(bot.owner_user_id, bot_id)
         )
 
-        filenames = (
-            modify_input.knowledge.added_filenames
-            + modify_input.knowledge.unchanged_filenames
-        )
+        filenames = added_filenames + unchanged_filenames
 
     generation_params = (
         GenerationParamsModel(
@@ -205,7 +214,7 @@ def modify_owned_bot(
     # if knowledge is not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
-    sync_status = (
+    sync_status: type_sync_status = (
         "QUEUED"
         if modify_input.is_embedding_required(bot)
         or modify_input.is_guardrails_update_required(bot)
@@ -271,6 +280,14 @@ def modify_owned_bot(
             modify_input.active_models.model_dump()  # type: ignore
         ),
     )
+
+    if sync_status == "QUEUED":
+        start_embedding_state_machine(
+            user_id=user.id,
+            bot_id=bot.id,
+            added_filenames=added_filenames,
+            deleted_filenames=deleted_filenames,
+        )
 
     return BotModifyOutput(
         id=bot_id,
