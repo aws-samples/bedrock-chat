@@ -109,7 +109,8 @@ def calc_knowledge_base_hash(knowledge_base: BedrockKnowledgeBaseModel) -> str:
                         "exist_knowledge_base_id",
                         "data_source_ids",
                     }
-                ).encode()
+                ).encode(),
+                usedforsecurity=False,
             ).digest()
         )
         .decode()

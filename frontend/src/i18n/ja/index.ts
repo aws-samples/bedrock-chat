@@ -943,19 +943,19 @@ const translation: typeof en = {
         },
       },
       advancedConfigration: {
-        existKnowledgeBaseId: {
+        existingKnowledgeBaseId: {
           label: '既存のAmazon Bedrock Knowledge BaseのID',
           description:
-            '既存のAmazon Bedrock Knowledge Baseを使用することができる',
-          createNewKb: {
-            label: '新規のナレッジを作成する',
-          },
-          useSharedKb: {
-            label: 'Pool Pattern',
-          },
-          existing: {
-            label: '外部のナレッジ(Knowledge Base)を利用する',
-          },
+            '既存のAmazon Bedrock Knowledge Baseを利用できます',
+        },
+        createDedicatedKnowledgeBase: {
+          label: '専用のKnowledge Baseを作成する',
+        },
+        createTenantInSharedKnowledgeBase: {
+          label: '共有のKnowledge Baseにテナントを作成する',
+        },
+        useExistingKnowledgeBase: {
+          label: '外部のKnowledge Baseを利用する',
         },
       },
     },

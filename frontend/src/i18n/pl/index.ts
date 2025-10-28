@@ -726,16 +726,19 @@ Jak sklasyfikowałbyś ten e-mail?`,
         },
       },
       advancedConfigration: {
-        existKnowledgeBaseId: {
+        existingKnowledgeBaseId: {
           label: 'ID dla bazy wiedzy Amazon Bedrock',
           description:
             'Proszę podać ID istniejącej Bazy Wiedzy Amazon Bedrock.',
-          createNewKb: {
-            label: 'Utwórz nową Bazę Wiedzy',
-          },
-          existing: {
-            label: 'Użyj istniejącej Bazy Wiedzy',
-          },
+        },
+        createDedicatedKnowledgeBase: {
+          label: 'Utwórz dedykowaną Bazę Wiedzy',
+        },
+        createTenantInSharedKnowledgeBase: {
+          label: 'Utwórz najemcę w udostępnionej Bazy Wiedzy',
+        },
+        useExistingKnowledgeBase: {
+          label: 'Użyj istniejącej Bazy Wiedzy',
         },
       },
     },

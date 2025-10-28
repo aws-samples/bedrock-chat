@@ -725,16 +725,19 @@ const translation = {
         },
       },
       advancedConfigration: {
-        existKnowledgeBaseId: {
+        existingKnowledgeBaseId: {
           label: 'ID Amazon Bedrock Knowledge Base',
           description:
             'Masukkan ID Amazon Bedrock Knowledge Base eksisting Anda.',
-          createNewKb: {
-            label: 'Buat Knowledge Base baru',
-          },
-          existing: {
-            label: 'Gunakan Knowledge Base eksisting',
-          },
+        },
+        createDedicatedKnowledgeBase: {
+          label: 'Buat Knowledge Base berdedikasi',
+        },
+        createTenantInSharedKnowledgeBase: {
+          label: 'Buat penyewa di Knowledge Base bersama',
+        },
+        useExistingKnowledgeBase: {
+          label: 'Gunakan Knowledge Base eksisting',
         },
       },
     },

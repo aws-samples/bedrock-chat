@@ -36,6 +36,7 @@ export class Embedding extends Construct {
   private _finalizeCustomBotBuildHandler: IFunction;
   private _finalizeSharedKnowledgeBasesBuildHandler: IFunction;
   private _synchronizeDataSourceHandler: IFunction;
+  private _lockHandler: IFunction;
 
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
@@ -83,6 +84,7 @@ export class Embedding extends Construct {
         resources: ["arn:aws:logs:*:*:*"],
       })
     );
+    props.documentBucket.grantReadWrite(handlerRole);
 
     this._updateSyncStatusHandler = new DockerImageFunction(
       this,
@@ -219,6 +221,27 @@ export class Embedding extends Construct {
       role: handlerRole,
       logRetention: logs.RetentionDays.THREE_MONTHS,
     });
+
+    this._lockHandler = new DockerImageFunction(this, "LockHandler", {
+      code: DockerImageCode.fromImageAsset(path.join(__dirname, "../../../backend"), {
+        platform: Platform.LINUX_AMD64,
+        file: "lambda.Dockerfile",
+        cmd: [
+          "embedding_statemachine.bedrock_knowledge_base.lock.handler",
+        ],
+        exclude: [...excludeDockerImage],
+      }),
+      memorySize: 512,
+      timeout: Duration.minutes(1),
+      environment: {
+        ACCOUNT: Stack.of(this).account,
+        REGION: Stack.of(this).region,
+        BEDROCK_REGION: props.bedrockRegion,
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
+      },
+      role: handlerRole,
+      logRetention: logs.RetentionDays.THREE_MONTHS,
+    });
   }
 
   private setupStateMachine(props: EmbeddingProps): sfn.StateMachine {
@@ -230,13 +253,42 @@ export class Embedding extends Construct {
       },
     });
 
+    const acquireLockForSharedKnowledgeBases = this.createAcquireLock("ForSharedKnowledgeBases", {
+      name: "shared-knowledge-bases",
+      resultPath: "$.Lock",
+    });
+
+    const releaseLockForSharedKnowledgeBasesOnFailed = this.createReleaseLock("ForSharedKnowledgeBasesOnFailed", {
+      name: "shared-knowledge-bases",
+      lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
+    });
+    const syncSharedKnowledgeBasesFailed = new sfn.Fail(this, "SyncSharedKnowledgeBasesFailed", {
+      cause: "Shared knowledge bases sync failed",
+    });
+    const releaseLockFallback = (
+      releaseLockForSharedKnowledgeBasesOnFailed
+        .next(syncSharedKnowledgeBasesFailed)
+    );
+
+    const updateSyncStatusRunning = new tasks.LambdaInvoke(this, "UpdateSyncStatusRunning", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        QueuedBots: sfn.JsonPath.objectAt("$.QueuedBots"),
+        SyncStatus: "RUNNING",
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+    updateSyncStatusRunning.addCatch(releaseLockFallback, {
+      resultPath: "$.Error",
+    });
+
     const buildSharedKnowledgeBases = new tasks.CodeBuildStartBuild(this, "BuildSharedKnowledgeBases", {
       project: props.bedrockSharedKnowledgeBasesProject,
       integrationPattern: sfn.IntegrationPattern.RUN_JOB,
       environmentVariablesOverride: {
         SHARED_KNOWLEDGE_BASES: {
           type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-          value: sfn.JsonPath.stringAt("States.JsonToString($.SharedKnowledgeBases.KnowledgeBases)"),
+          value: sfn.JsonPath.jsonToString(sfn.JsonPath.objectAt("$.SharedKnowledgeBases")),
         },
         // Bucket name provisioned by the bedrock stack
         BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
@@ -248,135 +300,258 @@ export class Embedding extends Construct {
           value: props.enableRagReplicas.toString(),
         },
       },
-      resultPath: "$.Build",
+      resultPath: sfn.JsonPath.DISCARD,
     });
-    // buildSharedKnowledgeBases.addCatch(fallback);
 
-    const updateSyncStatusRunning = this.createUpdateSyncStatusTask(
-      "UpdateSyncStatusRunning",
-      "RUNNING"
-    );
+    const passSharedKnowledgeBasesBuildError = new sfn.Pass(this, "PassSharedKnowledgeBasesBuildError", {
+      parameters: {
+        QueuedBots: sfn.JsonPath.objectAt("$.QueuedBots"),
+        Lock: sfn.JsonPath.objectAt("$.Lock"),
+        Error: sfn.JsonPath.stringAt("$.Error.Error"),
+        Cause: sfn.JsonPath.stringToJson(sfn.JsonPath.stringAt("$.Error.Cause")),
+      },
+    });
+    const updateSyncStatusFailedForSharedKnowledgeBasesBuild = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForSharedKnowledgeBasesBuild", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        QueuedBots: sfn.JsonPath.objectAt("$.QueuedBots"),
+        SyncStatus: "FAILED",
+        Build: sfn.JsonPath.objectAt("$.Cause.Build"),
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+    updateSyncStatusFailedForSharedKnowledgeBasesBuild.addCatch(releaseLockFallback, {
+      resultPath: "$.Error",
+    });
 
-    const updateSyncStatusSucceeded = this.createUpdateSyncStatusTask(
-      "UpdateSyncStatusSuccess",
-      "SUCCEEDED",
-      "Knowledge base sync succeeded"
+    const buildSharedKnowledgeBasesFallback = (
+      passSharedKnowledgeBasesBuildError
+        .next(updateSyncStatusFailedForSharedKnowledgeBasesBuild)
+        .next(releaseLockFallback)
     );
+    buildSharedKnowledgeBases.addCatch(buildSharedKnowledgeBasesFallback, {
+      resultPath: "$.Error",
+    })
 
     const finalizeSharedKnowledgeBasesBuild = new tasks.LambdaInvoke(this, "FinalizeSharedKnowledgeBasesBuild", {
       lambdaFunction: this._finalizeSharedKnowledgeBasesBuildHandler,
       resultSelector: {
+        QueuedBots: sfn.JsonPath.objectAt("$.Payload.QueuedBots"),
+        SharedKnowledgeBases: sfn.JsonPath.objectAt("$.Payload.SharedKnowledgeBases"),
         DataSources: sfn.JsonPath.objectAt("$.Payload.DataSources"),
+        Lock: sfn.JsonPath.objectAt("$.Payload.Lock"),
       },
-      resultPath: "$.StackOutput",
     });
-    // finalizeSharedKnowledgeBasesBuild.addCatch(fallback);
-
-    const dataSourceSynchronizationForSharedKnowledgeBases = this.createDataSourceSynchronizationTask("Shared");
 
     const mapIngestionJobsForSharedKnowledgeBases = new sfn.Map(this, "MapIngestionJobsForSharedKnowledgeBases", {
-      inputPath: "$.StackOutput.DataSources",
+      inputPath: "$.DataSources",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
-    }).itemProcessor(
-      dataSourceSynchronizationForSharedKnowledgeBases
+    });
+    const ingestionJobForSharedKnowledgeBases = this.createIngestionJob("Shared");
+
+    const updateSyncStatusFailedForSharedKnowledgeBases = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForSharedKnowledgeBases", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        QueuedBots: sfn.JsonPath.objectAt("$.QueuedBots"),
+        SyncStatus: "FAILED",
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    })
+    updateSyncStatusFailedForSharedKnowledgeBases.addCatch(releaseLockFallback, {
+      resultPath: "$.Error",
+    });
+
+    const syncSharedKnowledgeBasesFallback = (
+      updateSyncStatusFailedForSharedKnowledgeBases
+        .next(releaseLockFallback)
     );
+    finalizeSharedKnowledgeBasesBuild.addCatch(syncSharedKnowledgeBasesFallback, {
+      resultPath: "$.Error",
+    });
+    mapIngestionJobsForSharedKnowledgeBases.addCatch(syncSharedKnowledgeBasesFallback, {
+      resultPath: "$.Error",
+    });
+
+    const releaseLockForSharedKnowledgeBases = this.createReleaseLock("ForSharedKnowledgeBases", {
+      name: "shared-knowledge-bases",
+      lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
+    });
 
     const mapQueuedBots = new sfn.Map(this, "MapQueuedBots", {
       itemsPath: "$.QueuedBots",
-    });
-
-    const updateSyncStatusFailedForDedicated = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForDedicated", {
-      lambdaFunction: this._updateSyncStatusHandler,
-      payload: sfn.TaskInput.fromObject({
-        cause: sfn.JsonPath.stringAt("$.Cause"),
-      }),
       resultPath: sfn.JsonPath.DISCARD,
     });
 
-    const startCustomBotBuild = new tasks.CodeBuildStartBuild(
-      this,
-      "StartCustomBotBuild",
-      {
-        project: props.bedrockCustomBotProject,
-        integrationPattern: sfn.IntegrationPattern.RUN_JOB,
-        environmentVariablesOverride: {
-          OWNER_USER_ID: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt("$.OwnerUserId"),
-          },
-          BOT_ID: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt("$.BotId"),
-          },
-          // Bucket name provisioned by the bedrock stack
-          BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: props.documentBucket.bucketName,
-          },
-          // Source info e.g. file names, URLs, etc.
-          KNOWLEDGE: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.Knowledge)"
-            ),
-          },
-          // Bedrock Knowledge Base configuration
-          KNOWLEDGE_BASE: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.KnowledgeBase)"
-            ),
-          },
-          GUARDRAILS: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: sfn.JsonPath.stringAt(
-              "States.JsonToString($.Guardrails)"
-            ),
-          },
-          ENABLE_RAG_REPLICAS: {
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-            value: props.enableRagReplicas.toString(),
-          },
+    const acquireLockForCustomBot = this.createAcquireLock("ForCustomBot", {
+      name: sfn.JsonPath.format("custombot-{}", sfn.JsonPath.stringAt("$.BotId")),
+      resultPath: "$.Lock",
+    });
+
+    const startCustomBotBuild = new tasks.CodeBuildStartBuild(this, "StartCustomBotBuild", {
+      project: props.bedrockCustomBotProject,
+      integrationPattern: sfn.IntegrationPattern.RUN_JOB,
+      environmentVariablesOverride: {
+        OWNER_USER_ID: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.stringAt("$.OwnerUserId"),
         },
-        resultPath: "$.Build",
-      }
+        BOT_ID: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.stringAt("$.BotId"),
+        },
+        // Bucket name provisioned by the bedrock stack
+        BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: props.documentBucket.bucketName,
+        },
+        // Source info e.g. file names, URLs, etc.
+        KNOWLEDGE: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.jsonToString(sfn.JsonPath.objectAt("$.Knowledge")),
+        },
+        // Bedrock Knowledge Base configuration
+        KNOWLEDGE_BASE: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.jsonToString(sfn.JsonPath.objectAt("$.KnowledgeBase")),
+        },
+        GUARDRAILS: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: sfn.JsonPath.jsonToString(sfn.JsonPath.objectAt("$.Guardrails")),
+        },
+        ENABLE_RAG_REPLICAS: {
+          type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          value: props.enableRagReplicas.toString(),
+        },
+      },
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+
+    const releaseLockForCustomBot = this.createReleaseLock("ForCustomBot", {
+      name: sfn.JsonPath.format("custombot-{}", sfn.JsonPath.stringAt("$.BotId")),
+      lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
+    });
+    const syncCustomBotSucceeded = new sfn.Succeed(this, "SyncCustomBotSucceeded");
+    const syncCustomBotFinished = (
+      releaseLockForCustomBot
+        .next(syncCustomBotSucceeded)
     );
-    startCustomBotBuild.addCatch(updateSyncStatusFailedForDedicated);
+
+    const passCustomBotBuildError = new sfn.Pass(this, "PassCustomBotBuildError", {
+      parameters: {
+        OwnerUserId: sfn.JsonPath.stringAt("$.OwnerUserId"),
+        BotId: sfn.JsonPath.stringAt("$.BotId"),
+        Lock: sfn.JsonPath.objectAt("$.Lock"),
+        Error: sfn.JsonPath.stringAt("$.Error.Error"),
+        Cause: sfn.JsonPath.stringToJson(sfn.JsonPath.stringAt("$.Error.Cause")),
+      },
+    });
+    const updateSyncStatusFailedForCustomBotBuild = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForCustomBotBuild", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        OwnerUserId: sfn.JsonPath.stringAt("$.OwnerUserId"),
+        BotId: sfn.JsonPath.stringAt("$.BotId"),
+        SyncStatus: "FAILED",
+        Build: sfn.JsonPath.objectAt("$.Cause.Build"),
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+    updateSyncStatusFailedForCustomBotBuild.addCatch(syncCustomBotFinished, {
+      resultPath: "$.Error",
+    });
+
+    const buildCustomBotFallback = (
+      passCustomBotBuildError
+        .next(updateSyncStatusFailedForCustomBotBuild)
+        .next(syncCustomBotFinished)
+    );
+
+    startCustomBotBuild.addCatch(buildCustomBotFallback, {
+      resultPath: "$.Error",
+    });
 
     const finalizeCustomBotBuild = new tasks.LambdaInvoke(this, "FinalizeCustomBotBuild", {
       lambdaFunction: this._finalizeCustomBotBuildHandler,
       resultSelector: {
+        OwnerUserId: sfn.JsonPath.stringAt("$.Payload.OwnerUserId"),
+        BotId: sfn.JsonPath.stringAt("$.Payload.BotId"),
         DataSources: sfn.JsonPath.objectAt("$.Payload.DataSources"),
-        Bots: sfn.JsonPath.objectAt("$.Payload.Bots"),
+        Lock: sfn.JsonPath.objectAt("$.Payload.Lock"),
       },
-      resultPath: "$.StackOutput",
     });
-    finalizeCustomBotBuild.addCatch(updateSyncStatusFailedForDedicated);
 
-    const dataSourceSynchronizationForDedicatedKnowledgeBases = this.createDataSourceSynchronizationTask("Dedicated");
-
-    const mapIngestionJobs = new sfn.Map(this, "MapIngestionJobs", {
-      inputPath: "$.StackOutput.DataSources",
+    const mapIngestionJobsForCustomBot = new sfn.Map(this, "MapIngestionJobsForCustomBot", {
+      inputPath: "$.DataSources",
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
-    }).itemProcessor(
-      dataSourceSynchronizationForDedicatedKnowledgeBases
-    );
+    });
+    const ingestionJobForCustomBot = this.createIngestionJob("CustomBot");
 
-    const definition = bootstrapStateMachine
-      .next(buildSharedKnowledgeBases)
-      .next(finalizeSharedKnowledgeBasesBuild)
-      .next(mapIngestionJobsForSharedKnowledgeBases)
-      .next(
-        mapQueuedBots.itemProcessor(
-          updateSyncStatusRunning
-            .next(startCustomBotBuild)
-            .next(finalizeCustomBotBuild)
-            .next(mapIngestionJobs)
-            .next(updateSyncStatusSucceeded)
+    const updateSyncStatusFailedForCustomBot = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForCustomBot", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        OwnerUserId: sfn.JsonPath.stringAt("$.OwnerUserId"),
+        BotId: sfn.JsonPath.stringAt("$.BotId"),
+        SyncStatus: "FAILED",
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+    updateSyncStatusFailedForCustomBot.addCatch(syncCustomBotFinished, {
+      resultPath: "$.Error",
+    });
+
+    const syncCustomBotFallback = (
+      updateSyncStatusFailedForCustomBot
+        .next(syncCustomBotFinished)
+    );
+    finalizeCustomBotBuild.addCatch(syncCustomBotFallback, {
+      resultPath: "$.Error",
+    });
+    mapIngestionJobsForCustomBot.addCatch(syncCustomBotFallback, {
+      resultPath: "$.Error",
+    });
+
+    const updateSyncStatusSucceeded = new tasks.LambdaInvoke(this, "UpdateSyncStatusSuccess", {
+      lambdaFunction: this._updateSyncStatusHandler,
+      payload: sfn.TaskInput.fromObject({
+        OwnerUserId: sfn.JsonPath.stringAt("$.OwnerUserId"),
+        BotId: sfn.JsonPath.stringAt("$.BotId"),
+        SyncStatus: "SUCCEEDED",
+        SyncStatusReason: "Knowledge base sync succeeded",
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    });
+    updateSyncStatusSucceeded.addCatch(syncCustomBotFinished, {
+      resultPath: "$.Error",
+    });
+
+    const definition = (
+      bootstrapStateMachine
+        .next(acquireLockForSharedKnowledgeBases)
+        .next(updateSyncStatusRunning)
+        .next(buildSharedKnowledgeBases)
+        .next(finalizeSharedKnowledgeBasesBuild)
+        .next(
+          mapIngestionJobsForSharedKnowledgeBases.itemProcessor(
+            ingestionJobForSharedKnowledgeBases
+          )
         )
-      )
+        .next(releaseLockForSharedKnowledgeBases)
+        .next(
+          mapQueuedBots.itemProcessor(
+            acquireLockForCustomBot
+              .next(startCustomBotBuild)
+              .next(finalizeCustomBotBuild)
+              .next(
+                mapIngestionJobsForCustomBot.itemProcessor(
+                  ingestionJobForCustomBot
+                )
+              )
+              .next(updateSyncStatusSucceeded)
+              .next(syncCustomBotFinished)
+          )
+        )
+    );
 
     return new sfn.StateMachine(this, "StateMachine", {
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
@@ -481,49 +656,25 @@ export class Embedding extends Construct {
     return removalHandler;
   }
 
-  private createUpdateSyncStatusTask(
-    id: string,
-    syncStatus: string,
-    syncStatusReason?: string,
-    lastExecIdPath?: string
-  ): tasks.LambdaInvoke {
-    const payload: { [key: string]: any } = {
-      "user_id.$": "$.OwnerUserId",
-      "bot_id.$": "$.BotId",
-      sync_status: syncStatus,
-      sync_status_reason: syncStatusReason || "",
-    };
-
-    if (lastExecIdPath) {
-      payload["last_exec_id.$"] = lastExecIdPath;
-    }
-
-    return new tasks.LambdaInvoke(this, id, {
-      lambdaFunction: this._updateSyncStatusHandler,
-      payload: sfn.TaskInput.fromObject(payload),
-      resultPath: sfn.JsonPath.DISCARD,
-    });
-  }
-
-  private createDataSourceSynchronizationTask(name: string): sfn.IChainable {
-    const startIngestionJob = new tasks.LambdaInvoke(this, `StartIngestionJob${name}`, {
+  private createIngestionJob(idSuffix: string) {
+    const startIngestionJob = new tasks.LambdaInvoke(this, `StartIngestionJob${idSuffix}`, {
       lambdaFunction: this._synchronizeDataSourceHandler,
       payload: sfn.TaskInput.fromObject({
         Action: "Ingest",
         KnowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
         DataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
-        Files: sfn.JsonPath.objectAt("$.Files"),
+        FilesDiffs: sfn.JsonPath.objectAt("$.FilesDiffs"),
       }),
       resultSelector: {
         KnowledgeBaseId: sfn.JsonPath.stringAt("$.Payload.KnowledgeBaseId"),
         DataSourceId: sfn.JsonPath.stringAt("$.Payload.DataSourceId"),
-        Files: sfn.JsonPath.objectAt("$.Payload.Files"),
+        DocumentsDiff: sfn.JsonPath.objectAt("$.Payload.DocumentsDiff"),
         IngestionJobId: sfn.JsonPath.stringAt("$.Payload.IngestionJobId"),
       },
       resultPath: "$.IngestionJob",
     });
 
-    const checkIngestionJob = new tasks.LambdaInvoke(this, `CheckIngestionJob${name}`, {
+    const checkIngestionJob = new tasks.LambdaInvoke(this, `CheckIngestionJob${idSuffix}`, {
       lambdaFunction: this._synchronizeDataSourceHandler,
       payload: sfn.TaskInput.fromObject({
         Action: "Check",
@@ -532,7 +683,7 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
     });
 
-    const ingestionComplete = new sfn.Pass(this, `IngestionComplete${name}`);
+    const ingestionComplete = new sfn.Pass(this, `IngestionComplete${idSuffix}`);
     return startIngestionJob
       .next(
         checkIngestionJob.addRetry({
@@ -546,5 +697,61 @@ export class Embedding extends Construct {
           resultPath: sfn.JsonPath.stringAt('$.Error'),
         })
       ).next(ingestionComplete)
+  }
+
+  private createAcquireLock(idSuffix: string, {
+    name,
+    owner = sfn.JsonPath.executionName,
+    expires = Duration.hours(6),
+    resultPath,
+  }: {
+    name: string;
+    owner?: string;
+    expires?: Duration;
+    resultPath?: string;
+  }) {
+    return new tasks.LambdaInvoke(this, `AcquireLock${idSuffix}`, {
+      lambdaFunction: this._lockHandler,
+      payload: sfn.TaskInput.fromObject({
+        Action: "Acquire",
+        LockName: name,
+        Owner: owner,
+        ExpiresSeconds: expires.toSeconds(),
+      }),
+      resultSelector: {
+        LockId: sfn.JsonPath.stringAt("$.Payload.LockId"),
+      },
+      resultPath: resultPath,
+    }).addRetry({
+      interval: Duration.seconds(15),
+      maxAttempts: expires.toSeconds() / 15,
+      backoffRate: 1,
+      errors: [
+        'RetryException',
+      ],
+    });
+  }
+
+  private createReleaseLock(idSuffix: string, {
+    name,
+    lockId,
+  }: {
+    name: string;
+    lockId: string;
+  }) {
+    return new tasks.LambdaInvoke(this, `ReleaseLock${idSuffix}`, {
+      lambdaFunction: this._lockHandler,
+      payload: sfn.TaskInput.fromObject({
+        Action: "Release",
+        LockName: name,
+        LockId: lockId,
+      }),
+      resultPath: sfn.JsonPath.DISCARD,
+    }).addRetry({
+      maxAttempts: 5,
+      errors: [
+        'RetryException',
+      ],
+    });
   }
 }

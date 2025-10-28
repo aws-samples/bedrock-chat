@@ -1603,7 +1603,7 @@ const BotKbEditPage: React.FC = () => {
                     value="new"
                     checked={knowledgeBaseType === 'new'}
                     label={t(
-                      'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.createNewKb.label'
+                      'knowledgeBaseSettings.advancedConfigration.createDedicatedKnowledgeBase.label'
                     )}
                     onChange={() => setKnowledgeBaseType('new')}
                     disabled
@@ -1613,7 +1613,7 @@ const BotKbEditPage: React.FC = () => {
                     value="shared"
                     checked={knowledgeBaseType === 'shared'}
                     label={t(
-                      'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.useSharedKb.label'
+                      'knowledgeBaseSettings.advancedConfigration.createTenantInSharedKnowledgeBase.label'
                     )}
                     onChange={() => setKnowledgeBaseType('shared')}
                   />
@@ -1622,7 +1622,7 @@ const BotKbEditPage: React.FC = () => {
                     value="existing"
                     checked={knowledgeBaseType === 'existing'}
                     label={t(
-                      'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.existing.label'
+                      'knowledgeBaseSettings.advancedConfigration.useExistingKnowledgeBase.label'
                     )}
                     onChange={() => setKnowledgeBaseType('existing')}
                   />
@@ -1634,7 +1634,7 @@ const BotKbEditPage: React.FC = () => {
                       <div className="mt-3 rounded-lg border border-aws-font-color-light/30 p-4 dark:border-aws-font-color-dark/30">
                         <InputText
                           label={t(
-                            'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.label'
+                            'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.label'
                           )}
                           value={existKnowledgeBaseId ?? ''}
                           onChange={setExistKnowledgeBaseId}
@@ -1643,7 +1643,7 @@ const BotKbEditPage: React.FC = () => {
                         />
                         <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           {t(
-                            'knowledgeBaseSettings.advancedConfigration.existKnowledgeBaseId.description'
+                            'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.description'
                           )}
                         </div>
                       </div>

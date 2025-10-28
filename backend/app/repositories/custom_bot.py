@@ -139,7 +139,6 @@ def update_bot(
         "ConversationQuickStarters = :conversation_quick_starters, "
         "ActiveModels = :active_models"
     )
-    remove_attributes: list[str] = []
 
     expression_attribute_values = {
         ":title": title,
@@ -186,9 +185,6 @@ def update_bot(
         )
 
     try:
-        if len(remove_attributes) > 0:
-            update_expression += " REMOVE " + ", ".join(remove_attributes)
-
         response = table.update_item(
             Key={"PK": owner_user_id, "SK": compose_sk(bot_id, "bot")},
             UpdateExpression=update_expression,

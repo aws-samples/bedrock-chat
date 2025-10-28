@@ -37,7 +37,7 @@ export class BedrockSharedKnowledgeBasesCodebuild extends Construct {
         phases: {
           install: {
             "runtime-versions": {
-              nodejs: "18",
+              nodejs: 22,
             },
             "on-failure": "ABORT",
           },

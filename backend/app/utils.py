@@ -319,6 +319,7 @@ def start_embedding_state_machine(
     user_id: str,
     bot_id: str,
     added_filenames: list[str],
+    unchanged_filenames: list[str],
     deleted_filenames: list[str],
 ):
     client = boto3.client("stepfunctions")
@@ -330,8 +331,9 @@ def start_embedding_state_machine(
                     {
                         "OwnerUserId": user_id,
                         "BotId": bot_id,
-                        "Files": {
+                        "FilesDiff": {
                             "Added": added_filenames,
+                            "Unchanged": unchanged_filenames,
                             "Deleted": deleted_filenames,
                         },
                     },

@@ -148,7 +148,8 @@ def create_new_bot(user: User, bot_input: BotInput) -> BotOutput:
         start_embedding_state_machine(
             user_id=user.id,
             bot_id=new_bot.id,
-            added_filenames=[],
+            added_filenames=filenames,
+            unchanged_filenames=[],
             deleted_filenames=[],
         )
 
@@ -286,6 +287,7 @@ def modify_owned_bot(
             user_id=user.id,
             bot_id=bot.id,
             added_filenames=added_filenames,
+            unchanged_filenames=unchanged_filenames,
             deleted_filenames=deleted_filenames,
         )
 

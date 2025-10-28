@@ -9,37 +9,56 @@ from app.repositories.custom_bot import (
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION")
 
-cfn = boto3.client("cloudformation", BEDROCK_REGION)
+cfn = boto3.client(
+    service_name="cloudformation",
+    region_name=BEDROCK_REGION,
+)
 
 
-class DataSourceFiles(TypedDict):
+class BotFilesDiff(TypedDict):
     OwnerUserId: str
     BotId: str
     Added: list[str]
+    Unchanged: list[str]
     Deleted: list[str]
 
 
 class DataSource(TypedDict):
     KnowledgeBaseId: str
     DataSourceId: str
-    Files: list[DataSourceFiles]
+    FilesDiffs: list[BotFilesDiff]
 
 
-class Bot(TypedDict):
-    OwnerUserId: str
-    BotId: str
-
-
-class StackOutput(TypedDict):
-    DataSources: List[DataSource]
-    Bots: list[Bot]
-
-
-def handler(event, context) -> StackOutput:
-    print(event)
+def handler(event, context):
     user_id = event["OwnerUserId"]
     bot_id = event["BotId"]
-    files = event.get("Files")
+
+    bot_files_diffs: list[BotFilesDiff] = []
+
+    files_diff_from_event = event.get("FilesDiff")
+    if files_diff_from_event:
+        bot_files_diffs.append(
+            {
+                "OwnerUserId": user_id,
+                "BotId": bot_id,
+                "Added": files_diff_from_event["Added"],
+                "Unchanged": files_diff_from_event["Unchanged"],
+                "Deleted": files_diff_from_event["Deleted"],
+            }
+        )
+
+    data_sources: list[DataSource] = []
+
+    data_sources_from_event = event.get("DataSources")
+    if data_sources_from_event:
+        data_sources.extend(
+            {
+                "KnowledgeBaseId": data_source["KnowledgeBaseId"],
+                "DataSourceId": data_source["DataSourceId"],
+                "FilesDiffs": bot_files_diffs,
+            }
+            for data_source in data_sources_from_event
+        )
 
     # Note: stack naming rule is defined on:
     # cdk/bin/bedrock-custom-bot.ts
@@ -50,61 +69,43 @@ def handler(event, context) -> StackOutput:
     if not outputs:
         raise ValueError(f"No outputs found in CloudFormation stack '{stack_name}'")
 
-    knowledge_base_id = None
-    data_source_ids: List[str] = []
+    stack_outputs = dict(
+        (output["OutputKey"], output["OutputValue"])
+        for output in outputs
+        if "OutputKey" in output and "OutputValue" in output
+    )
 
-    guardrail_arn = None
-    guardrail_version = None
-
-    for output in outputs:
-        key = output.get("OutputKey")
-        value = output.get("OutputValue")
-        if key and value:
-            if key == "KnowledgeBaseId":
-                knowledge_base_id = value
-
-            elif key.startswith("DataSource"):
-                data_source_ids.append(value)
-
-            elif key == "GuardrailArn":
-                guardrail_arn = value
-
-            elif key == "GuardrailVersion":
-                guardrail_version = value
-
-    result: StackOutput = {
-        "DataSources": [],
-        "Bots": [
-            {
-                "OwnerUserId": user_id,
-                "BotId": bot_id,
-            },
-        ],
-    }
-
+    knowledge_base_id = stack_outputs.get("KnowledgeBaseId")
     if knowledge_base_id:
-        result["DataSources"].extend(
+        data_source_ids: List[str] = [
+            value
+            for key, value in stack_outputs.items()
+            if key.startswith(f"DataSource")
+        ]
+        data_sources.extend(
             {
                 "KnowledgeBaseId": knowledge_base_id,
                 "DataSourceId": data_source_id,
-                "Files": (
-                    [
-                        {
-                            "OwnerUserId": user_id,
-                            "BotId": bot_id,
-                            "Added": files["Added"],
-                            "Deleted": files["Deleted"],
-                        }
-                    ]
-                    if files is not None
-                    else []
-                ),
+                "FilesDiffs": bot_files_diffs,
             }
             for data_source_id in data_source_ids
         )
         update_knowledge_base_id(user_id, bot_id, knowledge_base_id, data_source_ids)
 
+    guardrail_arn = stack_outputs.get("GuardrailArn")
+    guardrail_version = stack_outputs.get("GuardrailVersion")
     if guardrail_arn and guardrail_version:
         update_guardrails_params(user_id, bot_id, guardrail_arn, guardrail_version)
 
-    return result
+    return {
+        "OwnerUserId": user_id,
+        "BotId": bot_id,
+        "DataSources": data_sources,
+        **(
+            {
+                "Lock": event["Lock"],
+            }
+            if "Lock" in event
+            else {}
+        ),
+    }

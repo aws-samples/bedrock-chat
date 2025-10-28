@@ -32,6 +32,11 @@ from pydantic import (
     validator,
 )
 
+from app.repositories.models.custom_bot_kb import (
+    BedrockKnowledgeBaseModel,
+    calc_knowledge_base_hash,
+)
+
 if TYPE_CHECKING:
     from app.repositories.models.custom_bot import BotModel
 
@@ -355,10 +360,15 @@ class BotModifyInput(BaseSchema):
             self.bedrock_knowledge_base is not None
             and current_bot_model.bedrock_knowledge_base is not None
         ):
-            if (
-                self.bedrock_knowledge_base.type
-                != current_bot_model.bedrock_knowledge_base.type
-            ):
+            knowledge_base_hash = calc_knowledge_base_hash(
+                BedrockKnowledgeBaseModel.model_validate(
+                    self.bedrock_knowledge_base.model_dump()
+                )
+            )
+            current_knowledge_base_hash = calc_knowledge_base_hash(
+                current_bot_model.bedrock_knowledge_base
+            )
+            if knowledge_base_hash != current_knowledge_base_hash:
                 return True
 
         return False
