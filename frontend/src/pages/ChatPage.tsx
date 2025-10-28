@@ -565,13 +565,13 @@ const ChatPage: React.FC = () => {
                       botId={botId}
                     />
                   )}
-                  <div className="px-20">
-                    <div className="px-10 text-lg font-bold">
+                  <div className="px-20 text-center">
+                    <div className="text-lg font-bold">
                       {isLoadingBot && botId && (
                         <Skeleton className="h-5 w-32" />
                       )}
                       {!isLoadingBot && bot && (
-                        <div className="flex items-baseline">
+                        <div className="flex items-baseline justify-center">
                           <IconPinnedBot
                             botSharedStatus={bot?.sharedStatus}
                             className="mr-1 shrink-0 text-aws-aqua"

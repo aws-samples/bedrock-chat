@@ -175,7 +175,6 @@ export const streamingStateMachine = setup({
           actions: 'reset',
         },
         goodbye: {
-          actions: 'reset',
           target: 'leaving',
         },
       },

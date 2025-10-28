@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(messa
 logger = logging.getLogger(__name__)
 
 GLOBAL_AVAILABLE_MODELS = os.environ.get("GLOBAL_AVAILABLE_MODELS")
+LOGO_PATH = os.environ.get("LOGO_PATH", "")
 
 
 def get_global_available_models() -> list[str]:
@@ -36,3 +37,8 @@ def get_global_available_models() -> list[str]:
 
     logger.info("No global available models configured - all models are available")
     return []
+
+
+def get_logo_path() -> str:
+    """Return the configured drawer logo path."""
+    return LOGO_PATH

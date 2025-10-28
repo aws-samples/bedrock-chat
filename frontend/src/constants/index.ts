@@ -75,10 +75,10 @@ export const GUARDRAILS_FILTERS_THRESHOLD = {
   STEP: 1,
 };
 
-export const GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD = {
-  MAX: 0.99,
+export const GUARDRAILS_CONTEXTUAL_GROUNDING_THRESHOLD = {
+  MAX: 1,
   MIN: 0,
-  STEP: 0.01,
+  STEP: 0.1,
 };
 
 export const AVAILABLE_MODEL_KEYS = [
@@ -86,6 +86,7 @@ export const AVAILABLE_MODEL_KEYS = [
   'claude-v4.1-opus',
   'claude-v4-sonnet',
   'claude-v4.5-sonnet',
+  'claude-v4.5-haiku',
   'claude-v3-opus',
   'claude-v3.5-sonnet',
   'claude-v3.5-sonnet-v2',

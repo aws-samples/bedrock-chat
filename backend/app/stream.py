@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Callable, TypedDict, TypeGuard
+from typing import Callable, NotRequired, TypedDict, TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool
 from app.bedrock import (
@@ -21,11 +21,13 @@ from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client, get_current_time
+from app.vector_search import SearchResult
+
 from botocore.exceptions import ClientError
 from mypy_boto3_bedrock_runtime.literals import ConversationRoleType, StopReasonType
-from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 from pydantic import JsonValue
 from reretry import retry
+from typing_extensions import deprecated
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -62,9 +64,9 @@ class _PartialToolUseContent(TypedDict):
 
 
 class _PartialReasoningContent(TypedDict):
-    text: str
-    signature: str
-    redacted_content: bytes
+    reasoning_text: NotRequired[str]
+    signature: NotRequired[str]
+    redacted_content: NotRequired[bytes]
 
 
 class _PartialMessage(TypedDict):
@@ -77,9 +79,7 @@ class _PartialMessage(TypedDict):
 def _is_text_content(
     content: _PartialTextContent | _PartialToolUseContent | _PartialReasoningContent,
 ) -> TypeGuard[_PartialTextContent]:
-    return "text" in content and (
-        "signature" not in content and "redacted_content" not in content
-    )
+    return "text" in content
 
 
 def _is_tool_use_content(
@@ -91,11 +91,11 @@ def _is_tool_use_content(
 def _is_reasoning_content(
     content: _PartialTextContent | _PartialToolUseContent | _PartialReasoningContent,
 ) -> TypeGuard[_PartialReasoningContent]:
-    return "signature" in content or "redacted_content" in content
+    return "reasoning_text" in content or "redacted_content" in content
 
 
 def _content_model_from_partial_content(
-    content: _PartialTextContent | _PartialToolUseContent,
+    content: _PartialTextContent | _PartialToolUseContent | _PartialReasoningContent,
 ) -> ContentModel:
     if _is_text_content(content=content):
         return TextContentModel(
@@ -114,44 +114,26 @@ def _content_model_from_partial_content(
         )
 
     elif _is_reasoning_content(content=content):
-        return ReasoningContentModel(
-            content_type="reasoning",
-            text=content["text"],
-            signature=content["signature"],
-            redacted_content=content["redacted_content"],
-        )
+        if "reasoning_text" in content:
+            return ReasoningContentModel(
+                content_type="reasoning",
+                text=content["reasoning_text"],
+                signature=content.get("signature", ""),
+                redacted_content=b"",
+            )
 
-    else:
-        raise ValueError(f"Unknown content type")
+        elif "redacted_content" in content:
+            return ReasoningContentModel(
+                content_type="reasoning",
+                text="",
+                signature="",
+                redacted_content=content["redacted_content"],
+            )
 
-
-def _content_model_to_partial_content(
-    content: ContentModel,
-) -> _PartialTextContent | _PartialToolUseContent | _PartialReasoningContent:
-    if isinstance(content, TextContentModel):
-        return {
-            "text": content.body,
-        }
-
-    elif isinstance(content, ToolUseContentModel):
-        return {
-            "tool_use": {
-                "tool_use_id": content.body.tool_use_id,
-                "name": content.body.name,
-                "input": json.dumps(content.body.input),
-            },
-        }
-    elif isinstance(content, ReasoningContentModel):
-        return {
-            "text": content.text,
-            "signature": content.signature,
-            "redacted_content": content.redacted_content,
-        }
-
-    else:
-        raise ValueError(f"Unknown content type")
+    raise ValueError(f"Unknown content type")
 
 
+@deprecated("Use strands instead")
 class ConverseApiStreamHandler:
     """Stream handler using Converse API.
     Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
@@ -193,8 +175,7 @@ class ConverseApiStreamHandler:
     def run(
         self,
         messages: list[SimpleMessageModel],
-        grounding_source: GuardrailConverseContentBlockTypeDef | None = None,
-        message_for_continue_generate: SimpleMessageModel | None = None,
+        search_results: list[SearchResult] | None = None,
         enable_reasoning: bool = False,
         prompt_caching_enabled: bool = False,
     ) -> OnStopInput:
@@ -206,7 +187,7 @@ class ConverseApiStreamHandler:
                 instructions=self.instructions,
                 generation_params=self.generation_params,
                 guardrail=self.guardrail,
-                grounding_source=grounding_source,
+                search_results=search_results,
                 tools=self.tools,
                 enable_reasoning=enable_reasoning,
                 prompt_caching_enabled=prompt_caching_enabled,
@@ -225,16 +206,7 @@ class ConverseApiStreamHandler:
 
             current_message = _PartialMessage(
                 role="assistant",
-                contents=(
-                    {
-                        index: _content_model_to_partial_content(content=content)
-                        for index, content in enumerate(
-                            message_for_continue_generate.content
-                        )
-                    }
-                    if message_for_continue_generate is not None
-                    else {}
-                ),
+                contents={},
             )
             current_errors: list[Exception] = []
             stop_reason: StopReasonType = "end_turn"
@@ -276,13 +248,21 @@ class ConverseApiStreamHandler:
                         if index in current_message["contents"]:
                             content = current_message["contents"][index]
                             if _is_reasoning_content(content=content):
-                                content["text"] += reasoning.get("text", "")
+                                if "text" in reasoning:
+                                    if "reasoning_text" in content:
+                                        content["reasoning_text"] += reasoning["text"]
+
+                                    else:
+                                        content["reasoning_text"] = reasoning["text"]
+
                                 if "signature" in reasoning:
                                     content["signature"] = reasoning["signature"]
+
                                 if "redactedContent" in reasoning:
                                     content["redacted_content"] = reasoning[
                                         "redactedContent"
                                     ]
+
                             else:
                                 # Should not happen
                                 logger.warning(
@@ -290,16 +270,23 @@ class ConverseApiStreamHandler:
                                 )
                         else:
                             # If the block is not started, create a new block
-                            current_message["contents"][index] = {
-                                "text": reasoning.get("text", ""),
-                                "signature": reasoning.get("signature", ""),
-                                "redacted_content": reasoning.get(
-                                    "redactedContent", b""
-                                ),
-                            }
-                        if self.on_reasoning:
+                            reasoning_content: _PartialReasoningContent = {}
+                            if "text" in reasoning:
+                                reasoning_content["reasoning_text"] = reasoning["text"]
+
+                            if "signature" in reasoning:
+                                reasoning_content["signature"] = reasoning["signature"]
+
+                            if "redactedContent" in reasoning:
+                                reasoning_content["redacted_content"] = reasoning[
+                                    "redactedContent"
+                                ]
+
+                            current_message["contents"][index] = reasoning_content
+
+                        if self.on_reasoning and "text" in reasoning:
                             # Only text is streamed
-                            self.on_reasoning(reasoning.get("text", ""))
+                            self.on_reasoning(reasoning["text"])
 
                     elif "toolUse" in delta:
                         input = delta["toolUse"]["input"]

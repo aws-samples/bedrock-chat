@@ -38,7 +38,7 @@ const AppContent: React.FC<Props> = (props) => {
     deleteConversation,
     clearConversations: clear,
   } = useConversation();
-  const { starredBots, recentlyUsedUnstarredBots } = useBot();
+  const { pinnedBots, starredBots, recentlyUsedUnstarredBots } = useBot();
   const { newChat, isGeneratedTitle } = useChat();
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
   const { isAdmin } = useLoginUser();
@@ -92,6 +92,7 @@ const AppContent: React.FC<Props> = (props) => {
     <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
       <Drawer
         isAdmin={isAdmin}
+        pinnedBots={pinnedBots}
         conversations={conversations}
         starredBots={starredBots}
         recentlyUsedUnstarredBots={recentlyUsedUnstarredBots}

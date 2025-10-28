@@ -19,12 +19,16 @@ from app.routes.schemas.admin import (
 )
 from app.routes.schemas.bot import (
     AllVisibilityInput,
+    BedrockAgentTool,
+    InternetTool,
     PartialVisibilityInput,
+    PlainTool,
     PrivateVisibilityInput,
 )
 from app.usecases.bot import (
     fetch_all_bots,
     fetch_all_pinned_bots,
+    fetch_available_agent_tools,
     fetch_bot,
     fetch_bot_summary,
     issue_presigned_url,
@@ -402,6 +406,47 @@ class TestSharing(unittest.TestCase):
 
         # Assert that alias successfully created
         self.assertTrue(alias_exists(self.subscriber.id, self.bot.id))
+
+
+class TestFetchAvailableAgentTools(unittest.TestCase):
+    def test_fetch_available_agent_tools_basic(self):
+        """Test basic functionality of fetch_available_agent_tools"""
+        tools = fetch_available_agent_tools()
+
+        self.assertIsInstance(tools, list)
+        self.assertGreater(len(tools), 0)  # At least one tool should be available
+
+    def test_fetch_available_agent_tools_types(self):
+        """Test tool type conversion"""
+        tools = fetch_available_agent_tools()
+
+        # bedrock_agent -> BedrockAgentTool
+        bedrock_tools = [t for t in tools if t.name == "bedrock_agent"]
+        self.assertEqual(len(bedrock_tools), 1)
+        self.assertIsInstance(bedrock_tools[0], BedrockAgentTool)
+        self.assertEqual(bedrock_tools[0].tool_type, "bedrock_agent")
+
+        # internet_search -> InternetTool
+        internet_tools = [t for t in tools if t.name == "internet_search"]
+        self.assertEqual(len(internet_tools), 1)
+        self.assertIsInstance(internet_tools[0], InternetTool)
+        self.assertEqual(internet_tools[0].tool_type, "internet")
+        self.assertEqual(internet_tools[0].search_engine, "duckduckgo")
+
+    def test_fetch_available_agent_tools_descriptions(self):
+        """Test tool descriptions are properly extracted and print them"""
+        tools = fetch_available_agent_tools()
+
+        print("\n=== Available Agent Tools ===")
+        for tool in tools:
+            print(f"Tool: {tool.name}")
+            print(f"Type: {tool.tool_type}")
+            print(f"Description: {tool.description}")
+            print("-" * 50)
+
+            self.assertIsNotNone(tool.description)
+            self.assertNotEqual(tool.description, "")
+            self.assertIsInstance(tool.description, str)
 
 
 if __name__ == "__main__":

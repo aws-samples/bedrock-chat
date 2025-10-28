@@ -5,6 +5,10 @@ on:
     - cron: "0 0 1 * *" # Every Month'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-highlights:
     runs-on: ubuntu-latest

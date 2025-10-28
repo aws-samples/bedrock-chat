@@ -1,77 +1,175 @@
-# Agen Berkuasa LLM (ReAct)
+# Ejen Berkuasa LLM (ReAct)
 
-## Apakah Agen (ReAct)?
+## Apakah Agent (ReAct)?
 
-Agen adalah sistem AI canggih yang menggunakan model bahasa besar (LLM) sebagai mesin komputasi utamanya. Ia menggabungkan kemampuan penalaran LLM dengan fungsionalitas tambahan seperti perancangan dan penggunaan alat untuk melakukan tugas kompleks secara autonomi. Agen dapat memecah pertanyaan yang rumit, menghasilkan penyelesaian langkah demi langkah, dan berinteraksi dengan alat atau API eksternal untuk mengumpulkan informasi atau melaksanakan sub-tugas.
+Agent adalah sistem AI termaju yang menggunakan model bahasa besar (LLM) sebagai enjin pengkomputeran utamanya. Ia menggabungkan keupayaan penaakulan LLM dengan fungsi tambahan seperti perancangan dan penggunaan alat untuk melaksanakan tugas kompleks secara automatik. Agent boleh memecahkan pertanyaan rumit, menjana penyelesaian langkah demi langkah, dan berinteraksi dengan alat luaran atau API untuk mengumpul maklumat atau melaksanakan subtugas.
 
-Contoh ini mengimplementasikan Agen menggunakan pendekatan [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct memungkinkan agen menyelesaikan tugas kompleks dengan menggabungkan penalaran dan tindakan dalam gelung maklum balas berulang. Agen berulang kali melalui tiga langkah utama: Pemikiran, Tindakan, dan Pemerhatian. Ia menganalisis situasi semasa menggunakan LLM, memutuskan tindakan selanjutnya yang akan diambil, melaksanakan tindakan menggunakan alat atau API yang tersedia, dan belajar dari keputusan yang diamati. Proses berterusan ini membolehkan agen menyesuaikan diri dengan persekitaran dinamik, meningkatkan ketepatan penyelesaian tugas, dan menyediakan penyelesaian yang peka konteks.
+Sampel ini mengimplementasikan Agent menggunakan pendekatan [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react). ReAct membolehkan agent menyelesaikan tugas kompleks dengan menggabungkan penaakulan dan tindakan dalam gelung maklum balas berulang. Agent berulang kali melalui tiga langkah utama: Pemikiran, Tindakan, dan Pemerhatian. Ia menganalisis situasi semasa menggunakan LLM, membuat keputusan tentang tindakan seterusnya yang perlu diambil, melaksanakan tindakan menggunakan alat atau API yang tersedia, dan belajar daripada hasil yang diperhatikan. Proses berterusan ini membolehkan agent menyesuaikan diri dengan persekitaran dinamik, meningkatkan ketepatan penyelesaian tugas, dan menyediakan penyelesaian yang peka konteks.
+
+Implementasi ini dikuasakan oleh [Strands Agents](https://strandsagents.com/), SDK sumber terbuka yang mengambil pendekatan berasaskan model untuk membina agent AI. Strands menyediakan rangka kerja yang ringan dan fleksibel untuk mencipta alat tersuai menggunakan penghias Python dan menyokong pelbagai pembekal model termasuk Amazon Bedrock.
 
 ## Contoh Kes Penggunaan
 
-Ejen yang menggunakan ReAct dapat diaplikasikan dalam pelbagai senario, menyediakan penyelesaian yang tepat dan cekap.
+Ejen yang menggunakan ReAct boleh digunakan dalam pelbagai senario, memberikan penyelesaian yang tepat dan cekap.
 
 ### Teks-ke-SQL
 
-Pengguna meminta "jumlah jualan untuk suku tahun terakhir." Ejen mentafsirkan permintaan ini, menukar ia ke dalam pertanyaan SQL, melaksanakannya terhadap pangkalan data, dan membentangkan hasilnya.
+Seorang pengguna bertanya tentang "jumlah jualan untuk suku tahun lepas." Ejen mentafsir permintaan ini, menukarkannya kepada pertanyaan SQL, melaksanakannya terhadap pangkalan data, dan menyampaikan hasilnya.
 
 ### Ramalan Kewangan
 
-Penganalisis kewangan perlu meramalkan pendapatan suku tahun hadapan. Ejen mengumpul data yang berkaitan, melakukan pengiraan yang diperlukan menggunakan model kewangan, dan menjana laporan ramalan terperinci, memastikan ketepatan unjuran.
+Seorang penganalisis kewangan perlu meramalkan hasil suku tahun akan datang. Ejen mengumpulkan data yang berkaitan, melakukan pengiraan yang diperlukan menggunakan model kewangan, dan menghasilkan laporan ramalan terperinci, memastikan ketepatan unjuran tersebut.
 
-## Untuk Menggunakan Fitur Ejen
+## Untuk menggunakan ciri Agent
 
-Untuk mengaktifkan fungsionaliti Ejen untuk chatbot yang disesuaikan, ikuti langkah-langkah berikut:
+Untuk mengaktifkan fungsi Agent bagi chatbot tersuai anda, ikuti langkah-langkah berikut:
 
-Terdapat dua cara untuk menggunakan fitur Ejen:
+Terdapat dua cara untuk menggunakan ciri Agent:
 
-### Menggunakan Penggunaan Alat
+### Menggunakan Tool Use
 
-Untuk mengaktifkan fungsionaliti Ejen dengan Penggunaan Alat untuk chatbot yang disesuaikan, ikuti langkah-langkah berikut:
+Untuk mengaktifkan fungsi Agent dengan Tool Use bagi chatbot tersuai anda, ikuti langkah-langkah berikut:
 
-1. Navigasi ke bahagian Ejen dalam skrin bot tersuai.
+1. Navigasi ke bahagian Agent dalam skrin bot tersuai.
 
-2. Dalam bahagian Ejen, anda akan menemui senarai alat yang tersedia yang boleh digunakan oleh Ejen. Secara lalai, semua alat adalah tidak aktif.
+2. Di bahagian Agent, anda akan menjumpai senarai alat yang tersedia untuk digunakan oleh Agent. Secara lalai, semua alat dinyahaktifkan.
 
-3. Untuk mengaktifkan alat, hanya togol suis di sebelah alat yang diinginkan. Sebaik sahaja alat diaktifkan, Ejen akan mempunyai akses kepadanya dan dapat menggunakannya semasa memproses pertanyaan pengguna.
+3. Untuk mengaktifkan alat, hanya togol suis di sebelah alat yang dikehendaki. Setelah alat diaktifkan, Agent akan mempunyai akses kepadanya dan boleh menggunakannya semasa memproses pertanyaan pengguna.
 
 ![](./imgs/agent_tools.png)
 
-4. Contohnya, alat "Carian Internet" membolehkan Ejen mengambil maklumat dari internet untuk menjawab soalan pengguna.
+4. Sebagai contoh, alat "Internet Search" membolehkan Agent mendapatkan maklumat dari internet untuk menjawab soalan pengguna.
 
 ![](./imgs/agent1.png)
 ![](./imgs/agent2.png)
 
-5. Anda boleh membangun dan menambah alat tersuai anda sendiri untuk mengembangkan keupayaan Ejen. Rujuk bahagian [Cara Membangun Alat Anda Sendiri](#how-to-develop-your-own-tools) untuk maklumat lanjut tentang membuat dan mengintegrasikan alat tersuai.
+5. Anda boleh membangun dan menambah alat tersuai anda sendiri untuk meluaskan keupayaan Agent. Rujuk bahagian [How to develop your own tools](#how-to-develop-your-own-tools) untuk maklumat lanjut tentang mencipta dan mengintegrasikan alat tersuai.
 
-### Menggunakan Ejen Bedrock
+### Menggunakan Bedrock Agent
 
-Anda boleh menggunakan [Ejen Bedrock](https://aws.amazon.com/bedrock/agents/) yang dibuat di Amazon Bedrock.
+Anda boleh menggunakan [Bedrock Agent](https://aws.amazon.com/bedrock/agents/) yang dicipta dalam Amazon Bedrock.
 
-Pertama, buat Ejen di Bedrock (contohnya, melalui Konsol Pengurusan). Kemudian, nyatakan ID Ejen dalam skrin tetapan bot tersuai. Sebaik sahaja ditetapkan, chatbot anda akan memanfaatkan Ejen Bedrock untuk memproses pertanyaan pengguna.
+Pertama, cipta Agent dalam Bedrock (contohnya, melalui Management Console). Kemudian, tentukan ID Agent dalam skrin tetapan bot tersuai. Setelah ditetapkan, chatbot anda akan memanfaatkan Bedrock Agent untuk memproses pertanyaan pengguna.
 
 ![](./imgs/bedrock_agent_tool.png)
 
-## Cara Membangun Alat Anda Sendiri
+## Cara membangunkan alat sendiri
 
-Untuk membangun alat khusus anda sendiri untuk Agen, ikuti panduan berikut:
+Untuk membangunkan alat tersuai sendiri untuk Agen menggunakan Strands SDK, ikuti garis panduan berikut:
 
-- Buat kelas baru yang mewarisi daripada kelas `AgentTool`. Walaupun antara muka adalah serasi dengan LangChain, implementasi contoh ini menyediakan kelas `AgentTool` sendiri, yang mana anda perlu mewarisinya ([sumber](../backend/app/agents/tools/agent_tool.py)).
+### Mengenai Alat Strands
 
-- Merujuk kepada implementasi contoh alat [pengiraan BMI](../examples/agents/tools/bmi/bmi.py). Contoh ini menunjukkan cara membuat alat yang mengira Indeks Jisim Tubuh (BMI) berdasarkan input pengguna.
+Strands menyediakan penghias `@tool` yang mudah yang menukar fungsi Python biasa kepada alat agen AI. Penghias ini secara automatik mengekstrak maklumat dari docstring fungsi anda dan petunjuk jenis untuk mencipta spesifikasi alat yang boleh difahami dan digunakan oleh LLM. Pendekatan ini memanfaatkan ciri-ciri natif Python untuk pengalaman pembangunan alat yang bersih dan berfungsi.
 
-  - Nama dan keterangan yang diisytiharkan pada alat digunakan apabila LLM mempertimbangkan alat mana yang perlu digunakan untuk menjawab soalan pengguna. Dalam erti kata lain, ia disematkan pada arahan apabila memanggil LLM. Oleh itu, disyorkan untuk menjelaskan secara tepat sebanyak mungkin.
+Untuk maklumat terperinci mengenai alat Strands, lihat [dokumentasi Python Tools](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/tools/python-tools/).
 
-- [Pilihan] Sebaik sahaja anda telah melaksanakan alat khusus anda, disyorkan untuk mengesahkan fungsinya menggunakan skrip ujian ([contoh](../examples/agents/tools/bmi/test_bmi.py)). Skrip ini akan membantu anda memastikan alat anda berfungsi seperti yang dijangkakan.
+### Penciptaan Alat Asas
 
-- Selepas menyelesaikan pembangunan dan pengujian alat khusus anda, pindahkan fail pelaksanaan ke direktori [backend/app/agents/tools/](../backend/app/agents/tools/). Kemudian buka [backend/app/agents/utils.py](../backend/app/agents/utils.py) dan edit `get_available_tools` supaya pengguna dapat memilih alat yang dibangunkan.
+Cipta fungsi baru yang dihias dengan penghias `@tool` dari Strands:
 
-- [Pilihan] Tambahkan nama dan keterangan yang jelas untuk antara muka hadapan. Langkah ini adalah pilihan, tetapi jika anda tidak melakukan langkah ini, nama alat dan keterangan yang diisytiharkan dalam alat anda akan digunakan. Ia adalah untuk LLM tetapi bukan untuk pengguna, oleh itu disyorkan untuk menambahkan penjelasan khusus untuk UX yang lebih baik.
+```python
+from strands import tool
 
-  - Edit fail i18n. Buka [en/index.ts](../frontend/src/i18n/en/index.ts) dan tambahkan `name` dan `description` anda sendiri pada `agent.tools`.
+@tool
+def calculator(expression: str) -> dict:
+    """
+    Perform mathematical calculations safely.
+
+    Args:
+        expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
+
+    Returns:
+        dict: Result in Strands format with toolUseId, status, and content
+    """
+    try:
+        # Your calculation logic here
+        result = eval(expression)  # Note: Use safe evaluation in production
+        return {
+            "toolUseId": "placeholder",
+            "status": "success",
+            "content": [{"text": str(result)}]
+        }
+    except Exception as e:
+        return {
+            "toolUseId": "placeholder",
+            "status": "error",
+            "content": [{"text": f"Error: {str(e)}"}]
+        }
+```
+
+### Alat dengan Konteks Bot (Corak Penutupan)
+
+Untuk mengakses maklumat bot (BotModel), gunakan corak penutupan yang menangkap konteks bot:
+
+```python
+from strands import tool
+from app.repositories.models.custom_bot import BotModel
+
+def create_calculator_tool(bot: BotModel | None = None):
+    """Create calculator tool with bot context closure."""
+
+    @tool
+    def calculator(expression: str) -> dict:
+        """
+        Perform mathematical calculations safely.
+
+        Args:
+            expression: Mathematical expression to evaluate (e.g., "2+2", "10*5", "sqrt(16)")
+
+        Returns:
+            dict: Result in Strands format with toolUseId, status, and content
+        """
+        # Access bot context within the tool
+        if bot:
+            print(f"Tool used by bot: {bot.id}")
+
+        try:
+            result = eval(expression)  # Use safe evaluation in production
+            return {
+                "toolUseId": "placeholder",
+                "status": "success",
+                "content": [{"text": str(result)}]
+            }
+        except Exception as e:
+            return {
+                "toolUseId": "placeholder",
+                "status": "error",
+                "content": [{"text": f"Error: {str(e)}"}]
+            }
+
+    return calculator
+```
+
+### Keperluan Format Pulangan
+
+Semua alat Strands mesti memulangkan kamus dengan struktur berikut:
+
+```python
+{
+    "toolUseId": "placeholder",  # Will be replaced by Strands
+    "status": "success" | "error",
+    "content": [
+        {"text": "Simple text response"} |
+        {"json": {"key": "Complex data object"}}
+    ]
+}
+```
+
+- Gunakan `{"text": "message"}` untuk respons teks mudah
+- Gunakan `{"json": data}` untuk data kompleks yang perlu dikekalkan sebagai maklumat berstruktur
+- Sentiasa tetapkan `status` kepada sama ada `"success"` atau `"error"`
+
+### Garis Panduan Implementasi
+
+- Nama fungsi dan docstring digunakan apabila LLM mempertimbangkan alat mana yang hendak digunakan. Docstring dibenamkan dalam prompt, jadi terangkan tujuan dan parameter alat dengan tepat.
+
+- Rujuk implementasi contoh [alat pengiraan BMI](../examples/agents/tools/bmi/bmi_strands.py). Contoh ini menunjukkan cara mencipta alat yang mengira Indeks Jisim Badan (BMI) menggunakan penghias `@tool` Strands dan corak penutupan.
+
+- Selepas selesai pembangunan, letakkan fail implementasi anda dalam direktori [backend/app/strands_integration/tools/](../backend/app/strands_integration/tools/). Kemudian buka [backend/app/strands_integration/utils.py](../backend/app/strands_integration/utils.py) dan edit `get_strands_registered_tools` untuk memasukkan alat baru anda.
+
+- [Pilihan] Tambah nama dan penerangan yang jelas untuk frontend. Langkah ini adalah pilihan, tetapi jika anda tidak melakukan langkah ini, nama alat dan penerangan dari fungsi anda akan digunakan. Memandangkan ini adalah untuk penggunaan LLM, adalah disyorkan untuk menambah penerangan mesra pengguna untuk UX yang lebih baik.
+
+  - Edit fail i18n. Buka [en/index.ts](../frontend/src/i18n/en/index.ts) dan tambah `name` dan `description` anda sendiri pada `agent.tools`.
   - Edit `xx/index.ts` juga. Di mana `xx` mewakili kod negara yang anda inginkan.
 
-- Jalankan `npx cdk deploy` untuk menggunakan perubahan anda. Ini akan menjadikan alat khusus anda tersedia dalam skrin bot khusus.
-
-## Sumbangan
-
-**Sumbangan kepada repositori alat ini adalah dialu-alukan!** Jika anda membangunkan alat yang berguna dan diimplementasikan dengan baik, pertimbangkan untuk menyumbangkannya kepada projek dengan menghantar isu atau permintaan tarik.
+- Jalankan `npx cdk deploy` untuk mengatur perubahan anda. Ini akan menjadikan alat tersuai anda tersedia dalam skrin bot tersuai.

@@ -206,7 +206,7 @@ export type GetBotsResponse = BotListItem[];
 
 export type GetMyBotResponse = BotDetails;
 
-export type GetPinnedBotResponse = BotMeta[];
+export type GetPinnedBotResponse = BotListItem[];
 
 export type GetBotSummaryResponse = BotSummary;
 

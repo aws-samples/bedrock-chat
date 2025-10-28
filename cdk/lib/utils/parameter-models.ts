@@ -32,6 +32,7 @@ const BaseParametersSchema = z.object({
 
   // Bedrock configuration
   bedrockRegion: z.string().default("us-east-1"),
+  enableBedrockGlobalInference: z.boolean().default(true),
   enableBedrockCrossRegionInference: z.boolean().default(true),
 });
 
@@ -113,6 +114,9 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Global model configuration
   // If not configured (empty array), all models are available
   globalAvailableModels: z.array(z.string()).default([]),
+
+  // Frontend branding
+  logoPath: z.string().default(""),
 
   // debug parameter
   devAccessIamRoleArn: z.string().default("")
@@ -252,6 +256,9 @@ export function resolveBedrockChatParameters(
       "publishedApiAllowedIpV6AddressRanges"
     ),
     enableRagReplicas: app.node.tryGetContext("enableRagReplicas"),
+    enableBedrockGlobalInference: app.node.tryGetContext(
+      "enableBedrockGlobalInference"
+    ),
     enableBedrockCrossRegionInference: app.node.tryGetContext(
       "enableBedrockCrossRegionInference"
     ),
@@ -262,6 +269,7 @@ export function resolveBedrockChatParameters(
     enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
+    logoPath: app.node.tryGetContext("logoPath"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };
 
@@ -323,6 +331,9 @@ export function resolveApiPublishParameters(): ApiPublishParameters {
     envName: getEnvVar("ENV_NAME"),
     envPrefix: getEnvVar("ENV_PREFIX"),
     bedrockRegion: getEnvVar("BEDROCK_REGION"),
+    enableBedrockGlobalInference: getEnvVar(
+      "ENABLE_BEDROCK_GLOBAL_INFERENCE"
+    ),
     enableBedrockCrossRegionInference: getEnvVar(
       "ENABLE_BEDROCK_CROSS_REGION_INFERENCE"
     ),

@@ -22,6 +22,7 @@ export interface WebSocketProps {
   readonly documentBucket: s3.IBucket;
   readonly largeMessageBucket: s3.IBucket;
   readonly accessLogBucket?: s3.Bucket;
+  readonly enableBedrockGlobalInference: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
 }
@@ -125,8 +126,11 @@ export class WebSocket extends Construct {
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
         WEBSOCKET_SESSION_TABLE_NAME: database.websocketSessionTable.tableName,
+        ENABLE_BEDROCK_GLOBAL_INFERENCE:
+          props.enableBedrockGlobalInference.toString(),
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
+        USE_STRANDS: "true",
       },
       role: handlerRole,
       snapStart: props.enableLambdaSnapStart

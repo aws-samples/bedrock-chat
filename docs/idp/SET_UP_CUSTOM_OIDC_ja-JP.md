@@ -1,32 +1,32 @@
-# 外部IDプロバイダーの設定
+# 外部アイデンティティプロバイダーの設定
 
-## ステップ 1: OIDCクライアントの作成
+## ステップ1：OIDCクライアントの作成
 
-対象のOIDCプロバイダーの手順に従い、OIDCクライアントIDとシークレットの値を控えてください。また、次のステップで必要となる発行者URL（issuer URL）も必要です。セットアップ手順でリダイレクトURIが必要な場合は、デプロイ完了後に置き換えられる仮の値を入力してください。
+対象のOIDCプロバイダーの手順に従い、OIDCクライアントIDとシークレットの値を記録してください。また、以降のステップで発行者URL（issuer URL）が必要となります。セットアップ時にリダイレクトURIが必要な場合は、デプロイ完了後に置き換えられるダミー値を入力してください。
 
-## ステップ 2: AWS Secrets Managerに認証情報を保存
+## ステップ2：AWS Secrets Managerに認証情報を保存する
 
-1. AWS管理コンソールに移動します。
+1. AWS Management Consoleにアクセスします。
 2. Secrets Managerに移動し、「新しいシークレットを保存」を選択します。
-3. 「その他の種類のシークレット」を選択します。
+3. 「その他のシークレットタイプ」を選択します。
 4. クライアントIDとクライアントシークレットをキーと値のペアとして入力します。
 
-   - キー: `clientId`、値: <YOUR_GOOGLE_CLIENT_ID>
-   - キー: `clientSecret`、値: <YOUR_GOOGLE_CLIENT_SECRET>
-   - キー: `issuerUrl`、値: <ISSUER_URL_OF_THE_PROVIDER>
+   - キー: `clientId`, 値: <YOUR_GOOGLE_CLIENT_ID>
+   - キー: `clientSecret`, 値: <YOUR_GOOGLE_CLIENT_SECRET>
+   - キー: `issuerUrl`, 値: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. プロンプトに従ってシークレットに名前と説明を付けます。CDKコードで必要になるため、シークレット名をメモしておいてください（ステップ 3 の変数名 <YOUR_SECRET_NAME> で使用）。
-6. シークレットを確認して保存します。
+5. プロンプトに従ってシークレットの名前と説明を入力します。CDKコード（ステップ3の変数名<YOUR_SECRET_NAME>で使用）で必要になるため、シークレット名を控えておいてください。
+6. 内容を確認してシークレットを保存します。
 
 ### 注意
 
-キー名は、`clientId`、`clientSecret`、`issuerUrl` の文字列と完全に一致する必要があります。
+キー名は正確に `clientId`、`clientSecret`、`issuerUrl` と一致している必要があります。
 
-## ステップ 3: cdk.json の更新
+## ステップ3：cdk.jsonの更新
 
-cdk.json ファイルに ID プロバイダと SecretName を追加します。
+cdk.jsonファイルに、IDプロバイダーとSecretNameを追加します。
 
-次のようになります：
+以下のように設定します：
 
 ```json
 {
@@ -35,7 +35,7 @@ cdk.json ファイルに ID プロバイダと SecretName を追加します。
     "identityProviders": [
       {
         "service": "oidc", // 変更しないでください
-        "serviceName": "<YOUR_SERVICE_NAME>", // 任意の値を設定してください
+        "serviceName": "<YOUR_SERVICE_NAME>", // お好みの値を設定してください
         "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
@@ -44,20 +44,20 @@ cdk.json ファイルに ID プロバイダと SecretName を追加します。
 }
 ```
 
-### 注意
+### 注意事項
 
-#### ユニーク性
+#### 一意性について
 
-`userPoolDomainPrefix` は、すべての Amazon Cognito ユーザー間でグローバルにユニークである必要があります。他の AWS アカウントですでに使用されている接頭辞を選択すると、ユーザープールドメインの作成に失敗します。ユニーク性を確保するために、識別子、プロジェクト名、または環境名を接頭辞に含めることをお勧めします。
+`userPoolDomainPrefix`は、すべてのAmazon Cognitoユーザー間でグローバルに一意である必要があります。他のAWSアカウントですでに使用されているプレフィックスを選択した場合、ユーザープールドメインの作成は失敗します。一意性を確保するために、識別子、プロジェクト名、または環境名をプレフィックスに含めることをお勧めします。
 
-## ステップ4: CDKスタックのデプロイ
+## ステップ 4: CDK スタックのデプロイ
 
-AWS にCDKスタックをデプロイします：
+CDK スタックを AWS にデプロイします：
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## ステップ 5: Cognito のリダイレクト URI で OIDC クライアントを更新
+## Step 5: OIDC クライアントを Cognito のリダイレクト URI で更新
 
-スタックをデプロイした後、`AuthApprovedRedirectURI` が CloudFormation の出力に表示されます。OIDC 設定に戻り、正しいリダイレクト URI で更新してください。
+スタックのデプロイ後、CloudFormation の出力に `AuthApprovedRedirectURI` が表示されます。OIDC の設定に戻り、正しいリダイレクト URI で更新してください。

@@ -4,6 +4,7 @@ import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import InputText from './InputText';
+import Toggle from './Toggle';
 
 type Props = BaseProps & {
   isOpen: boolean;
@@ -23,6 +24,14 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
     number | null
   >(0);
 
+  const [showNewChat, setShowNewChat] = useState(true);
+  const [showMyBots, setShowMyBots] = useState(true);
+  const [showDiscoverBots, setShowDiscoverBots] = useState(true);
+  const [showPinnedBots, setShowPinnedBots] = useState(true);
+  const [showStarredBots, setShowStarredBots] = useState(true);
+  const [showRecentlyUsedBots, setShowRecentlyUsedBots] = useState(true);
+  const [showConversationHistory, setShowConversationHistory] = useState(true);
+
   useEffect(() => {
     if (props.isOpen) {
       setStarredBotsCount(props.drawerOptions.displayCount.starredBots);
@@ -32,6 +41,13 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
       setConversationHistoryCount(
         props.drawerOptions.displayCount.conversationHistory
       );
+      setShowNewChat(props.drawerOptions.show.newChat);
+      setShowMyBots(props.drawerOptions.show.myBots);
+      setShowDiscoverBots(props.drawerOptions.show.discoverBots);
+      setShowPinnedBots(props.drawerOptions.show.pinnedBots);
+      setShowStarredBots(props.drawerOptions.show.starredBots);
+      setShowRecentlyUsedBots(props.drawerOptions.show.recentlyUsedBots);
+      setShowConversationHistory(props.drawerOptions.show.conversationHistory);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.isOpen]);
@@ -82,6 +98,49 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
       <div className="flex flex-col gap-3">
         <div>
           <div className="text-base font-bold">
+            {t('drawerOptionsDialog.label.visibility')}
+          </div>
+          <div className="ml-3 mt-1 flex flex-col gap-1">
+            <Toggle
+              label={t('button.newChat')}
+              value={showNewChat}
+              onChange={setShowNewChat}
+            />
+            <Toggle
+              label={t('app.myBots')}
+              value={showMyBots}
+              onChange={setShowMyBots}
+            />
+            <Toggle
+              label={t('app.discoverBots')}
+              value={showDiscoverBots}
+              onChange={setShowDiscoverBots}
+            />
+            <Toggle
+              label={t('app.pinnedBots')}
+              value={showPinnedBots}
+              onChange={setShowPinnedBots}
+            />
+            <Toggle
+              label={t('app.starredBots')}
+              value={showStarredBots}
+              onChange={setShowStarredBots}
+            />
+            <Toggle
+              label={t('app.recentlyUsedBots')}
+              value={showRecentlyUsedBots}
+              onChange={setShowRecentlyUsedBots}
+            />
+            <Toggle
+              label={t('app.conversationHistory')}
+              value={showConversationHistory}
+              onChange={setShowConversationHistory}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="text-base font-bold">
             {t('drawerOptionsDialog.label.displayCount')}
           </div>
           <div className="ml-3 mt-1 flex flex-col gap-2">
@@ -90,6 +149,7 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               type="number"
               value={starredBotsCount?.toString() ?? ''}
               errorMessage={errorMessages['starredBots']}
+              disabled={!showStarredBots}
               onChange={(s) => {
                 setStarredBotsCount(s === '' ? null : parseInt(s));
               }}
@@ -99,6 +159,7 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               type="number"
               value={recentlyUsedBotsCount?.toString() ?? ''}
               errorMessage={errorMessages['recentlyUsedBots']}
+              disabled={!showRecentlyUsedBots}
               onChange={(s) => {
                 setRecentlyUsedBotsCount(s === '' ? null : parseInt(s));
               }}
@@ -108,6 +169,7 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               type="number"
               value={conversationHistoryCount?.toString() ?? ''}
               errorMessage={errorMessages['conversationHistory']}
+              disabled={!showConversationHistory}
               onChange={(s) => {
                 setConversationHistoryCount(s === '' ? null : parseInt(s));
               }}
@@ -128,6 +190,15 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
                 starredBots: starredBotsCount!,
                 recentlyUsedBots: recentlyUsedBotsCount!,
                 conversationHistory: conversationHistoryCount!,
+              },
+              show: {
+                newChat: showNewChat,
+                myBots: showMyBots,
+                discoverBots: showDiscoverBots,
+                pinnedBots: showPinnedBots,
+                starredBots: showStarredBots,
+                recentlyUsedBots: showRecentlyUsedBots,
+                conversationHistory: showConversationHistory,
               },
             });
           }}

@@ -2,69 +2,69 @@
 
 ## Forutsetninger
 
-Administratorbrukeren må være medlem av gruppen som heter `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at brukergruppe-ID-en kan refereres ved å gå til CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+Admin-brukeren må være medlem av en gruppe kalt `Admin`, som kan settes opp via administrasjonskonsollen > Amazon Cognito User pools eller aws cli. Merk at bruker-pool-ID-en kan refereres ved å gå til CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_admin.png)
 
-## Merk offentlige bots som Vesentlige
+## Merk offentlige boter som Essensielle
 
-Offentlige bots kan nå merkes som "Vesentlige" av administratorer. Bots som er merket som Vesentlige vil bli fremhevet i "Vesentlige" seksjonen i bot-butikken, noe som gjør dem lett tilgjengelige for brukere. Dette lar administratorer fremheve viktige bots som de vil at alle brukere skal bruke.
+Offentlige boter kan nå merkes som "Essensielle" av administratorer. Boter som er merket som Essensielle vil bli vist i "Essensielle"-seksjonen i bot-butikken, noe som gjør dem lett tilgjengelige for brukere. Dette lar administratorer feste viktige boter som de ønsker at alle brukere skal bruke.
 
 ### Eksempler
 
 - HR Assistent Bot: Hjelper ansatte med HR-relaterte spørsmål og oppgaver.
-- IT Support Bot: Gir assistanse for interne tekniske problemer og kontostyring.
-- Intern Retningslinjer Guide Bot: Svarer på hyppig stilte spørsmål om oppmøteregler, sikkerhetspolicyer og andre interne retningslinjer.
-- Ny Ansatt Onboarding Bot: Veileder nye medarbeidere gjennom prosedyrer og systembruk på deres første dag.
-- Fordelsinformasjon Bot: Forklarer selskapets fordels- og velferdsprogrammer.
+- IT Support Bot: Gir assistanse for interne tekniske problemer og kontoadministrasjon.
+- Intern Policy Guide Bot: Svarer på vanlige spørsmål om oppmøteregler, sikkerhetspolicyer og andre interne forskrifter.
+- Onboarding Bot for Nyansatte: Veileder nyansatte gjennom prosedyrer og systembruk på deres første dag.
+- Personalfordel Informasjons Bot: Forklarer bedriftens fordelsordninger og velferdstjenester.
 
 ![](./imgs/admin_bot_menue.png)
 ![](./imgs/bot_store.png)
 
 ## Tilbakemeldingssløyfe
 
-Resultatet fra LLM oppfyller ikke alltid brukerens forventninger. Noen ganger klarer den ikke å tilfredsstille brukerens behov. For effektivt å "integrere" LLM-er i forretningsdrift og dagligliv, er det avgjørende å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppstod. Basert på analyseresultatene kan brukerne justere promptene, RAG-datakildene og parameterne tilsvarende.
+Resultatet fra LLM møter ikke alltid brukerens forventninger. Noen ganger klarer det ikke å tilfredsstille brukerens behov. For å effektivt "integrere" LLMer i forretningsdrift og dagligliv, er det essensielt å implementere en tilbakemeldingssløyfe. Bedrock Chat er utstyrt med en tilbakemeldingsfunksjon som er designet for å gjøre det mulig for brukere å analysere hvorfor misnøye oppsto. Basert på analyseresultatene kan brukere justere prompts, RAG-datakilder og parametere tilsvarende.
 
 ![](./imgs/feedback_loop.png)
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Dataanalytikere kan få tilgang til samtalelogger ved hjelp av [Amazon Athena](https://aws.amazon.com/jp/athena/). Hvis de ønsker å analysere dataene i [Jupyter Notebook](https://jupyter.org/), kan [denne notatbokeksempelet](../examples/notebooks/feedback_analysis_example.ipynb) være en referanse.
+Dataanalytikere kan få tilgang til samtalelogger ved hjelp av [Amazon Athena](https://aws.amazon.com/jp/athena/). Hvis de ønsker å analysere dataene med [Jupyter Notebook](https://jupyter.org/), kan [dette notebook-eksempelet](../examples/notebooks/feedback_analysis_example.ipynb) være en referanse.
 
-## Dashboard
+## Dashbord
 
-Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med fokus på å samle inn data for hver bot og bruker over angitte tidsperioder og sortere resultatene etter bruksavgifter.
+Gir for øyeblikket en grunnleggende oversikt over chatbot- og brukerbruk, med fokus på å aggregere data for hver bot og bruker over spesifikke tidsperioder og sortere resultatene etter bruksavgifter.
 
 ![](./imgs/admin_bot_analytics.png)
 
-## Notater
+## Merknader
 
-- Som nevnt i [arkitekturen](../README.md#architecture), vil admin-funksjonene referere til S3-bucketen som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres én gang i timen, kan de siste samtalene umiddelbart ikke gjenspeiles.
+- Som angitt i [arkitekturen](../README.md#architecture), vil administratorfunksjonene henvise til S3-bøtten som er eksportert fra DynamoDB. Vær oppmerksom på at siden eksporten utføres én gang i timen, vil de nyeste samtalene kanskje ikke gjenspeiles umiddelbart.
 
-- I offentlige bot-bruk vil bots som ikke har blitt brukt i det hele tatt i den angitte perioden ikke bli oppført.
+- I offentlig bot-bruk vil bots som ikke har vært brukt i det hele tatt i den angitte perioden ikke bli listet.
 
-- I brukerbruk vil brukere som ikke har brukt systemet i det hele tatt i den angitte perioden ikke bli oppført.
+- I brukerstatistikken vil brukere som ikke har brukt systemet i det hele tatt i den angitte perioden ikke bli listet.
 
-> [!Viktig]
+> [!Important]
 > Hvis du bruker flere miljøer (dev, prod, osv.), vil Athena-databasenavnet inkludere miljøprefikset. I stedet for `bedrockchatstack_usage_analysis`, vil databasenavnet være:
 >
-> - For standard miljø: `bedrockchatstack_usage_analysis`
+> - For standardmiljø: `bedrockchatstack_usage_analysis`
 > - For navngitte miljøer: `<env-prefix>_bedrockchatstack_usage_analysis` (f.eks. `dev_bedrockchatstack_usage_analysis`)
 >
 > I tillegg vil tabellnavnet inkludere miljøprefikset:
 >
-> - For standard miljø: `ddb_export`
+> - For standardmiljø: `ddb_export`
 > - For navngitte miljøer: `<env-prefix>_ddb_export` (f.eks. `dev_ddb_export`)
 >
-> Sørg for å justere dine spørringer tilsvarende når du arbeider med flere miljøer.
+> Sørg for å justere spørringene dine tilsvarende når du jobber med flere miljøer.
 
 ## Last ned samtaledata
 
-Du kan søke i samtaleloggene til Athena ved hjelp av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemelding kan refereres i `MessageMap`-attributtet.
+Du kan spørre samtaleloggene med Athena ved hjelp av SQL. For å laste ned logger, åpne Athena Query Editor fra administrasjonskonsollen og kjør SQL. Følgende er noen eksempelspørringer som er nyttige for å analysere brukstilfeller. Tilbakemeldinger kan refereres i `MessageMap`-attributtet.
 
-### Spørring per Bot-ID
+### Spørring per Bot-ID 
 
-Rediger `bot-id` og `datehour`. `bot-id` kan refereres på skjermen for botbehandling, som kan nås fra Bot Publish APIs, vist på venstre sidepanel. Merk den siste delen av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+Rediger `bot-id` og `datehour`. `bot-id` kan refereres på Bot Management-skjermen, som kan nås fra Bot Publish APIs, som vises i venstre sidepanel. Merk slutten av URL-en som `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
 
 ```sql
 SELECT
@@ -86,14 +86,14 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Merk]
+> [!Note]
 > Hvis du bruker et navngitt miljø (f.eks. "dev"), erstatt `bedrockchatstack_usage_analysis.ddb_export` med `dev_bedrockchatstack_usage_analysis.dev_ddb_export` i spørringen over.
 
 ### Spørring per Bruker-ID
 
-Rediger `user-id` og `datehour`. `user-id` kan refereres på skjermen for botbehandling.
+Rediger `user-id` og `datehour`. `user-id` kan refereres på Bot Management-skjermen.
 
-> [!Merk]
+> [!Note]
 > Brukerbruksanalyse kommer snart.
 
 ```sql
@@ -116,5 +116,5 @@ ORDER BY
     d.datehour DESC;
 ```
 
-> [!Merk]
+> [!Note]
 > Hvis du bruker et navngitt miljø (f.eks. "dev"), erstatt `bedrockchatstack_usage_analysis.ddb_export` med `dev_bedrockchatstack_usage_analysis.dev_ddb_export` i spørringen over.

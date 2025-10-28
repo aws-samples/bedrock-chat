@@ -6,6 +6,7 @@ from ulid import ULID
 
 os.environ["REGION"] = "us-west-2"
 os.environ["BEDROCK_REGION"] = "us-west-2"
+os.environ["ENABLE_BEDROCK_GLOBAL_INFERENCE"] = "true"
 os.environ["ENABLE_BEDROCK_CROSS_REGION_INFERENCE"] = "true"
 
 sys.path.append(".")
@@ -29,7 +30,12 @@ class TestGetModelId(unittest.TestCase):
         # Prefix with "us." to enable cross-region
         expected_model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
-            get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
+            get_model_id(
+                model,
+                enable_global=True,
+                enable_cross_region=True,
+                bedrock_region="us-east-1",
+            ),
             expected_model_id,
         )
 
@@ -38,7 +44,12 @@ class TestGetModelId(unittest.TestCase):
         # No prefix to disable cross-region
         expected_model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
-            get_model_id(model, enable_cross_region=False, bedrock_region="us-east-1"),
+            get_model_id(
+                model,
+                enable_global=False,
+                enable_cross_region=False,
+                bedrock_region="us-east-1",
+            ),
             expected_model_id,
         )
 
@@ -48,7 +59,10 @@ class TestGetModelId(unittest.TestCase):
         expected_model_id = "apac.anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
             get_model_id(
-                model, enable_cross_region=True, bedrock_region="ap-northeast-1"
+                model,
+                enable_global=True,
+                enable_cross_region=True,
+                bedrock_region="ap-northeast-1",
             ),
             expected_model_id,
         )
@@ -58,7 +72,26 @@ class TestGetModelId(unittest.TestCase):
         model = "claude-v4-sonnet"
         expected_model_id = "global.anthropic.claude-sonnet-4-20250514-v1:0"
         self.assertEqual(
-            get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
+            get_model_id(
+                model,
+                enable_global=True,
+                enable_cross_region=True,
+                bedrock_region="us-east-1",
+            ),
+            expected_model_id,
+        )
+
+    def test_get_model_id_without_global_with_cross_region_inference_priority(self):
+        """Global inference is selected for supported model and region"""
+        model = "claude-v4-sonnet"
+        expected_model_id = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+        self.assertEqual(
+            get_model_id(
+                model,
+                enable_global=False,
+                enable_cross_region=True,
+                bedrock_region="us-east-1",
+            ),
             expected_model_id,
         )
 
@@ -67,7 +100,12 @@ class TestGetModelId(unittest.TestCase):
         model = "claude-v3.5-sonnet"  # Non-global supported
         expected_model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
         self.assertEqual(
-            get_model_id(model, enable_cross_region=True, bedrock_region="us-east-1"),
+            get_model_id(
+                model,
+                enable_global=True,
+                enable_cross_region=True,
+                bedrock_region="us-east-1",
+            ),
             expected_model_id,
         )
 
@@ -77,7 +115,12 @@ class TestGetModelId(unittest.TestCase):
         # ap-south-1 is not global-supported but APAC regional-supported
         expected_model_id = "apac.anthropic.claude-sonnet-4-20250514-v1:0"
         self.assertEqual(
-            get_model_id(model, enable_cross_region=True, bedrock_region="ap-south-1"),
+            get_model_id(
+                model,
+                enable_global=True,
+                enable_cross_region=True,
+                bedrock_region="ap-south-1",
+            ),
             expected_model_id,
         )
 

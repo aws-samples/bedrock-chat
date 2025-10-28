@@ -1,126 +1,126 @@
-# Przewodnik migracji (z v2 do v3)
+# Przewodnik migracji (v2 do v3)
 
-## Streszczenie
+## TL;DR
 
-- V3 wprowadza kontrolę uprawnień na poziomie szczegółowym oraz funkcjonalność Bot Store, wymagając zmian w schemacie DynamoDB
+- Wersja V3 wprowadza szczegółową kontrolę uprawnień i funkcjonalność Bot Store, wymagając zmian w schemacie DynamoDB
 - **Wykonaj kopię zapasową tabeli ConversationTable w DynamoDB przed migracją**
-- Zaktualizuj adres URL repozytorium z `bedrock-claude-chat` na `bedrock-chat`
+- Zaktualizuj URL repozytorium z `bedrock-claude-chat` na `bedrock-chat`
 - Uruchom skrypt migracyjny, aby przekonwertować dane do nowego schematu
-- Wszystkie Twoje boty i rozmowy zostaną zachowane z nowym modelem uprawnień
-- **WAŻNE: Podczas procesu migracji aplikacja będzie niedostępna dla wszystkich użytkowników do czasu zakończenia migracji. Ten proces zazwyczaj trwa około 60 minut, w zależności od ilości danych i wydajności środowiska deweloperskiego.**
-- **WAŻNE: Wszystkie opublikowane interfejsy API muszą zostać usunięte podczas procesu migracji.**
-- **OSTRZEŻENIE: Proces migracji nie może zagwarantować 100% sukcesu dla wszystkich botów. Przed migracją udokumentuj konfiguracje ważnych botów na wypadek konieczności ich ręcznego odtworzenia**
+- Wszystkie twoje boty i konwersacje zostaną zachowane w nowym modelu uprawnień
+- **WAŻNE: Podczas procesu migracji aplikacja będzie niedostępna dla wszystkich użytkowników do czasu zakończenia migracji. Ten proces trwa zazwyczaj około 60 minut, w zależności od ilości danych i wydajności środowiska deweloperskiego.**
+- **WAŻNE: Wszystkie opublikowane API muszą zostać usunięte podczas procesu migracji.**
+- **OSTRZEŻENIE: Proces migracji nie może zagwarantować 100% sukcesu dla wszystkich botów. Przed migracją należy udokumentować ważne konfiguracje botów na wypadek konieczności ich ręcznego odtworzenia**
 
 ## Wprowadzenie
 
-### Co Nowego w V3
+### Co nowego w V3
 
-V3 wprowadza znaczące ulepszenia w Bedrock Chat:
+V3 wprowadza znaczące ulepszenia do Bedrock Chat:
 
 1. **Precyzyjna kontrola uprawnień**: Kontroluj dostęp do botów za pomocą uprawnień opartych na grupach użytkowników
-2. **Sklep z Botami**: Udostępniaj i odkrywaj boty za pośrednictwem scentralizowanego sklepu
-3. **Funkcje administracyjne**: Zarządzaj interfejsami API, oznaczaj boty jako niezbędne i analizuj użycie botów
+2. **Bot Store**: Udostępniaj i odkrywaj boty poprzez scentralizowany marketplace
+3. **Funkcje administracyjne**: Zarządzaj API, oznaczaj boty jako kluczowe i analizuj ich wykorzystanie
 
-Te nowe funkcje wymagały zmian w schemacie DynamoDB, co wiąże się z koniecznością przeprowadzenia procesu migracji dla istniejących użytkowników.
+Te nowe funkcje wymagały zmian w schemacie DynamoDB, co wymusiło proces migracji dla istniejących użytkowników.
 
-### Dlaczego Ta Migracja Jest Konieczna
+### Dlaczego ta migracja jest konieczna
 
-Nowy model uprawnień i funkcjonalność Sklepu z Botami wymagały przestrukturyzowania sposobu przechowywania i dostępu do danych botów. Proces migracji konwertuje istniejące boty i rozmowy na nowy schemat, zachowując wszystkie dane.
+Nowy model uprawnień i funkcjonalność Bot Store wymagały restrukturyzacji sposobu przechowywania i dostępu do danych botów. Proces migracji przekształca istniejące boty i konwersacje do nowego schematu, zachowując wszystkie dane.
 
 > [!WARNING]
-> Powiadomienie o Przerwie w Działaniu: **Podczas procesu migracji aplikacja będzie niedostępna dla wszystkich użytkowników.** Zaplanuj przeprowadzenie tej migracji w oknie konserwacyjnym, gdy użytkownicy nie potrzebują dostępu do systemu. Aplikacja stanie się ponownie dostępna dopiero po pomyślnym zakończeniu skryptu migracyjnego i prawidłowej konwersji wszystkich danych do nowego schematu. Ten proces zazwyczaj trwa około 60 minut, w zależności od ilości danych i wydajności środowiska deweloperskiego.
+> Informacja o przerwach w działaniu usługi: **Podczas procesu migracji aplikacja będzie niedostępna dla wszystkich użytkowników.** Zaplanuj przeprowadzenie tej migracji w oknie serwisowym, gdy użytkownicy nie potrzebują dostępu do systemu. Aplikacja będzie ponownie dostępna dopiero po pomyślnym zakończeniu skryptu migracyjnego i prawidłowej konwersji wszystkich danych do nowego schematu. Ten proces zazwyczaj trwa około 60 minut, w zależności od ilości danych i wydajności środowiska deweloperskiego.
 
 > [!IMPORTANT]
-> Przed przystąpieniem do migracji: **Proces migracji nie może zagwarantować 100% powodzenia dla wszystkich botów**, zwłaszcza tych utworzonych w starszych wersjach lub z niestandardowymi konfiguracjami. Przed rozpoczęciem procesu migracji udokumentuj ważne konfiguracje botów (instrukcje, źródła wiedzy, ustawienia) na wypadek konieczności ręcznego ich odtworzenia.
+> Przed rozpoczęciem migracji: **Proces migracji nie może zagwarantować 100% sukcesu dla wszystkich botów**, szczególnie tych utworzonych w starszych wersjach lub z niestandardowymi konfiguracjami. Prosimy o udokumentowanie ważnych konfiguracji botów (instrukcje, źródła wiedzy, ustawienia) przed rozpoczęciem procesu migracji, na wypadek gdyby trzeba było je odtworzyć ręcznie.
 
 ## Proces migracji
 
-### Ważna informacja o widoczności botów w wersji 3
+### Ważna informacja o widoczności botów w V3
 
-W wersji 3 **wszystkie boty z wersji 2 z włączonym publicznym udostępnianiem będą widoczne w sklepie Bot Store.** Jeśli posiadasz boty zawierające wrażliwe informacje, które nie powinny być odkrywane, rozważ ich ustawienie jako prywatne przed migracją do wersji 3.
+W V3, **wszystkie boty v2 z włączonym publicznym udostępnianiem będą możliwe do wyszukania w Bot Store.** Jeśli masz boty zawierające poufne informacje, których nie chcesz udostępniać publicznie, rozważ ustawienie ich jako prywatne przed migracją do V3.
 
-### Krok 1: Zidentyfikuj nazwę twojego środowiska
+### Krok 1: Zidentyfikuj nazwę swojego środowiska
 
-W tej procedurze `{YOUR_ENV_PREFIX}` jest określony do identyfikacji nazwy twoich stosów CloudFormation. Jeśli korzystasz z funkcji [Wdrażanie wielu środowisk](../../README.md#deploying-multiple-environments), zamień go na nazwę środowiska do migracji. Jeśli nie, zamień go na pusty ciąg znaków.
+W tej procedurze, `{YOUR_ENV_PREFIX}` służy do identyfikacji nazwy Twoich stosów CloudFormation. Jeśli korzystasz z funkcji [Deploying Multiple Environments](../../README.md#deploying-multiple-environments), zastąp ją nazwą środowiska, które ma zostać zmigrowane. Jeśli nie, zastąp ją pustym ciągiem.
 
-### Krok 2: Zaktualizuj adres URL repozytorium (Zalecane)
+### Krok 2: Aktualizacja adresu URL repozytorium (Zalecane)
 
-Repozytorium zostało przemianowane z `bedrock-claude-chat` na `bedrock-chat`. Zaktualizuj lokalne repozytorium:
+Nazwa repozytorium została zmieniona z `bedrock-claude-chat` na `bedrock-chat`. Zaktualizuj swoje lokalne repozytorium:
 
 ```bash
-# Sprawdź aktualny zdalny adres URL
+# Check your current remote URL
 git remote -v
 
-# Zaktualizuj zdalny adres URL
+# Update the remote URL
 git remote set-url origin https://github.com/aws-samples/bedrock-chat.git
 
-# Sprawdź zmianę
+# Verify the change
 git remote -v
 ```
 
-### Krok 3: Upewnij się, że używasz najnowszej wersji V2
+### Krok 3: Upewnij się, że masz najnowszą wersję V2
 
-> [!OSTRZEŻENIE]
-> Musisz zaktualizować do wersji v2.10.0 przed migracją do V3. **Pominięcie tego kroku może spowodować utratę danych podczas migracji.**
+> [!WARNING]
+> MUSISZ zaktualizować do wersji v2.10.0 przed migracją do V3. **Pominięcie tego kroku może skutkować utratą danych podczas migracji.**
 
-Przed rozpoczęciem migracji upewnij się, że używasz najnowszej wersji V2 (**v2.10.0**). Gwarantuje to posiadanie wszystkich niezbędnych poprawek błędów i ulepszeń przed aktualizacją do V3:
+Przed rozpoczęciem migracji upewnij się, że używasz najnowszej wersji V2 (**v2.10.0**). Zapewni to dostęp do wszystkich niezbędnych poprawek błędów i ulepszeń przed aktualizacją do V3:
 
 ```bash
-# Pobierz najnowsze tagi
+# Fetch the latest tags
 git fetch --tags
 
-# Przełącz się na najnowszą wersję V2
+# Checkout the latest V2 version
 git checkout v2.10.0
 
-# Wdróż najnowszą wersję V2
+# Deploy the latest V2 version
 cd cdk
 npm ci
 npx cdk deploy --all
 ```
 
-### Krok 4: Zanotuj nazwę tabeli DynamoDB V2
+### Krok 4: Zapisz nazwę tabeli DynamoDB V2
 
-Pobierz nazwę tabeli ConversationTable z wyjść CloudFormation:
+Pobierz nazwę tabeli ConversationTable V2 z wyników CloudFormation:
 
 ```bash
-# Pobierz nazwę tabeli ConversationTable V2
+# Get the V2 ConversationTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='ConversationTableName'].OutputValue" \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 ```
 
-Upewnij się, że zapiszesz nazwę tej tabeli w bezpiecznym miejscu, ponieważ będzie potrzebna później w skrypcie migracyjnym.
+Pamiętaj, aby zapisać tę nazwę tabeli w bezpiecznym miejscu, ponieważ będzie potrzebna później do skryptu migracji.
 
-### Krok 5: Wykonaj kopię zapasową tabeli DynamoDB
+### Krok 5: Utwórz kopię zapasową tabeli DynamoDB
 
-Przed kontynuacją utwórz kopię zapasową tabeli ConversationTable przy użyciu nazwy, którą właśnie zanotowałeś:
+Przed kontynuowaniem utwórz kopię zapasową tabeli ConversationTable DynamoDB używając zapisanej wcześniej nazwy:
 
 ```bash
-# Utwórz kopię zapasową tabeli V2
+# Create a backup of your V2 table
 aws dynamodb create-backup \
   --no-cli-pager \
   --backup-name "BedrockChatV2Backup-$(date +%Y%m%d)" \
   --table-name YOUR_V2_CONVERSATION_TABLE_NAME
 
-# Sprawdź, czy kopia zapasowa jest dostępna
+# Check the backup status is available
 aws dynamodb describe-backup \
   --no-cli-pager \
   --query BackupDescription.BackupDetails \
   --backup-arn YOUR_BACKUP_ARN
 ```
 
-### Krok 6: Usuń wszystkie opublikowane interfejsy API
+### Krok 6: Usuń wszystkie opublikowane API
 
-> [!WAŻNE]
-> Przed wdrożeniem V3 musisz usunąć wszystkie opublikowane interfejsy API, aby uniknąć konfliktów wartości wyjściowych Cloudformation podczas procesu aktualizacji.
+> [!IMPORTANT]
+> Przed wdrożeniem V3 musisz usunąć wszystkie opublikowane API, aby uniknąć konfliktów wartości wyjściowych Cloudformation podczas procesu aktualizacji.
 
 1. Zaloguj się do aplikacji jako administrator
-2. Przejdź do sekcji Administracja i wybierz "Zarządzanie API"
-3. Przejrzyj listę wszystkich opublikowanych interfejsów API
-4. Usuń każdy opublikowany interfejs API, klikając przycisk usuwania obok niego
+2. Przejdź do sekcji Admin i wybierz "API Management"
+3. Przejrzyj listę wszystkich opublikowanych API
+4. Usuń każde opublikowane API klikając przycisk usuwania obok niego
 
-Więcej informacji o publikowaniu i zarządzaniu interfejsami API można znaleźć w dokumentacji [PUBLISH_API.md](../PUBLISH_API_pl-PL.md), [ADMINISTRATOR.md](../ADMINISTRATOR_pl-PL.md) odpowiednio.
+Więcej informacji o publikowaniu i zarządzaniu API znajdziesz w dokumentacji [PUBLISH_API.md](../PUBLISH_API_pl-PL.md), [ADMINISTRATOR.md](../ADMINISTRATOR_pl-PL.md).
 
 ### Krok 7: Pobierz V3 i wdróż
 
@@ -134,92 +134,165 @@ npm ci
 npx cdk deploy --all
 ```
 
-> [!WAŻNE]
-> Po wdrożeniu V3 aplikacja będzie niedostępna dla wszystkich użytkowników do czasu zakończenia procesu migracji. Nowy schemat jest niezgodny ze starym formatem danych, więc użytkownicy nie będą mogli uzyskać dostępu do swoich botów lub rozmów do czasu zakończenia skryptu migracyjnego w kolejnych krokach.
+> [!IMPORTANT]
+> Po wdrożeniu V3 aplikacja będzie niedostępna dla wszystkich użytkowników do czasu zakończenia procesu migracji. Nowy schemat jest niekompatybilny ze starym formatem danych, więc użytkownicy nie będą mogli uzyskać dostępu do swoich botów ani konwersacji do czasu zakończenia skryptu migracji w kolejnych krokach.
 
-### Krok 8: Zanotuj nazwy tabel DynamoDB V3
+### Krok 8: Zapisz nazwy tabel DynamoDB V3
 
-Po wdrożeniu V3 musisz uzyskać nazwy nowej tabeli ConversationTable i BotTable:
+Po wdrożeniu V3 musisz pobrać nazwy zarówno nowej tabeli ConversationTable jak i BotTable:
 
 ```bash
-# Pobierz nazwę tabeli ConversationTable V3
+# Get the V3 ConversationTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='ConversationTableNameV3'].OutputValue" \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 
-# Pobierz nazwę tabeli BotTable V3
+# Get the V3 BotTable name
 aws cloudformation describe-stacks \
   --output text \
   --query "Stacks[0].Outputs[?OutputKey=='BotTableNameV3'].OutputValue" \
   --stack-name {YOUR_ENV_PREFIX}BedrockChatStack
 ```
 
-> [!Ważne]
-> Upewnij się, że zapiszesz nazwy tabel V3 wraz z wcześniej zapisaną nazwą tabeli V2, ponieważ wszystkie będą potrzebne do skryptu migracyjnego.
+> [!Important]
+> Pamiętaj, aby zapisać te nazwy tabel V3 wraz z wcześniej zapisaną nazwą tabeli V2, ponieważ wszystkie będą potrzebne do skryptu migracji.
 
-(Reszta dokumentu została przetłumaczona zgodnie z tym samym wzorem. Tłumaczenie zachowuje oryginalną strukturę, formatowanie markdown i specjalne uwagi.)
+### Krok 9: Uruchom skrypt migracji
 
-## V3 Często Zadawane Pytania
+Skrypt migracji przekonwertuje Twoje dane V2 do schematu V3. Najpierw edytuj skrypt migracji `docs/migration/migrate_v2_v3.py`, aby ustawić nazwy tabel i region:
 
-### Dostęp do Bota i Uprawnienia
+```python
+# Region where dynamodb is located
+REGION = "ap-northeast-1" # Replace with your region
 
-**P: Co się stanie, jeśli bot, którego używam, zostanie usunięty lub moje uprawnienia dostępu zostaną cofnięte?**
-O: Autoryzacja jest sprawdzana w momencie rozmowy, więc utracisz dostęp natychmiast.
+V2_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableXXXX" # Replace with your  value recorded in Step 4
+V3_CONVERSATION_TABLE = "BedrockChatStack-DatabaseConversationTableV3XXXX" # Replace with your  value recorded in Step 8
+V3_BOT_TABLE = "BedrockChatStack-DatabaseBotTableV3XXXXX" # Replace with your  value recorded in Step 8
+```
 
-**P: Co się stanie, jeśli użytkownik zostanie usunięty (np. pracownik odchodzi)?**
-O: Jego dane można całkowicie usunąć, usuwając wszystkie elementy z DynamoDB, używając jego identyfikatora użytkownika jako klucza partycji (PK).
+Następnie uruchom skrypt używając Poetry z katalogu backend:
 
-**P: Czy mogę wyłączyć udostępnianie dla istotnego bota publicznego?**
-O: Nie, administrator musi najpierw oznaczyć bota jako nieistotnego, zanim będzie można wyłączyć udostępnianie.
+> [!NOTE]
+> Wersja wymagań Pythona została zmieniona na 3.13.0 lub nowszą (Może ulec zmianie w przyszłym rozwoju. Zobacz pyproject.toml). Jeśli masz zainstalowane venv z inną wersją Pythona, będziesz musiał je najpierw usunąć.
 
-**P: Czy mogę usunąć istotnego bota publicznego?**
-O: Nie, administrator musi najpierw oznaczyć bota jako nieistotnego, zanim będzie można go usunąć.
+```bash
+# Navigate to the backend directory
+cd backend
 
-### Bezpieczeństwo i Implementacja
+# Install dependencies if you haven't already
+poetry install
 
-**P: Czy zaimplementowano zabezpieczenia na poziomie wierszy (RLS) dla tabeli botów?**
-O: Nie, biorąc pod uwagę różnorodność wzorców dostępu. Autoryzacja jest przeprowadzana podczas uzyskiwania dostępu do botów, a ryzyko wycieku metadanych jest uznawane za minimalne w porównaniu z historią rozmów.
+# Run a dry run first to see what would be migrated
+poetry run python ../docs/migration/migrate_v2_v3.py --dry-run
 
-**P: Jakie są wymagania dotyczące publikacji API?**
-O: Bot musi być publiczny.
+# If everything looks good, run the actual migration
+poetry run python ../docs/migration/migrate_v2_v3.py
 
-**P: Czy będzie ekran zarządzania wszystkimi prywatnymi botami?**
-O: Nie w początkowej wersji V3. Jednak elementy nadal można usuwać, wykonując zapytanie z identyfikatorem użytkownika w razie potrzeby.
+# Verify the migration was successful
+poetry run python ../docs/migration/migrate_v2_v3.py --verify-only
+```
 
-**P: Czy będzie funkcjonalność tagowania botów dla lepszego interfejsu wyszukiwania?**
-O: Nie w początkowej wersji V3, ale automatyczne tagowanie oparte na LLM może zostać dodane w przyszłych aktualizacjach.
+Skrypt migracji wygeneruje plik raportu w bieżącym katalogu ze szczegółami procesu migracji. Sprawdź ten plik, aby upewnić się, że wszystkie dane zostały poprawnie zmigrowane.
+
+#### Obsługa dużych ilości danych
+
+Dla środowisk z dużą liczbą użytkowników lub dużą ilością danych rozważ następujące podejścia:
+
+1. **Migruj użytkowników pojedynczo**: Dla użytkowników z dużą ilością danych, migruj ich po kolei:
+
+   ```bash
+   poetry run python ../docs/migration/migrate_v2_v3.py --users user-id-1 user-id-2
+   ```
+
+2. **Uwagi dotyczące pamięci**: Proces migracji ładuje dane do pamięci. Jeśli napotkasz błędy Out-Of-Memory (OOM), spróbuj:
+
+   - Migrować jednego użytkownika na raz
+   - Uruchomić migrację na maszynie z większą ilością pamięci
+   - Podzielić migrację na mniejsze partie użytkowników
+
+3. **Monitoruj migrację**: Sprawdzaj wygenerowane pliki raportów, aby upewnić się, że wszystkie dane są poprawnie migrowane, szczególnie w przypadku dużych zbiorów danych.
+
+### Krok 10: Zweryfikuj aplikację
+
+Po migracji otwórz swoją aplikację i zweryfikuj:
+
+- Wszystkie boty są dostępne
+- Konwersacje zostały zachowane
+- Nowe kontrole uprawnień działają
+
+### Czyszczenie (Opcjonalne)
+
+Po potwierdzeniu, że migracja zakończyła się sukcesem i wszystkie dane są poprawnie dostępne w V3, możesz opcjonalnie usunąć tabelę konwersacji V2, aby zaoszczędzić koszty:
+
+```bash
+# Delete the V2 conversation table (ONLY after confirming successful migration)
+aws dynamodb delete-table --table-name YOUR_V2_CONVERSATION_TABLE_NAME
+```
+
+> [!IMPORTANT]
+> Usuń tabelę V2 dopiero po dokładnym zweryfikowaniu, że wszystkie ważne dane zostały pomyślnie zmigrowane do V3. Zalecamy zachowanie kopii zapasowej utworzonej w Kroku 2 przez co najmniej kilka tygodni po migracji, nawet jeśli usuniesz oryginalną tabelę.
+
+## V3 FAQ
+
+### Dostęp i uprawnienia botów
+
+**Q: Co się stanie, jeśli bot, którego używam, zostanie usunięty lub moje uprawnienia dostępu zostaną cofnięte?**
+A: Autoryzacja jest sprawdzana w momencie czatu, więc stracisz dostęp natychmiast.
+
+**Q: Co się stanie, jeśli użytkownik zostanie usunięty (np. pracownik odchodzi)?**
+A: Jego dane mogą zostać całkowicie usunięte poprzez skasowanie wszystkich elementów z DynamoDB z jego ID użytkownika jako kluczem partycji (PK).
+
+**Q: Czy mogę wyłączyć udostępnianie dla bota publicznego oznaczonego jako niezbędny?**
+A: Nie, administrator musi najpierw oznaczyć bota jako nieistotnego przed wyłączeniem udostępniania.
+
+**Q: Czy mogę usunąć niezbędnego bota publicznego?**
+A: Nie, administrator musi najpierw oznaczyć bota jako nieistotnego przed usunięciem.
+
+### Bezpieczeństwo i implementacja
+
+**Q: Czy zaimplementowano zabezpieczenia na poziomie wierszy (RLS) dla tabeli botów?**
+A: Nie, biorąc pod uwagę różnorodność wzorców dostępu. Autoryzacja jest wykonywana podczas dostępu do botów, a ryzyko wycieku metadanych jest uznawane za minimalne w porównaniu z historią konwersacji.
+
+**Q: Jakie są wymagania dotyczące publikowania API?**
+A: Bot musi być publiczny.
+
+**Q: Czy będzie ekran zarządzania dla wszystkich prywatnych botów?**
+A: Nie w początkowej wersji V3. Jednak elementy nadal mogą być usuwane poprzez zapytania z ID użytkownika w razie potrzeby.
+
+**Q: Czy będzie funkcja tagowania botów dla lepszego UX wyszukiwania?**
+A: Nie w początkowej wersji V3, ale automatyczne tagowanie oparte na LLM może zostać dodane w przyszłych aktualizacjach.
 
 ### Administracja
 
-**P: Co mogą robić administratorzy?**
-O: Administratorzy mogą:
+**Q: Co mogą robić administratorzy?**
+A: Administratorzy mogą:
 
 - Zarządzać botami publicznymi (w tym sprawdzać boty o wysokich kosztach)
-- Zarządzać interfejsami API
-- Oznaczać boty publiczne jako istotne
+- Zarządzać API
+- Oznaczać boty publiczne jako niezbędne
 
-**P: Czy mogę oznaczyć boty częściowo udostępnione jako istotne?**
-O: Nie, obsługiwane są tylko boty publiczne.
+**Q: Czy mogę oznaczyć częściowo udostępnione boty jako niezbędne?**
+A: Nie, obsługiwane są tylko boty publiczne.
 
-**P: Czy mogę ustawić priorytet dla przypiętych botów?**
-O: W początkowej wersji - nie.
+**Q: Czy mogę ustawić priorytet dla przypiętych botów?**
+A: Nie w początkowej wersji.
 
-### Konfiguracja Autoryzacji
+### Konfiguracja autoryzacji
 
-**P: Jak skonfigurować autoryzację?**
-O:
+**Q: Jak skonfigurować autoryzację?**
+A:
 
 1. Otwórz konsolę Amazon Cognito i utwórz grupy użytkowników w puli użytkowników BrChat
-2. Dodaj użytkowników do tych grup zgodnie z potrzebami
-3. W BrChat wybierz grupy użytkowników, którym chcesz zezwolić na dostęp podczas konfigurowania ustawień udostępniania bota
+2. Dodaj użytkowników do tych grup według potrzeb
+3. W BrChat wybierz grupy użytkowników, którym chcesz zezwolić na dostęp podczas konfigurowania ustawień udostępniania botów
 
-Uwaga: Zmiany członkostwa w grupach wymagają ponownego zalogowania. Zmiany są odzwierciedlane przy odświeżeniu tokenu, ale nie w trakcie ważności tokenu ID (domyślnie 30 minut w V3, konfigurowalne przez `tokenValidMinutes` w `cdk.json` lub `parameter.ts`).
+Uwaga: Zmiany członkostwa w grupach wymagają ponownego logowania, aby weszły w życie. Zmiany są odzwierciedlane przy odświeżaniu tokena, ale nie w okresie ważności tokena ID (domyślnie 30 minut w V3, konfigurowalne przez `tokenValidMinutes` w `cdk.json` lub `parameter.ts`).
 
-**P: Czy system sprawdza Cognito za każdym razem, gdy uzyskiwany jest dostęp do bota?**
-O: Nie, autoryzacja jest sprawdzana przy użyciu tokenu JWT, aby uniknąć niepotrzebnych operacji we/wy.
+**Q: Czy system sprawdza Cognito za każdym razem, gdy bot jest używany?**
+A: Nie, autoryzacja jest sprawdzana przy użyciu tokena JWT, aby uniknąć niepotrzebnych operacji I/O.
 
-### Funkcjonalność Wyszukiwania
+### Funkcjonalność wyszukiwania
 
-**P: Czy wyszukiwanie botów obsługuje wyszukiwanie semantyczne?**
-O: Nie, obsługiwane jest tylko częściowe dopasowanie tekstu. Wyszukiwanie semantyczne (np. „samochód" → „auto", „EV", „pojazd") nie jest dostępne ze względu na obecne ograniczenia OpenSearch Serverless (marzec 2025).
+**Q: Czy wyszukiwanie botów obsługuje wyszukiwanie semantyczne?**
+A: Nie, obsługiwane jest tylko częściowe dopasowanie tekstu. Wyszukiwanie semantyczne (np. "automobil" → "samochód", "EV", "pojazd") nie jest dostępne ze względu na obecne ograniczenia OpenSearch Serverless (marzec 2025).

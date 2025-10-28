@@ -18,7 +18,6 @@ from mypy_boto3_bedrock_agent_runtime.type_defs import (
 from mypy_boto3_bedrock_agent_runtime.literals import (
     SearchTypeType,
 )
-from mypy_boto3_bedrock_runtime.type_defs import GuardrailConverseContentBlockTypeDef
 
 
 logger = logging.getLogger(__name__)
@@ -48,22 +47,6 @@ def search_result_to_related_document(
         source_name=search_result["source_name"],
         source_link=search_result["source_link"],
         page_number=search_result["page_number"],
-    )
-
-
-def to_guardrails_grounding_source(
-    search_results: list[SearchResult],
-) -> GuardrailConverseContentBlockTypeDef | None:
-    """Convert search results to Guardrails Grounding source format."""
-    return (
-        {
-            "text": {
-                "text": "\n\n".join(x["content"] for x in search_results),
-                "qualifiers": ["grounding_source"],
-            }
-        }
-        if len(search_results) > 0
-        else None
     )
 
 

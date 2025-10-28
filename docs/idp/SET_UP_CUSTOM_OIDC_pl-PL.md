@@ -1,32 +1,32 @@
 # Konfiguracja zewnętrznego dostawcy tożsamości
 
-## Krok 1: Utworzenie klienta OIDC
+## Krok 1: Utwórz klienta OIDC
 
-Postępuj zgodnie z procedurami dla docelowego dostawcy OIDC i zanotuj wartości identyfikatora klienta OIDC oraz jego sekretu. Adres URL wystawcy będzie również wymagany w kolejnych krokach. Jeśli podczas procesu konfiguracji wymagany jest identyfikator URI przekierowania, wprowadź wartość zastępczą, która zostanie wymieniona po zakończeniu wdrożenia.
+Postępuj zgodnie z procedurami dostawcy OIDC i zanotuj wartości identyfikatora klienta OIDC oraz sekretu. W kolejnych krokach wymagany będzie również adres URL wydawcy (issuer URL). Jeśli podczas procesu konfiguracji wymagany jest URI przekierowania, wprowadź tymczasową wartość, która zostanie zastąpiona po zakończeniu wdrożenia.
 
 ## Krok 2: Przechowywanie poświadczeń w AWS Secrets Manager
 
 1. Przejdź do konsoli zarządzania AWS.
-2. Przejdź do Secrets Manager i wybierz "Przechowaj nowy sekret".
-3. Wybierz "Inny typ sekretu".
-4. Wprowadź identyfikator klienta i klucz klienta jako pary klucz-wartość.
+2. Przejdź do Secrets Manager i wybierz "Store a new secret".
+3. Wybierz "Other type of secrets".
+4. Wprowadź identyfikator klienta i tajny klucz klienta jako pary klucz-wartość.
 
    - Klucz: `clientId`, Wartość: <YOUR_GOOGLE_CLIENT_ID>
    - Klucz: `clientSecret`, Wartość: <YOUR_GOOGLE_CLIENT_SECRET>
    - Klucz: `issuerUrl`, Wartość: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Postępuj zgodnie z monitami, aby nazwać i opisać sekret. Zanotuj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Używana w zmiennej kroku 3 <YOUR_SECRET_NAME>).
-6. Przejrzyj i przechowaj sekret.
+5. Postępuj zgodnie z instrukcjami, aby nazwać i opisać sekret. Zapamiętaj nazwę sekretu, ponieważ będzie ona potrzebna w kodzie CDK (Używana w kroku 3 jako nazwa zmiennej <YOUR_SECRET_NAME>).
+6. Przejrzyj i zapisz sekret.
 
 ### Uwaga
 
-Nazwy kluczy muszą dokładnie odpowiadać ciągom `clientId`, `clientSecret` i `issuerUrl`.
+Nazwy kluczy muszą dokładnie odpowiadać ciągom znaków `clientId`, `clientSecret` i `issuerUrl`.
 
-## Krok 3: Aktualizacja pliku cdk.json
+## Krok 3: Aktualizacja cdk.json
 
-W pliku cdk.json dodaj Dostawcę tożsamości i SecretName.
+W pliku cdk.json dodaj ID Dostawcy i SecretName do pliku cdk.json.
 
-w ten sposób:
+w następujący sposób:
 
 ```json
 {
@@ -35,11 +35,11 @@ w ten sposób:
     "identityProviders": [
       {
         "service": "oidc", // Nie zmieniaj
-        "serviceName": "<TWOJA_NAZWA_USŁUGI>", // Ustaw dowolną wartość
-        "secretName": "<TWOJA_NAZWA_SEKRETU>"
+        "serviceName": "<YOUR_SERVICE_NAME>", // Ustaw dowolną wartość
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<UNIKALNY_PREFIKS_DOMENY_DLA_TWOJEJ_PULI_UŻYTKOWNIKÓW>"
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```
@@ -48,16 +48,16 @@ w ten sposób:
 
 #### Unikalność
 
-Prefiks `userPoolDomainPrefix` musi być globalnie unikalny we wszystkich użytkownikach Amazon Cognito. Jeśli wybierzesz prefiks, który jest już używany przez inne konto AWS, utworzenie domeny puli użytkowników zakończy się niepowodzeniem. Dobrą praktyką jest dołączenie identyfikatorów, nazw projektów lub nazw środowisk do prefiksu, aby zapewnić jego unikalność.
+`userPoolDomainPrefix` musi być globalnie unikalny wśród wszystkich użytkowników Amazon Cognito. Jeśli wybierzesz prefiks, który jest już używany przez inne konto AWS, utworzenie domeny puli użytkowników nie powiedzie się. Dobrą praktyką jest uwzględnienie identyfikatorów, nazw projektów lub nazw środowisk w prefiksie, aby zapewnić unikalność.
 
-## Krok 4: Wdrożenie stosu CDK
+## Krok 4: Wdróż swój stos CDK
 
-Wdróż swój stos CDK w AWS:
+Wdróż swój stos CDK na AWS:
 
 ```sh
 npx cdk deploy --require-approval never --all
 ```
 
-## Krok 5: Aktualizacja klienta OIDC z przekierowaniami Cognito
+## Krok 5: Zaktualizuj klienta OIDC o adresy przekierowania Cognito
 
-Po wdrożeniu stosu, `AuthApprovedRedirectURI` będzie widoczny w wynikach CloudFormation. Wróć do konfiguracji OIDC i zaktualizuj ją o prawidłowe adresy URL przekierowań.
+Po wdrożeniu stosu, `AuthApprovedRedirectURI` jest wyświetlany w wynikach CloudFormation. Wróć do swojej konfiguracji OIDC i zaktualizuj ją o prawidłowe adresy URI przekierowania.

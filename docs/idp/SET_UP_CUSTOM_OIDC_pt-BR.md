@@ -1,32 +1,32 @@
 # Configurar provedor de identidade externo
 
-## Etapa 1: Criar um Cliente OIDC
+## Passo 1: Criar um Cliente OIDC
 
-Siga os procedimentos para o provedor OIDC de destino e anote os valores do ID do cliente OIDC e do segredo. Além disso, o URL do emissor é necessário nas etapas seguintes. Se um URI de redirecionamento for necessário durante o processo de configuração, insira um valor fictício, que será substituído após a conclusão da implantação.
+Siga os procedimentos para o provedor OIDC de destino e anote os valores do ID do cliente OIDC e do segredo. A URL do emissor também é necessária nas etapas seguintes. Se a URI de redirecionamento for necessária durante o processo de configuração, insira um valor temporário, que será substituído após a conclusão da implantação.
 
 ## Etapa 2: Armazenar Credenciais no AWS Secrets Manager
 
 1. Acesse o Console de Gerenciamento da AWS.
-2. Navegue até o Secrets Manager e escolha "Armazenar novo segredo".
-3. Selecione "Outro tipo de segredo".
+2. Navegue até o Secrets Manager e escolha "Armazenar um novo segredo".
+3. Selecione "Outro tipo de segredos".
 4. Insira o ID do cliente e o segredo do cliente como pares de chave-valor.
 
-   - Chave: `clientId`, Valor: <SEU_ID_DE_CLIENTE_DO_GOOGLE>
-   - Chave: `clientSecret`, Valor: <SEU_SEGREDO_DE_CLIENTE_DO_GOOGLE>
-   - Chave: `issuerUrl`, Valor: <URL_DO_EMISSOR_DO_PROVEDOR>
+   - Chave: `clientId`, Valor: <YOUR_GOOGLE_CLIENT_ID>
+   - Chave: `clientSecret`, Valor: <YOUR_GOOGLE_CLIENT_SECRET>
+   - Chave: `issuerUrl`, Valor: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Siga os prompts para nomear e descrever o segredo. Anote o nome do segredo, pois você precisará dele no seu código CDK (Usado na Etapa 3 no nome da variável <SEU_NOME_DO_SEGREDO>).
+5. Siga as instruções para nomear e descrever o segredo. Anote o nome do segredo, pois você precisará dele no seu código CDK (Usado na variável da Etapa 3 <YOUR_SECRET_NAME>).
 6. Revise e armazene o segredo.
 
 ### Atenção
 
 Os nomes das chaves devem corresponder exatamente às strings `clientId`, `clientSecret` e `issuerUrl`.
 
-## Etapa 3: Atualizar cdk.json
+## Passo 3: Atualizar cdk.json
 
-No arquivo cdk.json, adicione o Provedor de Identidade e o Nome do Segredo ao arquivo cdk.json.
+No seu arquivo cdk.json, adicione o ID Provider e o SecretName ao arquivo cdk.json.
 
-como a seguir:
+desta forma:
 
 ```json
 {
@@ -35,22 +35,22 @@ como a seguir:
     "identityProviders": [
       {
         "service": "oidc", // Não altere
-        "serviceName": "<SEU_NOME_DE_SERVIÇO>", // Defina qualquer valor que desejar
-        "secretName": "<SEU_NOME_DE_SEGREDO>"
+        "serviceName": "<SEU_NOME_DE_SERVICO>", // Defina qualquer valor que desejar
+        "secretName": "<SEU_NOME_DO_SEGREDO>"
       }
     ],
-    "userPoolDomainPrefix": "<PREFIXO_DE_DOMÍNIO_ÚNICO_PARA_SEU_USER_POOL>"
+    "userPoolDomainPrefix": "<PREFIXO_DE_DOMINIO_UNICO_PARA_SEU_POOL_DE_USUARIOS>"
   }
 }
 ```
 
 ### Atenção
 
-#### Unicidade
+#### Exclusividade
 
-O `userPoolDomainPrefix` deve ser globalmente único em todos os usuários do Amazon Cognito. Se você escolher um prefixo que já está em uso por outra conta AWS, a criação do domínio do user pool falhará. É uma boa prática incluir identificadores, nomes de projetos ou nomes de ambientes no prefixo para garantir a unicidade.
+O `userPoolDomainPrefix` deve ser globalmente único entre todos os usuários do Amazon Cognito. Se você escolher um prefixo que já esteja em uso por outra conta AWS, a criação do domínio do pool de usuários falhará. É uma boa prática incluir identificadores, nomes de projetos ou nomes de ambiente no prefixo para garantir a exclusividade.
 
-## Etapa 4: Implantar Sua Stack CDK
+## Etapa 4: Implante Sua Stack CDK
 
 Implante sua stack CDK na AWS:
 
@@ -58,6 +58,6 @@ Implante sua stack CDK na AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Etapa 5: Atualizar Cliente OIDC com URIs de Redirecionamento do Cognito
+## Etapa 5: Atualizar o Cliente OIDC com os URIs de Redirecionamento do Cognito
 
-Após implantar a pilha, `AuthApprovedRedirectURI` estará visível nos resultados do CloudFormation. Volte para sua configuração OIDC e atualize com os URIs de redirecionamento corretos.
+Após implantar a stack, o `AuthApprovedRedirectURI` é exibido nas saídas do CloudFormation. Volte para sua configuração OIDC e atualize com os URIs de redirecionamento corretos.

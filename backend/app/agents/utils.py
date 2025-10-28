@@ -1,16 +1,22 @@
+import logging
 from typing import Dict
+from typing_extensions import deprecated
 
 from app.agents.tools.agent_tool import AgentTool
+from app.agents.tools.bedrock_agent import BedrockAgent, bedrock_agent_tool
+from app.agents.tools.calculator import calculator_tool
 from app.agents.tools.internet_search import internet_search_tool
-from app.agents.tools.bedrock_agent import bedrock_agent_tool, BedrockAgent
 from app.agents.tools.knowledge import create_knowledge_tool
+from app.agents.tools.simple_list import simple_list_tool
+from app.bedrock import is_tooluse_supported
 from app.repositories.models.custom_bot import BotModel
-import logging
+from app.routes.schemas.conversation import type_model_name
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+@deprecated("Use get_strands_registered_tools() instead")
 def get_available_tools() -> list[AgentTool]:
     tools: list[AgentTool] = []
     tools.append(internet_search_tool)
@@ -18,7 +24,10 @@ def get_available_tools() -> list[AgentTool]:
     return tools
 
 
-def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
+@deprecated("Use get_strands_tools() instead")
+def get_tools(
+    bot: BotModel | None, model_name: type_model_name
+) -> Dict[str, AgentTool]:
     """Get a dictionary of tools based on bot's tool configuration
 
     Args:
@@ -28,6 +37,12 @@ def get_tools(bot: BotModel | None) -> Dict[str, AgentTool]:
         Dict[str, AgentTool]: Dictionary where key is tool name and value is tool instance
     """
     tools: Dict[str, AgentTool] = {}
+
+    if not is_tooluse_supported(model_name):
+        logger.warning(
+            f"Tool use is not supported for model {model_name}. Returning empty tool list."
+        )
+        return tools
 
     # Return empty dictionary if bot is None or agent is not enabled
     if not bot or not bot.is_agent_enabled():

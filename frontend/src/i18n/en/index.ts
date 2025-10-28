@@ -8,6 +8,9 @@ const translation = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: 'How can I Help You?',
+      myBots: 'My Bots',
+      discoverBots: 'Discover Bots',
+      pinnedBots: 'Pinned Bots',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'Recent Chats',
@@ -36,6 +39,11 @@ const translation = {
         label: 'Claude 4.5 (Sonnet)',
         description:
           'The latest version of the Sonnet model that achieves the highest level of coding performance and extended task processing',
+      },
+      'claude-v4.5-haiku': {
+        label: 'Claude 4.5 (Haiku)',
+        description:
+          'The fastest and most intelligent Haiku model with near-frontier performance and extended thinking capabilities',
       },
       'claude-v3-haiku': {
         label: 'Claude 3 (Haiku)',
@@ -650,6 +658,7 @@ How would you categorize this email?`,
     drawerOptionsDialog: {
       title: 'Side Menu Options',
       label: {
+        visibility: 'Visibility',
         displayCount: 'Display Count',
       },
     },
@@ -1057,11 +1066,11 @@ How would you categorize this email?`,
         hint: 'Use this policy to validate if model responses are grounded in the reference source and relevant to user’s query to filter model hallucination.',
         groundingThreshold: {
           label: 'Grounding',
-          hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 0.99: blocks almost everything',
+          hint: 'Validate if the model responses are grounded and factually correct based on the information provided in the reference source, and block responses that are below the defined threshold of grounding. 0: blocks nothing, 1: blocks almost everything',
         },
         relevanceThreshold: {
           label: 'Relevance',
-          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 0.99: blocks almost everything",
+          hint: "Validate if the model responses are relevant to the user's query and block responses that are below the defined threshold of relevance. 0: blocks nothing, 1: blocks almost everything",
         },
       },
     },

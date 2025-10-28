@@ -1,30 +1,30 @@
-# Thiết lập nhà cung cấp danh tính bên ngoài
+# Thiết lập nhà cung cấp định danh bên ngoài
 
-## Bước 1: Tạo Máy khách OIDC
+## Bước 1: Tạo một OIDC Client
 
-Thực hiện các thủ tục theo nhà cung cấp OIDC đích, và ghi chú các giá trị cho ID máy khách OIDC và bí mật. Đồng thời, URL của nhà phát hành cũng được yêu cầu ở các bước tiếp theo. Nếu URI chuyển hướng được yêu cầu trong quá trình thiết lập, hãy nhập giá trị giả, sau đó sẽ được thay thế sau khi triển khai hoàn tất.
+Thực hiện theo quy trình của nhà cung cấp OIDC mục tiêu, và ghi lại các giá trị ID client OIDC và secret. URL của issuer cũng sẽ được yêu cầu trong các bước tiếp theo. Nếu URI chuyển hướng được yêu cầu trong quá trình thiết lập, hãy nhập một giá trị tạm thời, giá trị này sẽ được thay thế sau khi hoàn tất triển khai.
 
-## Bước 2: Lưu Thông Tin Xác Thực trong AWS Secrets Manager
+## Bước 2: Lưu trữ Thông tin Xác thực trong AWS Secrets Manager
 
 1. Truy cập vào AWS Management Console.
-2. Điều hướng đến Secrets Manager và chọn "Lưu trữ một bí mật mới".
-3. Chọn "Loại bí mật khác".
-4. Nhập client ID và client secret dưới dạng các cặp khóa-giá trị.
+2. Điều hướng đến Secrets Manager và chọn "Store a new secret".
+3. Chọn "Other type of secrets".
+4. Nhập ID khách hàng và mã bí mật khách hàng dưới dạng cặp khóa-giá trị.
 
    - Khóa: `clientId`, Giá trị: <YOUR_GOOGLE_CLIENT_ID>
    - Khóa: `clientSecret`, Giá trị: <YOUR_GOOGLE_CLIENT_SECRET>
    - Khóa: `issuerUrl`, Giá trị: <ISSUER_URL_OF_THE_PROVIDER>
 
-5. Làm theo các lời nhắc để đặt tên và mô tả bí mật. Ghi chú tên bí mật vì bạn sẽ cần nó trong mã CDK (Được sử dụng trong tên biến Bước 3 <YOUR_SECRET_NAME>).
-6. Xem lại và lưu trữ bí mật.
+5. Làm theo các bước để đặt tên và mô tả secret. Ghi nhớ tên secret vì bạn sẽ cần nó trong mã CDK của mình (Được sử dụng trong tên biến Bước 3 <YOUR_SECRET_NAME>).
+6. Xem xét và lưu trữ secret.
 
-### Lưu Ý
+### Lưu ý
 
-Tên khóa phải khớp chính xác với các chuỗi `clientId`, `clientSecret` và `issuerUrl`.
+Tên các khóa phải khớp chính xác với các chuỗi `clientId`, `clientSecret` và `issuerUrl`.
 
 ## Bước 3: Cập nhật cdk.json
 
-Trong tệp cdk.json của bạn, hãy thêm ID Provider và SecretName vào tệp cdk.json.
+Trong tệp cdk.json của bạn, thêm ID Provider và SecretName vào tệp cdk.json.
 
 như sau:
 
@@ -35,11 +35,11 @@ như sau:
     "identityProviders": [
       {
         "service": "oidc", // Không thay đổi
-        "serviceName": "<TÊN_DỊCH_VỤ_CỦA_BẠN>", // Đặt bất kỳ giá trị nào bạn muốn
-        "secretName": "<TÊN_BÍ_MẬT_CỦA_BẠN>"
+        "serviceName": "<YOUR_SERVICE_NAME>", // Đặt bất kỳ giá trị nào bạn muốn
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
-    "userPoolDomainPrefix": "<TIỀN_TỐ_MIỀN_DUY_NHẤT_CHO_USER_POOL_CỦA_BẠN>"
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```
@@ -48,9 +48,9 @@ như sau:
 
 #### Tính duy nhất
 
-`userPoolDomainPrefix` phải là duy nhất trên toàn cầu đối với tất cả người dùng Amazon Cognito. Nếu bạn chọn một tiền tố đã được sử dụng bởi tài khoản AWS khác, việc tạo miền user pool sẽ thất bại. Một thực hành tốt là bao gồm các định danh, tên dự án hoặc tên môi trường trong tiền tố để đảm bảo tính duy nhất.
+`userPoolDomainPrefix` phải là duy nhất trên toàn cầu trong tất cả người dùng Amazon Cognito. Nếu bạn chọn một tiền tố đã được sử dụng bởi một tài khoản AWS khác, việc tạo domain user pool sẽ thất bại. Một cách làm tốt là nên bao gồm các định danh, tên dự án hoặc tên môi trường trong tiền tố để đảm bảo tính duy nhất.
 
-## Bước 4: Triển Khai Stack CDK
+## Bước 4: Triển khai Stack CDK
 
 Triển khai stack CDK của bạn lên AWS:
 
@@ -58,6 +58,6 @@ Triển khai stack CDK của bạn lên AWS:
 npx cdk deploy --require-approval never --all
 ```
 
-## Bước 5: Cập Nhật Client OIDC với Các URI Chuyển Hướng của Cognito
+## Bước 5: Cập nhật OIDC Client với các URI Chuyển hướng của Cognito
 
-Sau khi triển khai stack, `AuthApprovedRedirectURI` sẽ xuất hiện trong các kết quả của CloudFormation. Hãy quay lại cấu hình OIDC của bạn và cập nhật các URI chuyển hướng chính xác.
+Sau khi triển khai stack, `AuthApprovedRedirectURI` sẽ hiển thị trong phần đầu ra của CloudFormation. Quay lại cấu hình OIDC của bạn và cập nhật với các URI chuyển hướng chính xác.

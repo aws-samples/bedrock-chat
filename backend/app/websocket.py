@@ -57,9 +57,15 @@ class NotificationSender:
             command = self.commands.get()
             if command["type"] == "notify":
                 try:
+                    logger.debug(
+                        f"[WEBSOCKET_SEND] Sending to connection {self.connection_id}: {command['payload'][:200]}..."
+                    )
                     gatewayapi.post_to_connection(
                         ConnectionId=self.connection_id,
                         Data=command["payload"],
+                    )
+                    logger.debug(
+                        f"[WEBSOCKET_SEND] Successfully sent to connection {self.connection_id}"
                     )
 
                 except (
@@ -85,12 +91,16 @@ class NotificationSender:
         )
 
     def notify(self, payload: bytes | BinaryIO):
+        logger.debug(
+            f"[WEBSOCKET_NOTIFY] Adding payload to queue: {len(str(payload))} chars"
+        )
         self.commands.put(
             {
                 "type": "notify",
                 "payload": payload,
             }
         )
+        logger.debug(f"[WEBSOCKET_NOTIFY] Payload added to queue successfully")
 
     def on_stream(self, token: str):
         # Send completion
@@ -104,6 +114,7 @@ class NotificationSender:
         self.notify(payload=payload)
 
     def on_stop(self, arg: OnStopInput):
+        logger.debug(f"[WEBSOCKET_ON_STOP] WebSocket on_stop called with: {arg}")
         payload = json.dumps(
             dict(
                 status="STREAMING_END",
@@ -119,7 +130,11 @@ class NotificationSender:
             )
         ).encode("utf-8")
 
+        logger.debug(
+            f"[WEBSOCKET_ON_STOP] Sending STREAMING_END payload: {payload.decode('utf-8')}"
+        )
         self.notify(payload=payload)
+        logger.debug(f"[WEBSOCKET_ON_STOP] STREAMING_END payload sent successfully")
 
     def on_agent_thinking(self, tool_use: OnThinking):
         payload = json.dumps(
@@ -189,9 +204,7 @@ def process_chat_input(
             on_stream=lambda token: notificator.on_stream(
                 token=token,
             ),
-            on_stop=lambda arg: notificator.on_stop(
-                arg=arg,
-            ),
+            on_stop=lambda arg: notificator.on_stop(arg=arg),
             on_thinking=lambda tool_use: notificator.on_agent_thinking(
                 tool_use=tool_use,
             ),

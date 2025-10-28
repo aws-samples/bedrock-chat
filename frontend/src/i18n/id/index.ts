@@ -8,6 +8,7 @@ const translation = {
     app: {
       name: 'Bedrock Chat',
       inputMessage: 'Bisakah Saya Membantu Anda?',
+      pinnedBots: 'Bot yang Dipin',
       starredBots: 'Bot Favorit',
       recentlyUsedBots: 'Bot yang Baru Digunakan',
       conversationHistory: 'Riwayat',
@@ -827,11 +828,11 @@ const translation = {
         hint: 'Gunakan kebijakan ini untuk memvalidasi apakah respons model didasarkan pada sumber referensi dan relevan dengan pertanyaan pengguna, sehingga dapat mengurangi kemungkinan halusinasi model.',
         groundingThreshold: {
           label: 'Grounding',
-          hint: 'Validasi apakah respons model memilik dasar dan secara faktual benar berdasarkan informasi yang diberikan dalam sumber referensi, dan blok respons yang berada di bawah ambang batas grounding yang ditentukan. 0: tidak memblokir apa pun, 0.99: memblokir hampir semuanya',
+          hint: 'Validasi apakah respons model memilik dasar dan secara faktual benar berdasarkan informasi yang diberikan dalam sumber referensi, dan blok respons yang berada di bawah ambang batas grounding yang ditentukan. 0: tidak memblokir apa pun, 1: memblokir hampir semuanya',
         },
         relevanceThreshold: {
           label: 'Relevansi',
-          hint: 'Validasi apakah respons model relevan dengan pertanyaan pengguna dan blok respons yang berada di bawah ambang batas relevansi yang ditentukan. 0: tidak memblokir apa pun, 0.99: memblokir hampir semuanya',
+          hint: 'Validasi apakah respons model relevan dengan pertanyaan pengguna dan blok respons yang berada di bawah ambang batas relevansi yang ditentukan. 0: tidak memblokir apa pun, 1: memblokir hampir semuanya',
         },
       },
     },
