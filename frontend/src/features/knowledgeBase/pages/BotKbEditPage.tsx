@@ -1369,7 +1369,6 @@ const BotKbEditPage: React.FC = () => {
     conversationQuickStarters,
     navigate,
     bedrockKnowledgeBaseType,
-    knowledgeBaseId,
     existKnowledgeBaseId,
     embeddingsModel,
     chunkingStrategy,

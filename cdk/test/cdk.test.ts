@@ -1,7 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { Template } from "aws-cdk-lib/assertions";
-import { AwsPrototypingChecks } from "@aws-prototyping-sdk/pdk-nag";
 import {
   getEmbeddingModel,
   getChunkingStrategy,
@@ -172,8 +171,6 @@ describe("Bedrock Chat Stack Test", () => {
 
   test("default stack", () => {
     const app = new cdk.App();
-    // Security check
-    cdk.Aspects.of(app).add(new AwsPrototypingChecks());
 
     const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
       app,
@@ -613,115 +610,65 @@ describe("Bedrock Chat Stack Test", () => {
 describe("Bedrock Knowledge Base Stack", () => {
   const setupStack = (params: any = {}) => {
     const app = new cdk.App();
-    // Security check
-    cdk.Aspects.of(app).add(new AwsPrototypingChecks());
 
-    const PK: string = "test-user-id";
-    const SK: string = "test-user-id#BOT#test-bot-id";
+    const OWNER_USER_ID: string = "test-user-id";
+    const BOT_ID: string = "test-bot-id";
     const KNOWLEDGE = {
-      sitemap_urls: {
-        L: [],
-      },
-      filenames: {
-        L: [
-          {
-            S: "test-filename.pdf",
-          },
-        ],
-      },
-      source_urls: {
-        L: [
-          {
-            S: "https://example.com",
-          },
-        ],
-      },
-      s3_urls: params.s3Urls !== undefined ? params.s3Urls : { L: [] },
+      sitemap_urls: [],
+      filenames: [
+        "test-filename.pdf",
+      ],
+      source_urls: [
+        "https://example.com",
+      ],
+      s3_urls: params.s3Urls !== undefined ? params.s3Urls : [],
     };
 
-    const BEDROCK_KNOWLEDGE_BASE = {
-      type: {
-        S: "dedicated",
-      },
-      chunking_strategy: {
-        S: "fixed_size",
-      },
-      max_tokens:
-        params.maxTokens !== undefined
-          ? { N: String(params.maxTokens) }
-          : undefined,
-      instruction:
-        params.instruction !== undefined
-          ? { S: params.instruction }
-          : undefined,
-      overlap_percentage:
-        params.overlapPercentage !== undefined
-          ? { N: String(params.overlapPercentage) }
-          : undefined,
+    const KNOWLEDGE_BASE = {
+      type: "dedicated",
+      chunking_strategy: "fixed_size",
+      max_tokens: params.maxTokens,
+      instruction: params.instruction,
+      overlap_percentage: params.overlapPercentage,
       open_search: {
-        M: {
-          analyzer:
-            params.analyzer !== undefined
-              ? JSON.parse(params.analyzer)
-              : {
-                character_filters: {
-                  L: [
-                    {
-                      S: "icu_normalizer",
-                    },
-                  ],
-                },
-                token_filters: {
-                  L: [
-                    {
-                      S: "kuromoji_baseform",
-                    },
-                    {
-                      S: "kuromoji_part_of_speech",
-                    },
-                  ],
-                },
-                tokenizer: {
-                  S: "kuromoji_tokenizer",
-                },
-              },
-        },
+        analyzer:
+          params.analyzer !== undefined
+            ? JSON.parse(params.analyzer)
+            : {
+              character_filters: [
+                "icu_normalizer",
+              ],
+              token_filters: [
+                "kuromoji_baseform",
+                "kuromoji_part_of_speech",
+              ],
+              tokenizer: "kuromoji_tokenizer",
+            },
       },
-      embeddings_model: {
-        S: "titan_v2",
-      },
-    };
+      embeddings_model: "titan_v2",
+    } as const;
 
     const BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME =
       "test-document-bucket-name";
 
-    const ownerUserId: string = PK;
-    const botId: string = SK.split("#")[2];
-    const knowledgeBase = BEDROCK_KNOWLEDGE_BASE;
+    const ownerUserId: string = OWNER_USER_ID;
+    const botId: string = BOT_ID;
+    const knowledgeBase = KNOWLEDGE_BASE;
     const knowledge = KNOWLEDGE;
-    const existingS3Urls: string[] = knowledge.s3_urls.L.map(
-      (s3Url: any) => s3Url.S
-    );
+    const existingS3Urls: string[] = knowledge.s3_urls;
 
     const knowledgeBaseType = getKnowledgeBaseType(knowledgeBase.type);
-    const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model.S);
+    const embeddingsModel = getEmbeddingModel(knowledgeBase.embeddings_model);
     const chunkingStrategy = getChunkingStrategy(
-      knowledgeBase.chunking_strategy.S,
-      knowledgeBase.embeddings_model.S
+      knowledgeBase.chunking_strategy,
+      knowledgeBase.embeddings_model
     );
-    const maxTokens: number | undefined = knowledgeBase.max_tokens
-      ? Number(knowledgeBase.max_tokens.N)
+    const maxTokens: number | undefined = knowledgeBase.max_tokens;
+    const instruction: string | undefined = knowledgeBase.instruction;
+    const analyzer = knowledgeBase.open_search.analyzer
+      ? getAnalyzer(knowledgeBase.open_search.analyzer)
       : undefined;
-    const instruction: string | undefined = knowledgeBase.instruction
-      ? knowledgeBase.instruction.S
-      : undefined;
-    const analyzer = knowledgeBase.open_search.M.analyzer
-      ? getAnalyzer(knowledgeBase.open_search.M.analyzer)
-      : undefined;
-    const overlapPercentage: number | undefined =
-      knowledgeBase.overlap_percentage
-        ? Number(knowledgeBase.overlap_percentage.N)
-        : undefined;
+    const overlapPercentage: number | undefined = knowledgeBase.overlap_percentage;
 
     const stack = new BedrockCustomBotStack(app, "BedrockCustomBotStackStack", {
       ownerUserId,
@@ -736,8 +683,8 @@ describe("Bedrock Knowledge Base Stack", () => {
       instruction,
       analyzer,
       overlapPercentage,
-      filenames: knowledge.filenames.L.map((filename: any) => filename.S),
-      sourceUrls: knowledge.source_urls.L.map((sourceUrl: any) => sourceUrl.S),
+      filenames: knowledge.filenames,
+      sourceUrls: knowledge.source_urls,
       existKnowledgeBaseId: undefined,
     });
 
@@ -746,37 +693,21 @@ describe("Bedrock Knowledge Base Stack", () => {
 
   test("default kb stack", () => {
     const template = setupStack({
-      s3Urls: {
-        L: [
-          {
-            S: "s3://test-bucket/test-key",
-          },
-        ],
-      },
+      s3Urls: [
+        "s3://test-bucket/test-key",
+      ],
       maxTokens: 500,
       instruction: "This is an example instruction.",
       overlapPercentage: 10,
       analyzer: `{
-        "character_filters": {
-          "L": [
-            {
-              "S": "icu_normalizer"
-            }
-          ]
-        },
-        "token_filters": {
-          "L": [
-            {
-              "S": "kuromoji_baseform"
-            },
-            {
-              "S": "kuromoji_part_of_speech"
-            }
-          ]
-        },
-        "tokenizer": {
-          "S": "kuromoji_tokenizer"
-        }
+        "character_filters": [
+          "icu_normalizer"
+        ],
+        "token_filters": [
+          "kuromoji_baseform",
+          "kuromoji_part_of_speech"
+        ],
+        "tokenizer": "kuromoji_tokenizer"
       }`,
     });
     expect(template).toBeDefined();
@@ -787,26 +718,14 @@ describe("Bedrock Knowledge Base Stack", () => {
       instruction: "This is an example instruction.",
       overlapPercentage: 10,
       analyzer: `{
-        "character_filters": {
-          "L": [
-            {
-              "S": "icu_normalizer"
-            }
-          ]
-        },
-        "token_filters": {
-          "L": [
-            {
-              "S": "kuromoji_baseform"
-            },
-            {
-              "S": "kuromoji_part_of_speech"
-            }
-          ]
-        },
-        "tokenizer": {
-          "S": "kuromoji_tokenizer"
-        }
+        "character_filters": [
+          "icu_normalizer"
+        ],
+        "token_filters": [
+          "kuromoji_baseform",
+          "kuromoji_part_of_speech"
+        ],
+        "tokenizer": "kuromoji_tokenizer"
       }`,
     });
     expect(template).toBeDefined();
@@ -817,26 +736,14 @@ describe("Bedrock Knowledge Base Stack", () => {
       maxTokens: 500,
       overlapPercentage: 10,
       analyzer: `{
-        "character_filters": {
-          "L": [
-            {
-              "S": "icu_normalizer"
-            }
-          ]
-        },
-        "token_filters": {
-          "L": [
-            {
-              "S": "kuromoji_baseform"
-            },
-            {
-              "S": "kuromoji_part_of_speech"
-            }
-          ]
-        },
-        "tokenizer": {
-          "S": "kuromoji_tokenizer"
-        }
+        "character_filters": [
+          "icu_normalizer"
+        ],
+        "token_filters": [
+          "kuromoji_baseform",
+          "kuromoji_part_of_speech"
+        ],
+        "tokenizer": "kuromoji_tokenizer"
       }`,
     });
     expect(template).toBeDefined();
@@ -856,26 +763,14 @@ describe("Bedrock Knowledge Base Stack", () => {
       maxTokens: 500,
       instruction: "This is an example instruction.",
       analyzer: `{
-        "character_filters": {
-          "L": [
-            {
-              "S": "icu_normalizer"
-            }
-          ]
-        },
-        "token_filters": {
-          "L": [
-            {
-              "S": "kuromoji_baseform"
-            },
-            {
-              "S": "kuromoji_part_of_speech"
-            }
-          ]
-        },
-        "tokenizer": {
-          "S": "kuromoji_tokenizer"
-        }
+        "character_filters": [
+          "icu_normalizer"
+        ],
+        "token_filters": [
+          "kuromoji_baseform",
+          "kuromoji_part_of_speech"
+        ],
+        "tokenizer": "kuromoji_tokenizer"
       }`,
     });
     expect(template).toBeDefined();

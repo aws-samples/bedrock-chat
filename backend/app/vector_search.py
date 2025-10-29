@@ -90,7 +90,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             retrieve_parameter["retrievalConfiguration"]["vectorSearchConfiguration"]["filter"] = {  # type: ignore
                 "listContains": {
                     "key": "tenants",
-                    "value": f"BOT#{bot.id}",
+                    "value": f"BOT#{bot.id}",  # type: ignore
                 },
             }
 

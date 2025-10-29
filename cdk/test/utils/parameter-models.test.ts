@@ -736,12 +736,12 @@ describe("resolveBedrockCustomBotParameters", () => {
         ENV_NAME: "testEnv",
         ENV_PREFIX: "test-prefix",
         BEDROCK_REGION: "us-east-1",
-        PK: "env-pk",
-        SK: "env-sk",
+        OWNER_USER_ID: "env-pk",
+        BOT_ID: "env-sk",
         BEDROCK_CLAUDE_CHAT_DOCUMENT_BUCKET_NAME: "env-bucket",
         KNOWLEDGE: '{"env": "knowledge"}',
-        BEDROCK_KNOWLEDGE_BASE: '{"env": "kb"}',
-        BEDROCK_GUARDRAILS: '{"env": "guardrails"}',
+        KNOWLEDGE_BASE: '{"env": "kb"}',
+        GUARDRAILS: '{"env": "guardrails"}',
         ENABLE_RAG_REPLICAS: "true",
       };
 
@@ -753,8 +753,8 @@ describe("resolveBedrockCustomBotParameters", () => {
         expect(result.bedrockRegion).toBe("us-east-1");
         expect(result.envName).toBe("testEnv");
         expect(result.envPrefix).toBe("test-prefix");
-        expect(result.pk).toBe("env-pk");
-        expect(result.sk).toBe("env-sk");
+        expect(result.ownerUserId).toBe("env-pk");
+        expect(result.botId).toBe("env-sk");
         expect(result.documentBucketName).toBe("env-bucket");
         expect(result.knowledge).toBe('{"env": "knowledge"}');
         expect(result.knowledgeBase).toBe('{"env": "kb"}');
