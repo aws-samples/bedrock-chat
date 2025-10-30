@@ -14,14 +14,25 @@ from app.repositories.models.custom_bot_kb import (
 
 
 def handler(event, context):
+    """To build the information necessary for processing the embedded state machine, retrieve information about bots and shared Knowledge Bases from the database."""
     queued_bots_from_event = event.get("QueuedBots")
     if queued_bots_from_event is not None:
+        # The bots to be processed were specified in the input.
         queued_bots = get_queued_bots_from_event(queued_bots_from_event)
 
     else:
+        # Otherwise, retrieve bots with `SynsStatus of `QUEUED` from the database.
         queued_bots = get_queued_bots()
 
-    shared_knowledge_bases = find_shared_knowledge_bases()
+    if not queued_bots or any(
+        queued_bot["sync_shared_knowledge_bases_required"] for queued_bot in queued_bots
+    ):
+        # If there are updates to shared Knowledge Bases, or the state machine is started without specifying a queued bot, retrieve information about the shared Knowledge Bases from the database.
+        shared_knowledge_bases = find_shared_knowledge_bases()
+
+    else:
+        # Otherwise, skip the processing related to shared Knowledge Bases.
+        shared_knowledge_bases = None
 
     return {
         "QueuedBots": [
@@ -62,19 +73,23 @@ def handler(event, context):
             }
             for queued_bot in queued_bots
         ],
-        "SharedKnowledgeBases": [
-            {
-                "KnowledgeBaseHash": shared_knowledge_base["knowledge_base_hash"],
-                "KnowledgeBase": shared_knowledge_base["knowledge_base"].model_dump(
-                    exclude={
-                        "knowledge_base_id",
-                        "exist_knowledge_base_id",
-                        "data_source_ids",
-                    }
-                ),
-            }
-            for shared_knowledge_base in shared_knowledge_bases
-        ],
+        "SharedKnowledgeBases": (
+            [
+                {
+                    "KnowledgeBaseHash": shared_knowledge_base["knowledge_base_hash"],
+                    "KnowledgeBase": shared_knowledge_base["knowledge_base"].model_dump(
+                        exclude={
+                            "knowledge_base_id",
+                            "exist_knowledge_base_id",
+                            "data_source_ids",
+                        }
+                    ),
+                }
+                for shared_knowledge_base in shared_knowledge_bases
+            ]
+            if shared_knowledge_bases is not None
+            else None
+        ),
     }
 
 
@@ -87,6 +102,7 @@ class FilesDiff(TypedDict):
 class QueuedBot(TypedDict):
     bot: BotModel
     files_diff: NotRequired[FilesDiff]
+    sync_shared_knowledge_bases_required: bool
 
 
 def get_queued_bots_from_event(queued_bots_from_event: list[dict]) -> list[QueuedBot]:
@@ -97,6 +113,9 @@ def get_queued_bots_from_event(queued_bots_from_event: list[dict]) -> list[Queue
         if user_id and bot_id:
             bot = find_bot_by_id(bot_id)
             files_diff = queued_bot.get("FilesDiff", {})
+            sync_shared_knowledge_bases_required = queued_bot.get(
+                "SyncSharedKnowledgeBasesRequired", True
+            )
 
             added_files = files_diff.get("Added", [])
             unchanged_files = files_diff.get("Unchanged", [])
@@ -110,6 +129,7 @@ def get_queued_bots_from_event(queued_bots_from_event: list[dict]) -> list[Queue
                             "Unchanged": unchanged_files,
                             "Deleted": deleted_files,
                         },
+                        "sync_shared_knowledge_bases_required": sync_shared_knowledge_bases_required,
                     }
                 )
 
@@ -117,6 +137,7 @@ def get_queued_bots_from_event(queued_bots_from_event: list[dict]) -> list[Queue
                 result.append(
                     {
                         "bot": bot,
+                        "sync_shared_knowledge_bases_required": sync_shared_knowledge_bases_required,
                     }
                 )
 
@@ -128,6 +149,7 @@ def get_queued_bots() -> list[QueuedBot]:
     return [
         {
             "bot": bot,
+            "sync_shared_knowledge_bases_required": True,
         }
         for bot in bots
     ]

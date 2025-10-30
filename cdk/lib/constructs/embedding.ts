@@ -245,6 +245,7 @@ export class Embedding extends Construct {
   }
 
   private setupStateMachine(props: EmbeddingProps): sfn.StateMachine {
+    // To build the information necessary for processing the embedded state machine, retrieve information about bots and shared Knowledge Bases from the database.
     const bootstrapStateMachine = new tasks.LambdaInvoke(this, "BootstrapStateMachine", {
       lambdaFunction: this._bootstrapStateMachineHandler,
       resultSelector: {
@@ -253,12 +254,16 @@ export class Embedding extends Construct {
       },
     });
 
-    const acquireLockForSharedKnowledgeBases = this.createAcquireLock("ForSharedKnowledgeBases", {
+    const checkSyncSharedKnowledgeBasesRequired = new sfn.Choice(this, "CheckSyncSharedKnowledgeBasesRequired");
+
+    // Acquire a distributed lock for shared Knowledge Bases.
+    const acquireLockForSharedKnowledgeBases = this.createAcquireLockTask("ForSharedKnowledgeBases", {
       name: "shared-knowledge-bases",
       resultPath: "$.Lock",
     });
 
-    const releaseLockForSharedKnowledgeBasesOnFailed = this.createReleaseLock("ForSharedKnowledgeBasesOnFailed", {
+    // Release the acquired lock for shared Knowledge Bases.
+    const releaseLockForSharedKnowledgeBasesOnFailed = this.createReleaseLockTask("ForSharedKnowledgeBasesOnFailed", {
       name: "shared-knowledge-bases",
       lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
     });
@@ -333,6 +338,7 @@ export class Embedding extends Construct {
       resultPath: "$.Error",
     })
 
+    // Obtain the ID of the shared Knowledge Bases built by `BrChatSharedKbStack`, and update `knowledge_base_id` of the referring bots.
     const finalizeSharedKnowledgeBasesBuild = new tasks.LambdaInvoke(this, "FinalizeSharedKnowledgeBasesBuild", {
       lambdaFunction: this._finalizeSharedKnowledgeBasesBuildHandler,
       resultSelector: {
@@ -348,7 +354,8 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     });
-    const ingestionJobForSharedKnowledgeBases = this.createIngestionJob("Shared");
+    // Perform entire synchronization into the data source of shared Knowledge Bases.
+    const ingestionJobForSharedKnowledgeBases = this.createIngestionTask("Shared", {});
 
     const updateSyncStatusFailedForSharedKnowledgeBases = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForSharedKnowledgeBases", {
       lambdaFunction: this._updateSyncStatusHandler,
@@ -373,7 +380,8 @@ export class Embedding extends Construct {
       resultPath: "$.Error",
     });
 
-    const releaseLockForSharedKnowledgeBases = this.createReleaseLock("ForSharedKnowledgeBases", {
+    // Release the acquired lock for shared Knowledge Bases.
+    const releaseLockForSharedKnowledgeBases = this.createReleaseLockTask("ForSharedKnowledgeBases", {
       name: "shared-knowledge-bases",
       lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
     });
@@ -383,7 +391,8 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
     });
 
-    const acquireLockForCustomBot = this.createAcquireLock("ForCustomBot", {
+    // Acquire a distributed lock for custom bots.
+    const acquireLockForCustomBot = this.createAcquireLockTask("ForCustomBot", {
       name: sfn.JsonPath.format("custombot-{}", sfn.JsonPath.stringAt("$.BotId")),
       resultPath: "$.Lock",
     });
@@ -427,7 +436,8 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
     });
 
-    const releaseLockForCustomBot = this.createReleaseLock("ForCustomBot", {
+    // Release the acquired lock for custom bots.
+    const releaseLockForCustomBot = this.createReleaseLockTask("ForCustomBot", {
       name: sfn.JsonPath.format("custombot-{}", sfn.JsonPath.stringAt("$.BotId")),
       lockId: sfn.JsonPath.stringAt("$.Lock.LockId"),
     });
@@ -470,6 +480,7 @@ export class Embedding extends Construct {
       resultPath: "$.Error",
     });
 
+    // Obtain the ID of the dedicated Knowledge Bases and Guardrails built by `BrChatKbStackXXX`, and update `knowledge_base_id` and `guardrail_arn` of the bot.
     const finalizeCustomBotBuild = new tasks.LambdaInvoke(this, "FinalizeCustomBotBuild", {
       lambdaFunction: this._finalizeCustomBotBuildHandler,
       resultSelector: {
@@ -485,7 +496,8 @@ export class Embedding extends Construct {
       resultPath: sfn.JsonPath.DISCARD,
       maxConcurrency: 1,
     });
-    const ingestionJobForCustomBot = this.createIngestionJob("CustomBot");
+    // Perform direct ingestion or entire synchronization into the data source of dedicated Knowledge Bases.
+    const ingestionJobForCustomBot = this.createIngestionTask("CustomBot", {});
 
     const updateSyncStatusFailedForCustomBot = new tasks.LambdaInvoke(this, "UpdateSyncStatusFailedForCustomBot", {
       lambdaFunction: this._updateSyncStatusHandler,
@@ -527,29 +539,37 @@ export class Embedding extends Construct {
 
     const definition = (
       bootstrapStateMachine
-        .next(acquireLockForSharedKnowledgeBases)
-        .next(updateSyncStatusRunning)
-        .next(buildSharedKnowledgeBases)
-        .next(finalizeSharedKnowledgeBasesBuild)
         .next(
-          mapIngestionJobsForSharedKnowledgeBases.itemProcessor(
-            ingestionJobForSharedKnowledgeBases
-          )
-        )
-        .next(releaseLockForSharedKnowledgeBases)
-        .next(
-          mapQueuedBots.itemProcessor(
-            acquireLockForCustomBot
-              .next(startCustomBotBuild)
-              .next(finalizeCustomBotBuild)
-              .next(
-                mapIngestionJobsForCustomBot.itemProcessor(
-                  ingestionJobForCustomBot
+          checkSyncSharedKnowledgeBasesRequired
+            .when(sfn.Condition.isNotNull("$.SharedKnowledgeBases"), (
+              // If there are updates to the shared Knowledge Base, build shared Knowledge Bases and synchronize data sources.
+              acquireLockForSharedKnowledgeBases
+                .next(updateSyncStatusRunning)
+                .next(buildSharedKnowledgeBases)
+                .next(finalizeSharedKnowledgeBasesBuild)
+                .next(
+                  mapIngestionJobsForSharedKnowledgeBases.itemProcessor(
+                    ingestionJobForSharedKnowledgeBases
+                  )
                 )
+                .next(releaseLockForSharedKnowledgeBases)
+                .next(mapQueuedBots)
+            ))
+            .otherwise(
+              // Otherwise, skip the processing related to shared Knowledge Bases.
+              mapQueuedBots.itemProcessor(
+                acquireLockForCustomBot
+                  .next(startCustomBotBuild)
+                  .next(finalizeCustomBotBuild)
+                  .next(
+                    mapIngestionJobsForCustomBot.itemProcessor(
+                      ingestionJobForCustomBot
+                    )
+                  )
+                  .next(updateSyncStatusSucceeded)
+                  .next(syncCustomBotFinished)
               )
-              .next(updateSyncStatusSucceeded)
-              .next(syncCustomBotFinished)
-          )
+            )
         )
     );
 
@@ -656,7 +676,12 @@ export class Embedding extends Construct {
     return removalHandler;
   }
 
-  private createIngestionJob(idSuffix: string) {
+  private createIngestionTask(idSuffix: string, {
+    timeout = Duration.hours(12),
+  }: {
+    timeout?: Duration,
+  }) {
+    // Perform direct ingestion or entire synchronization into the data source
     const startIngestionJob = new tasks.LambdaInvoke(this, `StartIngestionJob${idSuffix}`, {
       lambdaFunction: this._synchronizeDataSourceHandler,
       payload: sfn.TaskInput.fromObject({
@@ -674,6 +699,7 @@ export class Embedding extends Construct {
       resultPath: "$.IngestionJob",
     });
 
+    // Check for the completion of direct ingestion or entire synchronization.
     const checkIngestionJob = new tasks.LambdaInvoke(this, `CheckIngestionJob${idSuffix}`, {
       lambdaFunction: this._synchronizeDataSourceHandler,
       payload: sfn.TaskInput.fromObject({
@@ -688,7 +714,7 @@ export class Embedding extends Construct {
       .next(
         checkIngestionJob.addRetry({
           interval: Duration.seconds(15),
-          maxAttempts: 12 * 60 * 60 / 15,
+          maxAttempts: timeout.toSeconds() / 15,
           backoffRate: 1,
           errors: [
             'RetryException',
@@ -699,24 +725,24 @@ export class Embedding extends Construct {
       ).next(ingestionComplete)
   }
 
-  private createAcquireLock(idSuffix: string, {
+  private createAcquireLockTask(idSuffix: string, {
     name,
     owner = sfn.JsonPath.executionName,
-    expires = Duration.hours(6),
+    timeout = Duration.hours(12),
     resultPath,
   }: {
     name: string;
     owner?: string;
-    expires?: Duration;
+    timeout?: Duration;
     resultPath?: string;
   }) {
+    // Acquire a distributed lock.
     return new tasks.LambdaInvoke(this, `AcquireLock${idSuffix}`, {
       lambdaFunction: this._lockHandler,
       payload: sfn.TaskInput.fromObject({
         Action: "Acquire",
         LockName: name,
         Owner: owner,
-        ExpiresSeconds: expires.toSeconds(),
       }),
       resultSelector: {
         LockId: sfn.JsonPath.stringAt("$.Payload.LockId"),
@@ -724,7 +750,7 @@ export class Embedding extends Construct {
       resultPath: resultPath,
     }).addRetry({
       interval: Duration.seconds(15),
-      maxAttempts: expires.toSeconds() / 15,
+      maxAttempts: timeout.toSeconds() / 15,
       backoffRate: 1,
       errors: [
         'RetryException',
@@ -732,13 +758,14 @@ export class Embedding extends Construct {
     });
   }
 
-  private createReleaseLock(idSuffix: string, {
+  private createReleaseLockTask(idSuffix: string, {
     name,
     lockId,
   }: {
     name: string;
     lockId: string;
   }) {
+    // Release the acquired lock.
     return new tasks.LambdaInvoke(this, `ReleaseLock${idSuffix}`, {
       lambdaFunction: this._lockHandler,
       payload: sfn.TaskInput.fromObject({

@@ -87,6 +87,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
             },
         }
         if bot.bedrock_knowledge_base.type == "shared":
+            # Specify the Bot ID as a filter condition for the shared Knowledge Base.
             retrieve_parameter["retrievalConfiguration"]["vectorSearchConfiguration"]["filter"] = {  # type: ignore
                 "listContains": {
                     "key": "tenants",

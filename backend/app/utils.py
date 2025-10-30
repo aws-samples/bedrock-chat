@@ -321,7 +321,18 @@ def start_embedding_state_machine(
     added_filenames: list[str],
     unchanged_filenames: list[str],
     deleted_filenames: list[str],
+    sync_shared_knowledge_bases_required: bool,
 ):
+    """Start the Embedding state machine for `QUEUED` bot.
+
+    Args:
+        user_id (str): User ID of the bot.
+        bot_id (str): Bot ID.
+        added_filenames (list[str]): Files added to the bot.
+        unchanged_filenames (list[str]): Files unchanged in the bot.
+        deleted_filenames (list[str]): Files deleted from the bot.
+        sync_shared_knowledge_bases_required (bool): Whether there have been any changes to the shared Knowledge Bases.
+    """
     client = boto3.client("stepfunctions")
     client.start_execution(
         stateMachineArn=EMBEDDING_STATE_MACHINE_ARN,
@@ -336,6 +347,7 @@ def start_embedding_state_machine(
                             "Unchanged": unchanged_filenames,
                             "Deleted": deleted_filenames,
                         },
+                        "SyncSharedKnowledgeBasesRequired": sync_shared_knowledge_bases_required,
                     },
                 ],
             }

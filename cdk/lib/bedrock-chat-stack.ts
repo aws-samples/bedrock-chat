@@ -365,5 +365,8 @@ export class BedrockChatStack extends cdk.Stack {
       value: largeMessageBucket.bucketName,
       exportName: `${props.envPrefix}${sepHyphen}BedrockClaudeChatLargeMessageBucketName`,
     });
+    new CfnOutput(this, 'EmbeddingStateMachineArn', {
+      value: embedding.stateMachine.stateMachineArn,
+    });
   }
 }

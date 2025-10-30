@@ -30,6 +30,7 @@ class DataSource(TypedDict):
 
 
 def handler(event, context):
+    """Obtain the ID of the dedicated Knowledge Bases and Guardrails built by `BrChatKbStackXXX`, and update `knowledge_base_id` and `guardrail_arn` of the bot."""
     user_id = event["OwnerUserId"]
     bot_id = event["BotId"]
 
@@ -75,6 +76,7 @@ def handler(event, context):
         if "OutputKey" in output and "OutputValue" in output
     )
 
+    # Update `knowledge_base_id` of the bot using dedicated Knowledge Base.
     knowledge_base_id = stack_outputs.get("KnowledgeBaseId")
     if knowledge_base_id:
         data_source_ids: List[str] = [
@@ -92,6 +94,7 @@ def handler(event, context):
         )
         update_knowledge_base_id(user_id, bot_id, knowledge_base_id, data_source_ids)
 
+    # Update `guardrail_arn` of the bot using dedicated Guardrail.
     guardrail_arn = stack_outputs.get("GuardrailArn")
     guardrail_version = stack_outputs.get("GuardrailVersion")
     if guardrail_arn and guardrail_version:

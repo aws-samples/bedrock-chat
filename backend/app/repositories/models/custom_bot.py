@@ -2,7 +2,6 @@ import logging
 from typing import Annotated, Any, Dict, List, Literal, Optional, Self, Type, get_args
 
 from app.config import DEFAULT_GENERATION_CONFIG
-from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.models.common import DynamicBaseModel, Float, SecureString
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -39,7 +38,6 @@ from app.utils import (
 )
 from pydantic import (
     BaseModel,
-    ConfigDict,
     Discriminator,
     Field,
     ValidationInfo,
@@ -453,10 +451,12 @@ class BotModel(BaseModel):
                 and len(self.knowledge.filenames) == 0
                 and len(self.knowledge.s3_urls) == 0
             ):
+                # Clear Knowledge Base ID if the Knowledge Base is not needed.
                 self.bedrock_knowledge_base.type = None
                 self.bedrock_knowledge_base.knowledge_base_id = None
 
             elif self.bedrock_knowledge_base.type is None:
+                # Otherwise, if the type of Knowledge Base is omitted, it will default to `dedicated`.
                 self.bedrock_knowledge_base.type = "dedicated"
 
         return self
@@ -465,6 +465,7 @@ class BotModel(BaseModel):
     def validate_guardrails(self) -> Self:
         if self.bedrock_guardrails is not None:
             if not self.bedrock_guardrails.is_guardrail_enabled:
+                # Clear Guardrail ARN if the Guardrail is not needed.
                 self.bedrock_guardrails.guardrail_arn = ""
                 self.bedrock_guardrails.guardrail_version = ""
 

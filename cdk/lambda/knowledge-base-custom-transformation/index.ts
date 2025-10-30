@@ -1,5 +1,9 @@
 import { type Handler } from 'aws-lambda';
 
+/**
+ * Custom transformation function used in the S3 data source of a shared Knowledge Base.
+ * https://docs.aws.amazon.com/bedrock/latest/userguide/kb-custom-transformation.html
+ */
 export const handler: Handler = async (event, context) => {
   console.log(`Event: ${JSON.stringify(event)}`);
 
@@ -10,24 +14,26 @@ export const handler: Handler = async (event, context) => {
         const originalFileLocation = file.originalFileLocation;
         const s3Uri = new URL(originalFileLocation.s3_location.uri);
 
-        const fileName = s3Uri.pathname.match(/^(\/[^/]+)*\/(?<fileName>[^/]+)$/)?.groups?.fileName;
-        if (fileName?.startsWith('.')) {
-          console.log(`Ignored dotfile '${fileName}'`);
+        // Ignore files that do not exist in the directory for bots.
+        const groups = s3Uri.pathname.match(/^\/(?<userId>[^/]+)\/(?<botId>[^/]+)\/documents\/(?<fileName>[^/]+)$/)?.groups;
+        const userId = groups?.userId;
+        const botId = groups?.botId;
+        if (groups == null || botId == null || userId === '.temp') {
           return [];
         }
 
-        const botId = s3Uri.pathname.match(/^\/(?<userId>[^/]+)\/(?<botId>[^/]+)\/documents\/(?<fileName>[^/]+)$/)?.groups?.botId;
-        return [{
-          originalFileLocation,
-          ...(botId != null ? {
+        // For files uploaded by bots, set the bot's ID in the metadata field named 'tenants'.
+        return [
+          {
+            originalFileLocation,
+            contentBatches: file.contentBatches,
             fileMetadata: {
-                tenants: [
-                  `BOT#${botId}`,
-                ],
+              tenants: [
+                `BOT#${botId}`,
+              ],
             },
-          } : undefined),
-          contentBatches: file.contentBatches,
-        }];
+          },
+        ];
       }),
    };
 };

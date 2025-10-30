@@ -12,6 +12,7 @@ bedrock_agent = get_bedrock_agent_client()
 
 
 def handler(event, context):
+    """Perform data source synchronization for a Knowledge Base."""
     match event["Action"]:
         case "Ingest":
             return handle_ingest(event)
@@ -41,6 +42,7 @@ def get_data_source_type(knowledge_base_id: str, data_source_id: str):
 
 
 def handle_ingest(event):
+    """Perform direct ingestion or entire synchronization into the data source"""
     knowledge_base_id = event["KnowledgeBaseId"]
     data_source_id = event["DataSourceId"]
 
@@ -53,6 +55,7 @@ def handle_ingest(event):
         )
         == "S3"
     ):
+        # If the bot specifies which files should be ingested, perform direct ingestion.
         added_documents: list[str] = []
         unchanged_documents: list[str] = []
         deleted_documents: list[str] = []
@@ -74,6 +77,7 @@ def handle_ingest(event):
                 for deleted_file in bot_files_diff["Deleted"]
             )
 
+        # If an 'unchanged' document doesn't actually exist, treat it as an 'added' document.
         for i in range(0, len(unchanged_documents), 10):
             get_documents_response = bedrock_agent.get_knowledge_base_documents(
                 knowledgeBaseId=knowledge_base_id,
@@ -99,6 +103,7 @@ def handle_ingest(event):
             "Deleted": [],
         }
 
+        # Ingest 'added' documents to the data source.
         for i in range(0, len(added_documents), 10):
             ingest_response = bedrock_agent.ingest_knowledge_base_documents(
                 knowledgeBaseId=knowledge_base_id,
@@ -123,6 +128,7 @@ def handle_ingest(event):
                 if document["status"] != "IGNORED" and "s3" in document["identifier"]
             )
 
+        # Delete 'deleted' documents from the data source.
         for i in range(0, len(deleted_documents), 10):
             delete_response = bedrock_agent.delete_knowledge_base_documents(
                 knowledgeBaseId=knowledge_base_id,
@@ -151,6 +157,7 @@ def handle_ingest(event):
         }
 
     else:
+        # Otherwise, start the entire synchronization job.
         start_job_response = bedrock_agent.start_ingestion_job(
             knowledgeBaseId=knowledge_base_id,
             dataSourceId=data_source_id,
@@ -170,12 +177,14 @@ class RetryException(Exception):
 
 
 def handle_check(event):
+    """Check for the completion of direct ingestion or entire synchronization."""
     ingestion_job = event["IngestionJob"]
     knowledge_base_id = ingestion_job["KnowledgeBaseId"]
     data_source_id = ingestion_job["DataSourceId"]
 
     documents_diff = ingestion_job.get("DocumentsDiff")
     if documents_diff:
+        # Check for the completion of indexing of 'added' documents.
         added_documents = documents_diff["Added"]
         for i in range(0, len(added_documents), 10):
             get_documents_response = bedrock_agent.get_knowledge_base_documents(
@@ -204,6 +213,7 @@ def handle_check(event):
                     case _:
                         raise Exception(f"File {uri}: Bad status '{status}'.")
 
+        # Check for the absence of 'deleted' documents.
         deleted_documents = documents_diff["Deleted"]
         for i in range(0, len(deleted_documents), 10):
             get_documents_response = bedrock_agent.get_knowledge_base_documents(
@@ -234,26 +244,28 @@ def handle_check(event):
 
         return
 
-    ingestion_job_id = ingestion_job.get("IngestionJobId")
-    if ingestion_job_id:
-        get_job_response = bedrock_agent.get_ingestion_job(
-            knowledgeBaseId=knowledge_base_id,
-            dataSourceId=data_source_id,
-            ingestionJobId=ingestion_job_id,
-        )
-        status = get_job_response["ingestionJob"]["status"]
-        match status:
-            case "COMPLETE":
-                pass
+    else:
+        # Check the completion of entire synchronization job.
+        ingestion_job_id = ingestion_job.get("IngestionJobId")
+        if ingestion_job_id:
+            get_job_response = bedrock_agent.get_ingestion_job(
+                knowledgeBaseId=knowledge_base_id,
+                dataSourceId=data_source_id,
+                ingestionJobId=ingestion_job_id,
+            )
+            status = get_job_response["ingestionJob"]["status"]
+            match status:
+                case "COMPLETE":
+                    pass
 
-            case "STARTING" | "IN_PROGRESS":
-                raise RetryException()
+                case "STARTING" | "IN_PROGRESS":
+                    raise RetryException()
 
-            case _:
-                raise Exception(
-                    f"Ingestion Job '{ingestion_job_id}': Bad status '{status}'."
-                )
+                case _:
+                    raise Exception(
+                        f"Ingestion Job '{ingestion_job_id}': Bad status '{status}'."
+                    )
 
-        return
+            return
 
     raise Exception("Invalid parameters.")

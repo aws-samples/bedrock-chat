@@ -41,6 +41,21 @@ You can also import existing [Amazon Bedrock's KnowledgeBase](https://aws.amazon
 > [!Important]
 > For governance reasons, only allowed users are able to create customized bots. To allow the creation of customized bots, the user must be a member of group called `CreatingBotAllowed`, which can be set up via the management console > Amazon Cognito User pools or aws cli. Note that the user pool id can be referred by accessing CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
+### Multi-Tenant Usage of Knowledge Base
+
+In Amazon Bedrock Knowledge Bases, by default, the number of Knowledge Bases that can be created in a single AWS account is limited to 100. To work around this limitation, you can use 'multi-tenant' mode, where a Knowledge Base with common settings is shared among multiple bots, and files uploaded by each bot are filtered by attaching the Bot ID as metadata.
+
+Newly created bots will have multi-tenant mode enabled by default. To migrate existing bots to multi-tenant mode, change the bot's knowledge settings to "Create a tenant in a shared Knowledge Base."
+
+To migrate multiple bots to multi-tenant mode in bulk, execute commands like the following:
+
+```bash
+aws dynamodb execute-statement --statement "UPDATE \"$BotTableNameV3\" SET BedrockKnowledgeBase.type='shared' SET SyncStatus='QUEUED' WHERE PK='$UserID' AND SK='BOT#$BotID'"
+# Execute for all target bots
+
+aws stepfunctions start-execution --state-machine-arn $EmbeddingStateMachineArn
+```
+
 ### Administrative features
 
 API Management, Mark bots as essential, Analyze usage for bots. [detail](./docs/ADMINISTRATOR.md)
@@ -194,7 +209,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs
 - [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/): Provides a managed interface for Retrieval-Augmented Generation ([RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)), offering services for embedding and parsing documents
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching Step Functions to embed external knowledge
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving deletion event of bots from DynamoDB stream and delete CloudFormation stack related to the bot
 - [AWS Step Functions](https://aws.amazon.com/step-functions/): Orchestrating ingestion pipeline to embed external knowledge into Bedrock Knowledge Bases
 - [Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/features/serverless/): Serves as the backend database for Bedrock Knowledge Bases, providing full-text search and vector search capabilities, enabling accurate retrieval of relevant information
 - [Amazon Athena](https://aws.amazon.com/athena/): Query service to analyze S3 bucket

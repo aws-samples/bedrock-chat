@@ -13,7 +13,7 @@ from app.routes.schemas.bot_kb import (
     type_kb_resource_type,
 )
 from typing import Literal
-from pydantic import BaseModel, validator, model_validator
+from pydantic import BaseModel
 
 
 class SearchParamsModel(BaseModel):
@@ -100,6 +100,14 @@ class BedrockKnowledgeBaseModel(BaseModel):
 
 
 def calc_knowledge_base_hash(knowledge_base: BedrockKnowledgeBaseModel) -> str:
+    """Calculate hashcode of Knowledge Base settings.
+
+    Args:
+        knowledge_base (BedrockKnowledgeBaseModel): Knowledge Base settings
+
+    Returns:
+        str: BASE32 encoded MD5 hashcode of JSON-formatted Knowledge Base settings.
+    """
     return (
         base64.b32encode(
             md5(

@@ -4,7 +4,6 @@ from typing import Literal, TypeGuard
 
 from app.agents.tools.agent_tool import AgentTool as LegacyAgentTool
 from app.config import DEFAULT_GENERATION_CONFIG
-from app.config import GenerationParams as GenerationParamsDict
 from app.repositories.common import RecordNotFoundError
 from app.repositories.custom_bot import (
     alias_exists,
@@ -30,7 +29,6 @@ from app.repositories.custom_bot import (
     update_bot_stats,
 )
 from app.repositories.models.custom_bot import (
-    ActiveModelsModel,
     AgentModel,
     BotAliasModel,
     BotModel,
@@ -44,7 +42,6 @@ from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
 from app.routes.schemas.admin import (
     PushBotInput,
     PushBotInputPinned,
-    PushBotInputUnpinned,
 )
 from app.routes.schemas.bot import (
     ActiveModelsOutput,
@@ -145,12 +142,17 @@ def create_new_bot(user: User, bot_input: BotInput) -> BotOutput:
     store_bot(new_bot)
 
     if new_bot.sync_status == "QUEUED":
+        # If necessary, start the Embedding state machine.
         start_embedding_state_machine(
             user_id=user.id,
             bot_id=new_bot.id,
             added_filenames=filenames,
             unchanged_filenames=[],
             deleted_filenames=[],
+            sync_shared_knowledge_bases_required=(
+                new_bot.bedrock_knowledge_base is not None
+                and new_bot.bedrock_knowledge_base.type == "shared"
+            ),
         )
 
     return new_bot.to_output()
@@ -283,12 +285,16 @@ def modify_owned_bot(
     )
 
     if sync_status == "QUEUED":
+        # If necessary, start the Embedding state machine.
         start_embedding_state_machine(
             user_id=user.id,
             bot_id=bot.id,
             added_filenames=added_filenames,
             unchanged_filenames=unchanged_filenames,
             deleted_filenames=deleted_filenames,
+            sync_shared_knowledge_bases_required=(
+                modify_input.is_sync_shared_knowledge_bases_required(bot)
+            ),
         )
 
     return BotModifyOutput(

@@ -3,7 +3,6 @@ import json
 import logging
 from decimal import Decimal as decimal
 
-from app.config import DEFAULT_GENERATION_CONFIG
 from app.repositories.common import (
     TRANSACTION_BATCH_READ_SIZE,
     RecordNotFoundError,
@@ -22,8 +21,6 @@ from app.repositories.models.custom_bot import (
     ConversationQuickStarterModel,
     GenerationParamsModel,
     KnowledgeModel,
-    UsageStatsModel,
-    default_active_models,
 )
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.repositories.models.custom_bot_kb import BedrockKnowledgeBaseModel
@@ -163,10 +160,12 @@ def update_bot(
             and len(knowledge.filenames) == 0
             and len(knowledge.s3_urls) == 0
         ):
+            # Clear Knowledge Base ID if the Knowledge Base is not needed.
             bedrock_knowledge_base.type = None
             bedrock_knowledge_base.knowledge_base_id = None
 
         elif bedrock_knowledge_base.type is None:
+            # Otherwise, if the type of Knowledge Base is omitted, it will default to `dedicated`.
             bedrock_knowledge_base.type = "dedicated"
 
         update_expression += ", BedrockKnowledgeBase = :bedrock_knowledge_base"
@@ -176,6 +175,7 @@ def update_bot(
 
     if bedrock_guardrails:
         if not bedrock_guardrails.is_guardrail_enabled:
+            # Clear Guardrail ARN if the Guardrail is not needed.
             bedrock_guardrails.guardrail_arn = ""
             bedrock_guardrails.guardrail_version = ""
 

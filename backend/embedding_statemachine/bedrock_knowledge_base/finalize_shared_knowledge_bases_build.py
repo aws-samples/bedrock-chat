@@ -1,5 +1,5 @@
 import os
-from typing import List, TypedDict
+from typing import TypedDict
 
 import boto3
 from app.repositories.custom_bot import update_knowledge_base_id
@@ -38,6 +38,7 @@ class DataSource(TypedDict):
 
 
 def handler(event, context):
+    """Obtain the ID of the shared Knowledge Bases built by `BrChatSharedKbStack`, and update `knowledge_base_id` of the referring bots."""
     queued_bots = event["QueuedBots"]
     shared_knowledge_bases = event["SharedKnowledgeBases"]
 
@@ -56,6 +57,7 @@ def handler(event, context):
         if "OutputKey" in output and "OutputValue" in output
     )
 
+    # Dict of Knowledge Bases built by `BrChatSharedKbStack`. Key is knowledge base hash.
     knowledge_bases: dict[str, KnowledgeBase] = {}
 
     for shared_knowledge_base in shared_knowledge_bases:
@@ -72,52 +74,77 @@ def handler(event, context):
                 "queued_bots": [],
             }
 
-    data_sources: list[DataSource] = []
+    # Dict of data sources that require entire synchronization. Key is data source ID.
+    data_sources: dict[str, DataSource] = {}
 
-    for queued_bot in queued_bots:
-        knowledge_base_hash = queued_bot.get("KnowledgeBaseHash")
-        if knowledge_base_hash and knowledge_base_hash in knowledge_bases:
-            knowledge_base = knowledge_bases[knowledge_base_hash]
-            if "FilesDiff" in queued_bot:
-                queued_bot["DataSources"] = [
-                    {
-                        "KnowledgeBaseId": knowledge_base["knowledge_base_id"],
-                        "DataSourceId": data_source_id,
-                    }
-                    for data_source_id in knowledge_base["data_source_ids"]
-                ]
+    if queued_bots:
+        # If there are `QUEUED` bots, synchronize only shared Knowledge Bases that they reference.
+        for queued_bot in queued_bots:
+            knowledge_base_hash = queued_bot.get("KnowledgeBaseHash")
+            if knowledge_base_hash and knowledge_base_hash in knowledge_bases:
+                knowledge_base = knowledge_bases[knowledge_base_hash]
+                if "FilesDiff" in queued_bot:
+                    # If the bot specifies which files should be ingested, add the data sources as the ingestion target for that bot.
+                    queued_bot["DataSources"] = [
+                        {
+                            "KnowledgeBaseId": knowledge_base["knowledge_base_id"],
+                            "DataSourceId": data_source_id,
+                        }
+                        for data_source_id in knowledge_base["data_source_ids"]
+                    ]
 
-            else:
-                data_sources.extend(
+                else:
+                    # Otherwise, the data sources to be synchronized entirely.
+                    data_sources.update(
+                        (
+                            data_source_id,
+                            {
+                                "KnowledgeBaseId": knowledge_base["knowledge_base_id"],
+                                "DataSourceId": data_source_id,
+                                "FilesDiffs": [],
+                            },
+                        )
+                        for data_source_id in knowledge_base["data_source_ids"]
+                    )
+                    pass
+
+                # Add the bots referencing this Knowledge Base to the list.
+                knowledge_base["queued_bots"].append(
                     {
-                        "KnowledgeBaseId": knowledge_base["knowledge_base_id"],
-                        "DataSourceId": data_source_id,
-                        "FilesDiffs": [],
+                        "user_id": queued_bot["OwnerUserId"],
+                        "bot_id": queued_bot["BotId"],
                     }
-                    for data_source_id in knowledge_base["data_source_ids"]
                 )
-                pass
 
-            knowledge_base["queued_bots"].append(
+        # Update `knowledge_base_id` of the bots using shared Knowledge Bases.
+        for knowledge_base in knowledge_bases.values():
+            for queued_bot in knowledge_base["queued_bots"]:
+                update_knowledge_base_id(
+                    user_id=queued_bot["user_id"],
+                    bot_id=queued_bot["bot_id"],
+                    knowledge_base_id=knowledge_base["knowledge_base_id"],
+                    data_source_ids=knowledge_base["data_source_ids"],
+                )
+
+    else:
+        # Otherwise, synchronize all shared Knowledge Bases.
+        data_sources.update(
+            (
+                data_source_id,
                 {
-                    "user_id": queued_bot["OwnerUserId"],
-                    "bot_id": queued_bot["BotId"],
-                }
+                    "KnowledgeBaseId": knowledge_base["knowledge_base_id"],
+                    "DataSourceId": data_source_id,
+                    "FilesDiffs": [],
+                },
             )
-
-    for knowledge_base in knowledge_bases.values():
-        for queued_bot in knowledge_base["queued_bots"]:
-            update_knowledge_base_id(
-                user_id=queued_bot["user_id"],
-                bot_id=queued_bot["bot_id"],
-                knowledge_base_id=knowledge_base["knowledge_base_id"],
-                data_source_ids=knowledge_base["data_source_ids"],
-            )
+            for knowledge_base in knowledge_bases.values()
+            for data_source_id in knowledge_base["data_source_ids"]
+        )
 
     return {
         "QueuedBots": queued_bots,
         "SharedKnowledgeBases": shared_knowledge_bases,
-        "DataSources": data_sources,
+        "DataSources": list(data_sources.values()),
         **(
             {
                 "Lock": event["Lock"],

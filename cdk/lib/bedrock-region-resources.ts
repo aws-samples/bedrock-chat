@@ -1,4 +1,10 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import {
+  CfnOutput,
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+} from "aws-cdk-lib";
 import { Construct } from "constructs";
 import {
   BlockPublicAccess,
@@ -41,6 +47,10 @@ export class BedrockRegionResourcesStack extends Stack {
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
       serverAccessLogsPrefix: "DocumentBucket",
+    });
+    this.documentBucket.addLifecycleRule({
+      prefix: ".temp/",
+      expiration: Duration.days(1),
     });
 
     new CfnOutput(this, "DocumentBucketName", {

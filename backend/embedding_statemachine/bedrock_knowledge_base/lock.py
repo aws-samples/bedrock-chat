@@ -1,5 +1,4 @@
 import os
-from datetime import datetime, timedelta
 
 import boto3
 
@@ -13,6 +12,7 @@ s3 = boto3.client(
 
 
 def handler(event, context):
+    """Distributed locking using Amazon S3's conditional write feature."""
     action = event["Action"]
     match action:
         case "Acquire":
@@ -29,15 +29,19 @@ class RetryException(Exception):
     pass
 
 
+def lock_name_to_s3_key(lock_name: str) -> str:
+    return f".temp/.lock.{lock_name.lower()}"
+
+
 def handle_acquire(event):
-    lock_name = event["LockName"]
+    """Acquire a distributed lock."""
+    lock_file_key = lock_name_to_s3_key(event["LockName"])
     owner = event["Owner"]
-    expires_seconds = event["ExpiresSeconds"]
     try:
+        # Create the lock file only if it does not already exist. Content is the owner ID.
         response = s3.put_object(
             Bucket=DOCUMENT_BUCKET,
-            Key=f".lock.{lock_name.lower()}",
-            Expires=datetime.now() + timedelta(seconds=expires_seconds),
+            Key=lock_file_key,
             IfNoneMatch="*",
             Body=owner,
         )
@@ -52,9 +56,10 @@ def handle_acquire(event):
         match error_code:
             case "PreconditionFailed":
                 try:
+                    # Check the owner ID because there is a possibility that `PreconditionFailed` occurred due to a retry caused by a network error, etc.
                     get_response = s3.get_object(
                         Bucket=DOCUMENT_BUCKET,
-                        Key=f".lock.{lock_name.lower()}",
+                        Key=lock_file_key,
                     )
                     body = get_response["Body"].read().decode()
                     if body != owner:
@@ -76,12 +81,14 @@ def handle_acquire(event):
 
 
 def handle_release(event):
-    lock_name = event["LockName"]
+    """Release the acquired lock."""
+    lock_file_key = lock_name_to_s3_key(event["LockName"])
     lock_id = event["LockId"]
     try:
+        # Delete the lock file only if it have the same `ETag` as when it was created.
         s3.delete_object(
             Bucket=DOCUMENT_BUCKET,
-            Key=f".lock.{lock_name.lower()}",
+            Key=lock_file_key,
             IfMatch=lock_id,
         )
 
@@ -89,6 +96,7 @@ def handle_release(event):
         error_code = ex.response.get("Error", {}).get("Code")
         match error_code:
             case "PreconditionFailed":
+                # If the lock file was replaced by another owner, the release of the lock is considered successful.
                 pass
 
             case "ConditionalRequestConflict":
