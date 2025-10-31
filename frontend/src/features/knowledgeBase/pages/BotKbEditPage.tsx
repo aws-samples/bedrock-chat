@@ -1605,7 +1605,6 @@ const BotKbEditPage: React.FC = () => {
                       'knowledgeBaseSettings.advancedConfigration.createDedicatedKnowledgeBase.label'
                     )}
                     onChange={() => setKnowledgeBaseType('new')}
-                    disabled
                   />
                   <RadioButton
                     name="knowledgeBaseType"
