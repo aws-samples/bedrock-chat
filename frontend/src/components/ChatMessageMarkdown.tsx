@@ -1,6 +1,6 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { ReactNode, useCallback, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import { ReactMarkdown, ReactMarkdownOptions as MarkdownOptions } from 'react-markdown/lib/react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
@@ -149,6 +149,91 @@ const ChatMessageMarkdown: React.FC<Props> = ({
     return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]];
   }, []);
 
+  type Components = Exclude<MarkdownOptions['components'], undefined>
+  type CodeComponent = Exclude<Components['code'], keyof JSX.IntrinsicElements | undefined>;
+  const Code: CodeComponent = useCallback(function ({ node: _node, inline, className, children, ...props }) {
+    const match = /language-(\w+)/.exec(className || '');
+    const codeText = onlyText(children).replace(/\n$/, '');
+
+    return !inline && match ? (
+      <CopyToClipboard codeText={codeText}>
+        <SyntaxHighlighter
+          {...props}
+          children={codeText}
+          style={vscDarkPlus}
+          language={match[1]}
+          PreTag="div"
+          wrapLongLines={true}
+          customStyle={{
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            maxWidth: '100%'
+          }}
+          className="code-block-wrap"
+        />
+      </CopyToClipboard>
+    ) : (
+      <code {...props} className={className}>
+        {children}
+      </code>
+    );
+  }, []);
+
+  type SupComponent = Exclude<Components['sup'], keyof JSX.IntrinsicElements | undefined>;
+  const Sup: SupComponent = useCallback(function ({ className, children }) {
+    // Footnote's Link is replaced with a component that displays the Reference document
+    return (
+      <sup className={className}>
+        {
+          children.map((child, idx) => {
+            if (child != null && typeof child === 'object' && 'props' in child && child.props['data-footnote-ref']) {
+              const href: string = child.props.href ?? '';
+              if (/#user-content-fn-[\d]+/.test(href ?? '')) {
+                const docNo = Number.parseInt(
+                  href.replace('#user-content-fn-', '')
+                );
+                const sourceId = sourceIds[docNo - 1];
+                const relatedDocument = relatedDocuments?.find(document => (
+                  document.sourceId === sourceId || document.sourceId === `${messageId}@${sourceId}`
+                ));
+
+                const refNo = child.props.children[0];
+                return (
+                  <RelatedDocumentLink
+                    key={`${idx}-${docNo}`}
+                    linkId={`${messageId}-${idx}-${docNo}`}
+                    relatedDocument={relatedDocument}
+                    sourceId={sourceId}
+                  >
+                    [{refNo}]
+                  </RelatedDocumentLink>
+                );
+              }
+            }
+            return child;
+          })
+        }
+      </sup>
+    );
+  }, [messageId, relatedDocuments, sourceIds]);
+
+  type SectionComponent = Exclude<Components['section'], keyof JSX.IntrinsicElements | undefined>;
+  const Section: SectionComponent = useCallback(function ({ className, children, ...props }) {
+    // Normal Footnote not shown for RAG reference documents
+    if ('data-footnotes' in props && props['data-footnotes']) {
+      return null;
+    } else {
+      return <section className={className}>{children}</section>;
+    }
+  }, []);
+
+  const components = useMemo((): Components => ({
+    code: Code,
+    sup: Sup,
+    section: Section,
+  }), [Code, Sup, Section]);
+
   return (
     <ReactMarkdown
       className={twMerge(className, 'prose dark:prose-invert max-w-full break-words')}
@@ -157,97 +242,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       rehypePlugins={rehypePlugins}
-      components={{
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        code({ node, inline, className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
-          const codeText = onlyText(children).replace(/\n$/, '');
-
-          return !inline && match ? (
-            <CopyToClipboard codeText={codeText}>
-              <SyntaxHighlighter
-                {...props}
-                children={codeText}
-                style={vscDarkPlus}
-                language={match[1]}
-                PreTag="div"
-                wrapLongLines={true}
-                customStyle={{
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  maxWidth: '100%'
-                }}
-                className="code-block-wrap"
-              />
-            </CopyToClipboard>
-          ) : (
-            <code {...props} className={className}>
-              {children}
-            </code>
-          );
-        },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        sup({ className, children }) {
-          // Footnote's Link is replaced with a component that displays the Reference document
-          return (
-            <sup className={className}>
-              {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                children.map((child, idx) => {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  if (child?.props['data-footnote-ref']) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const href: string = child.props.href ?? '';
-                    if (/#user-content-fn-[\d]+/.test(href ?? '')) {
-                      const docNo = Number.parseInt(
-                        href.replace('#user-content-fn-', '')
-                      );
-                      const sourceId = sourceIds[docNo - 1];
-                      const relatedDocument = relatedDocuments?.find(document => (
-                        document.sourceId === sourceId || document.sourceId === `${messageId}@${sourceId}`
-                      ));
-
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
-                      const refNo = child.props.children[0];
-                      return (
-                        <RelatedDocumentLink
-                          key={`${idx}-${docNo}`}
-                          linkId={`${messageId}-${idx}-${docNo}`}
-                          relatedDocument={relatedDocument}
-                          sourceId={sourceId}
-                        >
-                          [{refNo}]
-                        </RelatedDocumentLink>
-                      );
-                    }
-                  }
-                  return child;
-                })
-              }
-            </sup>
-          );
-        },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        section({ className, children, ...props }) {
-          // Normal Footnote not shown for RAG reference documents
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          if (props['data-footnotes']) {
-            return null;
-          } else {
-            return <section className={className}>{children}</section>;
-          }
-        },
-      }}
+      components={components}
     />
   );
 };
