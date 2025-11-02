@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import { ReactMarkdown, ReactMarkdownOptions as MarkdownOptions } from 'react-markdown/lib/react-markdown';
+import Markdown, { Options as MarkdownOptions } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
@@ -12,7 +12,7 @@ import { twMerge } from 'tailwind-merge';
 import i18next from 'i18next';
 import { create } from 'zustand';
 import { produce } from 'immer';
-import rehypeExternalLinks, { Options } from 'rehype-external-links';
+import rehypeExternalLinks, { Options as RehypeExternalLinksOptions } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
@@ -138,24 +138,31 @@ const ChatMessageMarkdown: React.FC<Props> = ({
     return textReplacedSourceId;
   }, [children, isStreaming, sourceIds, chatWaitingSymbol]);
 
-  const remarkPlugins = useMemo(() => {
-    return [remarkGfm, remarkBreaks, remarkMath];
-  }, []);
-  const rehypePlugins = useMemo(() => {
-    const rehypeExternalLinksOptions: Options = {
-      target: '_blank',
-      properties: { style: 'word-break: break-word;' },
-    };
-    return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]];
-  }, []);
+  type RemarkPlugins = Exclude<MarkdownOptions['remarkPlugins'], null | undefined>
+  const remarkPlugins = useMemo((): RemarkPlugins => [
+    remarkGfm,
+    remarkBreaks,
+    remarkMath,
+  ], []);
 
-  type Components = Exclude<MarkdownOptions['components'], undefined>
+  type RehypePlugins = Exclude<MarkdownOptions['rehypePlugins'], null | undefined>
+  const rehypePlugins = useMemo((): RehypePlugins => [
+    rehypeKatex,
+    [
+      rehypeExternalLinks, {
+        target: '_blank',
+        properties: { style: 'word-break: break-word;' },
+      } as const satisfies RehypeExternalLinksOptions,
+    ],
+  ], []);
+
+  type Components = Exclude<MarkdownOptions['components'], null | undefined>
   type CodeComponent = Exclude<Components['code'], keyof JSX.IntrinsicElements | undefined>;
-  const Code: CodeComponent = useCallback(function ({ node: _node, inline, className, children, ...props }) {
+  const Code = useCallback<CodeComponent>(function ({ node: _node, className, children, ref: _ref, ...props }) {
     const match = /language-(\w+)/.exec(className || '');
     const codeText = onlyText(children).replace(/\n$/, '');
 
-    return !inline && match ? (
+    return match ? (
       <CopyToClipboard codeText={codeText}>
         <SyntaxHighlighter
           {...props}
@@ -181,12 +188,12 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }, []);
 
   type SupComponent = Exclude<Components['sup'], keyof JSX.IntrinsicElements | undefined>;
-  const Sup: SupComponent = useCallback(function ({ className, children }) {
+  const Sup = useCallback<SupComponent>(function ({ className, children }) {
     // Footnote's Link is replaced with a component that displays the Reference document
     return (
       <sup className={className}>
         {
-          children.map((child, idx) => {
+          React.Children.map(children, (child, idx) => {
             if (child != null && typeof child === 'object' && 'props' in child && child.props['data-footnote-ref']) {
               const href: string = child.props.href ?? '';
               if (/#user-content-fn-[\d]+/.test(href ?? '')) {
@@ -219,7 +226,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }, [messageId, relatedDocuments, sourceIds]);
 
   type SectionComponent = Exclude<Components['section'], keyof JSX.IntrinsicElements | undefined>;
-  const Section: SectionComponent = useCallback(function ({ className, children, ...props }) {
+  const Section = useCallback<SectionComponent>(function ({ className, children, ...props }) {
     // Normal Footnote not shown for RAG reference documents
     if ('data-footnotes' in props && props['data-footnotes']) {
       return null;
@@ -235,15 +242,14 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }), [Code, Sup, Section]);
 
   return (
-    <ReactMarkdown
-      className={twMerge(className, 'prose dark:prose-invert max-w-full break-words')}
-      children={text}
-      remarkPlugins={remarkPlugins}
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      rehypePlugins={rehypePlugins}
-      components={components}
-    />
+    <div className={twMerge(className, 'prose dark:prose-invert w-full break-words')}>
+      <Markdown
+        children={text}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
+        components={components}
+      />
+    </div>
   );
 };
 
