@@ -348,19 +348,22 @@ const ChatPage: React.FC = () => {
   }> = React.memo((props) => {
     const { chatContent: message } = props;
 
-    const isReasoningActive = streamingState.matches('streaming');
-    const reasoning = useMemo(
-      () => isReasoningActive ? streamingState.context.reasoning : '',
-      [isReasoningActive]
-    );
+    const reasoning = useMemo(() => (
+      (streamingState.matches('streaming') && props.isStreaming)
+        ? streamingState.context.reasoning
+        : ''
+    ), [props.isStreaming]);
 
-    const isAgentThinking = useMemo(
-      () =>
-        [StreamingState.STREAMING, StreamingState.LEAVING].some(
-          (v) => v === streamingState.value
-        ),
-      []
-    );
+    const isAgentThinking = useMemo(() => {
+      switch (streamingState.value) {
+        case StreamingState.STREAMING:
+        case StreamingState.LEAVING:
+          return props.isStreaming;
+
+        default:
+          return false;
+      }
+    }, [props.isStreaming]);
 
     const tools: AgentToolsProps[] | undefined = useMemo(() => {
       if (isAgentThinking) {
