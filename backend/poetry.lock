@@ -1882,14 +1882,14 @@ files = [
 
 [[package]]
 name = "pg8000"
-version = "1.31.2"
+version = "1.31.5"
 description = "PostgreSQL interface library"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pg8000-1.31.2-py3-none-any.whl", hash = "sha256:436c771ede71af4d4c22ba867a30add0bc5c942d7ab27fadbb6934a487ecc8f6"},
-    {file = "pg8000-1.31.2.tar.gz", hash = "sha256:1ea46cf09d8eca07fe7eaadefd7951e37bee7fabe675df164f1a572ffb300876"},
+    {file = "pg8000-1.31.5-py3-none-any.whl", hash = "sha256:0af2c1926b153307639868d2ee5cef6cd3a7d07448e12736989b10e1d491e201"},
+    {file = "pg8000-1.31.5.tar.gz", hash = "sha256:46ebb03be52b7a77c03c725c79da2ca281d6e8f59577ca66b17c9009618cae78"},
 ]
 
 [package.dependencies]
@@ -3242,4 +3242,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13.0"
-content-hash = "f2286d94681d2f803b961de856497cf1c203f133ec5aeaeea5319c0b43e2fe76"
+content-hash = "380175ca41056dd28995c98864769a6fcb1a0b5cfb235b18d552f63b83b89eb7"
