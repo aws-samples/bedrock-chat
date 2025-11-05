@@ -37,6 +37,10 @@ def handler(event, context):
     return {
         "QueuedBots": [
             {
+                # Bot configuration for State Machine processing
+                # - Shared bots: KnowledgeBaseHash set, KnowledgeBase empty
+                # - Dedicated bots: KnowledgeBase set, KnowledgeBaseHash None
+                # - FilesDiff: Present when bot has specific file changes
                 "OwnerUserId": queued_bot["bot"].owner_user_id,
                 "BotId": queued_bot["bot"].id,
                 **(

@@ -84,7 +84,12 @@ def handler(event, context):
             if knowledge_base_hash and knowledge_base_hash in knowledge_bases:
                 knowledge_base = knowledge_bases[knowledge_base_hash]
                 if "FilesDiff" in queued_bot:
-                    # If the bot specifies which files should be ingested, add the data sources as the ingestion target for that bot.
+                    # Assign shared KB's DataSources to individual bot for processing in MapQueuedBots flow.
+                    # This preserves bot-specific file diff information needed for:
+                    # - Constructing bot-specific S3 paths (user_id/bot_id/filename)
+                    # - Individual bot status tracking
+                    # - Proper ingestion attribution
+                    # The bot will update the shared Knowledge Base's DataSources in MapQueuedBots flow.
                     queued_bot["DataSources"] = [
                         {
                             "KnowledgeBaseId": knowledge_base["knowledge_base_id"],

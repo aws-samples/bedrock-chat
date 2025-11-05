@@ -86,6 +86,7 @@ def handle_release(event):
     lock_id = event["LockId"]
     try:
         # Delete the lock file only if it have the same `ETag` as when it was created.
+        # Note: lock is automatically released after 1 day passed (see also: cdk/lib/bedrock-region-resources.ts)
         s3.delete_object(
             Bucket=DOCUMENT_BUCKET,
             Key=lock_file_key,

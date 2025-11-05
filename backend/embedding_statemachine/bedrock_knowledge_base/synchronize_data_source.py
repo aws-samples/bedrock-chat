@@ -42,7 +42,15 @@ def get_data_source_type(knowledge_base_id: str, data_source_id: str):
 
 
 def handle_ingest(event):
-    """Perform direct ingestion or entire synchronization into the data source"""
+    """Perform data source synchronization for Knowledge Bases.
+
+    This function handles both shared and dedicated Knowledge Base DataSources.
+    The target DataSource is determined by KnowledgeBaseId/DataSourceId in the event,
+    regardless of whether called from SharedKnowledgeBases flow or MapQueuedBots flow.
+
+    Shared KB bots with file diffs reach here via MapQueuedBots flow but still
+    update the shared Knowledge Base's DataSources with bot-specific file changes.
+    """
     knowledge_base_id = event["KnowledgeBaseId"]
     data_source_id = event["DataSourceId"]
 

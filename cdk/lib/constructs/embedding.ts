@@ -537,6 +537,28 @@ export class Embedding extends Construct {
       resultPath: "$.Error",
     });
 
+    /**
+     * Knowledge Base Synchronization State Machine
+     * 
+     * This state machine processes both Shared and Dedicated Knowledge Bases through two main flows:
+     * 
+     * 1. SharedKnowledgeBases Flow:
+     *    - Executes when SharedKnowledgeBases != null
+     *    - Handles full synchronization of shared Knowledge Bases
+     *    - Processes bots without file diffs via global data source sync
+     * 
+     * 2. MapQueuedBots Flow:
+     *    - Always executes (after SharedKnowledgeBases flow or standalone)
+     *    - Processes each queued bot individually for:
+     *      a) Dedicated bots: Creates KB + processes file diffs
+     *      b) Shared bots with file diffs: Processes bot-specific file changes to shared KB
+     *      c) Guardrails management for all bots
+     * 
+     * Why shared bots with file diffs use MapQueuedBots flow:
+     * - File diffs contain bot-specific metadata (OwnerUserId, BotId)
+     * - Requires bot-specific S3 path construction (user_id/bot_id/filename)
+     * - Enables individual bot status tracking during ingestion
+     */
     const definition = (
       bootstrapStateMachine
         .next(

@@ -30,7 +30,14 @@ class DataSource(TypedDict):
 
 
 def handler(event, context):
-    """Obtain the ID of the dedicated Knowledge Bases and Guardrails built by `BrChatKbStackXXX`, and update `knowledge_base_id` and `guardrail_arn` of the bot."""
+    """Finalize custom bot build by retrieving CloudFormation outputs and setting up data sources.
+
+    This handler processes both:
+    - Dedicated bots: Retrieves new KB/Guardrails from BrChatKbStack{botId} CloudFormation outputs
+    - Shared bots with file diffs: Inherits shared KB DataSources from previous flow
+
+    All bots proceed to ingestion processing with their respective DataSources.
+    """
     user_id = event["OwnerUserId"]
     bot_id = event["BotId"]
 
