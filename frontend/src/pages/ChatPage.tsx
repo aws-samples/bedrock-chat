@@ -157,6 +157,15 @@ const ChatPage: React.FC = () => {
     }
   }, [bot]);
 
+  const isLastAssistantMessageEmpty = useMemo(() => {
+    if (messages.length === 0) {
+      return false;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    return lastMessage.role === 'assistant' && lastMessage.content.length === 0;
+  }, [messages]);
+
   const disabledInput = useMemo(() => {
     return botId !== null && !isAvailabilityBot && !isLoadingBot;
   }, [botId, isAvailabilityBot, isLoadingBot]);
@@ -676,7 +685,7 @@ const ChatPage: React.FC = () => {
         <InputChatContent
           className="mb-7 w-11/12 md:w-10/12 lg:w-4/6 xl:w-3/6"
           dndMode={dndMode}
-          disabledSend={postingMessage || hasError}
+          disabledSend={postingMessage || hasError || isLastAssistantMessageEmpty}
           disabledRegenerate={postingMessage || hasError}
           disabledContinue={postingMessage || hasError}
           disabled={disabledInput}
