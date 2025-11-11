@@ -27,7 +27,7 @@ DEFAULT_GENERATION_CONFIG: GenerationParams = {
     "top_k": 250,
     "top_p": 0.999,
     "temperature": 1.0,
-    "stop_sequences": ["Human: ", "Assistant: "],
+    "stop_sequences": [],
     # Budget tokens must NOT exceeds max_tokens
     "reasoning_params": {"budget_tokens": 1024},
 }
