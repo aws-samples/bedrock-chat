@@ -140,22 +140,15 @@ You can specify the following parameters during deployment to enhance security a
 Example usage:
 
 ```bash
-./bin.sh --cdk-json-override '{
-  "context": {
-    "selfSignUpEnabled": false,
-    "enableLambdaSnapStart": true,
-    "allowedIpV4AddressRanges": ["192.168.1.0/24"],
-    "allowedCountries": ["US", "CA"],
-    "allowedSignUpEmailDomains": ["example.com"],
-    "globalAvailableModels": [
-      "claude-v3.7-sonnet",
-      "claude-v3.5-sonnet",
-      "amazon-nova-pro",
-      "amazon-nova-lite",
-      "llama3-3-70b-instruct"
-    ]
-  }
-}'
+./bin.sh --repo-url "https://github.com/Ascend-corp-sys/bedrock-chat-ascend.git" \
+  --cdk-json-override '{
+    "context": {
+      "bedrockRegion": "ap-northeast-1",
+      "allowedCountries": ["JP"],
+      "globalAvailableModels": ["claude-v4.5-sonnet", "gpt-oss-120b"],
+      "autoJoinUserGroups": []
+    }
+  }'
 ```
 
 The override JSON must follow the same structure as cdk.json. You can override any context values including:
