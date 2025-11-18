@@ -35,7 +35,7 @@ const translation = {
           error: 'Feil',
         },
         app: {
-          name: 'Bedrock Chat',
+          name: 'Ascend FAQ Chat',
           inputMessage: 'Send en melding',
           pinnedBots: 'Faste boter',
           starredBots: 'Favorittbot',

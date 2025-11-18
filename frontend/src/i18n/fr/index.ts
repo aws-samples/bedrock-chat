@@ -1,7 +1,7 @@
 const translation = {
   translation: {
     app: {
-      name: 'Bedrock Chat',
+      name: 'Ascend FAQ Chat',
       inputMessage: 'Envoyer un message',
       pinnedBots: 'Bots épinglés',
       starredBots: 'Epingler un bot',

@@ -6,7 +6,7 @@ const translation = {
       },
     },
     app: {
-      name: 'Bedrock Chat',
+      name: 'Ascend FAQ Chat',
       inputMessage: 'Como posso te ajudar?',
       pinnedBots: 'Bots Fixados',
       starredBots: 'Bots Favoritos',
