@@ -101,11 +101,11 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
             {t('drawerOptionsDialog.label.visibility')}
           </div>
           <div className="ml-3 mt-1 flex flex-col gap-1">
-            <Toggle
+            {/* <Toggle
               label={t('button.newChat')}
               value={showNewChat}
               onChange={setShowNewChat}
-            />
+            /> */}
             <Toggle
               label={t('app.myBots')}
               value={showMyBots}
@@ -121,16 +121,16 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               value={showPinnedBots}
               onChange={setShowPinnedBots}
             />
-            <Toggle
+            {/* <Toggle
               label={t('app.starredBots')}
               value={showStarredBots}
               onChange={setShowStarredBots}
-            />
-            <Toggle
+            /> */}
+            {/* <Toggle
               label={t('app.recentlyUsedBots')}
               value={showRecentlyUsedBots}
               onChange={setShowRecentlyUsedBots}
-            />
+            /> */}
             <Toggle
               label={t('app.conversationHistory')}
               value={showConversationHistory}
@@ -139,7 +139,7 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <div className="text-base font-bold">
             {t('drawerOptionsDialog.label.displayCount')}
           </div>
@@ -175,7 +175,7 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               }}
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="mt-4 flex justify-end gap-2">

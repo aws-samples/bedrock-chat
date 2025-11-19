@@ -313,7 +313,7 @@ const Drawer: React.FC<Props> = (props) => {
           )}
           {!isAdminPanel && (
             <>
-              {drawerOptions.show.newChat && (
+              {/* {drawerOptions.show.newChat && (
                 <DrawerItem
                   isActive={false}
                   icon={<PiNotePencil />}
@@ -321,7 +321,7 @@ const Drawer: React.FC<Props> = (props) => {
                   onClick={onClickNewChat}
                   labelComponent={t('button.newChat')}
                 />
-              )}
+              )} */}
               {drawerOptions.show.myBots && (
                 <DrawerItem
                   isActive={false}
@@ -361,7 +361,7 @@ const Drawer: React.FC<Props> = (props) => {
                   </ExpandableDrawerGroup>
                 ) : null}
 
-              {drawerOptions.show.starredBots && (
+              {/* {drawerOptions.show.starredBots && (
                 <ExpandableDrawerGroup
                   label={t('app.starredBots')}
                   className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
@@ -406,9 +406,9 @@ const Drawer: React.FC<Props> = (props) => {
                     </Button>
                   )}
                 </ExpandableDrawerGroup>
-              )}
+              )} */}
 
-              {drawerOptions.show.recentlyUsedBots && (
+              {/* {drawerOptions.show.recentlyUsedBots && (
                 <ExpandableDrawerGroup
                   label={t('app.recentlyUsedBots')}
                   className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark ">
@@ -453,7 +453,7 @@ const Drawer: React.FC<Props> = (props) => {
                     </Button>
                   )}
                 </ExpandableDrawerGroup>
-              )}
+              )} */}
 
               {drawerOptions.show.conversationHistory && (
                 <ExpandableDrawerGroup
