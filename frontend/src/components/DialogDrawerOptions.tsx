@@ -3,7 +3,7 @@ import { BaseProps, DrawerOptions } from '../@types/common';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
-import InputText from './InputText';
+// import InputText from './InputText';
 import Toggle from './Toggle';
 
 type Props = BaseProps & {

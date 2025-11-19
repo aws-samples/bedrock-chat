@@ -18,11 +18,11 @@ import {
   PiCheck,
   PiCompass,
   PiListBullets,
-  PiNotePencil,
+  //PiNotePencil,
   PiPencilLine,
   PiPlugs,
   PiPresentationChart,
-  PiRobot,
+  //PiRobot,
   PiTrash,
   PiX,
 } from 'react-icons/pi';
@@ -39,7 +39,7 @@ import { usePageLabel } from '../routes';
 import { twMerge } from 'tailwind-merge';
 import Button from './Button';
 import Skeleton from './Skeleton';
-import { isPinnedBot } from '../utils/BotUtils';
+//import { isPinnedBot } from '../utils/BotUtils';
 import IconPinnedBot from './IconPinnedBot';
 import useGlobalConfig from '../hooks/useGlobalConfig';
 
@@ -204,7 +204,7 @@ const Drawer: React.FC<Props> = (props) => {
   const navigate = useNavigate();
   const { getPageLabel } = usePageLabel();
   const { opened, switchOpen, drawerOptions } = useDrawer();
-  const { conversations, pinnedBots, starredBots, recentlyUsedUnstarredBots } = props;
+  const { conversations, pinnedBots /*, starredBots,*/ /*recentlyUsedUnstarredBots*/ } = props;
 
   const location = useLocation();
 
@@ -237,11 +237,11 @@ const Drawer: React.FC<Props> = (props) => {
     }
   }, [conversations, prevConversations]);
 
-  const onClickNewChat = useCallback(() => {
-    newChat();
-    closeSmallDrawer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // const onClickNewChat = useCallback(() => {
+  //   newChat();
+  //   closeSmallDrawer();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const onClickNewBotChat = useCallback(
     () => {
