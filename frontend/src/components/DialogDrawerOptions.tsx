@@ -5,6 +5,7 @@ import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 // import InputText from './InputText';
 import Toggle from './Toggle';
+import useLoginUser from '../hooks/useLoginUser';
 
 type Props = BaseProps & {
   isOpen: boolean;
@@ -15,6 +16,7 @@ type Props = BaseProps & {
 
 const DialogDrawerOptions: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { isAllowCreatingBot } = useLoginUser();
 
   const [starredBotsCount, setStarredBotsCount] = useState<number | null>(0);
   const [recentlyUsedBotsCount, setRecentlyUsedBotsCount] = useState<
@@ -107,15 +109,15 @@ const DialogDrawerOptions: React.FC<Props> = (props) => {
               onChange={setShowNewChat}
             /> */}
             <Toggle
-              label={t('app.myBots')}
-              value={showMyBots}
-              onChange={setShowMyBots}
-            />
-            <Toggle
               label={t('app.discoverBots')}
               value={showDiscoverBots}
               onChange={setShowDiscoverBots}
             />
+            {isAllowCreatingBot && (<Toggle
+              label={t('app.myBots')}
+              value={showMyBots}
+              onChange={setShowMyBots}
+            />)}
             <Toggle
               label={t('app.pinnedBots')}
               value={showPinnedBots}

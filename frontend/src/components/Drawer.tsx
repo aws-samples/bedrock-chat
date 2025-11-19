@@ -42,6 +42,7 @@ import Skeleton from './Skeleton';
 //import { isPinnedBot } from '../utils/BotUtils';
 import IconPinnedBot from './IconPinnedBot';
 import useGlobalConfig from '../hooks/useGlobalConfig';
+import useLoginUser from '../hooks/useLoginUser';
 
 type Props = BaseProps & {
   isAdmin: boolean;
@@ -217,6 +218,7 @@ const Drawer: React.FC<Props> = (props) => {
   const { getGlobalConfig } = useGlobalConfig();
   const { data: globalConfig } = getGlobalConfig();
   const logoSrc = globalConfig?.logoPath ?? '';
+  const { isAllowCreatingBot } = useLoginUser();
 
   useEffect(() => {
     setPrevConversations(conversations);
@@ -322,21 +324,22 @@ const Drawer: React.FC<Props> = (props) => {
                   labelComponent={t('button.newChat')}
                 />
               )} */}
-              {drawerOptions.show.myBots && (
-                <DrawerItem
-                  isActive={false}
-                  icon={<PiListBullets />}
-                  to="/bot/my"
-                  labelComponent={getPageLabel('/bot/my')}
-                  onClick={closeSmallDrawer}
-                />
-              )}
               {drawerOptions.show.discoverBots && (
                 <DrawerItem
                   isActive={false}
                   icon={<PiCompass />}
                   to="/bot/discover"
                   labelComponent={getPageLabel('/bot/discover')}
+                  onClick={closeSmallDrawer}
+                />
+              )}
+
+              {isAllowCreatingBot && drawerOptions.show.myBots && (
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiListBullets />}
+                  to="/bot/my"
+                  labelComponent={getPageLabel('/bot/my')}
                   onClick={closeSmallDrawer}
                 />
               )}
