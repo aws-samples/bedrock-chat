@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import Markdown, { Options as MarkdownOptions } from 'react-markdown';
+import Markdown, { MarkdownHooks, Options as MarkdownOptions } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
@@ -14,6 +14,7 @@ import { create } from 'zustand';
 import { produce } from 'immer';
 import rehypeExternalLinks, { Options as RehypeExternalLinksOptions } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
+import rehypeMermaid, { RehypeMermaidOptions } from 'rehype-mermaid';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
 import { onlyText } from 'react-children-utilities';
@@ -156,6 +157,51 @@ const ChatMessageMarkdown: React.FC<Props> = ({
     ],
   ], []);
 
+  const rehypeAsyncPlugins = useMemo((): RehypePlugins => [
+    ...rehypePlugins,
+    [
+      rehypeMermaid, {
+        errorFallback: (_element, diagram, error) => (
+          {
+            type: "element",
+            tagName: "pre",
+            properties: {
+              className: "p-3 space-y-1",
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: "p-2 bg-[#1e1e1e] font-[Menlo, Monaco, Consolas, \"Andale Mono\", \"Ubuntu Mono\", \"Courier New\", monospace] text-[13px] text-[#d4d4d4] leading-[1.3] whitespace-pre-wrap break-all",
+                },
+                children: [
+                  {
+                    type: "text",
+                    value: diagram,
+                  },
+                ],
+              },
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: "p-2 bg-[#1e1e1e] text-[13px] text-[#dcdcaa] leading-[1.3]",
+                },
+                children: [
+                  {
+                    type: "text",
+                    value: `${error}`,
+                  },
+                ],
+              },
+            ],
+          }
+        ),
+      } as const satisfies RehypeMermaidOptions,
+    ],
+  ], [rehypePlugins]);
+
   type Components = Exclude<MarkdownOptions['components'], null | undefined>
   type CodeComponent = Exclude<Components['code'], keyof JSX.IntrinsicElements | undefined>;
   const Code = useCallback<CodeComponent>(function ({ node: _node, className, children, ref: _ref, ...props }) {
@@ -243,12 +289,29 @@ const ChatMessageMarkdown: React.FC<Props> = ({
 
   return (
     <div className={twMerge(className, 'prose dark:prose-invert w-full break-words')}>
-      <Markdown
-        children={text}
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
-        components={components}
-      />
+      {isStreaming ? (
+        <Markdown
+          children={text}
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypePlugins}
+          components={components}
+        />
+      ) : (
+        <MarkdownHooks
+          children={text}
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypeAsyncPlugins}
+          components={components}
+          fallback={
+            <Markdown
+              children={text}
+              remarkPlugins={remarkPlugins}
+              rehypePlugins={rehypePlugins}
+              components={components}
+            />
+          }
+        />
+      )}
     </div>
   );
 };
