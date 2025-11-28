@@ -998,6 +998,7 @@ How would you categorize this email?`,
             'This bot is published as API by administrator. Published API must be shared with all users.',
         },
       },
+      invalidMermaidFormat: "Error in diagram drawing"
     },
     validation: {
       title: 'Validation Error',

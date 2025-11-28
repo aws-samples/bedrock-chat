@@ -43,6 +43,7 @@ import {
   DisplayMessageContent,
   Model,
   PutFeedbackRequest,
+  RelatedDocument,
 } from '../@types/conversation.ts';
 import { AVAILABLE_MODEL_KEYS } from '../constants/index';
 import usePostMessageStreaming from '../hooks/usePostMessageStreaming.ts';
@@ -52,6 +53,98 @@ import Skeleton from '../components/Skeleton.tsx';
 import { twMerge } from 'tailwind-merge';
 import ButtonStar from '../components/ButtonStar.tsx';
 import MenuBot from '../components/MenuBot.tsx';
+
+// ChatMessageWithRelatedDocuments component moved outside to prevent re-creation on every render
+type ChatMessageWithRelatedDocumentsProps = {
+  chatContent: DisplayMessageContent;
+  isStreaming: boolean;
+  streamingReasoning: string;
+  streamingTools: AgentToolsProps[];
+  streamingRelatedDocuments: RelatedDocument[];
+  streamingStateValue: string;
+  botHasAgent: boolean;
+  botHasKnowledge: boolean;
+  relatedDocuments: RelatedDocument[];
+  onChangeMessageId?: (messageId: string) => void;
+  onSubmit?: (messageId: string, content: string) => void;
+  onSubmitFeedback?: (messageId: string, feedback: PutFeedbackRequest) => void;
+};
+
+const ChatMessageWithRelatedDocuments: React.FC<ChatMessageWithRelatedDocumentsProps> = React.memo((props) => {
+  const { t } = useTranslation();
+  const { chatContent: message } = props;
+
+  const isAgentThinking = useMemo(() => {
+    switch (props.streamingStateValue) {
+      case StreamingState.STREAMING:
+      case StreamingState.LEAVING:
+        return props.isStreaming;
+      default:
+        return false;
+    }
+  }, [props.streamingStateValue, props.isStreaming]);
+
+  const reasoning = useMemo(() => (
+    isAgentThinking ? props.streamingReasoning : ''
+  ), [isAgentThinking, props.streamingReasoning]);
+
+  const tools: AgentToolsProps[] | undefined = useMemo(() => {
+    if (isAgentThinking) {
+      if (props.streamingTools.length > 0) {
+        return props.streamingTools;
+      }
+
+      if (props.botHasAgent) {
+        return [{ thought: t('agent.progress.label'), tools: {} }];
+      }
+
+      if (props.botHasKnowledge) {
+        return [{ thought: t('bot.label.retrievingKnowledge'), tools: {} }];
+      }
+
+      return undefined;
+    } else {
+      if (props.botHasKnowledge) {
+        const pseudoToolUseId = message.id;
+        const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(
+          props.relatedDocuments,
+          pseudoToolUseId
+        );
+        if (relatedDocumentsOfVectorSearch != null && relatedDocumentsOfVectorSearch.length > 0) {
+          return [{
+            tools: {
+              [pseudoToolUseId]: {
+                name: 'knowledge_base_tool',
+                status: 'success',
+                input: {},
+                relatedDocuments: relatedDocumentsOfVectorSearch,
+              },
+            },
+          }];
+        }
+      }
+      return undefined;
+    }
+  }, [isAgentThinking, props.streamingTools, props.botHasAgent, props.botHasKnowledge, message.id, props.relatedDocuments, t]);
+
+  const relatedDocumentsForCitation = useMemo(
+    () => isAgentThinking ? props.streamingRelatedDocuments : props.relatedDocuments,
+    [isAgentThinking, props.streamingRelatedDocuments, props.relatedDocuments]
+  );
+
+  return (
+    <ChatMessage
+      tools={tools}
+      reasoning={reasoning}
+      chatContent={message}
+      isStreaming={props.isStreaming}
+      relatedDocuments={relatedDocumentsForCitation}
+      onChangeMessageId={props.onChangeMessageId}
+      onSubmit={props.onSubmit}
+      onSubmitFeedback={props.onSubmitFeedback}
+    />
+  );
+});
 
 // Default model activation settings when no bot is selected
 const defaultActiveModels: ActiveModels = (() => {
@@ -336,112 +429,6 @@ const ChatPage: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   });
 
-  const ChatMessageWithRelatedDocuments: React.FC<{
-    chatContent: DisplayMessageContent;
-    isStreaming: boolean;
-    onChangeMessageId?: (messageId: string) => void;
-    onSubmit?: (messageId: string, content: string) => void;
-    onSubmitFeedback?: (
-      messageId: string,
-      feedback: PutFeedbackRequest
-    ) => void;
-  }> = React.memo((props) => {
-    const { chatContent: message } = props;
-
-    const reasoning = useMemo(() => (
-      (streamingState.matches('streaming') && props.isStreaming)
-        ? streamingState.context.reasoning
-        : ''
-    ), [props.isStreaming]);
-
-    const isAgentThinking = useMemo(() => {
-      switch (streamingState.value) {
-        case StreamingState.STREAMING:
-        case StreamingState.LEAVING:
-          return props.isStreaming;
-
-        default:
-          return false;
-      }
-    }, [props.isStreaming]);
-
-    const tools: AgentToolsProps[] | undefined = useMemo(() => {
-      if (isAgentThinking) {
-        if (streamingState.context.tools.length > 0) {
-          return streamingState.context.tools;
-        }
-
-        if (bot?.hasAgent) {
-          return [
-            {
-              thought: t('agent.progress.label'),
-              tools: {},
-            },
-          ];
-        }
-
-        if (bot?.hasKnowledge) {
-          return [
-            {
-              thought: t('bot.label.retrievingKnowledge'), // @@
-              tools: {},
-            },
-          ];
-        }
-
-        return undefined;
-      } else {
-        if (bot?.hasKnowledge) {
-          const pseudoToolUseId = message.id;
-          const relatedDocumentsOfVectorSearch = getRelatedDocumentsOfToolUse(
-            relatedDocuments,
-            pseudoToolUseId
-          );
-          if (
-            relatedDocumentsOfVectorSearch != null &&
-            relatedDocumentsOfVectorSearch.length > 0
-          ) {
-            return [
-              {
-                tools: {
-                  [pseudoToolUseId]: {
-                    name: 'knowledge_base_tool',
-                    status: 'success',
-                    input: {},
-                    relatedDocuments: relatedDocumentsOfVectorSearch,
-                  },
-                },
-              },
-            ];
-          }
-        }
-
-        return undefined;
-      }
-    }, [isAgentThinking, message]);
-
-    const relatedDocumentsForCitation = useMemo(
-      () =>
-        isAgentThinking
-          ? streamingState.context.relatedDocuments
-          : relatedDocuments,
-      [isAgentThinking]
-    );
-
-    return (
-      <ChatMessage
-        tools={tools}
-        reasoning={reasoning}
-        chatContent={message}
-        isStreaming={props.isStreaming}
-        relatedDocuments={relatedDocumentsForCitation}
-        onChangeMessageId={props.onChangeMessageId}
-        onSubmit={props.onSubmit}
-        onSubmitFeedback={props.onSubmitFeedback}
-      />
-    );
-  });
-
   const activeModels = useMemo(() => {
     if (!bot) {
       return defaultActiveModels;
@@ -605,7 +592,7 @@ const ChatPage: React.FC = () => {
                 <>
                   {messages?.map((message, idx, array) => (
                     <div
-                      key={idx}
+                      key={message.id}
                       className={`${
                         message.role === 'assistant'
                           ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/35'
@@ -614,6 +601,13 @@ const ChatPage: React.FC = () => {
                       <ChatMessageWithRelatedDocuments
                         chatContent={message}
                         isStreaming={postingMessage && idx + 1 === array.length}
+                        streamingReasoning={streamingState.context.reasoning}
+                        streamingTools={streamingState.context.tools}
+                        streamingRelatedDocuments={streamingState.context.relatedDocuments}
+                        streamingStateValue={streamingState.value as string}
+                        botHasAgent={bot?.hasAgent ?? false}
+                        botHasKnowledge={bot?.hasKnowledge ?? false}
+                        relatedDocuments={relatedDocuments ?? []}
                         onChangeMessageId={onChangeCurrentMessageId}
                         onSubmit={onSubmitEditedContent}
                         onSubmitFeedback={(messageId, feedback) => {

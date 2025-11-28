@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import Markdown, { MarkdownHooks, Options as MarkdownOptions } from 'react-markdown';
+import Markdown, { Options as MarkdownOptions } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
@@ -14,11 +14,11 @@ import { create } from 'zustand';
 import { produce } from 'immer';
 import rehypeExternalLinks, { Options as RehypeExternalLinksOptions } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
-import rehypeMermaid, { RehypeMermaidOptions } from 'rehype-mermaid';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
 import { onlyText } from 'react-children-utilities';
 import RelatedDocumentViewer from './RelatedDocumentViewer';
+import MermaidBlock from './MermaidBlock';
 
 type Props = BaseProps & {
   children: string;
@@ -157,56 +157,32 @@ const ChatMessageMarkdown: React.FC<Props> = ({
     ],
   ], []);
 
-  const rehypeAsyncPlugins = useMemo((): RehypePlugins => [
-    ...rehypePlugins,
-    [
-      rehypeMermaid, {
-        errorFallback: (_element, diagram, error) => (
-          {
-            type: "element",
-            tagName: "pre",
-            properties: {
-              className: "p-3 space-y-1",
-            },
-            children: [
-              {
-                type: "element",
-                tagName: "div",
-                properties: {
-                  className: "p-2 bg-[#1e1e1e] font-[Menlo, Monaco, Consolas, \"Andale Mono\", \"Ubuntu Mono\", \"Courier New\", monospace] text-[13px] text-[#d4d4d4] leading-[1.3] whitespace-pre-wrap break-all",
-                },
-                children: [
-                  {
-                    type: "text",
-                    value: diagram,
-                  },
-                ],
-              },
-              {
-                type: "element",
-                tagName: "div",
-                properties: {
-                  className: "p-2 bg-[#1e1e1e] text-[13px] text-[#dcdcaa] leading-[1.3]",
-                },
-                children: [
-                  {
-                    type: "text",
-                    value: `${error}`,
-                  },
-                ],
-              },
-            ],
-          }
-        ),
-      } as const satisfies RehypeMermaidOptions,
-    ],
-  ], [rehypePlugins]);
-
   type Components = Exclude<MarkdownOptions['components'], null | undefined>
+  
+  type PreComponent = Exclude<Components['pre'], keyof JSX.IntrinsicElements | undefined>;
+  const Pre = useCallback<PreComponent>(function ({ children, ...props }) {
+    // Check if this pre contains a mermaid code block
+    if (React.isValidElement(children) && children.props?.className?.includes('language-mermaid')) {
+      const codeText = onlyText(children).replace(/\n$/, '');
+      // Don't render mermaid during streaming to avoid parse errors
+      if (isStreaming) {
+        return <pre {...props}>{children}</pre>;
+      }
+      return <MermaidBlock code={codeText} />;
+    }
+    return <pre {...props}>{children}</pre>;
+  }, [isStreaming]);
+
   type CodeComponent = Exclude<Components['code'], keyof JSX.IntrinsicElements | undefined>;
   const Code = useCallback<CodeComponent>(function ({ node: _node, className, children, ref: _ref, ...props }) {
     const match = /language-(\w+)/.exec(className || '');
     const codeText = onlyText(children).replace(/\n$/, '');
+    const language = match?.[1];
+
+    // Mermaid is handled by Pre component
+    if (language === 'mermaid') {
+      return <code className={className}>{children}</code>;
+    }
 
     return match ? (
       <CopyToClipboard codeText={codeText}>
@@ -282,36 +258,20 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }, []);
 
   const components = useMemo((): Components => ({
+    pre: Pre,
     code: Code,
     sup: Sup,
     section: Section,
-  }), [Code, Sup, Section]);
+  }), [Pre, Code, Sup, Section]);
 
   return (
     <div className={twMerge(className, 'prose dark:prose-invert w-full break-words')}>
-      {isStreaming ? (
-        <Markdown
-          children={text}
-          remarkPlugins={remarkPlugins}
-          rehypePlugins={rehypePlugins}
-          components={components}
-        />
-      ) : (
-        <MarkdownHooks
-          children={text}
-          remarkPlugins={remarkPlugins}
-          rehypePlugins={rehypeAsyncPlugins}
-          components={components}
-          fallback={
-            <Markdown
-              children={text}
-              remarkPlugins={remarkPlugins}
-              rehypePlugins={rehypePlugins}
-              components={components}
-            />
-          }
-        />
-      )}
+      <Markdown
+        children={text}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
+        components={components}
+      />
     </div>
   );
 };

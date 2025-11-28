@@ -1003,6 +1003,7 @@ const translation: typeof en = {
             'このボットは管理者によってAPIとして公開されています。APIを公開するためには、全ユーザーに共有する必要があります。',
         },
       },
+      invalidMermaidFormat: "ダイアグラム描画時にエラーが発生しました"
     },
     validation: {
       title: 'バリデーションエラー',
