@@ -19,6 +19,7 @@ import 'katex/dist/katex.min.css';
 import { onlyText } from 'react-children-utilities';
 import RelatedDocumentViewer from './RelatedDocumentViewer';
 import MermaidBlock from './MermaidBlock';
+import rehypeMermaid from '../utils/rehypeMermaid';
 
 type Props = BaseProps & {
   children: string;
@@ -147,42 +148,40 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   ], []);
 
   type RehypePlugins = Exclude<MarkdownOptions['rehypePlugins'], null | undefined>
-  const rehypePlugins = useMemo((): RehypePlugins => [
-    rehypeKatex,
-    [
-      rehypeExternalLinks, {
-        target: '_blank',
-        properties: { style: 'word-break: break-word;' },
-      } as const satisfies RehypeExternalLinksOptions,
-    ],
-  ], []);
+  const rehypePlugins = useMemo((): RehypePlugins => {
+    const plugins: RehypePlugins = [
+      rehypeKatex,
+      [
+        rehypeExternalLinks, {
+          target: '_blank',
+          properties: { style: 'word-break: break-word;' },
+        } as const satisfies RehypeExternalLinksOptions,
+      ],
+    ];
+    // Only transform mermaid blocks when not streaming to avoid parse errors
+    if (!isStreaming) {
+      plugins.push(rehypeMermaid);
+    }
+    return plugins;
+  }, [isStreaming]);
 
   type Components = Exclude<MarkdownOptions['components'], null | undefined>
-  
-  type PreComponent = Exclude<Components['pre'], keyof JSX.IntrinsicElements | undefined>;
-  const Pre = useCallback<PreComponent>(function ({ children, ...props }) {
-    // Check if this pre contains a mermaid code block
-    if (React.isValidElement(children) && children.props?.className?.includes('language-mermaid')) {
-      const codeText = onlyText(children).replace(/\n$/, '');
-      // Don't render mermaid during streaming to avoid parse errors
-      if (isStreaming) {
-        return <pre {...props}>{children}</pre>;
-      }
-      return <MermaidBlock code={codeText} />;
+
+  // Handle mermaid blocks transformed by rehypeMermaid plugin
+  type DivComponent = Exclude<Components['div'], keyof JSX.IntrinsicElements | undefined>;
+  const Div = useCallback<DivComponent>(function ({ node: _node, ...props }) {
+    const dataMermaid = (props as Record<string, unknown>)['data-mermaid'];
+    const dataMermaidCode = (props as Record<string, unknown>)['data-mermaid-code'];
+    if (dataMermaid === 'true' && typeof dataMermaidCode === 'string') {
+      return <MermaidBlock code={dataMermaidCode} />;
     }
-    return <pre {...props}>{children}</pre>;
-  }, [isStreaming]);
+    return <div {...props} />;
+  }, []);
 
   type CodeComponent = Exclude<Components['code'], keyof JSX.IntrinsicElements | undefined>;
   const Code = useCallback<CodeComponent>(function ({ node: _node, className, children, ref: _ref, ...props }) {
     const match = /language-(\w+)/.exec(className || '');
     const codeText = onlyText(children).replace(/\n$/, '');
-    const language = match?.[1];
-
-    // Mermaid is handled by Pre component
-    if (language === 'mermaid') {
-      return <code className={className}>{children}</code>;
-    }
 
     return match ? (
       <CopyToClipboard codeText={codeText}>
@@ -258,11 +257,11 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }, []);
 
   const components = useMemo((): Components => ({
-    pre: Pre,
+    div: Div,
     code: Code,
     sup: Sup,
     section: Section,
-  }), [Pre, Code, Sup, Section]);
+  }), [Div, Code, Sup, Section]);
 
   return (
     <div className={twMerge(className, 'prose dark:prose-invert w-full break-words')}>
