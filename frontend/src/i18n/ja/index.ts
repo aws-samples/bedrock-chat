@@ -956,6 +956,8 @@ const translation: typeof en = {
           label: '既存のAmazon Bedrock Knowledge BaseのID',
           description:
             '既存のAmazon Bedrock Knowledge Baseを利用できます',
+          noKnowledgeBasesFound:
+            'アカウントにナレッジベースが見つかりません。最初にナレッジベースを作成してください。',
         },
         createDedicatedKnowledgeBase: {
           label: '専用のKnowledge Baseを作成する',

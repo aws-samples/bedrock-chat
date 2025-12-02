@@ -947,9 +947,11 @@ How would you categorize this email?`,
       },
       advancedConfigration: {
         existingKnowledgeBaseId: {
-          label: 'ID for the Amazon Bedrock Knowledge Base',
+          label: 'Amazon Bedrock Knowledge Base ID',
           description:
-            'Please specify ID that your existing Amazon Bedrock knowledge base.',
+            'Please specify the ID of your existing Amazon Bedrock knowledge base.',
+          noKnowledgeBasesFound:
+            'No knowledge bases found in your account. Please create a knowledge base first.',
         },
         createDedicatedKnowledgeBase: {
           label: 'Create a dedicated Knowledge Base',
@@ -958,7 +960,7 @@ How would you categorize this email?`,
           label: 'Create a tenant in a shared Knowledge Base',
         },
         useExistingKnowledgeBase: {
-          label: 'Use your existing Knowledge Base',
+          label: 'Use an existing Knowledge Base',
         },
       },
     },
