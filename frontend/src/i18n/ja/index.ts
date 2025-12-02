@@ -33,6 +33,11 @@ const translation: typeof en = {
         description:
           '最も強力なOpusの最新版。推論能力が向上',
       },
+      'claude-v4.5-opus': {
+        label: 'Claude 4.5 (Opus)',
+        description:
+          '最大の能力と実用的なパフォーマンスを組み合わせた最も知的なモデル。',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:

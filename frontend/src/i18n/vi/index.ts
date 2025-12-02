@@ -41,6 +41,11 @@ const translation = {
         description:
           'Phiên bản mới nhất của mô hình Claude mạnh nhất với khả năng lý luận được cải thiện.',
       },
+      'claude-v4.5-opus': {
+        label: 'Claude 4.5 (Opus)',
+        description:
+          'The most intelligent model combining maximum capability with practical performance. Features a more accessible price point than previous Opus models.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Mô hình mạnh mẽ cho các tác vụ cực kỳ phức tạp.',

@@ -232,6 +232,12 @@ BEDROCK_PRICING = {
             "cache_write_input": 0.01875,
             "cache_read_input": 0.0015,
         },
+        "claude-v4.5-opus": {
+            "input": 0.005,
+            "output": 0.025,
+            "cache_write_input": 0.00625,
+            "cache_read_input": 0.0005,
+        },
         "claude-v4-sonnet": {
             "input": 0.003,
             "output": 0.015,

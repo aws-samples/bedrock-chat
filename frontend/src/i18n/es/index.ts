@@ -41,6 +41,11 @@ const translation = {
         description:
           'La versión más reciente del modelo Claude más potente con capacidades de razonamiento mejoradas.',
       },
+      'claude-v4.5-opus': {
+        label: 'Claude 4.5 (Opus)',
+        description:
+          'Nuestro modelo más inteligente que combina capacidad máxima con rendimiento práctico.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Modelo potente para tareas altamente complejas.',

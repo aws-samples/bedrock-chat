@@ -30,6 +30,11 @@ const translation = {
         description:
           'Latest version of the most powerful Opus model with enhanced reasoning capabilities.',
       },
+      'claude-v4.5-opus': {
+        label: 'Claude 4.5 (Opus)',
+        description:
+          'The most intelligent model combining maximum capability with practical performance. Features a more accessible price point than previous Opus models.',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
