@@ -48,6 +48,7 @@ export interface ApiProps {
   readonly openSearchEndpoint?: string;
   readonly globalAvailableModels?: string[];
   readonly defaultModel?: string;
+  readonly titleModel?: string;
   readonly logoPath?: string;
 }
 
@@ -277,7 +278,8 @@ export class Api extends Construct {
         GLOBAL_AVAILABLE_MODELS: props.globalAvailableModels 
           ? JSON.stringify(props.globalAvailableModels)
           : "[]",
-        DEFAULT_MODEL: props.defaultModel!,
+        DEFAULT_MODEL: props.defaultModel || "",
+        TITLE_MODEL: props.titleModel || "",
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
         LOGO_PATH: props.logoPath || "",
         USE_STRANDS: "true",

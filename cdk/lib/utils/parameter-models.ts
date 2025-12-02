@@ -116,7 +116,11 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   globalAvailableModels: z.array(z.string()).default([]),
 
   // Default model to be selected when user first visits the app
-  defaultModel: z.string().default("claude-v3.7-sonnet"),
+  defaultModel: z.string().optional(),
+
+  // Model used for generating conversation titles
+  // (defaults to defaultModel, then a hardcoded default in get_title_model())
+  titleModel: z.string().optional(),
 
   // Frontend branding
   logoPath: z.string().default(""),
@@ -273,6 +277,7 @@ export function resolveBedrockChatParameters(
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
     defaultModel: app.node.tryGetContext("defaultModel"),
+    titleModel: app.node.tryGetContext("titleModel"),
     logoPath: app.node.tryGetContext("logoPath"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
   };

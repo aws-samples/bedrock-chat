@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 GLOBAL_AVAILABLE_MODELS = os.environ.get("GLOBAL_AVAILABLE_MODELS")
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL")
+TITLE_MODEL = os.environ.get("TITLE_MODEL")
 LOGO_PATH = os.environ.get("LOGO_PATH", "")
 
 
@@ -43,10 +44,16 @@ def get_global_available_models() -> list[str]:
 
 
 def get_default_model() -> type_model_name:
-    """Return the configured default model."""
-    if not DEFAULT_MODEL:
-        raise ValueError("DEFAULT_MODEL environment variable must be set")
-    return DEFAULT_MODEL  # type: ignore[return-value]
+    """Return the configured default model, falling back to claude-v3.7-sonnet."""
+    return DEFAULT_MODEL or "claude-v3.7-sonnet"  # type: ignore[return-value]
+
+
+def get_title_model() -> type_model_name:
+    """Return the model for title generation.
+    
+    Falls back to: TITLE_MODEL -> DEFAULT_MODEL -> claude-v3-haiku
+    """
+    return TITLE_MODEL or DEFAULT_MODEL or "claude-v3-haiku"  # type: ignore[return-value]
 
 
 def get_logo_path() -> str:
