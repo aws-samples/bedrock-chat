@@ -614,6 +614,35 @@ To configure change the following settings in `cdk.json` or `parameters.ts`:
 "enableBedrockCrossRegionInference": false,
 ```
 
+### Configure Default Models
+
+By default, the application uses `claude-v3.7-sonnet` as the default model for new chat conversations and `claude-v3-haiku` for generating conversation titles. However, some AWS accounts may not have access to these specific models, or you may prefer to use different models as defaults.
+
+You can configure the default models using the following parameters in `parameter.ts`:
+
+```typescript
+bedrockChatParams.set("default", {
+  // Model selected by default when users start a new chat
+  defaultModel: "claude-v3.7-sonnet",
+  
+  // Model used for generating conversation titles (cost optimization)
+  titleModel: "claude-v3-haiku",
+});
+```
+
+- **defaultModel** (optional): The model pre-selected in the chat UI when users start a new conversation. If not set, defaults to `claude-v3.7-sonnet`.
+- **titleModel** (optional): The model used to automatically generate conversation titles. If not set, falls back to `defaultModel`, then to `claude-v3-haiku`.
+
+**When to configure these settings:**
+
+- Your AWS account doesn't have access to the default models (`claude-v3.7-sonnet` or `claude-v3-haiku`)
+- You want to use a different model as the default for your users
+- You want to optimize costs by using a cheaper model (like `claude-v3-haiku` or `amazon-nova-lite`) for title generation
+- You want to use the same model for both chat and title generation for consistency
+
+> [!Note]
+> The `titleModel` is only used internally for generating short conversation titles. Using a smaller, cheaper model for this purpose is recommended as it reduces costs without affecting the user's chat experience.
+
 ### Lambda SnapStart
 
 [Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html) improves cold start times for Lambda functions, providing faster response times for better user experience. On the other hand, for Python functions, there is a [charge depending on cache size](https://aws.amazon.com/lambda/pricing/#SnapStart_Pricing) and [not available in some regions](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html#snapstart-supported-regions) currently. To disable SnapStart, edit `cdk.json`.
