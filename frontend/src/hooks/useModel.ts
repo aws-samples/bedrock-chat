@@ -303,7 +303,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     }
   }, [processedActiveModels, availableModels]);
 
-  const getDefaultModel = useCallback((): Model | undefined => {
+  const getDefaultModel = useCallback((): Model => {
     // Use the default model from global config if available
     const configDefaultModel = globalConfig?.defaultModel as Model | undefined;
 
@@ -319,7 +319,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
     // If config default is not available or not set yet, select the first model
     // Returns undefined if no models are available
-    return filteredModels[0]?.modelId;
+    return filteredModels[0]?.modelId ?? 'amazon-nova-lite';
   }, [filteredModels, globalConfig?.defaultModel]);
 
   // select the model via list of activeModels
@@ -328,7 +328,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       const modelExists = filteredModels.some(
         (m: ModelItem) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
       );
-      return modelExists ? targetModelId : getDefaultModel();
+      return modelExists ? targetModelId : (getDefaultModel() ?? filteredModels[0]?.modelId ?? 'amazon-nova-lite');
     },
     [filteredModels, getDefaultModel]
   );
