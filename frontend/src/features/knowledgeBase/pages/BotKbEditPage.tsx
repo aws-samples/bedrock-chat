@@ -84,7 +84,11 @@ const BotKbEditPage: React.FC = () => {
   const { getGlobalConfig } = useGlobalConfig();
   const { data: globalConfig } = getGlobalConfig();
   const { listKnowledgeBases } = useKnowledgeBaseApi();
-  const { data: knowledgeBasesData } = listKnowledgeBases();
+  const {
+    data: knowledgeBasesData,
+    isLoading: isLoadingKnowledgeBases,
+    error: knowledgeBasesError,
+  } = listKnowledgeBases();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1631,6 +1635,7 @@ const BotKbEditPage: React.FC = () => {
                     label={t(
                       'knowledgeBaseSettings.advancedConfigration.useExistingKnowledgeBase.label'
                     )}
+                    disabled={!!knowledgeBasesError}
                     onChange={() => setKnowledgeBaseType('existing')}
                   />
                 </div>
@@ -1655,15 +1660,31 @@ const BotKbEditPage: React.FC = () => {
                           value={existKnowledgeBaseId ?? ''}
                           options={knowledgeBaseOptions}
                           onChange={setExistKnowledgeBaseId}
-                          disabled={knowledgeBaseOptions.length === 0}
+                          disabled={
+                            isLoadingKnowledgeBases ||
+                            !!knowledgeBasesError ||
+                            knowledgeBaseOptions.length === 0
+                          }
                         />
-                        {knowledgeBaseOptions.length === 0 && (
-                          <div className="mt-2 text-sm text-red">
-                            {t(
-                              'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.noKnowledgeBasesFound'
-                            )}
+                        {isLoadingKnowledgeBases && (
+                          <div className="mt-2 text-sm text-aws-font-color-light dark:text-aws-font-color-dark">
+                            {t('bot.label.loadingKnowledgeBases')}
                           </div>
                         )}
+                        {knowledgeBasesError && (
+                          <div className="mt-2 text-sm text-red">
+                            {t('bot.label.failedToLoadKnowledgeBases')}
+                          </div>
+                        )}
+                        {!isLoadingKnowledgeBases &&
+                          !knowledgeBasesError &&
+                          knowledgeBaseOptions.length === 0 && (
+                            <div className="mt-2 text-sm text-red">
+                              {t(
+                                'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.noKnowledgeBasesFound'
+                              )}
+                            </div>
+                          )}
                         <div className="mt-2 text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           {t(
                             'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.description'

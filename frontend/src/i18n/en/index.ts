@@ -276,6 +276,9 @@ const translation = {
         },
         citeRetrievedContexts: 'Retrieved Context Citation',
         unsupported: 'Unsupported, Read-only',
+        loadingKnowledgeBases: 'Loading knowledge bases...',
+        failedToLoadKnowledgeBases:
+          'Failed to load knowledge bases. Please try again later.',
       },
       titleSubmenu: {
         edit: 'Edit',
