@@ -41,7 +41,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
 
     if (!isCurrentModelAvailable && availableModels.length > 0) {
       const defaultModelId = getDefaultModel();
-      if (defaultModelId) {
+      if (defaultModelId && defaultModelId !== modelId) {
         setModelId(defaultModelId);
       }
     }
@@ -52,10 +52,13 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
     if (foundModel) {
       return foundModel.label;
     }
-    // Fallback to the default model's label if the current model is not found
+    // Only call getDefaultModel if current model is not found
     const defaultModelId = getDefaultModel();
-    const defaultModel = availableModels.find((model) => model.modelId === defaultModelId);
-    return defaultModel?.label ?? '';
+    if (defaultModelId) {
+      const defaultModel = availableModels.find((model) => model.modelId === defaultModelId);
+      return defaultModel?.label ?? '';
+    }
+    return '';
   }, [availableModels, modelId, getDefaultModel]);
 
   return (

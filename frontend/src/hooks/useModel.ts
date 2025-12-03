@@ -31,10 +31,10 @@ const LLAMA_SUPPORTED_MEDIA_TYPES = [
 ];
 
 const useModelState = create<{
-  modelId: Model;
+  modelId: Model | undefined;
   setModelId: (m: Model) => void;
 }>((set) => ({
-  modelId: '' as Model, // Will be set by useEffect based on config/localStorage
+  modelId: undefined, // Will be set by useEffect based on config/localStorage
   setModelId: (m) => {
     set({
       modelId: m,
@@ -303,7 +303,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     }
   }, [processedActiveModels, availableModels]);
 
-  const getDefaultModel = useCallback(() => {
+  const getDefaultModel = useCallback((): Model | undefined => {
     // Use the default model from global config if available
     const configDefaultModel = globalConfig?.defaultModel as Model | undefined;
 
@@ -318,6 +318,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     }
 
     // If config default is not available or not set yet, select the first model
+    // Returns undefined if no models are available
     return filteredModels[0]?.modelId;
   }, [filteredModels, globalConfig?.defaultModel]);
 
@@ -386,13 +387,14 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   }, [botId]);
 
   const model = useMemo(() => {
+    if (!modelId) return undefined;
     return filteredModels.find(
       (model: ModelItem) => toCamelCase(model.modelId) === toCamelCase(modelId)
     );
   }, [filteredModels, modelId]);
 
   return {
-    modelId,
+    modelId: modelId ?? getDefaultModel(),
     setModelId: (model: Model) => {
       setRecentUseModelId(model);
       if (botId) {

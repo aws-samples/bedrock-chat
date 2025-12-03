@@ -45,7 +45,7 @@ def get_global_available_models() -> list[str]:
 
 def get_default_model() -> type_model_name:
     """Return the configured default model, falling back to claude-v3.7-sonnet."""
-    return DEFAULT_MODEL or "claude-v3.7-sonnet"  # type: ignore[return-value]
+    return (DEFAULT_MODEL or "").strip() or "claude-v3.7-sonnet"  # type: ignore[return-value]
 
 
 def get_title_model() -> type_model_name:
@@ -53,7 +53,7 @@ def get_title_model() -> type_model_name:
     
     Falls back to: TITLE_MODEL -> DEFAULT_MODEL -> claude-v3-haiku
     """
-    return TITLE_MODEL or DEFAULT_MODEL or "claude-v3-haiku"  # type: ignore[return-value]
+    return (TITLE_MODEL or "").strip() or (DEFAULT_MODEL or "").strip() or "claude-v3-haiku"  # type: ignore[return-value]
 
 
 def get_logo_path() -> str:

@@ -124,3 +124,123 @@ class TestGetGlobalAvailableModels(unittest.TestCase):
             "GLOBAL_AVAILABLE_MODELS must be a JSON array, got <class 'dict'>"
         )
         self.assertEqual(result, [])
+
+
+class TestGetDefaultModel(unittest.TestCase):
+    """Test cases for get_default_model function."""
+
+    @patch.object(global_config, "DEFAULT_MODEL", "claude-v3.5-sonnet")
+    def test_returns_configured_model(self):
+        """Test that configured DEFAULT_MODEL is returned."""
+        from app.usecases.global_config import get_default_model
+
+        result = get_default_model()
+        self.assertEqual(result, "claude-v3.5-sonnet")
+
+    @patch.object(global_config, "DEFAULT_MODEL", None)
+    def test_falls_back_to_default_when_none(self):
+        """Test that default model is returned when DEFAULT_MODEL is None."""
+        from app.usecases.global_config import get_default_model
+
+        result = get_default_model()
+        self.assertEqual(result, "claude-v3.7-sonnet")
+
+    @patch.object(global_config, "DEFAULT_MODEL", "")
+    def test_falls_back_to_default_when_empty_string(self):
+        """Test that default model is returned when DEFAULT_MODEL is empty string."""
+        from app.usecases.global_config import get_default_model
+
+        result = get_default_model()
+        self.assertEqual(result, "claude-v3.7-sonnet")
+
+    @patch.object(global_config, "DEFAULT_MODEL", "   ")
+    def test_falls_back_to_default_when_whitespace(self):
+        """Test that default model is returned when DEFAULT_MODEL contains only whitespace."""
+        from app.usecases.global_config import get_default_model
+
+        result = get_default_model()
+        self.assertEqual(result, "claude-v3.7-sonnet")
+
+    @patch.object(global_config, "DEFAULT_MODEL", "  amazon-nova-pro  ")
+    def test_strips_whitespace_from_configured_model(self):
+        """Test that whitespace is stripped from configured model."""
+        from app.usecases.global_config import get_default_model
+
+        result = get_default_model()
+        self.assertEqual(result, "amazon-nova-pro")
+
+
+class TestGetTitleModel(unittest.TestCase):
+    """Test cases for get_title_model function."""
+
+    @patch.object(global_config, "TITLE_MODEL", "claude-v3-haiku")
+    @patch.object(global_config, "DEFAULT_MODEL", "claude-v3.7-sonnet")
+    def test_returns_title_model_when_set(self):
+        """Test that TITLE_MODEL is returned when configured."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "claude-v3-haiku")
+
+    @patch.object(global_config, "TITLE_MODEL", None)
+    @patch.object(global_config, "DEFAULT_MODEL", "claude-v3.5-sonnet")
+    def test_falls_back_to_default_model_when_title_model_none(self):
+        """Test that DEFAULT_MODEL is returned when TITLE_MODEL is None."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "claude-v3.5-sonnet")
+
+    @patch.object(global_config, "TITLE_MODEL", "")
+    @patch.object(global_config, "DEFAULT_MODEL", "amazon-nova-lite")
+    def test_falls_back_to_default_model_when_title_model_empty(self):
+        """Test that DEFAULT_MODEL is returned when TITLE_MODEL is empty string."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "amazon-nova-lite")
+
+    @patch.object(global_config, "TITLE_MODEL", None)
+    @patch.object(global_config, "DEFAULT_MODEL", None)
+    def test_falls_back_to_haiku_when_both_none(self):
+        """Test that claude-v3-haiku is returned when both TITLE_MODEL and DEFAULT_MODEL are None."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "claude-v3-haiku")
+
+    @patch.object(global_config, "TITLE_MODEL", "")
+    @patch.object(global_config, "DEFAULT_MODEL", "")
+    def test_falls_back_to_haiku_when_both_empty(self):
+        """Test that claude-v3-haiku is returned when both TITLE_MODEL and DEFAULT_MODEL are empty."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "claude-v3-haiku")
+
+    @patch.object(global_config, "TITLE_MODEL", "   ")
+    @patch.object(global_config, "DEFAULT_MODEL", "   ")
+    def test_falls_back_to_haiku_when_both_whitespace(self):
+        """Test that claude-v3-haiku is returned when both contain only whitespace."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "claude-v3-haiku")
+
+    @patch.object(global_config, "TITLE_MODEL", "  mistral-7b-instruct  ")
+    @patch.object(global_config, "DEFAULT_MODEL", "claude-v3.7-sonnet")
+    def test_strips_whitespace_from_title_model(self):
+        """Test that whitespace is stripped from TITLE_MODEL."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "mistral-7b-instruct")
+
+    @patch.object(global_config, "TITLE_MODEL", "")
+    @patch.object(global_config, "DEFAULT_MODEL", "  llama3-3-70b-instruct  ")
+    def test_strips_whitespace_from_default_model_fallback(self):
+        """Test that whitespace is stripped from DEFAULT_MODEL when used as fallback."""
+        from app.usecases.global_config import get_title_model
+
+        result = get_title_model()
+        self.assertEqual(result, "llama3-3-70b-instruct")
