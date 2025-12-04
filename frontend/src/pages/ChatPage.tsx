@@ -202,7 +202,7 @@ const ChatPage: React.FC = () => {
 
   const { getBotId } = useConversation();
 
-  const { scrollToBottom, scrollToTop } = useScroll();
+  const { scrollToBottom, scrollToTop } = useScroll(conversationId);
 
   const { conversationId: paramConversationId, botId: paramBotId } =
     useParams();

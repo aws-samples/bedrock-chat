@@ -1,7 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const useScroll = () => {
+const useScroll = (conversationId?: string) => {
   const [disabled, setDisabled] = useState(false);
+  const isInitialScroll = useRef(true);
+
+  // Reset initial scroll flag when conversationId changes
+  useEffect(() => {
+    isInitialScroll.current = true;
+  }, [conversationId]);
 
   useEffect(() => {
     const elem = document.getElementById('messages');
@@ -9,7 +15,7 @@ const useScroll = () => {
       return;
     }
     const listener = () => {
-      // 最下部までスクロールしている場合は、自動スクロールする
+      // Enable auto-scroll when scrolled to the bottom
       if (elem.scrollTop + elem.clientHeight === elem.scrollHeight) {
         setDisabled(false);
       } else {
@@ -23,21 +29,47 @@ const useScroll = () => {
     };
   }, []);
 
-  return {
-    scrollToTop: () => {
-      document.getElementById('messages')?.scrollTo({
-        top: 0,
-        behavior: 'smooth',
+  const scrollToTop = useCallback(() => {
+    document.getElementById('messages')?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    const elem = document.getElementById('messages');
+    if (!elem) {return;}
+
+    const doScroll = () => {
+      elem.scrollTo({
+        top: elem.scrollHeight,
+        behavior: 'instant',
       });
-    },
-    scrollToBottom: () => {
-      if (!disabled) {
-        document.getElementById('messages')?.scrollTo({
-          top: document.getElementById('messages')?.scrollHeight,
-          behavior: 'instant',
+    };
+
+    // Scroll regardless of disabled state on initial scroll
+    if (!disabled || isInitialScroll.current) {
+      if (isInitialScroll.current) {
+        // Use MutationObserver to wait for async rendering (e.g., Mermaid)
+        doScroll();
+        const observer = new MutationObserver(() => {
+          doScroll();
         });
+        observer.observe(elem, { childList: true, subtree: true });
+        // Stop observing after a certain period
+        setTimeout(() => {
+          observer.disconnect();
+        }, 1000);
+        isInitialScroll.current = false;
+      } else {
+        doScroll();
       }
-    },
+    }
+  }, [disabled]);
+
+  return {
+    scrollToTop,
+    scrollToBottom,
   };
 };
 
