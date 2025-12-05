@@ -952,7 +952,7 @@ How would you categorize this email?`,
         existingKnowledgeBaseId: {
           label: 'Amazon Bedrock Knowledge Base ID',
           description:
-            'Please specify the ID of your existing Amazon Bedrock knowledge base.',
+            'Select your existing Amazon Bedrock knowledge base.',
           noKnowledgeBasesFound:
             'No knowledge bases found in your account. Please create a knowledge base first.',
         },

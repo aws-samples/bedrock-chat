@@ -1662,8 +1662,7 @@ const BotKbEditPage: React.FC = () => {
                           onChange={setExistKnowledgeBaseId}
                           disabled={
                             isLoadingKnowledgeBases ||
-                            !!knowledgeBasesError ||
-                            knowledgeBaseOptions.length === 0
+                            !!knowledgeBasesError
                           }
                         />
                         {isLoadingKnowledgeBases && (

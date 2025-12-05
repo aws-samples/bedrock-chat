@@ -170,7 +170,7 @@ def get_bot_available_tools(request: Request, bot_id: str):
 
 
 @router.get("/knowledge-bases", response_model=ListKnowledgeBasesResponse)
-def get_knowledge_bases(request: Request):
+def get_knowledge_bases():
     """List all available knowledge bases in the account."""
     knowledge_bases = list_knowledge_bases()
     return ListKnowledgeBasesResponse(knowledge_bases=knowledge_bases)

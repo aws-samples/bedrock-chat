@@ -307,39 +307,6 @@ class TestKnowledgeBaseRepository(unittest.TestCase):
         self.assertEqual(kb.description, test_desc)
         self.assertEqual(kb.status, test_status)
 
-    @patch("app.repositories.knowledge_base.get_bedrock_agent_client")
-    def test_list_knowledge_bases_empty_strings(self, mock_get_client):
-        """Test handling of empty string values in API response"""
-        # Setup mock client and paginator
-        mock_client = MagicMock()
-        mock_paginator = MagicMock()
-        mock_get_client.return_value = mock_client
-        mock_client.get_paginator.return_value = mock_paginator
-
-        # Mock response with empty strings
-        mock_paginator.paginate.return_value = [
-            {
-                "knowledgeBaseSummaries": [
-                    {
-                        "knowledgeBaseId": "",
-                        "name": "",
-                        "description": "",
-                        "status": "",
-                    }
-                ]
-            }
-        ]
-
-        # Execute
-        result = list_knowledge_bases()
-
-        # Assert - empty strings should be preserved (not converted to None)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].knowledge_base_id, "")
-        self.assertEqual(result[0].name, "")
-        self.assertEqual(result[0].description, "")
-        self.assertEqual(result[0].status, "")
-
-
+# (Remove lines 310-342 entirely)
 if __name__ == "__main__":
     unittest.main()

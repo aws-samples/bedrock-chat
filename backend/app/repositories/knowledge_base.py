@@ -48,11 +48,14 @@ def list_knowledge_bases() -> List[KnowledgeBaseListItem]:
 
         for page in page_iterator:
             for kb in page.get("knowledgeBaseSummaries", []):
+                kb_id = kb.get("knowledgeBaseId")
+                kb_name = kb.get("name", kb_id)  # Fallback to ID if name is missing
+                logger.debug(f"Found knowledge base: ID={kb_id}, Name={kb_name}")
                 knowledge_bases.append(
                     KnowledgeBaseListItem(
-                        knowledge_base_id=kb.get("knowledgeBaseId", ""),
-                        name=kb.get("name", ""),
-                        description=kb.get("description"),
+                        knowledge_base_id=kb_id,
+                        name=kb_name,
+                        description=kb.get("description", ""),
                         status=kb.get("status", "UNKNOWN"),
                     )
                 )
