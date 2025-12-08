@@ -219,9 +219,7 @@ class TestKnowledgeBaseRepository(unittest.TestCase):
 
     @patch("app.repositories.knowledge_base.logger")
     @patch("app.repositories.knowledge_base.get_bedrock_agent_client")
-    def test_list_knowledge_bases_logging_success(
-        self, mock_get_client, mock_logger
-    ):
+    def test_list_knowledge_bases_logging_success(self, mock_get_client, mock_logger):
         """Test that successful execution logs the count"""
         # Setup mock client and paginator
         mock_client = MagicMock()
@@ -306,6 +304,7 @@ class TestKnowledgeBaseRepository(unittest.TestCase):
         self.assertEqual(kb.name, test_name)
         self.assertEqual(kb.description, test_desc)
         self.assertEqual(kb.status, test_status)
+
 
 # (Remove lines 310-342 entirely)
 if __name__ == "__main__":
