@@ -387,7 +387,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   }, [botId]);
 
   const model = useMemo(() => {
-    if (!modelId) return undefined;
+    if (!modelId) { return undefined; }
     return filteredModels.find(
       (model: ModelItem) => toCamelCase(model.modelId) === toCamelCase(modelId)
     );

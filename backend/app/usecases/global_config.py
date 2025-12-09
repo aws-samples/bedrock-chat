@@ -50,7 +50,7 @@ def get_default_model() -> type_model_name:
 
 def get_title_model() -> type_model_name:
     """Return the model for title generation.
-    
+
     Falls back to: TITLE_MODEL -> DEFAULT_MODEL -> claude-v3-haiku
     """
     return (TITLE_MODEL or "").strip() or (DEFAULT_MODEL or "").strip() or "claude-v3-haiku"  # type: ignore[return-value]
