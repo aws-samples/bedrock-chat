@@ -54,7 +54,7 @@
     "@aws-cdk/aws-opensearchservice:enableOpensearchMultiAzWithStandby": true,
     "bedrockRegion": "us-east-1",
     "enableFrontendIpv6": true,
-    "enableFrontendWaf": true,
+    "enableFrontendWaf": false,
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "allowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
@@ -65,7 +65,7 @@
     "userPoolDomainPrefix": "",
     "allowedSignUpEmailDomains": [],
     "autoJoinUserGroups": ["CreatingBotAllowed"],
-    "selfSignUpEnabled": true,
+    "selfSignUpEnabled": false,
     "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "publishedApiAllowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
@@ -74,8 +74,8 @@
     "enableRagReplicas": true,
     "enableBedrockGlobalInference": true,
     "enableBedrockCrossRegionInference": true,
-    "enableLambdaSnapStart": true,
-    "enableBotStore": true,
+    "enableLambdaSnapStart": false,
+    "enableBotStore": false,
     "enableBotStoreReplicas": false,
     "botStoreLanguage": "en",
     "globalAvailableModels": [],
