@@ -26,7 +26,12 @@ from app.utils import get_current_time
 from app.vector_search import (
     SearchResult,
 )
+
+from strands import Agent
+from strands.telemetry.metrics import EventLoopMetrics
+from strands.types.event_loop import StopReason
 from strands.types.content import Message
+from strands.types.exceptions import MaxTokensReachedException
 
 logger = logging.getLogger(__name__)
 
@@ -116,25 +121,37 @@ def converse_with_strands(
         prompt_caching_enabled=prompt_caching_enabled,
     )
 
-    result = agent(strands_messages)
+    def run_agent(agent: Agent) -> tuple[StopReason, Message, EventLoopMetrics]:
+        try:
+            result = agent(strands_messages)
+            return (
+                result.stop_reason,
+                result.message,
+                result.metrics,
+            )
+
+        except MaxTokensReachedException:
+            return (
+                "max_tokens",
+                agent.messages[-1],
+                agent.event_loop_metrics,
+            )
+
+    stop_reason, result_message, metrics = run_agent(agent)
 
     # Convert Strands Message to MessageModel
     message = strands_message_to_message_model(
-        message=result.message,
+        message=result_message,
         model_name=chat_input.message.model,
         create_time=get_current_time(),
         thinking_log=thinking_log,
     )
 
     # Extract token usage from metrics
-    input_tokens = result.metrics.accumulated_usage.get("inputTokens", 0)
-    output_tokens = result.metrics.accumulated_usage.get("outputTokens", 0)
-    cache_read_input_tokens = result.metrics.accumulated_usage.get(
-        "cacheReadInputTokens", 0
-    )
-    cache_write_input_tokens = result.metrics.accumulated_usage.get(
-        "cacheWriteInputTokens", 0
-    )
+    input_tokens = metrics.accumulated_usage.get("inputTokens", 0)
+    output_tokens = metrics.accumulated_usage.get("outputTokens", 0)
+    cache_read_input_tokens = metrics.accumulated_usage.get("cacheReadInputTokens", 0)
+    cache_write_input_tokens = metrics.accumulated_usage.get("cacheWriteInputTokens", 0)
 
     # Calculate price using the same function as chat_legacy
     price = calculate_price(
@@ -157,7 +174,7 @@ def converse_with_strands(
 
     return OnStopInput(
         message=message,
-        stop_reason=result.stop_reason,
+        stop_reason=stop_reason,
         input_token_count=input_tokens,
         output_token_count=output_tokens,
         cache_read_input_count=cache_read_input_tokens,
