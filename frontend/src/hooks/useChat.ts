@@ -21,6 +21,12 @@ import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
 import { useMachine } from '@xstate/react';
 import { streamingStateMachine } from './xstates/streaming';
+import {
+  EPHEMERAL_MODE,
+  saveConversationLocally,
+  generateLocalTitle,
+  updateTitleLocally,
+} from './useConversationStorage';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -432,20 +438,42 @@ const useChat = () => {
       botId: bot?.botId,
       enableReasoning: params.enableReasoning,
     };
-    const createNewConversation = () => {
+    const createNewConversation = async () => {
       // Copy State to prevent screen flicker
       copyMessages('', newConversationId);
 
-      conversationApi
-        .updateTitleWithGeneratedTitle(newConversationId)
-        .then(() => {
-          setConversationId(newConversationId);
-        })
-        .finally(() => {
-          syncConversations().then(() => {
-            setIsGeneratedTitle(true);
-          });
+      if (EPHEMERAL_MODE) {
+        // In ephemeral mode, save to IndexedDB and generate title locally
+        const messageMap = useChatState.getState().chats[newConversationId];
+        await saveConversationLocally(
+          newConversationId,
+          messageMap,
+          NEW_MESSAGE_ID.ASSISTANT,
+          false,
+          'New conversation',
+          bot?.botId
+        );
+
+        // Generate title from first message
+        const title = await generateLocalTitle(newConversationId);
+        await updateTitleLocally(newConversationId, title);
+
+        setConversationId(newConversationId);
+        syncConversations().then(() => {
+          setIsGeneratedTitle(true);
         });
+      } else {
+        conversationApi
+          .updateTitleWithGeneratedTitle(newConversationId)
+          .then(() => {
+            setConversationId(newConversationId);
+          })
+          .finally(() => {
+            syncConversations().then(() => {
+              setIsGeneratedTitle(true);
+            });
+          });
+      }
     };
 
     setPostingMessage(true);
@@ -489,11 +517,25 @@ const useChat = () => {
     });
 
     postPromise
-      .then(() => {
+      .then(async () => {
         if (isNewChat) {
-          createNewConversation();
+          await createNewConversation();
         } else {
-          mutate();
+          if (EPHEMERAL_MODE) {
+            // Sync existing conversation to local storage
+            const messageMap = useChatState.getState().chats[conversationId];
+            await saveConversationLocally(
+              conversationId,
+              messageMap,
+              currentMessageId || NEW_MESSAGE_ID.ASSISTANT,
+              false,
+              undefined,
+              bot?.botId
+            );
+            syncConversations();
+          } else {
+            mutate();
+          }
         }
       })
       .catch((e) => {
@@ -547,8 +589,19 @@ const useChat = () => {
         streamingSend(event);
       },
     })
-      .then(() => {
-        mutate();
+      .then(async () => {
+        if (EPHEMERAL_MODE) {
+          const messageMap = useChatState.getState().chats[conversationId];
+          await saveConversationLocally(
+            conversationId,
+            messageMap,
+            currentMessage.id,
+            false
+          );
+          syncConversations();
+        } else {
+          mutate();
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -649,8 +702,21 @@ const useChat = () => {
         streamingSend(event);
       },
     })
-      .then(() => {
-        mutate();
+      .then(async () => {
+        if (EPHEMERAL_MODE) {
+          const messageMap = useChatState.getState().chats[conversationId];
+          await saveConversationLocally(
+            conversationId,
+            messageMap,
+            NEW_MESSAGE_ID.ASSISTANT,
+            false,
+            undefined,
+            props?.bot?.botId
+          );
+          syncConversations();
+        } else {
+          mutate();
+        }
       })
       .catch((e) => {
         console.error(e);

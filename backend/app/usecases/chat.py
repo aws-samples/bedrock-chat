@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
@@ -571,13 +572,16 @@ def post_process_result(
         related_documents.extend(search_results_as_related_documents)
 
     # Store conversation before finish streaming so that front-end can avoid 404 issue
-    store_conversation(user.id, conversation)
-    if related_documents:
-        store_related_documents(
-            user_id=user.id,
-            conversation_id=conversation.id,
-            related_documents=related_documents,
-        )
+    # In ephemeral mode, skip server-side storage - frontend handles local persistence
+    ephemeral_mode = os.environ.get("EPHEMERAL_MODE", "").lower() == "true"
+    if not ephemeral_mode:
+        store_conversation(user.id, conversation)
+        if related_documents:
+            store_related_documents(
+                user_id=user.id,
+                conversation_id=conversation.id,
+                related_documents=related_documents,
+            )
 
     # Call on_stop callback
     if on_stop:
