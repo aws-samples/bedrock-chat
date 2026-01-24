@@ -19,6 +19,8 @@ export type StreamingContext = {
   text: string;
   tools: AgentToolsProps[];
   relatedDocuments: RelatedDocument[];
+  /** Stop reason from the backend - used to determine shouldContinue */
+  stopReason: string;
 };
 
 export type StreamingEvent =
@@ -48,7 +50,7 @@ export type StreamingEvent =
       relatedDocument: RelatedDocument;
     }
   | { type: 'reset' }
-  | { type: 'goodbye' };
+  | { type: 'goodbye'; stopReason?: string };
 
 export const streamingStateMachine = setup({
   types: {
@@ -61,6 +63,11 @@ export const streamingStateMachine = setup({
       text: '',
       tools: [],
       relatedDocuments: [],
+      stopReason: '',
+    }),
+    setStopReason: assign({
+      stopReason: ({ event }) =>
+        event.type === 'goodbye' && event.stopReason ? event.stopReason : '',
     }),
     appendReasoning: assign({
       reasoning: ({ context, event }) =>
@@ -142,7 +149,7 @@ export const streamingStateMachine = setup({
     text: '',
     tools: [],
     relatedDocuments: [],
-    areAllToolsSuccessful: false,
+    stopReason: '',
   },
   initial: 'sleeping',
   states: {
@@ -175,6 +182,7 @@ export const streamingStateMachine = setup({
           actions: 'reset',
         },
         goodbye: {
+          actions: 'setStopReason',
           target: 'leaving',
         },
       },

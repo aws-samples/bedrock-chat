@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
@@ -11,6 +11,7 @@ import {
   PutFeedbackRequest,
   TextContent,
   Content,
+  RelatedDocument,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -26,6 +27,8 @@ import {
   saveConversationLocally,
   generateLocalTitle,
   updateTitleLocally,
+  getConversationLocally,
+  StoredConversation,
 } from './useConversationStorage';
 
 type ChatStateType = {
@@ -273,20 +276,77 @@ const useChat = () => {
 
   const conversationApi = useConversationApi();
   const feedbackApi = useFeedbackApi();
+
+  // In ephemeral mode, skip API calls and use local state instead
+  const [localConversation, setLocalConversation] = useState<StoredConversation | null>(null);
+  const [localRelatedDocuments, setLocalRelatedDocuments] = useState<RelatedDocument[]>([]);
+  const [loadingLocal, setLoadingLocal] = useState(false);
+
+  // API calls - skip in ephemeral mode by passing undefined
   const {
-    data,
+    data: apiData,
     mutate,
-    isLoading: loadingConversation,
-    error: conversationError,
-  } = conversationApi.getConversation(conversationId);
-  const { syncConversations } = useConversation();
+    isLoading: loadingFromApi,
+    error: apiConversationError,
+  } = conversationApi.getConversation(EPHEMERAL_MODE ? undefined : conversationId);
 
   const {
-    data: relatedDocuments,
-    mutate: reloadRelatedDocuments,
-    isLoading: loadingRelatedDocuments,
-    error: relatedDocumentsError,
-  } = conversationApi.getRelatedDocuments(conversationId);
+    data: apiRelatedDocuments,
+    mutate: reloadApiRelatedDocuments,
+    isLoading: loadingApiRelatedDocuments,
+    error: apiRelatedDocumentsError,
+  } = conversationApi.getRelatedDocuments(EPHEMERAL_MODE ? undefined : conversationId);
+
+  const { syncConversations } = useConversation();
+
+  // Load from IndexedDB in ephemeral mode
+  useEffect(() => {
+    if (EPHEMERAL_MODE && conversationId) {
+      setLoadingLocal(true);
+      getConversationLocally(conversationId)
+        .then((conv) => {
+          setLocalConversation(conv || null);
+          setLocalRelatedDocuments(conv?.relatedDocuments || []);
+        })
+        .catch((err) => {
+          console.error('Failed to load conversation from IndexedDB:', err);
+          setLocalConversation(null);
+          setLocalRelatedDocuments([]);
+        })
+        .finally(() => {
+          setLoadingLocal(false);
+        });
+    } else if (!conversationId) {
+      setLocalConversation(null);
+      setLocalRelatedDocuments([]);
+    }
+  }, [conversationId]);
+
+  // Unified data accessors - use local or API based on mode
+  const data = EPHEMERAL_MODE ? localConversation : apiData;
+  const loadingConversation = EPHEMERAL_MODE ? loadingLocal : loadingFromApi;
+  const conversationError = EPHEMERAL_MODE ? null : apiConversationError;
+  const relatedDocuments = EPHEMERAL_MODE ? localRelatedDocuments : apiRelatedDocuments;
+  const loadingRelatedDocuments = EPHEMERAL_MODE ? loadingLocal : loadingApiRelatedDocuments;
+  const relatedDocumentsError = EPHEMERAL_MODE ? null : apiRelatedDocumentsError;
+
+  // Reload functions - in ephemeral mode, reload from IndexedDB
+  const reloadLocalConversation = useCallback(async () => {
+    if (EPHEMERAL_MODE && conversationId) {
+      const conv = await getConversationLocally(conversationId);
+      setLocalConversation(conv || null);
+      setLocalRelatedDocuments(conv?.relatedDocuments || []);
+    }
+  }, [conversationId]);
+
+  const reloadRelatedDocuments = EPHEMERAL_MODE
+    ? async () => {
+        if (conversationId) {
+          const conv = await getConversationLocally(conversationId);
+          setLocalRelatedDocuments(conv?.relatedDocuments || []);
+        }
+      }
+    : reloadApiRelatedDocuments;
 
   const messages = useMemo(() => {
     return getMessages(conversationId, currentMessageId);
@@ -445,11 +505,13 @@ const useChat = () => {
       if (EPHEMERAL_MODE) {
         // In ephemeral mode, save to IndexedDB and generate title locally
         const messageMap = useChatState.getState().chats[newConversationId];
+        // Get shouldContinue from streaming state (true if max_tokens reached)
+        const shouldContinue = streamingActor.getSnapshot().context.stopReason === 'max_tokens';
         await saveConversationLocally(
           newConversationId,
           messageMap,
           NEW_MESSAGE_ID.ASSISTANT,
-          false,
+          shouldContinue,
           'New conversation',
           bot?.botId
         );
@@ -524,11 +586,13 @@ const useChat = () => {
           if (EPHEMERAL_MODE) {
             // Sync existing conversation to local storage
             const messageMap = useChatState.getState().chats[conversationId];
+            // Get shouldContinue from streaming state (true if max_tokens reached)
+            const shouldContinue = streamingActor.getSnapshot().context.stopReason === 'max_tokens';
             await saveConversationLocally(
               conversationId,
               messageMap,
               currentMessageId || NEW_MESSAGE_ID.ASSISTANT,
-              false,
+              shouldContinue,
               undefined,
               bot?.botId
             );
@@ -592,11 +656,13 @@ const useChat = () => {
       .then(async () => {
         if (EPHEMERAL_MODE) {
           const messageMap = useChatState.getState().chats[conversationId];
+          // Get shouldContinue from streaming state (true if max_tokens reached)
+          const shouldContinue = streamingActor.getSnapshot().context.stopReason === 'max_tokens';
           await saveConversationLocally(
             conversationId,
             messageMap,
             currentMessage.id,
-            false
+            shouldContinue
           );
           syncConversations();
         } else {
@@ -705,11 +771,13 @@ const useChat = () => {
       .then(async () => {
         if (EPHEMERAL_MODE) {
           const messageMap = useChatState.getState().chats[conversationId];
+          // Get shouldContinue from streaming state (true if max_tokens reached)
+          const shouldContinue = streamingActor.getSnapshot().context.stopReason === 'max_tokens';
           await saveConversationLocally(
             conversationId,
             messageMap,
             NEW_MESSAGE_ID.ASSISTANT,
-            false,
+            shouldContinue,
             undefined,
             props?.bot?.botId
           );

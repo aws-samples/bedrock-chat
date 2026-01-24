@@ -56,37 +56,42 @@ export const saveConversationLocally = async (
 ): Promise<void> => {
   if (!EPHEMERAL_MODE) return;
 
-  const db = await openDB();
+  try {
+    const db = await openDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
-    const store = transaction.objectStore(CONVERSATIONS_STORE);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
+      const store = transaction.objectStore(CONVERSATIONS_STORE);
 
-    // First try to get existing
-    const getRequest = store.get(conversationId);
+      // First try to get existing
+      const getRequest = store.get(conversationId);
 
-    getRequest.onsuccess = () => {
-      const existing = getRequest.result as StoredConversation | undefined;
+      getRequest.onsuccess = () => {
+        const existing = getRequest.result as StoredConversation | undefined;
 
-      const conversation: StoredConversation = {
-        id: conversationId,
-        title: title || existing?.title || 'New conversation',
-        createTime: existing?.createTime || createTime || Date.now(),
-        lastMessageId,
-        messageMap,
-        shouldContinue,
-        model: messageMap?.system?.model ?? existing?.model ?? '',
-        botId: botId || existing?.botId,
-        relatedDocuments: existing?.relatedDocuments,
+        const conversation: StoredConversation = {
+          id: conversationId,
+          title: title || existing?.title || 'New conversation',
+          createTime: existing?.createTime || createTime || Date.now(),
+          lastMessageId,
+          messageMap,
+          shouldContinue,
+          model: messageMap?.system?.model ?? existing?.model ?? '',
+          botId: botId || existing?.botId,
+          relatedDocuments: existing?.relatedDocuments,
+        };
+
+        const putRequest = store.put(conversation);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = () => reject(putRequest.error);
       };
 
-      const putRequest = store.put(conversation);
-      putRequest.onsuccess = () => resolve();
-      putRequest.onerror = () => reject(putRequest.error);
-    };
-
-    getRequest.onerror = () => reject(getRequest.error);
-  });
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  } catch (error) {
+    console.error('Failed to save conversation to IndexedDB:', error);
+    // Don't throw - allow the app to continue even if local storage fails
+  }
 };
 
 /**
@@ -95,36 +100,46 @@ export const saveConversationLocally = async (
 export const getConversationLocally = async (
   conversationId: string
 ): Promise<StoredConversation | undefined> => {
-  const db = await openDB();
+  try {
+    const db = await openDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONVERSATIONS_STORE, 'readonly');
-    const store = transaction.objectStore(CONVERSATIONS_STORE);
-    const request = store.get(conversationId);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(CONVERSATIONS_STORE, 'readonly');
+      const store = transaction.objectStore(CONVERSATIONS_STORE);
+      const request = store.get(conversationId);
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('Failed to get conversation from IndexedDB:', error);
+    return undefined;
+  }
 };
 
 /**
  * Get all conversations from local storage (sorted by createTime desc)
  */
 export const getAllConversationsLocally = async (): Promise<StoredConversation[]> => {
-  const db = await openDB();
+  try {
+    const db = await openDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONVERSATIONS_STORE, 'readonly');
-    const store = transaction.objectStore(CONVERSATIONS_STORE);
-    const request = store.getAll();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(CONVERSATIONS_STORE, 'readonly');
+      const store = transaction.objectStore(CONVERSATIONS_STORE);
+      const request = store.getAll();
 
-    request.onsuccess = () => {
-      const conversations = request.result as StoredConversation[];
-      conversations.sort((a, b) => b.createTime - a.createTime);
-      resolve(conversations);
-    };
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => {
+        const conversations = request.result as StoredConversation[];
+        conversations.sort((a, b) => b.createTime - a.createTime);
+        resolve(conversations);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('Failed to get all conversations from IndexedDB:', error);
+    return [];
+  }
 };
 
 /**
@@ -135,16 +150,20 @@ export const deleteConversationLocally = async (
 ): Promise<void> => {
   if (!EPHEMERAL_MODE) return;
 
-  const db = await openDB();
+  try {
+    const db = await openDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
-    const store = transaction.objectStore(CONVERSATIONS_STORE);
-    const request = store.delete(conversationId);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
+      const store = transaction.objectStore(CONVERSATIONS_STORE);
+      const request = store.delete(conversationId);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('Failed to delete conversation from IndexedDB:', error);
+  }
 };
 
 /**
@@ -153,16 +172,20 @@ export const deleteConversationLocally = async (
 export const clearAllConversationsLocally = async (): Promise<void> => {
   if (!EPHEMERAL_MODE) return;
 
-  const db = await openDB();
+  try {
+    const db = await openDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
-    const store = transaction.objectStore(CONVERSATIONS_STORE);
-    const request = store.clear();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
+      const store = transaction.objectStore(CONVERSATIONS_STORE);
+      const request = store.clear();
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('Failed to clear conversations from IndexedDB:', error);
+  }
 };
 
 /**
@@ -174,19 +197,23 @@ export const updateTitleLocally = async (
 ): Promise<void> => {
   if (!EPHEMERAL_MODE) return;
 
-  const conversation = await getConversationLocally(conversationId);
-  if (conversation) {
-    conversation.title = title;
-    const db = await openDB();
+  try {
+    const conversation = await getConversationLocally(conversationId);
+    if (conversation) {
+      conversation.title = title;
+      const db = await openDB();
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
-      const store = transaction.objectStore(CONVERSATIONS_STORE);
-      const request = store.put(conversation);
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
+        const store = transaction.objectStore(CONVERSATIONS_STORE);
+        const request = store.put(conversation);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to update title in IndexedDB:', error);
   }
 };
 
@@ -199,23 +226,27 @@ export const saveRelatedDocumentsLocally = async (
 ): Promise<void> => {
   if (!EPHEMERAL_MODE) return;
 
-  const conversation = await getConversationLocally(conversationId);
-  if (conversation) {
-    conversation.relatedDocuments = [
-      ...(conversation.relatedDocuments || []),
-      ...documents,
-    ];
+  try {
+    const conversation = await getConversationLocally(conversationId);
+    if (conversation) {
+      conversation.relatedDocuments = [
+        ...(conversation.relatedDocuments || []),
+        ...documents,
+      ];
 
-    const db = await openDB();
+      const db = await openDB();
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
-      const store = transaction.objectStore(CONVERSATIONS_STORE);
-      const request = store.put(conversation);
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(CONVERSATIONS_STORE, 'readwrite');
+        const store = transaction.objectStore(CONVERSATIONS_STORE);
+        const request = store.put(conversation);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to save related documents to IndexedDB:', error);
   }
 };
 
@@ -223,27 +254,32 @@ export const saveRelatedDocumentsLocally = async (
  * Generate a title from the first user message
  */
 export const generateLocalTitle = async (conversationId: string): Promise<string> => {
-  const conversation = await getConversationLocally(conversationId);
-  if (!conversation) return 'New conversation';
+  try {
+    const conversation = await getConversationLocally(conversationId);
+    if (!conversation) return 'New conversation';
 
-  const firstUserMsg = Object.values(conversation.messageMap).find(
-    (m) => m.role === 'user'
-  );
+    const firstUserMsg = Object.values(conversation.messageMap).find(
+      (m) => m.role === 'user'
+    );
 
-  if (!firstUserMsg) return 'New conversation';
+    if (!firstUserMsg) return 'New conversation';
 
-  const textContent = firstUserMsg.content.find((c) => c.contentType === 'text');
-  const body = (textContent as { body?: string })?.body || '';
+    const textContent = firstUserMsg.content.find((c) => c.contentType === 'text');
+    const body = (textContent as { body?: string })?.body || '';
 
-  // Take first 50 chars, trim to last complete word
-  let title = body.slice(0, 50);
-  if (body.length > 50) {
-    const lastSpace = title.lastIndexOf(' ');
-    if (lastSpace > 20) {
-      title = title.slice(0, lastSpace);
+    // Take first 50 chars, trim to last complete word
+    let title = body.slice(0, 50);
+    if (body.length > 50) {
+      const lastSpace = title.lastIndexOf(' ');
+      if (lastSpace > 20) {
+        title = title.slice(0, lastSpace);
+      }
+      title += '...';
     }
-    title += '...';
-  }
 
-  return title || 'New conversation';
+    return title || 'New conversation';
+  } catch (error) {
+    console.error('Failed to generate title from IndexedDB:', error);
+    return 'New conversation';
+  }
 };

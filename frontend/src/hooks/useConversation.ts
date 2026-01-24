@@ -56,20 +56,54 @@ const useEphemeralConversation = () => {
       return conversations?.find((c) => c.id === conversationId)?.botId ?? null;
     },
     deleteConversation: async (conversationId: string) => {
+      // Store previous state for reversion
+      const previousConversations = conversations;
+
       // Optimistic update
       setConversations((prev) => prev.filter((c) => c.id !== conversationId));
-      await deleteConversationLocally(conversationId);
+
+      try {
+        await deleteConversationLocally(conversationId);
+      } catch (error) {
+        console.error('Failed to delete conversation:', error);
+        // Revert to previous state on error
+        setConversations(previousConversations);
+        throw error;
+      }
     },
     clearConversations: async () => {
+      // Store previous state for reversion
+      const previousConversations = conversations;
+
+      // Optimistic update
       setConversations([]);
-      await clearAllConversationsLocally();
+
+      try {
+        await clearAllConversationsLocally();
+      } catch (error) {
+        console.error('Failed to clear conversations:', error);
+        // Revert to previous state on error
+        setConversations(previousConversations);
+        throw error;
+      }
     },
     updateTitle: async (conversationId: string, title: string) => {
+      // Store previous state for reversion
+      const previousConversations = conversations;
+
       // Optimistic update
       setConversations((prev) =>
         prev.map((c) => (c.id === conversationId ? { ...c, title } : c))
       );
-      await updateTitleLocally(conversationId, title);
+
+      try {
+        await updateTitleLocally(conversationId, title);
+      } catch (error) {
+        console.error('Failed to update title:', error);
+        // Revert to previous state on error
+        setConversations(previousConversations);
+        throw error;
+      }
     },
   };
 };

@@ -143,6 +143,7 @@ const usePostMessageStreaming = create<{
                     );
                     handleStreamingEvent({
                       type: 'goodbye',
+                      stopReason: data.stop_reason,
                     });
                     console.log(
                       '[FRONTEND_WS] handleStreamingEvent goodbye completed'
