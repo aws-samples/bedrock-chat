@@ -72,5 +72,13 @@
     "vite": "^6.4.1",
     "vite-plugin-pwa": "^0.21.1",
     "vitest": "^3.0.9"
+  },
+  "overrides": {
+    "@aws-amplify/ui": {
+      "xstate": "4.38.3"
+    },
+    "@aws-amplify/ui-react": {
+      "xstate": "4.38.3"
+    }
   }
 }
