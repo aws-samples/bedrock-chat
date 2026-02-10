@@ -40,6 +40,10 @@ const useConversation = () => {
       // Actual API call
       return conversationApi
         .deleteConversation(conversationId)
+        .then(() => {
+          // Revalidate after successful deletion to ensure UI is in sync
+          mutate();
+        })
         .catch((error) => {
           console.error('Failed to delete conversation:', error);
           // Revert to original state on error
