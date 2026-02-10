@@ -7,13 +7,14 @@ const translation = {
     },
     app: {
       name: 'Bedrock Chat',
-      inputMessage: 'Inviare un messaggio',
+      inputMessage: 'Come posso aiutarti?',
       pinnedBots: 'Bot fissati',
       starredBots: 'Bot preferiti',
       recentlyUsedBots: 'Bot utilizzati di recente',
       conversationHistory: 'Cronologia',
       chatWaitingSymbol: '▍',
-      adminConsoles: 'Solo Amministratore',
+      adminConsoles: 'Pannello Amministratore',
+      backChat: 'Torna alla Chat',
     },
     bot: {
       label: {
@@ -21,7 +22,7 @@ const translation = {
         recentlyUsedBots: 'Bot condivisi utilizzati di recente',
         knowledge: 'Informazioni',
         url: 'URL',
-        sitemap: 'URL della mappa del sito',
+        sitemap: 'Mappa del sito',
         file: 'File',
         loadingBot: 'Caricamento...',
         normalChat: 'Chat',
@@ -30,7 +31,7 @@ const translation = {
         noDescription: 'Nessuna Descrizione',
         notAvailable: 'Questo Bot NON è disponibile.',
         noBots: 'Nessun Bot.',
-        noBotsRecentlyUsed: 'Nessun Bot condiviso utilizzato di recente.',
+        noBotsRecentlyUsed: 'Nessun Bot utilizzato di recente.',
         retrievingKnowledge: '[Recupero delle informazioni...]',
         dndFileUpload:
           'Puoi caricare i file trascinandoli.\nFile supportati: {{fileExtensions}}',
@@ -134,7 +135,7 @@ Come classificheresti questa email?`,
           },
           apiKeyDetail: {
             creationDate: 'Data di creazione',
-            active: 'Attino',
+            active: 'Attivo',
             inactive: 'Inattivo',
             key: 'Chiavi API',
           },
@@ -177,10 +178,10 @@ Come classificheresti questa email?`,
         alert: {
           botUnshared: {
             title: 'Per favore condividi il Bot',
-            body: "Non puoi pubblicare un'API per il Bot che non è condivisa.",
+            body: "Non puoi pubblicare API per il Bot che non è condiviso con tutti.",
           },
           deploying: {
-            title: "La distribuzione dell'API è in CORSO",
+            title: "La distribuzione API è in CORSO",
             body: 'Attendi il completamento della distribuzione.',
           },
           deployed: {
@@ -218,7 +219,7 @@ Come classificheresti questa email?`,
         copy: 'Copia',
         copied: 'Copiato',
         instructionsSamples: 'Esempi',
-        chooseFiles: 'Seleziona files',
+        chooseFiles: 'Seleziona file',
       },
       deleteDialog: {
         title: 'Eliminare?',
@@ -244,7 +245,7 @@ Come classificheresti questa email?`,
     admin: {
       botAnalytics: {
         label: {
-          pageTitle: 'Analisi dei Bot condivisi',
+          pageTitle: 'Analisi dei Bot',
           noBotUsages:
             'Durante il Periodo di Calcolo non sono stati utilizzati Bot.',
           published: "L'API è pubblicata.",
@@ -264,7 +265,7 @@ Come classificheresti questa email?`,
       },
       apiManagement: {
         label: {
-          pageTitle: "Gestione dell'API",
+          pageTitle: "Gestione API",
           publishedDate: 'Data di pubblicazione',
           noApi: 'NESSUNA API.',
         },
@@ -336,6 +337,9 @@ Come classificheresti questa email?`,
       close: 'Chiudi',
       add: 'Aggiungi',
       continue: 'Continuare a generare',
+      botManagement: 'Gestione Bot',
+      mode: 'Modalità',
+      drawerOption: 'Opzioni Menu',
     },
     input: {
       hint: {
