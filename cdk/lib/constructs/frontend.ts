@@ -13,7 +13,7 @@ import {
   GeoRestriction,
 } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { NodejsBuild } from "deploy-time-build";
+import { NodejsBuild } from "@cdklabs/deploy-time-build";
 import { Auth } from "./auth";
 import { Idp } from "../utils/identity-provider";
 import { NagSuppressions } from "cdk-nag";
@@ -244,6 +244,7 @@ export class Frontend extends Construct {
       destinationBucket: this.assetBucket,
       distribution: this.cloudFrontWebDistribution,
       outputSourceDirectory: "dist",
+      nodejsVersion: 22,
     });
 
     if (idp.isExist()) {

@@ -28,7 +28,7 @@
     "aws-cdk-lib": "^2.189.1",
     "cdk-aws-lambda-powertools-layer": "^3.7.0",
     "constructs": "^10.0.0",
-    "deploy-time-build": "^0.3.2",
+    "@cdklabs/deploy-time-build": "^0.0.6",
     "effect": "^2.4.3",
     "source-map-support": "^0.5.21"
   }

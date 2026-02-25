@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:18-bullseye-slim
+FROM public.ecr.aws/docker/library/node:22-bookworm-slim
 
 WORKDIR /app
 
