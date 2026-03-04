@@ -10,12 +10,6 @@ import {
   CrawlingScope,
   CrawlingFilters,
 } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/web-crawler-data-source";
-import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
-import {
-  CharacterFilterType,
-  TokenFilterType,
-  TokenizerType,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 
 interface FixedSizeOptions {
   readonly maxTokens: number;
@@ -164,75 +158,3 @@ export const getChunkingStrategy = (
   }
 };
 
-export const getAnalyzer = (analyzer: any): Analyzer | undefined => {
-  // Example of analyzer:
-  //    {
-  //     "character_filters": [
-  //       "icu_normalizer"
-  //     ],
-  //     "token_filters": [
-  //       "kuromoji_baseform",
-  //       "kuromoji_part_of_speech"
-  //     ],
-  //     "tokenizer": "kuromoji_tokenizer"
-  //   }
-  console.log("getAnalyzer: analyzer: ", analyzer);
-  if (
-    !analyzer ||
-    !analyzer.character_filters
-  ) {
-    return undefined;
-  }
-
-  const characterFilters: CharacterFilterType[] =
-    analyzer.character_filters.map((filter: any) => {
-      switch (filter) {
-        case "icu_normalizer":
-          return CharacterFilterType.ICU_NORMALIZER;
-        default:
-          throw new Error(`Unknown character filter: ${filter}`);
-      }
-    });
-
-  const tokenizer: TokenizerType = (() => {
-    if (!analyzer.tokenizer) {
-      return TokenizerType.KUROMOJI_TOKENIZER;
-    }
-    switch (analyzer.tokenizer) {
-      case "kuromoji_tokenizer":
-        return TokenizerType.KUROMOJI_TOKENIZER;
-      case "icu_tokenizer":
-        return TokenizerType.ICU_TOKENIZER;
-      default:
-        throw new Error(`Unknown tokenizer: ${analyzer.tokenizer}`);
-    }
-  })();
-
-  const tokenFilters: TokenFilterType[] =
-    analyzer.token_filters?.map((filter: any) => {
-      switch (filter) {
-        case "kuromoji_baseform":
-          return TokenFilterType.KUROMOJI_BASEFORM;
-        case "kuromoji_part_of_speech":
-          return TokenFilterType.KUROMOJI_PART_OF_SPEECH;
-        case "kuromoji_stemmer":
-          return TokenFilterType.KUROMOJI_STEMMER;
-        case "cjk_width":
-          return TokenFilterType.CJK_WIDTH;
-        case "ja_stop":
-          return TokenFilterType.JA_STOP;
-        case "lowercase":
-          return TokenFilterType.LOWERCASE;
-        case "icu_folding":
-          return TokenFilterType.ICU_FOLDING;
-        default:
-          throw new Error(`Unknown token filter: ${filter}`);
-      }
-    }) || [];
-
-  return {
-    characterFilters,
-    tokenizer,
-    tokenFilters,
-  };
-};
