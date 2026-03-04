@@ -4,12 +4,10 @@ import { BedrockSharedKnowledgeBasesStack } from "../lib/bedrock-shared-knowledg
 import {
   getEmbeddingModel,
   getChunkingStrategy,
-  getAnalyzer,
   getParsingModel,
 } from "../lib/utils/bedrock-knowledge-base-args";
 import { BedrockFoundationModel } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 import { ChunkingStrategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock/data-sources/chunking";
-import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
 import { resolveBedrockSharedKnowledgeBasesParameters } from "../lib/utils/parameter-models";
 
 const app = new cdk.App();
@@ -34,7 +32,6 @@ interface KnowledgeConfig {
   embeddingsModel: BedrockFoundationModel;
   parsingModel: BedrockFoundationModel | undefined;
   instruction?: string;
-  analyzer?: Analyzer | undefined;
 }
 
 interface ChunkingConfig {
@@ -65,9 +62,6 @@ const knowledgeBases = sharedKnowledgeBasesJson.map((sharedKnowledgeBase: any) =
     embeddingsModel: getEmbeddingModel(knowledgeBaseJson.embeddings_model),
     parsingModel: getParsingModel(knowledgeBaseJson.parsing_model),
     instruction: knowledgeBaseJson.instruction,
-    analyzer: knowledgeBaseJson.open_search?.analyzer
-      ? getAnalyzer(knowledgeBaseJson.open_search.analyzer)
-      : undefined,
   };
 
   // Extract chunking configuration
@@ -113,7 +107,6 @@ const knowledgeBases = sharedKnowledgeBasesJson.map((sharedKnowledgeBase: any) =
         ...knowledgeConfig,
         embeddingsModel: knowledgeConfig.embeddingsModel.toString(),
         parsingModel: knowledgeConfig.parsingModel?.toString(),
-        analyzer: knowledgeConfig.analyzer ? "configured" : "undefined",
       },
       null,
       2
@@ -153,7 +146,6 @@ new BedrockSharedKnowledgeBasesStack(app, "BrChatSharedKbStack", {
     embeddingsModel: knowledgeBase.knowledgeConfig.embeddingsModel,
     parsingModel: knowledgeBase.knowledgeConfig.parsingModel,
     instruction: knowledgeBase.knowledgeConfig.instruction,
-    analyzer: knowledgeBase.knowledgeConfig.analyzer,
 
     // Chunking configuration
     chunkingStrategy: knowledgeBase.chunkingConfig.chunkingStrategy,

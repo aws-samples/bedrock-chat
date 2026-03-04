@@ -1,11 +1,10 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { VectorCollection } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
 import {
-  Analyzer,
+  VectorBucket,
   VectorIndex,
-} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
-import { VectorCollectionStandbyReplicas } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearchserverless";
+  VectorIndexDistanceMetric,
+} from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/s3vectors";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { BedrockFoundationModel, VectorStoreType } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
@@ -50,7 +49,7 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly ownerUserId: string;
   readonly botId: string;
   readonly bedrockClaudeChatDocumentBucketName: string;
-  readonly enableRagReplicas?: boolean;
+  readonly enableRagReplicas?: boolean; // unused with S3 Vectors
 
   // Knowledge base configuration
   readonly knowledgeBaseType: "dedicated" | "shared" | undefined;
@@ -61,7 +60,6 @@ interface BedrockCustomBotStackProps extends StackProps {
   readonly filenames: string[];
   readonly sourceUrls: string[];
   readonly instruction?: string;
-  readonly analyzer?: Analyzer;
 
   // Chunking configuration
   readonly chunkingStrategy: ChunkingStrategy;
@@ -87,41 +85,16 @@ export class BedrockCustomBotStack extends Stack {
       if (props.knowledgeBaseType === "dedicated"
         && (docBucketsAndPrefixes.length > 0 || props.sourceUrls.length > 0)
       ) {
-        const vectorCollection = new VectorCollection(this, "VectorCollection", {
-          standbyReplicas:
-            props.enableRagReplicas === true
-              ? VectorCollectionStandbyReplicas.ENABLED
-              : VectorCollectionStandbyReplicas.DISABLED,
-        });
+        const vectorBucket = new VectorBucket(this, "VectorBucket");
         const vectorIndex = new VectorIndex(this, "VectorIndex", {
-          collection: vectorCollection,
-          // DO NOT CHANGE THIS VALUE
-          indexName: "bedrock-knowledge-base-default-index",
-          // DO NOT CHANGE THIS VALUE
-          vectorField: "bedrock-knowledge-base-default-vector",
-          vectorDimensions: props.embeddingsModel.vectorDimensions!,
-          precision: "float",
-          distanceType: "l2",
-          mappings: [
-            {
-              mappingField: "AMAZON_BEDROCK_TEXT_CHUNK",
-              dataType: "text",
-              filterable: true,
-            },
-            {
-              mappingField: "AMAZON_BEDROCK_METADATA",
-              dataType: "text",
-              filterable: false,
-            },
-          ],
-          analyzer: props.analyzer,
+          vectorBucket: vectorBucket,
+          dimension: props.embeddingsModel.vectorDimensions!,
+          distanceMetric: VectorIndexDistanceMetric.COSINE,
         });
-        vectorIndex.node.addDependency(vectorCollection);
 
         const kb = new VectorKnowledgeBase(this, "KnowledgeBase", {
           embeddingsModel: props.embeddingsModel,
-          vectorStore: vectorCollection,
-          vectorIndex: vectorIndex,
+          vectorStore: vectorIndex,
           instruction: props.instruction,
         });
         new CfnOutput(this, "KnowledgeBaseId", {
@@ -205,7 +178,7 @@ export class BedrockCustomBotStack extends Stack {
       const executionRoleArn = getKnowledgeBase.getResponseField("roleArn");
 
       const kb = VectorKnowledgeBase.fromKnowledgeBaseAttributes(this, "MyKnowledgeBase", {
-        vectorStoreType: VectorStoreType.OPENSEARCH_SERVERLESS,
+        vectorStoreType: VectorStoreType.S3_VECTORS,
         knowledgeBaseId: props.existKnowledgeBaseId,
         executionRoleArn: executionRoleArn,
       });
