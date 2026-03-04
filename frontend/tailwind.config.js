@@ -4,7 +4,8 @@ export default {
   darkMode: 'class',
   theme: {
     fontFamily: {
-      body: ['M PLUS Rounded 1c'],
+      body: ['Arial Narrow', 'Arial', 'sans-serif'],
+      heading: ['Yu Gothic Medium', 'Yu Gothic', 'sans-serif'],
     },
     extend: {
       transitionProperty: {
@@ -16,7 +17,7 @@ export default {
       },
       colors: {
         'aws-squid-ink': {
-          light: '#232F3E',
+          light: '#6C3F99',
           dark: '#171717',
         },
         'aws-sea-blue': {

@@ -17,12 +17,12 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       manifest: {
-        name: 'Bedrock Chat',
-        short_name: 'Bedrock Chat',
+        name: 'Dylbot',
+        short_name: 'Dylbot',
         description: 'AWS-native chatbot using Bedrock',
         start_url: '/index.html',
         display: 'standalone',
-        theme_color: '#232F3E',
+        theme_color: '#6C3F99',
         icons: [
           {
             src: '/images/bedrock_icon_72.png',
