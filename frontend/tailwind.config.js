@@ -63,7 +63,7 @@ export default {
         },
         'aws-font-color-white': {
           light: '#ffffff',
-          dark':'#ececec',
+          dark: '#ececec',
         },
         'aws-ui-color': {
           dark: '#151515',
