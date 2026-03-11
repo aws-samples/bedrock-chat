@@ -5,7 +5,6 @@ import ButtonCopy from './ButtonCopy';
 import {
   PiCaretLeftBold,
   PiNotePencil,
-  PiUserFill,
   PiThumbsDown,
   PiThumbsDownFill,
 } from 'react-icons/pi';
@@ -30,6 +29,7 @@ import { AgentToolsProps } from '../features/agent/types';
 import { convertThinkingLogToAgentToolProps } from '../features/agent/utils/AgentUtils';
 import { convertUsedChunkToRelatedDocument } from '../utils/MessageUtils';
 import ReasoningCard from '../features/reasoning/components/ReasoningCard';
+import TypingIndicator from './TypingIndicator';
 
 type Props = BaseProps & {
   tools?: AgentToolsProps[];
@@ -149,100 +149,63 @@ const ChatMessage: React.FC<Props> = (props) => {
     [chatContent, props]
   );
 
+  const isUser = chatContent?.role === 'user';
+  const isAssistant = chatContent?.role === 'assistant';
+
   return (
-    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3')}>
-      <div className="col-start-1 lg:col-start-2 ">
-        {(chatContent?.sibling.length ?? 0) > 1 && (
-          <div className="flex items-center justify-start text-sm lg:justify-end">
-            <ButtonIcon
-              className="text-xs"
-              disabled={nodeIndex === 0}
-              onClick={() => {
-                onClickChange(nodeIndex - 1);
-              }}>
-              <PiCaretLeftBold />
-            </ButtonIcon>
-            {nodeIndex + 1}
-            <div className="mx-1">/</div>
-            {chatContent?.sibling.length}
-            <ButtonIcon
-              className="text-xs"
-              disabled={nodeIndex >= (chatContent?.sibling.length ?? 0) - 1}
-              onClick={() => {
-                onClickChange(nodeIndex + 1);
-              }}>
-              <PiCaretLeftBold className="rotate-180" />
-            </ButtonIcon>
-          </div>
-        )}
-      </div>
+    <div className={twMerge(props.className, 'animate-fade-in px-4 py-3')}>
+      {/* ── SIBLING NAVIGATOR ── */}
+      {(chatContent?.sibling.length ?? 0) > 1 && (
+        <div className={twMerge(
+          'mb-1 flex items-center gap-1 text-xs text-dark-gray dark:text-light-gray',
+          isUser ? 'justify-end' : 'justify-start pl-10'
+        )}>
+          <ButtonIcon
+            className="text-xs"
+            disabled={nodeIndex === 0}
+            onClick={() => onClickChange(nodeIndex - 1)}>
+            <PiCaretLeftBold />
+          </ButtonIcon>
+          {nodeIndex + 1} / {chatContent?.sibling.length}
+          <ButtonIcon
+            className="text-xs"
+            disabled={nodeIndex >= (chatContent?.sibling.length ?? 0) - 1}
+            onClick={() => onClickChange(nodeIndex + 1)}>
+            <PiCaretLeftBold className="rotate-180" />
+          </ButtonIcon>
+        </div>
+      )}
 
-      <div className="order-first col-span-12 flex lg:order-none lg:col-span-8 lg:col-start-3">
-        {chatContent?.role === 'user' && (
-          <div className="h-min rounded bg-aws-sea-blue-light p-2 text-xl text-white dark:bg-aws-sea-blue-dark">
-            <PiUserFill />
-          </div>
-        )}
-        {chatContent?.role === 'assistant' && (
-          <div className="min-w-[2.3rem] max-w-[2.3rem]">
-            <img src="/images/bedrock_icon_64.png" className="rounded" />
-          </div>
-        )}
-
-        <div className="ml-5 grow ">
-          {chatContent?.role === 'assistant' &&
-            tools != null &&
-            tools.length > 0 && (
-              <div className="flex flex-col">
-                {tools.map((tools, index) => (
-                  <div key={index} className="mb-3 mt-0">
-                    <AgentToolList
-                      messageId={chatContent.id}
-                      tools={tools}
-                      relatedDocuments={relatedDocuments}
-                    />
-                  </div>
-                ))}
-              </div>
-            )
-          }
-          {chatContent?.role == 'assistant' && reasoning && (
-            // ReasoningCard for ReasoningContent in assistant message itself.
-            <ReasoningCard
-              content={reasoning}
-              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
-            />
-          )}
-          {chatContent?.role === 'user' && !isEdit && (
-            <div>
-              {chatContent.content.some(
-                (content) => content.contentType === 'image'
-              ) && (
-                <div key="images">
-                  {chatContent.content.map((content, idx) => {
-                    if (content.contentType === 'image') {
+      {/* ── USER MESSAGE — right-aligned pill ── */}
+      {isUser && (
+        <div className="flex justify-end">
+          <div className="max-w-[80%]">
+            {!isEdit ? (
+              <div className="group relative">
+                {/* Attachments above bubble */}
+                {chatContent!.content.some((c) => c.contentType === 'image') && (
+                  <div className="mb-2 flex flex-wrap gap-2 justify-end">
+                    {chatContent!.content.map((content, idx) => {
+                      if (content.contentType !== 'image') return null;
                       const imageUrl = `data:${content.mediaType};base64,${content.body}`;
                       return (
                         <img
                           key={idx}
                           src={imageUrl}
-                          className="mb-2 h-48 cursor-pointer"
+                          className="h-40 cursor-pointer rounded-xl border border-black/10 object-cover"
                           onClick={() => {
                             setPreviewImageUrl(imageUrl);
                             setIsOpenPreviewImage(true);
                           }}
                         />
                       );
-                    }
-                  })}
-                </div>
-              )}
-              {chatContent.content.some(
-                (content) => content.contentType === 'attachment'
-              ) && (
-                <div key="files" className="my-2 flex">
-                  {chatContent.content.map((content, idx) => {
-                    if (content.contentType === 'attachment') {
+                    })}
+                  </div>
+                )}
+                {chatContent!.content.some((c) => c.contentType === 'attachment') && (
+                  <div className="mb-2 flex flex-wrap justify-end gap-2">
+                    {chatContent!.content.map((content, idx) => {
+                      if (content.contentType !== 'attachment') return null;
                       const isTextFile = TEXT_FILE_EXTENSIONS.some((ext) =>
                         content.fileName?.toLowerCase().endsWith(ext)
                       );
@@ -251,16 +214,13 @@ const ChatMessage: React.FC<Props> = (props) => {
                           key={idx}
                           fileName={content.fileName ?? ''}
                           onClick={
-                            // Only text file can be previewed
                             isTextFile
                               ? () => {
-                                  const textContent = new TextDecoder(
-                                    'utf-8'
-                                  ).decode(
+                                  const textContent = new TextDecoder('utf-8').decode(
                                     Uint8Array.from(atob(content.body), (c) =>
                                       c.charCodeAt(0)
                                     )
-                                  ); // base64 encoded text to be decoded string
+                                  );
                                   setDialogFileName(content.fileName ?? '');
                                   setDialogFileContent(textContent);
                                   setIsFileModalOpen(true);
@@ -269,107 +229,122 @@ const ChatMessage: React.FC<Props> = (props) => {
                           }
                         />
                       );
-                    }
-                  })}
-                </div>
-              )}
-              {chatContent.content.some(
-                (content) => content.contentType === 'text'
-              ) &&
-                chatContent.content.map((content, idx) => {
-                  if (content.contentType === 'text') {
-                    return (
-                      <React.Fragment key={idx}>
-                        {content.body.split('\n').map((c, idxBody) => (
-                          <div key={idxBody}>{c}</div>
-                        ))}
-                      </React.Fragment>
-                    );
-                  }
-                })}
-              <ModalDialog
-                isOpen={isOpenPreviewImage}
-                onClose={() => setIsOpenPreviewImage(false)}
-                // Set image null after transition end
-                widthFromContent={true}
-                onAfterLeave={() => setPreviewImageUrl(null)}>
-                {previewImageUrl && (
-                  <img
-                    src={previewImageUrl}
-                    className="mx-auto max-h-[80vh] max-w-full rounded-md"
-                  />
-                )}
-              </ModalDialog>
-              <ModalDialog
-                isOpen={isFileModalOpen}
-                onClose={() => setIsFileModalOpen(false)}
-                widthFromContent={true}
-                title={dialogFileName ?? ''}>
-                <div className="relative flex size-auto max-h-[80vh] max-w-[80vh] flex-col">
-                  <div className="overflow-auto px-4">
-                    <pre className="whitespace-pre-wrap break-all">
-                      {dialogFileContent}
-                    </pre>
+                    })}
                   </div>
+                )}
+
+                {/* Text bubble */}
+                {chatContent!.content.some((c) => c.contentType === 'text') && (
+                  <div className="rounded-2xl rounded-tr-sm bg-aws-squid-ink-light px-4 py-2.5 text-sm text-white dark:bg-aws-sea-blue-dark">
+                    {chatContent!.content.map((content, idx) => {
+                      if (content.contentType !== 'text') return null;
+                      return (
+                        <React.Fragment key={idx}>
+                          {content.body.split('\n').map((line, lineIdx) => (
+                            <div key={lineIdx}>{line || <br />}</div>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Edit button — shown on hover */}
+                <div className="mt-1 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
+                  <ButtonIcon
+                    className="text-dark-gray dark:text-light-gray"
+                    onClick={() => {
+                      const textContent = chatContent!.content[firstTextContent] as TextContent;
+                      setChangedContent(textContent.body);
+                      setIsEdit(true);
+                    }}>
+                    <PiNotePencil />
+                  </ButtonIcon>
                 </div>
-              </ModalDialog>
-            </div>
-          )}
-          {isEdit && (
-            <div>
-              <Textarea
-                className="bg-transparent"
-                value={changedContent}
-                noBorder
-                onChange={(v) => setChangedContent(v)}
-              />
-              <div className="flex justify-center gap-3">
-                <Button onClick={onSubmit}>{t('button.SaveAndSubmit')}</Button>
-                <Button
-                  outlined
-                  onClick={() => {
-                    setIsEdit(false);
-                  }}>
-                  {t('button.cancel')}
-                </Button>
               </div>
+            ) : (
+              <div className="w-full">
+                <Textarea
+                  className="bg-transparent"
+                  value={changedContent}
+                  noBorder
+                  onChange={(v) => setChangedContent(v)}
+                />
+                <div className="flex justify-center gap-3 pt-2">
+                  <Button onClick={onSubmit}>{t('button.SaveAndSubmit')}</Button>
+                  <Button outlined onClick={() => setIsEdit(false)}>
+                    {t('button.cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ASSISTANT MESSAGE — left-aligned with avatar ── */}
+      {isAssistant && (
+        <div className="flex items-start gap-3">
+          {/* Avatar */}
+          <div className="mt-0.5 shrink-0">
+            <div className="flex size-8 items-center justify-center overflow-hidden rounded-full border border-aws-squid-ink-light/20 bg-white shadow-sm dark:border-white/10 dark:bg-aws-paper-dark">
+              <img
+                src="/images/bedrock_icon_64.png"
+                className="size-6 object-contain"
+                alt="Assistant"
+              />
             </div>
-          )}
-          {chatContent?.role === 'assistant' && (
+          </div>
+
+          {/* Content */}
+          <div className="group min-w-0 flex-1">
+            {/* Agent tools */}
+            {tools != null && tools.length > 0 && (
+              <div className="mb-3 flex flex-col gap-2">
+                {tools.map((toolGroup, index) => (
+                  <AgentToolList
+                    key={index}
+                    messageId={chatContent!.id}
+                    tools={toolGroup}
+                    relatedDocuments={relatedDocuments}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Reasoning */}
+            {reasoning && (
+              <ReasoningCard
+                content={reasoning}
+                className="mb-3 flex w-full flex-col rounded-xl border border-gray/30 bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
+              />
+            )}
+
+            {/* Typing indicator while streaming with no content yet */}
+            {props.isStreaming &&
+              chatContent!.content.filter((c) => c.contentType === 'text').every(
+                (c) => (c as TextContent).body === ''
+              ) && (
+                <TypingIndicator className="py-1" />
+              )}
+
+            {/* Message text */}
             <ChatMessageMarkdown
               isStreaming={props.isStreaming}
               relatedDocuments={relatedDocuments}
-              messageId={chatContent.id}>
-              {chatContent.content
+              messageId={chatContent!.id}>
+              {chatContent!.content
                 .filter((content) => content.contentType === 'text')
                 .map((content) => (content as TextContent).body)
                 .join('\n')}
             </ChatMessageMarkdown>
-          )}
-        </div>
-      </div>
 
-      <div className="col-span-2 col-start-11">
-        <div className="flex flex-col items-end lg:items-start">
-          {chatContent?.role === 'user' && !isEdit && (
-            <ButtonIcon
-              className="text-dark-gray dark:text-light-gray"
-              onClick={() => {
-                const textContent = chatContent.content[
-                  firstTextContent
-                ] as TextContent;
-                setChangedContent(textContent.body);
-                setIsEdit(true);
-              }}>
-              <PiNotePencil />
-            </ButtonIcon>
-          )}
-          {chatContent?.role === 'assistant' && (
-            <div className="flex">
+            {/* Action bar — shown on hover */}
+            <div className="mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
               <ButtonIcon
                 className="text-dark-gray dark:text-light-gray"
                 onClick={() => setIsFeedbackOpen(true)}>
-                {chatContent.feedback && !chatContent.feedback.thumbsUp ? (
+                {chatContent!.feedback && !chatContent!.feedback.thumbsUp ? (
                   <PiThumbsDownFill />
                 ) : (
                   <PiThumbsDown />
@@ -378,19 +353,41 @@ const ChatMessage: React.FC<Props> = (props) => {
               <ButtonCopy
                 className="text-dark-gray dark:text-light-gray"
                 text={
-                  chatContent.content.find((c) => c.contentType === 'text')
-                    ? (
-                        chatContent.content.find(
-                          (c) => c.contentType === 'text'
-                        ) as TextContent
-                      ).body
+                  chatContent!.content.find((c) => c.contentType === 'text')
+                    ? (chatContent!.content.find((c) => c.contentType === 'text') as TextContent).body
                     : ''
                 }
               />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ── SHARED MODALS ── */}
+      <ModalDialog
+        isOpen={isOpenPreviewImage}
+        onClose={() => setIsOpenPreviewImage(false)}
+        widthFromContent={true}
+        onAfterLeave={() => setPreviewImageUrl(null)}>
+        {previewImageUrl && (
+          <img
+            src={previewImageUrl}
+            className="mx-auto max-h-[80vh] max-w-full rounded-xl"
+          />
+        )}
+      </ModalDialog>
+      <ModalDialog
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        widthFromContent={true}
+        title={dialogFileName ?? ''}>
+        <div className="relative flex size-auto max-h-[80vh] max-w-[80vh] flex-col">
+          <div className="overflow-auto px-4">
+            <pre className="whitespace-pre-wrap break-all">{dialogFileContent}</pre>
+          </div>
+        </div>
+      </ModalDialog>
+
       <DialogFeedback
         isOpen={isFeedbackOpen}
         thumbsUp={false}

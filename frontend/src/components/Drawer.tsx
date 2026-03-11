@@ -291,61 +291,70 @@ const Drawer: React.FC<Props> = (props) => {
 
   return (
     <>
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink-light scrollbar-thin scrollbar-track-white scrollbar-thumb-aws-squid-ink-light/30 dark:bg-aws-ui-color-dark dark:scrollbar-thumb-aws-ui-color-dark/30">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink-light scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 dark:bg-aws-ui-color-dark dark:scrollbar-thumb-white/10">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
-          } text-sm  text-white transition-width`}>
-          {logoSrc && (
-            <div className="sticky top-0 z-10 flex items-center justify-center border-b border-white/10 bg-aws-squid-ink-light px-4 py-6 dark:bg-aws-squid-ink-dark">
-              <button
-                type="button"
-                onClick={onClickLogo}
-                className="flex w-full items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
+          } text-sm text-white transition-width`}>
+          {/* Logo / Header area */}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-aws-squid-ink-light px-3 py-3 dark:bg-aws-ui-color-dark">
+            <button
+              type="button"
+              onClick={onClickLogo}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-white/10 focus:outline-none">
+              {logoSrc ? (
                 <img
                   src={logoSrc}
                   alt={t('app.name')}
-                  className="h-10 w-auto max-w-[170px]"
+                  className="h-8 w-auto max-w-[140px] shrink-0"
                   loading="lazy"
                 />
-              </button>
-            </div>
-          )}
+              ) : (
+                <span className="font-heading truncate text-sm font-semibold tracking-wide text-white/90">
+                  {t('app.name')}
+                </span>
+              )}
+            </button>
+          </div>
+
           {!isAdminPanel && (
             <>
-              {drawerOptions.show.newChat && (
-                <DrawerItem
-                  isActive={false}
-                  icon={<PiNotePencil />}
-                  to="/"
-                  onClick={onClickNewChat}
-                  labelComponent={t('button.newChat')}
-                />
-              )}
-              {drawerOptions.show.myBots && (
-                <DrawerItem
-                  isActive={false}
-                  icon={<PiListBullets />}
-                  to="/bot/my"
-                  labelComponent={getPageLabel('/bot/my')}
-                  onClick={closeSmallDrawer}
-                />
-              )}
-              {drawerOptions.show.discoverBots && (
-                <DrawerItem
-                  isActive={false}
-                  icon={<PiCompass />}
-                  to="/bot/discover"
-                  labelComponent={getPageLabel('/bot/discover')}
-                  onClick={closeSmallDrawer}
-                />
-              )}
+              {/* Primary nav items */}
+              <div className="px-2 pt-2">
+                {drawerOptions.show.newChat && (
+                  <DrawerItem
+                    isActive={false}
+                    icon={<PiNotePencil />}
+                    to="/"
+                    onClick={onClickNewChat}
+                    labelComponent={t('button.newChat')}
+                  />
+                )}
+                {drawerOptions.show.myBots && (
+                  <DrawerItem
+                    isActive={false}
+                    icon={<PiListBullets />}
+                    to="/bot/my"
+                    labelComponent={getPageLabel('/bot/my')}
+                    onClick={closeSmallDrawer}
+                  />
+                )}
+                {drawerOptions.show.discoverBots && (
+                  <DrawerItem
+                    isActive={false}
+                    icon={<PiCompass />}
+                    to="/bot/discover"
+                    labelComponent={getPageLabel('/bot/discover')}
+                    onClick={closeSmallDrawer}
+                  />
+                )}
+              </div>
 
               {drawerOptions.show.pinnedBots &&
                 pinnedBots?.filter((bot) => bot.available).length ? (
                   <ExpandableDrawerGroup
                     label={t('app.pinnedBots')}
-                    className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                    className="mt-1 border-t border-white/10 pt-1">
                     {pinnedBots
                       .filter((bot) => bot.available)
                       .map((bot) => (
@@ -364,14 +373,12 @@ const Drawer: React.FC<Props> = (props) => {
               {drawerOptions.show.starredBots && (
                 <ExpandableDrawerGroup
                   label={t('app.starredBots')}
-                  className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark">
+                  className="mt-1 border-t border-white/10 pt-1">
                   {starredBots === undefined && (
-                    <div className="flex flex-col gap-2 p-2">
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    <div className="flex flex-col gap-1.5 px-2 py-1">
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
                     </div>
                   )}
                   {starredBots
@@ -397,7 +404,7 @@ const Drawer: React.FC<Props> = (props) => {
                     <Button
                       text
                       rightIcon={<PiArrowRight />}
-                      className="w-full"
+                      className="w-full text-white/70 hover:text-white"
                       onClick={() => {
                         navigate('/bot/starred');
                         closeSmallDrawer();
@@ -411,14 +418,12 @@ const Drawer: React.FC<Props> = (props) => {
               {drawerOptions.show.recentlyUsedBots && (
                 <ExpandableDrawerGroup
                   label={t('app.recentlyUsedBots')}
-                  className="border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark ">
+                  className="mt-1 border-t border-white/10 pt-1">
                   {recentlyUsedUnstarredBots === undefined && (
-                    <div className="flex flex-col gap-2 p-2">
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    <div className="flex flex-col gap-1.5 px-2 py-1">
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
                     </div>
                   )}
                   {recentlyUsedUnstarredBots
@@ -444,7 +449,7 @@ const Drawer: React.FC<Props> = (props) => {
                     <Button
                       text
                       rightIcon={<PiArrowRight />}
-                      className="w-full"
+                      className="w-full text-white/70 hover:text-white"
                       onClick={() => {
                         navigate('/bot/recently-used');
                         closeSmallDrawer();
@@ -459,16 +464,16 @@ const Drawer: React.FC<Props> = (props) => {
                 <ExpandableDrawerGroup
                   label={t('app.conversationHistory')}
                   className={twMerge(
-                    'border-t bg-aws-squid-ink-light pt-1 dark:bg-aws-squid-ink-dark',
+                    'mt-1 border-t border-white/10 pt-1',
                     props.isAdmin ? 'mb-20' : 'mb-10'
                   )}>
                   {conversations === undefined && (
-                    <div className="flex flex-col gap-2 p-2">
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
-                      <Skeleton className="h-10 w-full bg-aws-sea-blue-light/50 dark:bg-aws-sea-blue-dark/50" />
+                    <div className="flex flex-col gap-1.5 px-2 py-1">
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-4/5 bg-white/10" />
+                      <Skeleton className="h-8 w-full bg-white/10" />
+                      <Skeleton className="h-8 w-3/4 bg-white/10" />
                     </div>
                   )}
                   {conversations
@@ -490,7 +495,7 @@ const Drawer: React.FC<Props> = (props) => {
                     <Button
                       text
                       rightIcon={<PiArrowRight />}
-                      className="w-full"
+                      className="w-full text-white/70 hover:text-white"
                       onClick={() => {
                         navigate('/conversations');
                         closeSmallDrawer();
@@ -505,31 +510,36 @@ const Drawer: React.FC<Props> = (props) => {
 
           {isAdminPanel && (
             <>
-              <div className="px-2 py-1 italic">{t('app.adminConsoles')}</div>
-              <DrawerItem
-                className="w-60"
-                isActive={location.pathname === '/admin/shared-bot-analytics'}
-                icon={<PiChartLine />}
-                to="/admin/shared-bot-analytics"
-                labelComponent={getPageLabel('/admin/shared-bot-analytics')}
-                onClick={closeSmallDrawer}
-              />
-              <DrawerItem
-                className="w-60"
-                isActive={location.pathname === '/admin/api-management'}
-                icon={<PiPlugs />}
-                to="/admin/api-management"
-                labelComponent={getPageLabel('/admin/api-management')}
-                onClick={closeSmallDrawer}
-              />
+              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50">
+                {t('app.adminConsoles')}
+              </div>
+              <div className="px-2">
+                <DrawerItem
+                  className="w-60"
+                  isActive={location.pathname === '/admin/shared-bot-analytics'}
+                  icon={<PiChartLine />}
+                  to="/admin/shared-bot-analytics"
+                  labelComponent={getPageLabel('/admin/shared-bot-analytics')}
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  className="w-60"
+                  isActive={location.pathname === '/admin/api-management'}
+                  icon={<PiPlugs />}
+                  to="/admin/api-management"
+                  labelComponent={getPageLabel('/admin/api-management')}
+                  onClick={closeSmallDrawer}
+                />
+              </div>
             </>
           )}
 
+          {/* Bottom fixed area */}
           <div
             className={twMerge(
               opened ? 'w-64' : 'w-0',
-              props.isAdmin ? 'h-20' : 'h-10',
-              'fixed -bottom-2 z-50 mb-2 flex flex-col items-start border-t bg-aws-squid-ink-light transition-width dark:bg-aws-ui-color-dark lg:w-64'
+              props.isAdmin ? 'h-20' : 'h-12',
+              'fixed -bottom-2 z-50 mb-2 flex flex-col items-start border-t border-white/10 bg-aws-squid-ink-light transition-width dark:bg-aws-ui-color-dark lg:w-64'
             )}>
             {props.isAdmin && !isAdminPanel && (
               <DrawerItem
@@ -571,7 +581,7 @@ const Drawer: React.FC<Props> = (props) => {
           <PiX />
         </ButtonIcon>
         <div
-          className="fixed z-40 h-dvh w-screen bg-dark-gray/90"
+          className="fixed z-40 h-dvh w-screen bg-black/60 backdrop-blur-sm"
           onClick={switchOpen}></div>
       </div>
     </>

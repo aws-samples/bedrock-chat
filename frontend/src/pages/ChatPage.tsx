@@ -472,164 +472,148 @@ const ChatPage: React.FC = () => {
       onDragOver={onDragOver}
       onDrop={endDnd}
       onDragEnd={endDnd}>
-      <div className="flex-1 overflow-hidden">
-        <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper-light p-2 dark:bg-aws-paper-dark">
-          <div className="flex w-full justify-between">
-            <div className="p-2">
-              <div className="mr-10 flex items-center whitespace-nowrap font-bold">
-                {isLoadingBot ? (
-                  <Skeleton className="h-5 w-32" />
-                ) : (
-                  <>
-                    <IconPinnedBot
-                      botSharedStatus={bot?.sharedStatus}
-                      className="mr-1 text-aws-aqua"
-                    />
-                    {pageTitle}
-                  </>
-                )}
-              </div>
-            </div>
 
-            {isLoadingBot && (
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="size-7" />
-                <Skeleton className="h-7 w-12" />
-              </div>
-            )}
+      {/* ── TOP HEADER BAR ── */}
+      <header className="sticky top-0 z-10 flex h-14 w-full shrink-0 items-center justify-between border-b border-black/5 bg-aws-paper-light/95 px-4 backdrop-blur-sm dark:border-white/5 dark:bg-aws-paper-dark/95">
+        {/* Left: title */}
+        <div className="flex min-w-0 items-center gap-2">
+          {isLoadingBot ? (
+            <>
+              <Skeleton className="h-5 w-8 rounded-full" />
+              <Skeleton className="h-5 w-36" />
+            </>
+          ) : (
+            <>
+              <IconPinnedBot
+                botSharedStatus={bot?.sharedStatus}
+                className="shrink-0 text-aws-aqua"
+              />
+              <h1 className="font-heading truncate text-sm font-semibold text-aws-font-color-light dark:text-aws-font-color-dark">
+                {pageTitle}
+              </h1>
+            </>
+          )}
+        </div>
 
-            {isAvailabilityBot && !isLoadingBot && (
-              <div className="absolute -top-1 right-0 flex h-full items-center">
-                <div className="h-full w-12 bg-gradient-to-r from-transparent to-aws-paper-light dark:to-aws-paper-dark"></div>
-                <div className="flex items-center bg-aws-paper-light dark:bg-aws-paper-dark">
-                  {bot?.owned && (
-                    <StatusSyncBot
-                      syncStatus={bot.syncStatus}
-                      onClickError={onClickSyncError}
-                    />
-                  )}
-
-                  <ButtonStar
-                    isStarred={bot?.isStarred ?? false}
-                    onClick={onClickStar}
-                  />
-
-                  <MenuBot
-                    className="mx-1"
-                    {...(bot?.owned && {
-                      onClickEdit: () => {
-                        onClickBotEdit(bot.id);
-                      },
-                    })}
-                    {...(bot?.sharedScope !== 'private' && {
-                      onClickCopyUrl: () => {
-                        onClickCopyUrl(bot?.id ?? '');
-                      },
-                    })}
-                    {...(canSwitchPinned
-                      ? {
-                          onClickSwitchPinned: () => {
-                            bot && togglePinBot(bot);
-                          },
-                          isPinned: isPinnedBot(bot?.sharedStatus ?? ''),
-                        }
-                      : {
-                          isPinned: undefined,
-                          onClickSwitchPinned: undefined,
-                        })}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Right: model badge + bot actions */}
+        <div className="flex shrink-0 items-center gap-1">
           {getPostedModel() && (
-            <div className="absolute right-2 top-10 text-xs text-dark-gray dark:text-light-gray">
-              model: {getPostedModel()}
+            <span className="hidden rounded-full border border-black/10 bg-white px-2.5 py-0.5 text-xs text-dark-gray dark:border-white/10 dark:bg-aws-paper-dark dark:text-light-gray sm:inline-flex">
+              {getPostedModel()}
+            </span>
+          )}
+          {isLoadingBot && (
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-24" />
+              <Skeleton className="size-7 rounded-full" />
+            </div>
+          )}
+          {isAvailabilityBot && !isLoadingBot && (
+            <div className="flex items-center">
+              {bot?.owned && (
+                <StatusSyncBot
+                  syncStatus={bot.syncStatus}
+                  onClickError={onClickSyncError}
+                />
+              )}
+              <ButtonStar isStarred={bot?.isStarred ?? false} onClick={onClickStar} />
+              <MenuBot
+                className="mx-1"
+                {...(bot?.owned && { onClickEdit: () => onClickBotEdit(bot.id) })}
+                {...(bot?.sharedScope !== 'private' && {
+                  onClickCopyUrl: () => onClickCopyUrl(bot?.id ?? ''),
+                })}
+                {...(canSwitchPinned
+                  ? {
+                      onClickSwitchPinned: () => bot && togglePinBot(bot),
+                      isPinned: isPinnedBot(bot?.sharedStatus ?? ''),
+                    }
+                  : { isPinned: undefined, onClickSwitchPinned: undefined })}
+              />
             </div>
           )}
         </div>
-        <section className="relative size-full flex-1 overflow-auto pb-9">
+      </header>
+
+      {/* ── MESSAGE AREA ── */}
+      <div className="flex-1 overflow-hidden">
+        <section className="relative size-full flex-1 overflow-auto">
           <div className="h-full">
             <div
               id="messages"
               role="presentation"
-              className="flex h-full flex-col overflow-auto pb-16">
-              {messages?.length === 0 ? (
-                <div className="relative mb-[45vh]  flex w-full flex-col items-center justify-center">
+              className="flex h-full flex-col overflow-auto pb-40">
+
+              {/* Empty state */}
+              {messages?.length === 0 && (
+                <div className="flex flex-1 flex-col items-center justify-center py-16">
                   {!loadingConversation && (
                     <SwitchBedrockModel
-                      className="mb-6 mt-3 w-min"
+                      className="mb-8 w-min"
                       activeModels={activeModels}
                       botId={botId}
                     />
                   )}
-                  <div className="px-20 text-center">
-                    <div className="text-lg font-bold">
-                      {isLoadingBot && botId && (
-                        <Skeleton className="h-5 w-32" />
-                      )}
-                      {!isLoadingBot && bot && (
-                        <div className="flex items-baseline justify-center">
-                          <IconPinnedBot
-                            botSharedStatus={bot?.sharedStatus}
-                            className="mr-1 shrink-0 text-aws-aqua"
-                          />
-                          <div>{pageTitle}</div>
-                        </div>
+                  {isLoadingBot && botId ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <Skeleton className="h-7 w-48 rounded-lg" />
+                      <Skeleton className="h-4 w-72 rounded" />
+                    </div>
+                  ) : bot ? (
+                    <div className="text-center">
+                      <div className="font-heading mb-2 flex items-center justify-center gap-1.5 text-xl font-semibold text-aws-font-color-light dark:text-aws-font-color-dark">
+                        <IconPinnedBot
+                          botSharedStatus={bot?.sharedStatus}
+                          className="shrink-0 text-aws-aqua"
+                        />
+                        {pageTitle}
+                      </div>
+                      {description && (
+                        <p className="mx-auto max-w-sm text-sm text-dark-gray dark:text-light-gray">
+                          {description}
+                        </p>
                       )}
                     </div>
-                    <div className="mt-3 text-xs text-dark-gray dark:text-light-gray">
-                      {isLoadingBot ? (
-                        <Skeleton className="mt-1 h-3 w-64" />
-                      ) : (
-                        description
-                      )}
-                    </div>
-                  </div>
+                  ) : null}
                 </div>
-              ) : (
-                <>
-                  {messages?.map((message, idx, array) => (
-                    <div
-                      key={message.id}
-                      className={`${
-                        message.role === 'assistant'
-                          ? 'bg-aws-squid-ink-light/5 dark:bg-aws-squid-ink-dark/35'
-                          : ''
-                      }`}>
-                      <ChatMessageWithRelatedDocuments
-                        chatContent={message}
-                        isStreaming={postingMessage && idx + 1 === array.length}
-                        streamingReasoning={streamingState.context.reasoning}
-                        streamingTools={streamingState.context.tools}
-                        streamingRelatedDocuments={streamingState.context.relatedDocuments}
-                        streamingStateValue={streamingState.value as string}
-                        botHasAgent={bot?.hasAgent ?? false}
-                        botHasKnowledge={bot?.hasKnowledge ?? false}
-                        relatedDocuments={relatedDocuments ?? []}
-                        onChangeMessageId={onChangeCurrentMessageId}
-                        onSubmit={onSubmitEditedContent}
-                        onSubmitFeedback={(messageId, feedback) => {
-                          if (conversationId) {
-                            giveFeedback(messageId, feedback);
-                          }
-                        }}
-                      />
-                      <div className="w-full border-b border-aws-squid-ink-light/10 dark:border-aws-squid-ink-dark/10"></div>
-                    </div>
-                  ))}
-                </>
               )}
+
+              {/* Messages list */}
+              {messages?.length > 0 && (
+                <div className="mx-auto w-full max-w-3xl px-4 py-6">
+                  {messages.map((message, idx, array) => (
+                    <ChatMessageWithRelatedDocuments
+                      key={message.id}
+                      chatContent={message}
+                      isStreaming={postingMessage && idx + 1 === array.length}
+                      streamingReasoning={streamingState.context.reasoning}
+                      streamingTools={streamingState.context.tools}
+                      streamingRelatedDocuments={streamingState.context.relatedDocuments}
+                      streamingStateValue={streamingState.value as string}
+                      botHasAgent={bot?.hasAgent ?? false}
+                      botHasKnowledge={bot?.hasKnowledge ?? false}
+                      relatedDocuments={relatedDocuments ?? []}
+                      onChangeMessageId={onChangeCurrentMessageId}
+                      onSubmit={onSubmitEditedContent}
+                      onSubmitFeedback={(messageId, feedback) => {
+                        if (conversationId) {
+                          giveFeedback(messageId, feedback);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Error state */}
               {hasError && (
-                <div className="mb-12 mt-2 flex flex-col items-center">
-                  <div className="flex items-center font-bold text-red">
-                    <PiWarningCircleFill className="mr-1 text-2xl" />
+                <div className="mb-12 mt-4 flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-1.5 rounded-xl border border-red/20 bg-light-red px-4 py-2.5 font-semibold text-red">
+                    <PiWarningCircleFill className="shrink-0 text-xl" />
                     {errorDetail ?? t('error.answerResponse')}
                   </div>
-
                   <Button
-                    className="mt-2 shadow "
+                    className="rounded-full shadow"
                     icon={<PiArrowsCounterClockwise />}
                     outlined
                     onClick={() => {
@@ -647,54 +631,53 @@ const ChatPage: React.FC = () => {
         </section>
       </div>
 
+      {/* ── INPUT AREA (fixed at bottom) ── */}
       <div
         className={twMerge(
-          'bottom-0 z-0 flex w-full flex-col items-center justify-center',
-          messages.length === 0 ? 'absolute top-2/3 -translate-y-1/2' : ''
+          'bottom-0 z-10 flex w-full flex-col items-center',
+          messages.length === 0
+            ? 'absolute top-1/2 -translate-y-1/4'
+            : 'relative bg-gradient-to-t from-aws-paper-light via-aws-paper-light/90 to-transparent pb-4 pt-2 dark:from-aws-paper-dark dark:via-aws-paper-dark/90'
         )}>
+
+        {/* Sync warning */}
         {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
-          <div className="mb-8 w-1/2">
-            <Alert
-              severity="warning"
-              title={t('bot.alert.sync.incomplete.title')}>
+          <div className="mb-3 w-11/12 md:w-10/12 lg:w-4/6 xl:w-3/6">
+            <Alert severity="warning" title={t('bot.alert.sync.incomplete.title')}>
               {t('bot.alert.sync.incomplete.body')}
             </Alert>
           </div>
         )}
-        {messages.length === 0 && (
-          <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
-            {bot?.conversationQuickStarters?.map((qs, idx) => (
-              <div
+
+        {/* Quick starters */}
+        {messages.length === 0 && bot?.conversationQuickStarters && bot.conversationQuickStarters.length > 0 && (
+          <div className="mb-3 flex w-11/12 flex-wrap justify-center gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
+            {bot.conversationQuickStarters.map((qs, idx) => (
+              <button
                 key={idx}
-                className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink-light/20 bg-white p-2 text-sm  text-dark-gray hover:shadow-lg hover:shadow-gray  dark:border-aws-squid-ink-dark/20 dark:text-light-gray"
-                onClick={() => {
-                  onSend(qs.example, reasoningEnabled);
-                }}>
-                <div>
-                  <PiPenNib />
-                </div>
+                className="flex cursor-pointer items-center gap-1.5 rounded-full border border-aws-squid-ink-light/15 bg-white px-3 py-1.5 text-sm text-dark-gray shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-aws-paper-dark dark:text-light-gray"
+                onClick={() => onSend(qs.example, reasoningEnabled)}>
+                <PiPenNib className="shrink-0 text-aws-aqua" />
                 {qs.title}
-              </div>
+              </button>
             ))}
           </div>
         )}
 
         <InputChatContent
-          className="mb-7 w-11/12 md:w-10/12 lg:w-4/6 xl:w-3/6"
+          className="mb-2 w-11/12 md:w-10/12 lg:w-4/6 xl:w-3/6"
           dndMode={dndMode}
           disabledSend={postingMessage || hasError || isLastAssistantMessageEmpty}
           disabledRegenerate={postingMessage || hasError}
           disabledContinue={postingMessage || hasError}
           disabled={disabledInput}
           placeholder={
-            disabledInput
-              ? t('bot.label.notAvailableBotInputMessage')
-              : undefined
+            disabledInput ? t('bot.label.notAvailableBotInputMessage') : undefined
           }
           canRegenerate={messages.length > 1}
           canContinue={getShouldContinue()}
           isLoading={postingMessage}
-          isNewChat={messages.length == 0}
+          isNewChat={messages.length === 0}
           onSend={onSend}
           onRegenerate={onRegenerate}
           continueGenerate={onContinueGenerate}
@@ -704,6 +687,7 @@ const ChatPage: React.FC = () => {
           onChangeReasoning={setReasoningEnabled}
         />
       </div>
+
       <BottomHelper />
     </div>
   );
