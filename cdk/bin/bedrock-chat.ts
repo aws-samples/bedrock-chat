@@ -109,6 +109,7 @@ const chat = new BedrockChatStack(
     devAccessIamRoleArn: params.devAccessIamRoleArn,
     allowedCountries: params.allowedCountries,
     logoPath: params.logoPath,
+    tavilyApiKeySecretArn: params.tavilyApiKeySecretArn || undefined,
   }
 );
 if (waf) {

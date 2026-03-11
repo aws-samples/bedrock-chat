@@ -61,6 +61,12 @@ export interface BedrockChatStackProps extends StackProps {
   readonly devAccessIamRoleArn?: string;
   readonly allowedCountries?: string[];
   readonly logoPath?: string;
+  /**
+   * Optional ARN of a Secrets Manager secret whose SecretString is a Tavily API key.
+   * When set the Lambda will use Tavily for web search instead of DuckDuckGo.
+   * Create the secret with: aws secretsmanager create-secret --name tavily/api-key --secret-string "tvly-..."
+   */
+  readonly tavilyApiKeySecretArn?: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -256,6 +262,7 @@ export class BedrockChatStack extends cdk.Stack {
       defaultModel: props.defaultModel,
       titleModel: props.titleModel,
       logoPath: props.logoPath,
+      tavilyApiKeySecretArn: props.tavilyApiKeySecretArn,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
     // Add permissions to API handler for BotStore
