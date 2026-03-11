@@ -17,31 +17,31 @@ const DrawerItem: React.FC<Props> = (props) => {
   return (
     <Link
       className={twMerge(
-        'group mx-2 my-1 flex h-10 items-center  rounded px-2',
+        'group mx-1 my-0.5 flex h-9 items-center rounded-lg px-2 transition-colors duration-150',
         (props.isActive ?? true)
-          ? 'bg-aws-sea-blue-light dark:bg-aws-sea-blue-dark'
-          : 'hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark',
+          ? 'bg-white/20 text-white'
+          : 'text-white/80 hover:bg-white/10 hover:text-white',
         props.className
       )}
       to={props.to}
       onClick={props.onClick}>
-      <div className={`flex h-8 max-h-5 w-full justify-start overflow-hidden`}>
-        <div className="mr-2 pt-0.5">{props.icon}</div>
-        <div className="relative flex-1 text-ellipsis break-all">
+      <div className={`flex h-8 max-h-5 w-full items-center justify-start overflow-hidden`}>
+        <div className="mr-2 shrink-0 text-base opacity-80">{props.icon}</div>
+        <div className="relative flex-1 truncate text-sm">
           {props.labelComponent}
           {(props.isBlur ?? true) && (
             <div
               className={twMerge(
-                'absolute inset-y-0 right-0 w-8 bg-gradient-to-l',
+                'absolute inset-y-0 right-0 w-6 bg-gradient-to-l',
                 props.isActive
-                  ? 'from-aws-sea-blue-light dark:from-aws-sea-blue-dark'
-                  : 'from-aws-squid-ink-light group-hover:from-aws-sea-blue-hover-light dark:from-aws-squid-ink-dark dark:group-hover:from-aws-paper-dark'
+                  ? 'from-white/20'
+                  : 'from-aws-squid-ink-light group-hover:from-white/10 dark:from-aws-ui-color-dark'
               )}
             />
           )}
         </div>
 
-        <div className="flex">{props.actionComponent}</div>
+        <div className="flex shrink-0">{props.actionComponent}</div>
       </div>
     </Link>
   );

@@ -147,20 +147,17 @@ const AppContent: React.FC<Props> = (props) => {
       />
 
       <main className="relative flex min-h-dvh flex-1 flex-col overflow-y-hidden transition-width">
-        <header className="visible flex h-12 w-full items-center bg-aws-squid-ink-light p-3 text-lg text-aws-font-color-white-light dark:bg-aws-squid-ink-dark dark:text-aws-font-color-white-dark lg:hidden lg:h-0">
+        {/* Mobile-only top bar */}
+        <header className="visible flex h-12 w-full shrink-0 items-center bg-aws-squid-ink-light px-2 text-aws-font-color-white-light dark:bg-aws-squid-ink-dark dark:text-aws-font-color-white-dark lg:hidden lg:h-0">
           <button
-            className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "
-            onClick={() => {
-              switchDrawer();
-            }}>
-            <PiList />
+            className="mr-1 rounded-lg p-2 transition-colors hover:bg-white/10 focus:outline-none"
+            onClick={() => switchDrawer()}>
+            <PiList className="text-lg" />
           </button>
 
-          <div className="flex-1 justify-center">
+          <div className="font-heading min-w-0 flex-1 truncate text-sm font-semibold">
             {isGeneratedTitle ? (
-              <>
-                <LazyOutputText text={getTitle(conversationId ?? '')} />
-              </>
+              <LazyOutputText text={getTitle(conversationId ?? '')} />
             ) : (
               <>
                 {isConversationOrNewChat
@@ -176,7 +173,7 @@ const AppContent: React.FC<Props> = (props) => {
         </header>
 
         <div
-          className="h-full overflow-hidden overflow-y-auto  text-aws-font-color-light dark:text-aws-font-color-dark"
+          className="h-full overflow-hidden overflow-y-auto text-aws-font-color-light dark:text-aws-font-color-dark"
           id="main">
           <SnackbarProvider>
             <Outlet />

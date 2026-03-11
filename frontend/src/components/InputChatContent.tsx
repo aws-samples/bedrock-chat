@@ -465,22 +465,104 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       <>
         {props.dndMode && (
           <div
-            className="fixed left-0 top-0 size-full bg-black/40"
-            onDrop={onDrop}></div>
+            className="fixed left-0 top-0 z-50 flex size-full items-center justify-center bg-black/40 backdrop-blur-sm"
+            onDrop={onDrop}>
+            <div className="rounded-2xl border-2 border-dashed border-white/60 bg-white/10 px-12 py-8 text-white">
+              <LuFilePlus2 className="mx-auto mb-2 text-4xl" />
+              <p className="text-sm font-medium">{t('app.inputMessage')}</p>
+            </div>
+          </div>
         )}
+
+        {/* Regenerate / Continue buttons above the input */}
+        {props.canRegenerate && (
+          <div className="mb-2 flex justify-center gap-2">
+            {props.canContinue && !props.disabledContinue && !props.disabled && (
+              <Button
+                className="rounded-full bg-aws-paper-light px-4 py-1.5 text-sm shadow-sm dark:bg-aws-paper-dark"
+                outlined
+                onClick={props.continueGenerate}>
+                <PiArrowFatLineRight className="mr-2" />
+                {t('button.continue')}
+              </Button>
+            )}
+            <Button
+              className="rounded-full bg-aws-paper-light px-4 py-1.5 text-sm shadow-sm dark:bg-aws-paper-dark"
+              outlined
+              disabled={props.disabledRegenerate || props.disabled}
+              onClick={() => props.onRegenerate(reasoningEnabled)}>
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
+          </div>
+        )}
+
         <div
           ref={inputRef}
           onDragOver={onDragOver}
           onDrop={onDrop}
           className={twMerge(
             props.className,
-            'relative mb-7 flex w-11/12 flex-col gap-1 rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray dark:bg-aws-ui-color-dark dark:shadow-black/35 md:w-10/12 lg:w-4/6 xl:w-3/6'
+            'relative flex w-11/12 flex-col rounded-2xl border border-black/10 bg-white shadow-lg shadow-gray/20 transition-shadow focus-within:border-aws-squid-ink-light/30 focus-within:shadow-aws-squid-ink-light/10 dark:border-white/10 dark:bg-aws-ui-color-dark dark:shadow-black/40 dark:focus-within:border-white/20 md:w-10/12 lg:w-4/6 xl:w-3/6'
           )}>
+
+          {/* Attached images */}
+          {base64EncodedImages.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-3 pt-3">
+              {base64EncodedImages.map((imageFile, idx) => (
+                <div key={idx} className="relative">
+                  <img
+                    src={imageFile}
+                    className="h-16 rounded-lg border border-black/10 object-cover dark:border-white/10"
+                    onClick={() => {
+                      setPreviewImageUrl(imageFile);
+                      setIsOpenPreviewImage(true);
+                    }}
+                  />
+                  <button
+                    className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full border border-light-gray bg-white text-dark-gray shadow-sm hover:bg-light-gray dark:border-dark-gray dark:bg-aws-paper-dark dark:text-light-gray"
+                    onClick={() => removeBase64EncodedImage(idx)}>
+                    <PiX className="text-[10px]" />
+                  </button>
+                </div>
+              ))}
+              <ModalDialog
+                isOpen={isOpenPreviewImage}
+                onClose={() => setIsOpenPreviewImage(false)}
+                onAfterLeave={() => setPreviewImageUrl(null)}
+                widthFromContent={true}>
+                {previewImageUrl && (
+                  <img
+                    src={previewImageUrl}
+                    className="mx-auto max-h-[80vh] max-w-full rounded-xl"
+                  />
+                )}
+              </ModalDialog>
+            </div>
+          )}
+
+          {/* Attached text files */}
+          {attachedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-3 pt-3">
+              {attachedFiles.map((file, idx) => (
+                <div key={idx} className="relative flex flex-col items-center">
+                  <UploadedAttachedFile fileName={file.name} />
+                  <button
+                    className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full border border-light-gray bg-white text-dark-gray shadow-sm hover:bg-light-gray dark:border-dark-gray dark:bg-aws-paper-dark dark:text-light-gray"
+                    onClick={() => removeTextFile(idx)}>
+                    <PiX className="text-[10px]" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Textarea */}
           <div className="flex w-full">
             <Textarea
-              key={`textarea-${props.isNewChat}`} // Add a key to force re-render
-              className="m-1 bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
-              placeholder={t('app.inputMessage')}
+              key={`textarea-${props.isNewChat}`}
+              className="m-1 bg-transparent px-3 scrollbar-thin scrollbar-thumb-light-gray dark:scrollbar-thumb-dark-gray"
+              placeholder={props.placeholder ?? t('app.inputMessage')}
               disabled={props.disabled}
               noBorder
               rows={props.isNewChat ? 3 : 1}
@@ -489,8 +571,10 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
               ref={focusInputRef}
             />
           </div>
-          <div className="bottom-0 right-0 flex w-full items-center justify-between px-2">
-            <div className="flex">
+
+          {/* Toolbar row */}
+          <div className="flex w-full items-center justify-between px-3 pb-2">
+            <div className="flex items-center gap-1">
               <ButtonFileChoose
                 disabled={props.isLoading}
                 icon
@@ -507,90 +591,14 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
                 />
               )}
             </div>
+
             <ButtonSend
-              className="m-2 align-bottom"
+              className="size-9 rounded-xl"
               disabled={disabledSend || props.disabled}
               loading={props.isLoading}
               onClick={sendContent}
             />
           </div>
-          {base64EncodedImages.length > 0 && (
-            <div className="relative m-2 mr-24 flex flex-wrap gap-3">
-              {base64EncodedImages.map((imageFile, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={imageFile}
-                    className="h-16 rounded border border-aws-squid-ink-light dark:border-aws-squid-ink-dark"
-                    onClick={() => {
-                      setPreviewImageUrl(imageFile);
-                      setIsOpenPreviewImage(true);
-                    }}
-                  />
-                  <ButtonIcon
-                    className="absolute left-0 top-0 -m-2 border border-aws-sea-blue-light bg-white p-1 text-xs text-aws-sea-blue-light dark:border-aws-sea-blue-dark dark:text-aws-sea-blue-dark"
-                    onClick={() => {
-                      removeBase64EncodedImage(idx);
-                    }}>
-                    <PiX />
-                  </ButtonIcon>
-                </div>
-              ))}
-              <ModalDialog
-                isOpen={isOpenPreviewImage}
-                onClose={() => setIsOpenPreviewImage(false)}
-                // Set image null after transition end
-                onAfterLeave={() => setPreviewImageUrl(null)}
-                widthFromContent={true}>
-                {previewImageUrl && (
-                  <img
-                    src={previewImageUrl}
-                    className="mx-auto max-h-[80vh] max-w-full rounded-md"
-                  />
-                )}
-              </ModalDialog>
-            </div>
-          )}
-          {attachedFiles.length > 0 && (
-            <div className="relative m-2 mr-24 flex flex-wrap gap-3">
-              {attachedFiles.map((file, idx) => (
-                <div key={idx} className="relative flex flex-col items-center">
-                  <UploadedAttachedFile fileName={file.name} />
-                  <ButtonIcon
-                    className="absolute left-2 top-1 -m-2 border border-aws-sea-blue-light bg-white p-1 text-xs text-aws-sea-blue-light dark:border-aws-sea-blue-dark dark:text-aws-sea-blue-dark"
-                    onClick={() => {
-                      removeTextFile(idx);
-                    }}>
-                    <PiX />
-                  </ButtonIcon>
-                </div>
-              ))}
-            </div>
-          )}
-          {props.canRegenerate && (
-            <div className="absolute -top-14 right-0 flex space-x-2">
-              {props.canContinue &&
-                !props.disabledContinue &&
-                !props.disabled && (
-                  <Button
-                    className="bg-aws-paper-light p-2 text-sm dark:bg-aws-paper-dark"
-                    outlined
-                    onClick={props.continueGenerate}>
-                    <PiArrowFatLineRight className="mr-2" />
-                    {t('button.continue')}
-                  </Button>
-                )}
-              <Button
-                className="bg-aws-paper-light p-2 text-sm dark:bg-aws-paper-dark"
-                outlined
-                disabled={props.disabledRegenerate || props.disabled}
-                onClick={() => {
-                  props.onRegenerate(reasoningEnabled);
-                }}>
-                <PiArrowsCounterClockwise className="mr-2" />
-                {t('button.regenerate')}
-              </Button>
-            </div>
-          )}
         </div>
       </>
     );
