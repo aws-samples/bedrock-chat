@@ -17,7 +17,6 @@ import {
 } from 'react-icons/pi';
 import { LuFilePlus2 } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
-import ButtonIcon from './ButtonIcon';
 import useModel from '../hooks/useModel';
 import { produce } from 'immer';
 import { twMerge } from 'tailwind-merge';
