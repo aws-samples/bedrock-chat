@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 from app.repositories.models.custom_bot import BotModel
 from strands import tool
@@ -7,6 +8,39 @@ from strands.types.tools import AgentTool as StrandsAgentTool
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+def _load_tavily_api_key() -> str:
+    """
+    Load the Tavily API key at module import time (Lambda cold-start).
+
+    Priority:
+    1. TAVILY_API_KEY env var (set directly — useful for local dev)
+    2. TAVILY_API_KEY_SECRET_ARN env var → reads the key from Secrets Manager
+    3. Empty string → DuckDuckGo fallback
+    """
+    direct_key = os.environ.get("TAVILY_API_KEY", "")
+    if direct_key:
+        return direct_key
+
+    secret_arn = os.environ.get("TAVILY_API_KEY_SECRET_ARN", "")
+    if not secret_arn:
+        return ""
+
+    try:
+        import boto3
+
+        region = os.environ.get("REGION", "us-east-1")
+        client = boto3.client("secretsmanager", region_name=region)
+        response = client.get_secret_value(SecretId=secret_arn)
+        key = response.get("SecretString", "").strip()
+        logger.info("Loaded Tavily API key from Secrets Manager.")
+        return key
+    except Exception as e:
+        logger.warning(f"Could not load Tavily API key from Secrets Manager: {e}")
+        return ""
+
+
+TAVILY_API_KEY = _load_tavily_api_key()
 
 
 def _search_with_duckduckgo_standalone(
@@ -172,6 +206,51 @@ Summary:"""
         return fallback_content
 
 
+def _search_with_tavily_standalone(
+    query: str, time_limit: str, locale: str, api_key: str
+) -> list[dict[str, str]]:
+    """Tavily search implementation — higher quality than DuckDuckGo."""
+    try:
+        from tavily import TavilyClient
+
+        logger.info(f"Executing Tavily search: query={query}, time_limit={time_limit}")
+
+        client = TavilyClient(api_key=api_key)
+
+        # Map time_limit (d/w/m/y) to Tavily's `days` parameter
+        days_map = {"d": 1, "w": 7, "m": 30, "y": 365}
+        days = days_map.get(time_limit, None)
+
+        search_kwargs: dict = {
+            "query": query,
+            "max_results": 10,
+            "include_answer": False,
+            "include_raw_content": False,
+        }
+        if days:
+            search_kwargs["days"] = days
+
+        response = client.search(**search_kwargs)
+        results = response.get("results", [])
+
+        formatted: list[dict[str, str]] = []
+        for r in results:
+            content = r.get("content", "")
+            title = r.get("title", "")
+            url = r.get("url", "")
+            summary = _summarize_content_standalone(content, title, url, query)
+            formatted.append(
+                {"content": summary, "source_name": title, "source_link": url}
+            )
+
+        logger.info(f"Tavily search completed. Found {len(formatted)} results")
+        return formatted
+
+    except Exception as e:
+        logger.error(f"Tavily search error: {e}. Falling back to DuckDuckGo.")
+        return []
+
+
 def _get_internet_tool_config(bot: BotModel | None):
     """Extract internet tool configuration from bot."""
     if not bot or not bot.agent or not bot.agent.tools:
@@ -210,8 +289,18 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
             # # Bot is captured on closure
             current_bot = bot
 
-            # Use DuckDuckGo if no bot context
-            if not current_bot:
+            # Priority order: Tavily (global key) > Firecrawl (per-bot key) > DuckDuckGo
+            if TAVILY_API_KEY:
+                logger.debug("[INTERNET_SEARCH_V3] Trying Tavily search")
+                results = _search_with_tavily_standalone(
+                    query, time_limit, locale, TAVILY_API_KEY
+                )
+                if not results:
+                    logger.warning(
+                        "[INTERNET_SEARCH_V3] Tavily returned no results, falling back to DuckDuckGo"
+                    )
+                    results = _search_with_duckduckgo_standalone(query, time_limit, locale)
+            elif not current_bot:
                 logger.debug("[INTERNET_SEARCH_V3] No bot context, using DuckDuckGo")
                 results = _search_with_duckduckgo_standalone(query, time_limit, locale)
             else:

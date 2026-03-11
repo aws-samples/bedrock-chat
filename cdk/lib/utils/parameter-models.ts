@@ -126,7 +126,12 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   logoPath: z.string().default(""),
 
   // debug parameter
-  devAccessIamRoleArn: z.string().default("")
+  devAccessIamRoleArn: z.string().default(""),
+
+  // Bedrock Engineer integration — optional Tavily API key for higher-quality web search
+  // Store the key in Secrets Manager and provide the ARN here.
+  // If omitted, DuckDuckGo is used as the fallback search engine.
+  tavilyApiKeySecretArn: z.string().default("")
 });
 
 /**
@@ -280,6 +285,7 @@ export function resolveBedrockChatParameters(
     titleModel: app.node.tryGetContext("titleModel"),
     logoPath: app.node.tryGetContext("logoPath"),
     devAccessIamRoleArn: app.node.tryGetContext("devAccessIamRoleArn"),
+    tavilyApiKeySecretArn: app.node.tryGetContext("tavilyApiKeySecretArn"),
   };
 
   return BedrockChatParametersSchema.parse(contextParams);

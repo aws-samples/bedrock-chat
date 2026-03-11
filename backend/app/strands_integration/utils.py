@@ -17,16 +17,21 @@ logger.setLevel(logging.INFO)
 def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
     """Get list of available Strands tools."""
     from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
-    from app.strands_integration.tools.calculator import create_calculator_tool
+    from app.strands_integration.tools.fetch_website import create_fetch_website_tool
+    from app.strands_integration.tools.image_generation import (
+        create_image_generation_tool,
+    )
     from app.strands_integration.tools.internet_search import (
         create_internet_search_tool,
     )
-    from app.strands_integration.tools.simple_list import simple_list, structured_list
+    from app.strands_integration.tools.s3_file_ops import create_s3_file_ops_tools
 
     tools: list[StrandsAgentTool] = []
     tools.append(create_internet_search_tool(bot))
     tools.append(create_bedrock_agent_tool(bot))
-    # tools.append(create_calculator_tool(bot))  # For testing purposes
+    tools.append(create_fetch_website_tool(bot))
+    tools.append(create_image_generation_tool(bot))
+    tools.extend(create_s3_file_ops_tools(bot))
     return tools
 
 

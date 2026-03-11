@@ -50,6 +50,13 @@ export interface ApiProps {
   readonly defaultModel?: string;
   readonly titleModel?: string;
   readonly logoPath?: string;
+  /**
+   * Optional ARN of a Secrets Manager secret whose SecretString is the Tavily API key.
+   * When provided the Lambda will read the key at cold-start and use Tavily for web search,
+   * falling back to DuckDuckGo if the key is absent or the call fails.
+   * Create the secret manually: aws secretsmanager create-secret --name tavily/api-key --secret-string "tvly-..."
+   */
+  readonly tavilyApiKeySecretArn?: string;
 }
 
 export class Api extends Construct {
@@ -211,6 +218,15 @@ export class Api extends Construct {
         ],
       })
     );
+    // For Tavily API key (optional — enables higher-quality web search)
+    if (props.tavilyApiKeySecretArn) {
+      handlerRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["secretsmanager:GetSecretValue"],
+          resources: [props.tavilyApiKeySecretArn],
+        })
+      );
+    }
     // For Firecrawl api key
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
@@ -282,6 +298,8 @@ export class Api extends Construct {
         TITLE_MODEL: props.titleModel || "",
         OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
         LOGO_PATH: props.logoPath || "",
+        // Tavily web-search key — read at runtime from Secrets Manager if ARN is provided
+        TAVILY_API_KEY_SECRET_ARN: props.tavilyApiKeySecretArn ?? "",
         USE_STRANDS: "true",
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
         PORT: "8000",
