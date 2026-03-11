@@ -23,7 +23,7 @@ const fixAmplifyXstate = {
     ) {
       return path.resolve(
         __dirname,
-        'node_modules/@aws-amplify/ui-react/node_modules/xstate/dist/xstate.esm.js'
+        'node_modules/@aws-amplify/ui-react/node_modules/xstate/es/index.js'
       );
     }
   },
