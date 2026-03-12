@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime
 
 import boto3
+from botocore.exceptions import ClientError
 from app.repositories.models.custom_bot import BotModel
 from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
@@ -141,9 +142,11 @@ def create_image_generation_tool(bot: BotModel | None = None) -> StrandsAgentToo
                 f"View/download here (link valid for 1 hour):\n{presigned_url}"
             )
 
-        except bedrock.exceptions.ValidationException as e:
-            logger.error(f"[IMAGE_GEN] Validation error: {e}")
-            return f"Error: Invalid image generation request — {e}"
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ValidationException":
+                logger.error(f"[IMAGE_GEN] Validation error: {e}")
+                return f"Error: Invalid image generation request — {e}"
+            raise
         except Exception as e:
             logger.error(f"[IMAGE_GEN] Error: {e}")
             return f"Error generating image: {e}"

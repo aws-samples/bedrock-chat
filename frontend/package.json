@@ -47,6 +47,7 @@
     "use-debounce": "^10.0.4",
     "use-immer": "^0.9.0",
     "xstate": "^5.13.0",
+    "xstate4": "npm:xstate@4.38.3",
     "zustand": "^4.3.9"
   },
   "devDependencies": {
