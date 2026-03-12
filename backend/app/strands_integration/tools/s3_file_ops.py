@@ -10,6 +10,7 @@ import os
 import posixpath
 
 import boto3
+from botocore.exceptions import ClientError
 from app.repositories.models.custom_bot import BotModel
 from strands import tool
 from strands.types.tools import AgentTool as StrandsAgentTool
@@ -111,8 +112,10 @@ def create_read_file_tool(bot: BotModel | None = None) -> StrandsAgentTool:
             content = response["Body"].read().decode("utf-8")
             logger.info(f"[READ_FILE] Read {len(content)} characters from '{key}'")
             return content
-        except _s3_client().exceptions.NoSuchKey:
-            return f"Error: File '{path}' does not exist in the workspace."
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                return f"Error: File '{path}' does not exist in the workspace."
+            raise
         except Exception as e:
             logger.error(f"[READ_FILE] Error: {e}")
             return f"Error reading file: {e}"
