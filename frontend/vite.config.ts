@@ -3,16 +3,21 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const _require = createRequire(import.meta.url);
 
-// @aws-amplify/ui-react ships its own nested xstate v4 (which uses the v4 `actions`
-// export), while this project also has top-level xstate v5.  In a clean CodeBuild
-// environment Rollup resolves the `xstate` import inside
-// `@aws-amplify/ui/.../actions.mjs` to the top-level v5, which does not export
-// `actions`, and the build fails.  The plugin below forces all `xstate` imports
-// that originate from inside `@aws-amplify` packages to resolve to the nested v4
-// copy so both co-exist cleanly.
+// @aws-amplify/ui-react-core has xstate v4 as a direct dependency.  The
+// top-level project also has xstate v5.  In a clean CodeBuild environment
+// Rollup resolves the `xstate` import inside `@aws-amplify` packages to the
+// top-level v5, which does not export `actions`, and the build fails.
+// The plugin below forces all `xstate` imports that originate from inside
+// `@aws-amplify` packages to resolve to the nested v4 copy so both co-exist.
+const xstateV4Path = _require.resolve('xstate', {
+  paths: [path.join(__dirname, 'node_modules/@aws-amplify/ui-react-core')],
+});
+
 const fixAmplifyXstate = {
   name: 'fix-amplify-xstate',
   resolveId(source: string, importer: string | undefined) {
@@ -21,10 +26,7 @@ const fixAmplifyXstate = {
       importer &&
       importer.includes(path.join('node_modules', '@aws-amplify'))
     ) {
-      return path.resolve(
-        __dirname,
-        'node_modules/@aws-amplify/ui-react/node_modules/xstate/es/index.js'
-      );
+      return xstateV4Path;
     }
   },
 };
