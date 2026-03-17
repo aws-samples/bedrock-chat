@@ -83,7 +83,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
               leave="transition ease-in duration-150"
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1">
-              <Popover.Panel className="absolute right-0 top-10 z-10 w-96">
+              <Popover.Panel className="absolute right-0 top-10 z-50 w-96">
                 <div className="mt-0.5 overflow-hidden shadow-lg">
                   <div className="flex flex-col whitespace-nowrap rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50 bg-white dark:bg-aws-ui-color-dark text-sm max-h-80 overflow-y-auto">
                     {availableModels.map((model) => (
