@@ -495,12 +495,13 @@ const ChatPage: React.FC = () => {
           )}
         </div>
 
-        {/* Right: model badge + bot actions */}
+        {/* Right: model selector + bot actions */}
         <div className="flex shrink-0 items-center gap-1">
-          {getPostedModel() && (
-            <span className="hidden rounded-full border border-black/10 bg-white px-2.5 py-0.5 text-xs text-dark-gray dark:border-white/10 dark:bg-aws-paper-dark dark:text-light-gray sm:inline-flex">
-              {getPostedModel()}
-            </span>
+          {!loadingConversation && (
+            <SwitchBedrockModel
+              activeModels={activeModels}
+              botId={botId}
+            />
           )}
           {isLoadingBot && (
             <div className="flex items-center gap-2">
@@ -547,13 +548,6 @@ const ChatPage: React.FC = () => {
               {/* Empty state */}
               {messages?.length === 0 && (
                 <div className="flex flex-1 flex-col items-center justify-center py-16">
-                  {!loadingConversation && (
-                    <SwitchBedrockModel
-                      className="mb-8 w-min"
-                      activeModels={activeModels}
-                      botId={botId}
-                    />
-                  )}
                   {isLoadingBot && botId ? (
                     <div className="flex flex-col items-center gap-3">
                       <Skeleton className="h-7 w-48 rounded-lg" />
