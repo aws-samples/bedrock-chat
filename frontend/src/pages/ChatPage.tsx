@@ -175,7 +175,6 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     continueGenerate,
-    getPostedModel,
     loadingConversation,
     getShouldContinue,
     relatedDocuments,
