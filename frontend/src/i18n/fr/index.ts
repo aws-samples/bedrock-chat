@@ -194,6 +194,11 @@ Comment catégoriseriez-vous cet e-mail ?`,
         'Le modèle sélectionné ne prend pas en charge les images.',
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

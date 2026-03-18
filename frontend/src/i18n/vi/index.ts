@@ -821,6 +821,11 @@ Bạn sẽ phân loại email này như thế nào?`,
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

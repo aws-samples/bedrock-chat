@@ -182,6 +182,8 @@ const ChatPage: React.FC = () => {
     reasoningEnabled,
     setReasoningEnabled,
     supportReasoning,
+    internetSearchEnabled,
+    setInternetSearchEnabled,
   } = useChat();
 
   // Error Handling
@@ -281,6 +283,7 @@ const ChatPage: React.FC = () => {
     (
       content: string,
       enableReasoning: boolean,
+      enableInternetSearch: boolean,
       base64EncodedImages?: string[],
       attachments?: AttachmentType[]
     ) => {
@@ -290,6 +293,7 @@ const ChatPage: React.FC = () => {
         attachments,
         bot: inputBotParams,
         enableReasoning,
+        enableInternetSearch,
       });
     },
     [inputBotParams, postChat]
@@ -309,6 +313,7 @@ const ChatPage: React.FC = () => {
           content,
           bot: inputBotParams,
           enableReasoning: reasoningEnabled,
+          enableInternetSearch: internetSearchEnabled,
         });
       } else {
         regenerate({
@@ -319,7 +324,7 @@ const ChatPage: React.FC = () => {
         });
       }
     },
-    [hasError, inputBotParams, regenerate, retryPostChat, reasoningEnabled]
+    [hasError, inputBotParams, regenerate, retryPostChat, reasoningEnabled, internetSearchEnabled]
   );
 
   const onRegenerate = useCallback(
@@ -612,6 +617,7 @@ const ChatPage: React.FC = () => {
                     onClick={() => {
                       retryPostChat({
                         enableReasoning: reasoningEnabled,
+                        enableInternetSearch: internetSearchEnabled,
                         bot: inputBotParams,
                       });
                     }}>
@@ -649,7 +655,7 @@ const ChatPage: React.FC = () => {
               <button
                 key={idx}
                 className="flex cursor-pointer items-center gap-1.5 rounded-full border border-aws-squid-ink-light/15 bg-white px-3 py-1.5 text-sm text-dark-gray shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-aws-paper-dark dark:text-light-gray"
-                onClick={() => onSend(qs.example, reasoningEnabled)}>
+                onClick={() => onSend(qs.example, reasoningEnabled, internetSearchEnabled)}>
                 <PiPenNib className="shrink-0 text-aws-aqua" />
                 {qs.title}
               </button>
@@ -678,6 +684,8 @@ const ChatPage: React.FC = () => {
           supportReasoning={supportReasoning}
           reasoningEnabled={reasoningEnabled}
           onChangeReasoning={setReasoningEnabled}
+          internetSearchEnabled={internetSearchEnabled}
+          onChangeInternetSearch={setInternetSearchEnabled}
         />
       </div>
 

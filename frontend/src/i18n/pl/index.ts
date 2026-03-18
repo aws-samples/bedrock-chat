@@ -843,6 +843,11 @@ Jak sklasyfikowałbyś ten e-mail?`,
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

@@ -1088,6 +1088,11 @@ How would you categorize this email?`,
         label: 'Reasoning Process',
       },
     },
+    internetSearch: {
+      button: {
+        label: 'Internet Search',
+      },
+    },
   },
 };
 

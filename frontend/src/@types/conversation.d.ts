@@ -119,6 +119,7 @@ export type PostMessageRequest = {
   botId?: string;
   continueGenerate?: boolean;
   enableReasoning: boolean;
+  enableInternetSearch: boolean;
 };
 
 export type PostMessageResponse = {

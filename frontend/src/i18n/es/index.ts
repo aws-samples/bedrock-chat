@@ -763,6 +763,11 @@ Las categorías de clasificación son:
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

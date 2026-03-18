@@ -809,6 +809,11 @@ const translation = {
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

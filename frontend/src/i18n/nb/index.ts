@@ -665,6 +665,11 @@ Hvordan vil du kategorisere denne e-posten?`,
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

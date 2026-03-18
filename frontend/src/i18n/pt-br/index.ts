@@ -1046,6 +1046,11 @@ Como você categorizaria este e-mail?`,
       card: {
         label: 'Processo de Raciocínio',
       },
+    internetSearch: {
+      button: {
+        label: "Internet Search",
+      },
+    },
     },
   },
 };

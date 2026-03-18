@@ -382,6 +382,11 @@ const translation = {
       notSupportedImage: '目前选取的模型不支援影像。',
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;
