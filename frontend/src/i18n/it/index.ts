@@ -400,6 +400,11 @@ Come classificheresti questa email?`,
       },
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

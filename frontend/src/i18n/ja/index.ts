@@ -1095,6 +1095,11 @@ const translation: typeof en = {
       card: {
         label: '思考過程',
       },
+    internetSearch: {
+      button: {
+        label: "Internet Search",
+      },
+    },
     },
   },
 };

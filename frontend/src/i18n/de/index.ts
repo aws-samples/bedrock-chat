@@ -195,6 +195,11 @@ Wie würden Sie diese E-Mail kategorisieren?`,
       notSupportedImage: 'Das ausgewählte Model unterstützt keine Bilder.',
     },
   },
+  internetSearch: {
+    button: {
+      label: "Internet Search",
+    },
+  },
 };
 
 export default translation;

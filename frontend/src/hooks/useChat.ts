@@ -89,6 +89,8 @@ const useChatState = create<{
   getShouldContinue: () => boolean;
   reasoningEnabled: boolean;
   setReasoningEnabled: (enabled: boolean) => void;
+  internetSearchEnabled: boolean;
+  setInternetSearchEnabled: (enabled: boolean) => void;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -232,6 +234,8 @@ const useChatState = create<{
     shouldCotinue: false,
     reasoningEnabled: false,
     setReasoningEnabled: (enabled) => set({ reasoningEnabled: enabled }),
+    internetSearchEnabled: false,
+    setInternetSearchEnabled: (enabled) => set({ internetSearchEnabled: enabled }),
   };
 });
 
@@ -260,6 +264,8 @@ const useChat = () => {
     setShouldContinue,
     reasoningEnabled,
     setReasoningEnabled,
+    internetSearchEnabled,
+    setInternetSearchEnabled,
   } = useChatState();
 
   const { post: postStreaming } = usePostMessageStreaming();
@@ -363,6 +369,7 @@ const useChat = () => {
   const postChat = (params: {
     content: string;
     enableReasoning: boolean;
+    enableInternetSearch: boolean;
     base64EncodedImages?: string[];
     attachments?: AttachmentType[];
     bot?: BotInputType;
@@ -431,6 +438,7 @@ const useChat = () => {
       },
       botId: bot?.botId,
       enableReasoning: params.enableReasoning,
+      enableInternetSearch: params.enableInternetSearch,
     };
     const createNewConversation = () => {
       // Copy State to prevent screen flicker
@@ -689,9 +697,12 @@ const useChat = () => {
     reasoningEnabled,
     setReasoningEnabled,
     supportReasoning,
+    internetSearchEnabled,
+    setInternetSearchEnabled,
     // エラーのリトライ
     retryPostChat: (params: {
       enableReasoning: boolean;
+      enableInternetSearch: boolean;
       content?: string;
       bot?: BotInputType;
     }) => {
@@ -709,6 +720,7 @@ const useChat = () => {
         postChat({
           content: params.content ?? latestMessageBody,
           enableReasoning: params.enableReasoning,
+          enableInternetSearch: params.enableInternetSearch,
           bot: params.bot
             ? {
                 botId: params.bot.botId,

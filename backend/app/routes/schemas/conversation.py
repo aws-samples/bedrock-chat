@@ -202,6 +202,7 @@ class ChatInput(BaseSchema):
     bot_id: str | None = Field(None)
     continue_generate: bool = Field(False)
     enable_reasoning: bool = Field(False)
+    enable_internet_search: bool = Field(False)
 
 
 class ChatOutput(BaseSchema):

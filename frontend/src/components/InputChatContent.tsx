@@ -23,6 +23,7 @@ import { twMerge } from 'tailwind-merge';
 import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import ButtonReasoning from './ButtonReasoning';
+import ButtonInternetSearch from './ButtonInternetSearch';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
 import UploadedAttachedFile from './UploadedAttachedFile';
@@ -48,6 +49,7 @@ type Props = BaseProps & {
   onSend: (
     content: string,
     enableReasoning: boolean,
+    enableInternetSearch: boolean,
     base64EncodedImages?: string[],
     attachments?: AttachmentType[]
   ) => void;
@@ -56,6 +58,8 @@ type Props = BaseProps & {
   supportReasoning: boolean;
   reasoningEnabled: boolean;
   onChangeReasoning: (enabled: boolean) => void;
+  internetSearchEnabled: boolean;
+  onChangeInternetSearch: (enabled: boolean) => void;
 };
 // Image size
 // Ref: https://docs.anthropic.com/en/docs/build-with-claude/vision#evaluate-image-size
@@ -165,7 +169,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
     }, [acceptMediaType]);
 
     const [content, setContent] = useState('');
-    const { reasoningEnabled, onChangeReasoning } = props;
+    const { reasoningEnabled, onChangeReasoning, internetSearchEnabled, onChangeInternetSearch } = props;
 
     const {
       base64EncodedImages,
@@ -208,6 +212,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       props.onSend(
         content,
         props.reasoningEnabled,
+        props.internetSearchEnabled,
         !disabledImageUpload && base64EncodedImages.length > 0
           ? base64EncodedImages
           : undefined,
@@ -589,6 +594,11 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
                   onToggleReasoning={() => onChangeReasoning(!reasoningEnabled)}
                 />
               )}
+              <ButtonInternetSearch
+                disabled={props.isLoading || props.canContinue}
+                showInternetSearch={internetSearchEnabled}
+                onToggleInternetSearch={() => onChangeInternetSearch(!internetSearchEnabled)}
+              />
             </div>
 
             <ButtonSend

@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
+from app.agents.tools.internet_search import InternetSearchInput, _internet_search
 from app.agents.utils import get_tools
 from app.bedrock import (
     BedrockGuardrailsModel,
@@ -284,6 +285,43 @@ def chat(
                         display_citation=display_citation,
                     )
                 )
+
+    # Internet search: when enabled, search the web and inject results as context
+    if chat_input.enable_internet_search and not chat_input.continue_generate:
+        user_content = conversation.message_map[user_msg_id].content
+        # Use the last text content as the search query
+        query_text = next(
+            (c.body for c in reversed(user_content) if isinstance(c, TextContentModel)),
+            None,
+        )
+        if query_text:
+            logger.info(f"Running internet search for query: {query_text}")
+            try:
+                search_input = InternetSearchInput(
+                    query=query_text,
+                    locale="en-us",
+                    time_limit="",
+                )
+                internet_results = _internet_search(
+                    tool_input=search_input, bot=bot, model=chat_input.message.model
+                )
+                if internet_results:
+                    context_lines = [
+                        "The following are recent internet search results relevant to the user's query. "
+                        "Use this information to provide an accurate and up-to-date response.\n"
+                    ]
+                    for i, result in enumerate(internet_results, 1):
+                        context_lines.append(
+                            f"[{i}] {result['source_name']}\n"
+                            f"URL: {result['source_link']}\n"
+                            f"{result['content']}\n"
+                        )
+                    instructions.append("\n".join(context_lines))
+                    logger.info(
+                        f"Injected {len(internet_results)} internet search results into instructions"
+                    )
+            except Exception as e:
+                logger.error(f"Internet search failed: {e}. Proceeding without search results.")
 
     # Leaf node id
     # If `continue_generate` is True, note that new message is not added to the message map.
