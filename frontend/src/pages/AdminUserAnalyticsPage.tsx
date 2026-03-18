@@ -1,18 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Help from '../components/Help';
 import useUserUsagesForAdmin from '../hooks/useUserUsagesForAdmin';
 import { addDate, formatDate } from '../utils/DateUtils';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
-import { PiArrowDown, PiUser } from 'react-icons/pi';
+import { PiArrowDown, PiArrowRight, PiUser } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
 import ListPageLayout from '../layouts/ListPageLayout';
+import { useNavigate } from 'react-router-dom';
 
 const DATA_FORMAT = 'YYYYMMDD';
 
 const AdminUserAnalyticsPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [searchDateFrom, setSearchDateFrom] = useState<null | string>(
     formatDate(addDate(new Date(), -1, 'month'), DATA_FORMAT)
@@ -22,10 +24,10 @@ const AdminUserAnalyticsPage: React.FC = () => {
   );
   const [isDescCost, setIsDescCost] = useState(true);
 
-  const { userUsages, isLoading } = useUserUsagesForAdmin({
-    start: searchDateFrom ? searchDateFrom + '00' : undefined,
-    end: searchDateTo ? searchDateTo + '23' : undefined,
-  });
+  const start = searchDateFrom ? searchDateFrom + '00' : undefined;
+  const end = searchDateTo ? searchDateTo + '23' : undefined;
+
+  const { userUsages, isLoading } = useUserUsagesForAdmin({ start, end });
 
   const sortedUsers = useMemo(() => {
     const dir = isDescCost ? -1 : 1;
@@ -39,6 +41,16 @@ const AdminUserAnalyticsPage: React.FC = () => {
       ? null
       : t('admin.validationError.period');
   }, [searchDateFrom, searchDateTo, t]);
+
+  const onClickUser = useCallback(
+    (userId: string, email: string) => {
+      const params = new URLSearchParams({ email });
+      if (start) params.set('start', start);
+      if (end) params.set('end', end);
+      navigate(`/admin/user/${userId}?${params.toString()}`);
+    },
+    [navigate, start, end]
+  );
 
   return (
     <ListPageLayout
@@ -111,9 +123,10 @@ const AdminUserAnalyticsPage: React.FC = () => {
       isEmpty={userUsages?.length === 0}
       emptyMessage={t('admin.userAnalytics.label.noUserUsages')}>
       {sortedUsers?.map((user, idx) => (
-        <div
+        <button
           key={idx}
-          className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/10 dark:bg-aws-ui-color-dark">
+          className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-black/10 bg-white px-4 py-3 text-left transition hover:bg-aws-paper dark:border-white/10 dark:bg-aws-ui-color-dark dark:hover:bg-aws-ui-color-dark/80"
+          onClick={() => onClickUser(user.id, user.email)}>
           <div className="flex items-center gap-3 overflow-hidden">
             <PiUser className="shrink-0 text-xl text-aws-font-color-light/60 dark:text-aws-font-color-dark/60" />
             <div className="overflow-hidden">
@@ -123,10 +136,13 @@ const AdminUserAnalyticsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="ml-4 shrink-0 text-lg font-bold">
-            {(Math.floor(user.totalPrice * 100) / 100).toFixed(2)} USD
+          <div className="ml-4 flex shrink-0 items-center gap-3">
+            <div className="text-lg font-bold">
+              {(Math.floor(user.totalPrice * 100) / 100).toFixed(2)} USD
+            </div>
+            <PiArrowRight className="text-aws-font-color-light/40 dark:text-aws-font-color-dark/40" />
           </div>
-        </div>
+        </button>
       ))}
     </ListPageLayout>
   );

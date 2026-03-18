@@ -20,3 +20,11 @@ class UsagePerUser(BaseModel):
     id: str  # user_id
     email: str
     total_price: float
+
+
+class ConversationUsage(BaseModel):
+    id: str  # conversation_id
+    title: str
+    create_time: float
+    total_price: float
+    bot_id: str | None

@@ -531,6 +531,22 @@ Como você categorizaria este e-mail?`,
             'If the Calculation Period is not set, the cost for today will be displayed.',
         },
       },
+      userConversations: {
+        label: {
+          pageTitle: 'User Conversations',
+          noConversations:
+            'No conversations found for this user during the selected period.',
+          user: 'User',
+          untitled: 'Untitled Conversation',
+        },
+        help: {
+          overview:
+            'View all conversations made by this user within the selected period.',
+        },
+        button: {
+          back: 'Back to User Analytics',
+        },
+      },
       apiManagement: {
         label: {
           pageTitle: 'Gerenciamento de API',

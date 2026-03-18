@@ -10,7 +10,11 @@ from typing import Any
 import boto3
 from app.repositories.common import get_bot_table_client
 from app.repositories.models.custom_bot import BotMetaWithStackInfo
-from app.repositories.models.usage_analysis import UsagePerBot, UsagePerUser
+from app.repositories.models.usage_analysis import (
+    ConversationUsage,
+    UsagePerBot,
+    UsagePerUser,
+)
 from boto3.dynamodb.conditions import Attr, Key
 
 REGION = os.environ.get("REGION", "us-east-1")
@@ -360,3 +364,108 @@ LIMIT {limit};
                 )
             )
     return usages
+
+
+async def find_conversations_by_user(
+    user_id: str,
+    limit: int = 100,
+    from_: str | None = None,
+    to_: str | None = None,
+) -> list[ConversationUsage]:
+    """Find conversations for a specific user sorted by create time descending.
+    - user_id: the Cognito user ID (PK in the conversation table).
+    - limit: must be between 1 and 1000.
+    - from_: start date in `YYYYMMDDHH` format.
+    - to_: end date in `YYYYMMDDHH` format.
+    - If from_ and to_ are omitted, defaults to today 00:00–23:00.
+    """
+    assert 1 <= limit <= 1000, "Limit must be between 1 and 1000."
+    assert (from_ and to_) or (
+        not from_ and not to_
+    ), "Both from_ and to_ must be specified or omitted."
+
+    # Validate user_id to prevent SQL injection (Cognito UUIDs are alphanumeric + hyphens)
+    if not re.match(r"^[a-zA-Z0-9_\-]+$", user_id):
+        raise ValueError(f"Invalid user_id format: {user_id}")
+
+    if from_ is not None and to_ is not None:
+        from_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", from_)
+        to_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", to_)
+    else:
+        today = date.today()
+        from_str = today.strftime("%Y/%m/%d/00")
+        to_str = today.strftime("%Y/%m/%d/23")
+
+    query = f"""
+WITH LatestRecords AS (
+    SELECT
+        newimage.SK.S AS SK,
+        MAX(datehour) AS LatestDateHour
+    FROM
+        {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE}
+    WHERE
+        datehour BETWEEN '{from_str}' AND '{to_str}'
+        AND Keys.PK.S = '{user_id}'
+        AND Keys.SK.S LIKE CONCAT(Keys.PK.S, '#CONV#%')
+    GROUP BY
+        newimage.SK.S
+),
+ConversationData AS (
+    SELECT
+        d.newimage.SK.S AS SK,
+        d.newimage.Title.S AS Title,
+        d.newimage.CreateTime.N AS CreateTime,
+        d.newimage.TotalPrice.N AS TotalPrice,
+        d.newimage.BotId.S AS BotId,
+        d.datehour
+    FROM
+        {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE} d
+    WHERE
+        datehour BETWEEN '{from_str}' AND '{to_str}'
+        AND d.Keys.PK.S = '{user_id}'
+        AND d.Keys.SK.S LIKE CONCAT(d.Keys.PK.S, '#CONV#%')
+)
+SELECT
+    cd.SK,
+    cd.Title,
+    cd.CreateTime,
+    cd.TotalPrice,
+    cd.BotId
+FROM ConversationData cd
+JOIN LatestRecords lr ON cd.SK = lr.SK AND cd.datehour = lr.LatestDateHour
+ORDER BY cd.CreateTime DESC
+LIMIT {limit};
+"""
+
+    logger.debug(query)
+    response = await run_athena_query(
+        query,
+        USAGE_ANALYSIS_DATABASE,
+        USAGE_ANALYSIS_WORKGROUP,
+        USAGE_ANALYSIS_OUTPUT_LOCATION,
+    )
+    rows = response["ResultSet"]["Rows"][1:]
+
+    conversations = []
+    for row in rows:
+        data = row["Data"]
+        sk = data[0].get("VarCharValue", "")
+        title = data[1].get("VarCharValue", "")
+        create_time_str = data[2].get("VarCharValue", "0")
+        total_price_str = data[3].get("VarCharValue", "0")
+        bot_id = data[4].get("VarCharValue", None) or None
+
+        # Extract conversation ID from SK: "{user_id}#CONV#{conversation_id}"
+        conv_id = sk.split("#CONV#", 1)[1] if "#CONV#" in sk else sk
+
+        conversations.append(
+            ConversationUsage(
+                id=conv_id,
+                title=title,
+                create_time=float(create_time_str),
+                total_price=float(total_price_str),
+                bot_id=bot_id,
+            )
+        )
+
+    return conversations

@@ -1,4 +1,6 @@
 import {
+  GetUserConversationsRequest,
+  GetUserConversationsResponse,
   GetUserUsagesRequest,
   GetUserUsagesResponse,
   ListBotApisRequest,
@@ -24,6 +26,13 @@ const useAdminApi = () => {
     getUserUsages: (req: GetUserUsagesRequest) => {
       return http.get<GetUserUsagesResponse>(
         !!req.start === !!req.end ? ['/admin/users', req] : null
+      );
+    },
+    getUserConversations: (userId: string, req: GetUserConversationsRequest) => {
+      return http.get<GetUserConversationsResponse>(
+        !!req.start === !!req.end
+          ? [`/admin/user/${userId}/conversations`, req]
+          : null
       );
     },
     getPublicBot: (botId: string) => {

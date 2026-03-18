@@ -4,9 +4,11 @@ from app.dependencies import check_admin
 from app.repositories.custom_bot import find_all_published_bots, find_bot_by_id
 from app.repositories.usage_analysis import (
     find_bots_sorted_by_price,
+    find_conversations_by_user,
     find_users_sorted_by_price,
 )
 from app.routes.schemas.admin import (
+    ConversationUsageOutput,
     PublicBotOutput,
     PublishedBotOutput,
     PublishedBotOutputsWithNextToken,
@@ -135,6 +137,40 @@ def get_public_bot(request: Request, bot_id: str, admin_check=Depends(check_admi
         allowed_cognito_users=bot.allowed_cognito_users,
     )
     return output
+
+
+@router.get(
+    "/admin/user/{user_id}/conversations",
+    response_model=list[ConversationUsageOutput],
+)
+async def get_user_conversations(
+    user_id: str,
+    limit: int = 100,
+    start: str | None = None,
+    end: str | None = None,
+    admin_check=Depends(check_admin),
+):
+    """Get conversations for a specific user. This is intended to be used by admin.
+    NOTE:
+    - limit: must be lower than 1000.
+    - start: start date of the period to be analyzed. The format is `YYYYMMDDHH`.
+    - end: end date of the period to be analyzed. The format is `YYYYMMDDHH`.
+    - If start and end are not specified, defaults to today's 00:00 to 23:00.
+    - The result is sorted by create_time in descending order.
+    """
+    conversations = await find_conversations_by_user(
+        user_id=user_id, limit=limit, from_=start, to_=end
+    )
+    return [
+        ConversationUsageOutput(
+            id=conv.id,
+            title=conv.title,
+            create_time=conv.create_time,
+            total_price=conv.total_price,
+            bot_id=conv.bot_id,
+        )
+        for conv in conversations
+    ]
 
 
 @router.patch("/admin/bot/{bot_id}/pushed")
