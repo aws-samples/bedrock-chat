@@ -850,7 +850,7 @@ class RelatedDocumentModel(BaseModel):
         if self.source_link is None:
             return None
 
-        url = urlparse(url=self.source_link)
+        url = urlparse(self.source_link)
         if url.scheme == "s3":
             source_link = generate_presigned_url(
                 bucket=url.netloc,
