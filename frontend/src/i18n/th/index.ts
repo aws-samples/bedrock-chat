@@ -384,6 +384,23 @@ const translation = {
             'หากไม่ได้ตั้งค่าช่วงเวลาการคำนวณ จะแสดงค่าใช้จ่ายสำหรับวันนี้',
         },
       },
+      userAnalytics: {
+        label: {
+          pageTitle: 'User Analytics',
+          noUserUsages: 'During the Calculation Period, no users were active.',
+          SearchCondition: {
+            title: 'Calculation Period',
+            from: 'From',
+            to: 'To',
+          },
+          sortByCost: 'Sort by Cost',
+        },
+        help: {
+          overview: 'Monitor invocation costs on a per-user basis.',
+          calculationPeriod:
+            'If the Calculation Period is not set, the cost for today will be displayed.',
+        },
+      },
       apiManagement: {
         label: {
           pageTitle: 'การจัดการ API',

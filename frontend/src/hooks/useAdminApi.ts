@@ -1,4 +1,6 @@
 import {
+  GetUserUsagesRequest,
+  GetUserUsagesResponse,
   ListBotApisRequest,
   ListBotApisResponse,
   ListPublicBotsRequest,
@@ -17,6 +19,11 @@ const useAdminApi = () => {
     listPublicBots: (req: ListPublicBotsRequest) => {
       return http.get<ListPublicBotsResponse>(
         !!req.start === !!req.end ? ['/admin/public-bots', req] : null
+      );
+    },
+    getUserUsages: (req: GetUserUsagesRequest) => {
+      return http.get<GetUserUsagesResponse>(
+        !!req.start === !!req.end ? ['/admin/users', req] : null
       );
     },
     getPublicBot: (botId: string) => {
