@@ -134,7 +134,7 @@ def _bedrock_knowledge_base_search(bot: BotModel, query: str) -> list[SearchResu
 
             elif location_type == "S3":
                 uri = location.get("s3Location", {}).get("uri", "")
-                source_name = urlparse(url=uri).path.split("/")[-1]
+                source_name = urlparse(uri).path.split("/")[-1]
                 return (source_name, uri)
 
             elif location_type == "CONFLUENCE":
