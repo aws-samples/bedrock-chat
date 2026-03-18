@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import useUserConversationsForAdmin from '../hooks/useUserConversationsForAdmin';
 import { formatDatetime } from '../utils/DateUtils';
 import { formatCostAUD } from '../utils/CurrencyUtils';
 import ListPageLayout from '../layouts/ListPageLayout';
-import { PiArrowLeft, PiRobot } from 'react-icons/pi';
+import { PiArrowLeft, PiArrowRight, PiRobot } from 'react-icons/pi';
 import Button from '../components/Button';
 
 const AdminUserConversationsPage: React.FC = () => {
@@ -21,6 +21,18 @@ const AdminUserConversationsPage: React.FC = () => {
   const { conversations, isLoading } = useUserConversationsForAdmin(
     userId ?? '',
     { start, end }
+  );
+
+  const onClickConversation = useCallback(
+    (conversationId: string) => {
+      const params = new URLSearchParams({ email });
+      if (start) params.set('start', start);
+      if (end) params.set('end', end);
+      navigate(
+        `/admin/user/${userId}/conversation/${conversationId}?${params.toString()}`
+      );
+    },
+    [navigate, userId, email, start, end]
   );
 
   const sortedConversations = useMemo(
@@ -58,9 +70,10 @@ const AdminUserConversationsPage: React.FC = () => {
       isEmpty={conversations?.length === 0}
       emptyMessage={t('admin.userConversations.label.noConversations')}>
       {sortedConversations?.map((conv) => (
-        <div
+        <button
           key={conv.id}
-          className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/10 dark:bg-aws-ui-color-dark">
+          className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-black/10 bg-white px-4 py-3 text-left transition hover:bg-aws-paper dark:border-white/10 dark:bg-aws-ui-color-dark dark:hover:bg-aws-ui-color-dark/80"
+          onClick={() => onClickConversation(conv.id)}>
           <div className="overflow-hidden">
             <div className="truncate font-semibold">
               {conv.title || t('admin.userConversations.label.untitled')}
@@ -77,10 +90,13 @@ const AdminUserConversationsPage: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="ml-4 shrink-0 text-lg font-bold">
-            {formatCostAUD(conv.totalPrice)}
+          <div className="ml-4 flex shrink-0 items-center gap-3">
+            <div className="text-lg font-bold">
+              {formatCostAUD(conv.totalPrice)}
+            </div>
+            <PiArrowRight className="text-aws-font-color-light/40 dark:text-aws-font-color-dark/40" />
           </div>
-        </div>
+        </button>
       ))}
     </ListPageLayout>
   );

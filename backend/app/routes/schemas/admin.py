@@ -67,6 +67,20 @@ class ConversationUsageOutput(BaseSchema):
     bot_id: str | None
 
 
+class AdminMessageOutput(BaseSchema):
+    role: str
+    content: str
+    create_time: float
+
+
+class ConversationDetailOutput(BaseSchema):
+    id: str
+    title: str
+    create_time: float
+    total_price: float
+    messages: list[AdminMessageOutput]
+
+
 class PushBotInputPinned(BaseSchema):
     to_pinned: Literal[True]
     order: int
