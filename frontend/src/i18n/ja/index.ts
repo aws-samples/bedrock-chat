@@ -592,6 +592,19 @@ const translation: typeof en = {
           back: 'Back to User Analytics',
         },
       },
+      conversationDetail: {
+        label: {
+          pageTitle: '会話の詳細',
+          untitled: '無題の会話',
+          totalCost: '合計コスト',
+          loading: '読み込み中...',
+          noMessages: 'この会話にはメッセージがありません。',
+          emptyMessage: '（空）',
+        },
+        button: {
+          back: '会話一覧に戻る',
+        },
+      },
       apiManagement: {
         label: {
           pageTitle: 'API管理',

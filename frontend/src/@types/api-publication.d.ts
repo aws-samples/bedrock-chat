@@ -127,3 +127,15 @@ export type GetUserConversationsResponse = {
   totalPrice: number;
   botId: string | null;
 }[];
+
+export type GetConversationDetailResponse = {
+  id: string;
+  title: string;
+  createTime: number;
+  totalPrice: number;
+  messages: {
+    role: string;
+    content: string;
+    createTime: number;
+  }[];
+};

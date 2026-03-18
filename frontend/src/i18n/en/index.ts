@@ -586,6 +586,19 @@ How would you categorize this email?`,
           back: 'Back to User Analytics',
         },
       },
+      conversationDetail: {
+        label: {
+          pageTitle: 'Conversation Detail',
+          untitled: 'Untitled Conversation',
+          totalCost: 'Total Cost',
+          loading: 'Loading...',
+          noMessages: 'No messages in this conversation.',
+          emptyMessage: '(empty)',
+        },
+        button: {
+          back: 'Back to Conversations',
+        },
+      },
       apiManagement: {
         label: {
           pageTitle: 'API Management',

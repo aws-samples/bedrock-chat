@@ -9,6 +9,7 @@ import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
 import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
 import AdminUserAnalyticsPage from './pages/AdminUserAnalyticsPage.tsx';
 import AdminUserConversationsPage from './pages/AdminUserConversationsPage.tsx';
+import AdminConversationDetailPage from './pages/AdminConversationDetailPage.tsx';
 import { useTranslation } from 'react-i18next';
 import {
   createBrowserRouter,
@@ -74,6 +75,10 @@ const rootChildren = [
   {
     path: '/admin/user/:userId',
     element: <AdminUserConversationsPage />,
+  },
+  {
+    path: '/admin/user/:userId/conversation/:conversationId',
+    element: <AdminConversationDetailPage />,
   },
   {
     path: '/admin/api-management',

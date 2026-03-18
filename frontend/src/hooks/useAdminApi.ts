@@ -1,4 +1,5 @@
 import {
+  GetConversationDetailResponse,
   GetUserConversationsRequest,
   GetUserConversationsResponse,
   GetUserUsagesRequest,
@@ -33,6 +34,11 @@ const useAdminApi = () => {
         !!req.start === !!req.end
           ? [`/admin/user/${userId}/conversations`, req]
           : null
+      );
+    },
+    getConversationDetail: (userId: string, conversationId: string) => {
+      return http.get<GetConversationDetailResponse>(
+        `/admin/user/${userId}/conversation/${conversationId}`
       );
     },
     getPublicBot: (botId: string) => {

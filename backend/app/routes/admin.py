@@ -1,6 +1,9 @@
 from datetime import date
 
 from app.dependencies import check_admin
+from app.repositories.conversation import find_conversation_by_id
+from app.repositories.common import RecordNotFoundError
+from app.repositories.models.conversation import TextContentModel
 from app.repositories.custom_bot import find_all_published_bots, find_bot_by_id
 from app.repositories.usage_analysis import (
     find_bots_sorted_by_price,
@@ -8,6 +11,8 @@ from app.repositories.usage_analysis import (
     find_users_sorted_by_price,
 )
 from app.routes.schemas.admin import (
+    AdminMessageOutput,
+    ConversationDetailOutput,
     ConversationUsageOutput,
     PublicBotOutput,
     PublishedBotOutput,
@@ -171,6 +176,57 @@ async def get_user_conversations(
         )
         for conv in conversations
     ]
+
+
+@router.get(
+    "/admin/user/{user_id}/conversation/{conversation_id}",
+    response_model=ConversationDetailOutput,
+)
+def get_user_conversation_detail(
+    user_id: str,
+    conversation_id: str,
+    admin_check=Depends(check_admin),
+):
+    """Get full message history of a specific conversation. Intended for admin use."""
+    from fastapi import HTTPException
+
+    try:
+        conv = find_conversation_by_id(user_id, conversation_id)
+    except RecordNotFoundError:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Walk from last_message_id up through parents to reconstruct the thread
+    ordered_ids: list[str] = []
+    current_id: str | None = conv.last_message_id
+    while current_id and current_id in conv.message_map:
+        ordered_ids.append(current_id)
+        current_id = conv.message_map[current_id].parent
+    ordered_ids.reverse()
+
+    messages: list[AdminMessageOutput] = []
+    for msg_id in ordered_ids:
+        msg = conv.message_map[msg_id]
+        if msg.role == "system":
+            continue
+        text_parts = [
+            c.body for c in msg.content if isinstance(c, TextContentModel)
+        ]
+        text = "\n".join(text_parts)
+        messages.append(
+            AdminMessageOutput(
+                role=msg.role,
+                content=text,
+                create_time=msg.create_time,
+            )
+        )
+
+    return ConversationDetailOutput(
+        id=conv.id,
+        title=conv.title,
+        create_time=conv.create_time,
+        total_price=conv.total_price,
+        messages=messages,
+    )
 
 
 @router.patch("/admin/bot/{bot_id}/pushed")
