@@ -2,22 +2,6 @@ import { z } from "zod";
 import { TIdentityProvider } from "./identity-provider";
 import { App } from "aws-cdk-lib";
 
-export const BotStoreLanguageSchema = z.enum([
-  "en",
-  "de",
-  "fr",
-  "es",
-  "ja",
-  "ko",
-  "zhhans",
-  "zhhant",
-  "it",
-  "nb",
-  "th",
-  "id",
-  "ms",
-]);
-
 /**
  * Base parameters schema that is common across all entry points
  */
@@ -102,11 +86,6 @@ const BedrockChatParametersSchema = BaseParametersSchema.extend({
   // Custom domain configuration
   alternateDomainName: z.string().default(""),
   hostedZoneId: z.string().default(""),
-
-  // BotStore
-  enableBotStore: z.boolean().default(true),
-  enableBotStoreReplicas: z.boolean().default(false),
-  botStoreLanguage: BotStoreLanguageSchema.default("en"),
 
   // ID token refresh interval
   tokenValidMinutes: z.number().default(30),
@@ -277,9 +256,6 @@ export function resolveBedrockChatParameters(
     enableLambdaSnapStart: app.node.tryGetContext("enableLambdaSnapStart"),
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
-    enableBotStore: app.node.tryGetContext("enableBotStore"),
-    enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
-    botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
     defaultModel: app.node.tryGetContext("defaultModel"),
     titleModel: app.node.tryGetContext("titleModel"),

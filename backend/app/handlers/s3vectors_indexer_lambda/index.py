@@ -158,6 +158,7 @@ def _process_conv_insert_modify(new_image: dict, bucket: str) -> dict | None:
             "ConversationId": conv_id,
             "UserId": pk,
             "Title": title,
+            "BotId": _ddb_str(new_image, "BotId"),
             "CreateTime": _ddb_num(new_image, "CreateTime"),
         },
     }
@@ -188,8 +189,6 @@ def handler(event, context):
         sk_old = _ddb_str(old_image, "SK")
         sk = sk_new or sk_old
 
-        is_bot = sk.startswith("BOT") or "#CONV#" not in sk and "BotId" in new_image
-        # More reliable: check for the BOT SK prefix pattern
         is_bot_record = sk.upper().startswith("BOT")
         is_conv_record = "#CONV#" in sk
 
