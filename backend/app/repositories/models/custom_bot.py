@@ -990,54 +990,6 @@ class BotMeta(BaseModel):
             shared_status="unshared",
         )
 
-    @classmethod
-    def from_opensearch_response(
-        cls,
-        hit: dict,
-        user_id: str,
-    ) -> Self:
-        """Create a BotMeta instance from OpenSearch response.
-
-        Args:
-            hit: A hit from OpenSearch response
-            user_id: Current user's ID to determine if the bot is owned
-
-        Returns:
-            BotMeta instance
-
-        Note:
-            OpenSearch response structure example:
-            {
-                "_source": {
-                    "BotId": "...",
-                    "Title": "...",
-                    "Description": "...",
-                    "CreateTime": 1234567890,
-                    "LastUsedTime": 1234567890,
-                    "SyncStatus": "...",
-                    "PK": "...",  # owner_user_id
-                    "SharedScope": "...",  # might not exist for private bots
-                    "SharedStatus": "...",
-                    "BedrockKnowledgeBase": {...}  # might not exist
-                }
-            }
-        """
-        source = hit["_source"]
-
-        return cls(
-            id=source["BotId"],
-            title=source["Title"],
-            description=source["Description"],
-            create_time=float(source["CreateTime"]),
-            last_used_time=float(source.get("LastUsedTime", source["CreateTime"])),
-            is_starred=source.get("IsStarred", False),
-            sync_status=source["SyncStatus"],
-            owned=source["PK"] == user_id,
-            is_origin_accessible=True,  # Always True as it's from direct search result
-            shared_scope=source.get("SharedScope", "private"),
-            shared_status=source["SharedStatus"],
-        )
-
     def to_output(self) -> BotMetaOutput:
         return BotMetaOutput(
             id=self.id,

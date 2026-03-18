@@ -49,9 +49,6 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableBedrockGlobalInference: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
-  readonly enableBotStore: boolean;
-  readonly enableBotStoreReplicas: boolean;
-  readonly botStoreLanguage: string;
   readonly globalAvailableModels?: string[];
   readonly defaultModel?: string;
   readonly titleModel?: string;

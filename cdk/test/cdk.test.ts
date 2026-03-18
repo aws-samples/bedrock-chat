@@ -61,9 +61,6 @@ describe("Bedrock Chat Stack Test", () => {
         enableBedrockGlobalInference: false,
         enableBedrockCrossRegionInference: false,
         enableLambdaSnapStart: true,
-        enableBotStore: true,
-        enableBotStoreReplicas: false,
-        botStoreLanguage: "en",
         tokenValidMinutes: 60,
       }
     );
@@ -140,9 +137,6 @@ describe("Bedrock Chat Stack Test", () => {
         enableBedrockGlobalInference: false,
         enableBedrockCrossRegionInference: false,
         enableLambdaSnapStart: true,
-        enableBotStore: true,
-        enableBotStoreReplicas: false,
-        botStoreLanguage: "en",
         tokenValidMinutes: 60,
       }
     );
@@ -207,9 +201,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockGlobalInference: false,
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
     const template = Template.fromStack(stack);
@@ -257,9 +248,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableLambdaSnapStart: true,
       alternateDomainName: "chat.example.com",
       hostedZoneId: "Z0123456789ABCDEF",
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
@@ -339,9 +327,6 @@ describe("Bedrock Chat Stack Test", () => {
       allowedIpV4AddressRanges: [""],
       allowedIpV6AddressRanges: [""],
       hostedZoneId: "",
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
@@ -396,9 +381,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockGlobalInference: false,
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
@@ -447,9 +429,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableBedrockGlobalInference: false,
       enableBedrockCrossRegionInference: false,
       enableLambdaSnapStart: true,
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
@@ -502,9 +481,6 @@ describe("Bedrock Chat Stack Test", () => {
       allowedIpV4AddressRanges: [""],
       allowedIpV6AddressRanges: [""],
       hostedZoneId: "Z0123456789ABCDEF",
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
@@ -584,9 +560,6 @@ describe("Bedrock Chat Stack Test", () => {
       enableLambdaSnapStart: true,
       alternateDomainName: "",
       hostedZoneId: "",
-      enableBotStore: true,
-      enableBotStoreReplicas: false,
-      botStoreLanguage: "en",
       tokenValidMinutes: 60,
     });
 
