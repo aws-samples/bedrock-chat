@@ -76,9 +76,11 @@ export class S3VectorsStore extends Construct {
     props.conversationTable.grantStreamRead(indexerRole);
 
     // Indexing Lambda — processes DynamoDB Stream events and writes to S3 Vectors
+    // Uses a dedicated directory with no pyproject.toml so bundling only copies
+    // the handler file (boto3 is already provided by the Lambda runtime).
     const indexerLambda = new PythonFunction(this, "Indexer", {
-      entry: path.join(__dirname, "../../../backend"),
-      index: "app/handlers/s3vectors_indexer.py",
+      entry: path.join(__dirname, "../../../backend/app/handlers/s3vectors_indexer_lambda"),
+      index: "index.py",
       handler: "handler",
       runtime: lambda.Runtime.PYTHON_3_13,
       timeout: Duration.minutes(5),
