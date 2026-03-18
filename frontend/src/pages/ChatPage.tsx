@@ -321,6 +321,7 @@ const ChatPage: React.FC = () => {
           content,
           bot: inputBotParams,
           enableReasoning: reasoningEnabled,
+          enableInternetSearch: internetSearchEnabled,
         });
       }
     },
@@ -332,9 +333,10 @@ const ChatPage: React.FC = () => {
       regenerate({
         bot: inputBotParams,
         enableReasoning,
+        enableInternetSearch: internetSearchEnabled,
       });
     },
-    [inputBotParams, regenerate]
+    [inputBotParams, regenerate, internetSearchEnabled]
   );
 
   const onContinueGenerate = useCallback(() => {

@@ -234,7 +234,7 @@ const useChatState = create<{
     shouldCotinue: false,
     reasoningEnabled: false,
     setReasoningEnabled: (enabled) => set({ reasoningEnabled: enabled }),
-    internetSearchEnabled: false,
+    internetSearchEnabled: true,
     setInternetSearchEnabled: (enabled) => set({ internetSearchEnabled: enabled }),
   };
 });
@@ -539,7 +539,7 @@ const useChat = () => {
       botId: params?.bot?.botId,
       continueGenerate: true,
       enableReasoning: false,
-      enableInternetSearch: false,
+      enableInternetSearch: internetSearchEnabled,
     };
 
     const lastMessage = messages[messages.length - 1];
@@ -574,6 +574,7 @@ const useChat = () => {
    */
   const regenerate = (props?: {
     enableReasoning: boolean;
+    enableInternetSearch?: boolean;
     content?: string;
     messageId?: string;
     bot?: BotInputType;
@@ -615,7 +616,7 @@ const useChat = () => {
       },
       botId: props?.bot?.botId,
       enableReasoning: props?.enableReasoning ?? false,
-      enableInternetSearch: false,
+      enableInternetSearch: props?.enableInternetSearch ?? internetSearchEnabled,
     };
 
     if (input.message.parentMessageId === null) {
