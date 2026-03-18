@@ -539,6 +539,7 @@ const useChat = () => {
       botId: params?.bot?.botId,
       continueGenerate: true,
       enableReasoning: false,
+      enableInternetSearch: false,
     };
 
     const lastMessage = messages[messages.length - 1];
@@ -614,6 +615,7 @@ const useChat = () => {
       },
       botId: props?.bot?.botId,
       enableReasoning: props?.enableReasoning ?? false,
+      enableInternetSearch: false,
     };
 
     if (input.message.parentMessageId === null) {

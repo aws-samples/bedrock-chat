@@ -5,6 +5,8 @@ const defaultProps = {
   reasoningEnabled: false,
   onChangeReasoning: () => {},
   supportReasoning: true,
+  internetSearchEnabled: false,
+  onChangeInternetSearch: () => {},
   isLoading: false,
   isNewChat: false,
   onSend: () => {},
