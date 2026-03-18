@@ -3,8 +3,6 @@ import os
 from typing import Literal
 
 import boto3
-from opensearchpy import OpenSearch, RequestsHttpConnection
-from requests_aws4auth import AWS4Auth
 
 DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
 CONVERSATION_TABLE_NAME = os.environ.get("CONVERSATION_TABLE_NAME", "")
@@ -13,8 +11,9 @@ ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
-OPENSEARCH_DOMAIN_ENDPOINT = os.environ.get(
-    "OPENSEARCH_DOMAIN_ENDPOINT",
+S3_VECTORS_BOT_BUCKET_NAME = os.environ.get("S3_VECTORS_BOT_BUCKET_NAME", "")
+S3_VECTORS_CONVERSATION_BUCKET_NAME = os.environ.get(
+    "S3_VECTORS_CONVERSATION_BUCKET_NAME", ""
 )
 
 # DynamoDB batch operation limits
@@ -173,38 +172,3 @@ def get_bot_table_client():
     )
 
 
-def get_opensearch_client(collection_type: str = "bot") -> OpenSearch:
-    """Get OpenSearch client with AWS authentication.
-
-    Args:
-        collection_type: Type of collection to connect to ("bot" or "conversation")
-        Note: This method now uses a single shared endpoint for both bot and conversation collections
-    """
-    endpoint = OPENSEARCH_DOMAIN_ENDPOINT
-    if not endpoint:
-        raise ValueError("OPENSEARCH_DOMAIN_ENDPOINT is not set")
-
-    # Get credentials from boto3
-    credentials = boto3.Session().get_credentials()
-    assert credentials is not None, "Credentials are not available"
-    aws_auth = AWS4Auth(
-        credentials.access_key,
-        credentials.secret_key,
-        REGION,
-        "aoss",
-        session_token=credentials.token,
-    )
-
-    # Omit https
-    host = endpoint.replace("https://", "")
-
-    client = OpenSearch(
-        hosts=[{"host": host, "port": 443}],
-        http_auth=aws_auth,
-        use_ssl=True,
-        verify_certs=True,
-        connection_class=RequestsHttpConnection,
-        timeout=30,
-    )
-
-    return client

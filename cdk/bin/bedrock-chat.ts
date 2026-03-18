@@ -5,7 +5,6 @@ import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { LogRetentionChecker } from "../rules/log-retention-checker";
-import { Language } from "../lib/constructs/bot-store";
 import { getBedrockChatParameters } from "../lib/utils/parameter-models";
 import { bedrockChatParams } from "../parameter";
 
