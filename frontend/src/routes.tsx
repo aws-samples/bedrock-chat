@@ -8,6 +8,7 @@ import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx
 import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
 import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
 import AdminUserAnalyticsPage from './pages/AdminUserAnalyticsPage.tsx';
+import AdminUserConversationsPage from './pages/AdminUserConversationsPage.tsx';
 import { useTranslation } from 'react-i18next';
 import {
   createBrowserRouter,
@@ -69,6 +70,10 @@ const rootChildren = [
   {
     path: '/admin/user-analytics',
     element: <AdminUserAnalyticsPage />,
+  },
+  {
+    path: '/admin/user/:userId',
+    element: <AdminUserConversationsPage />,
   },
   {
     path: '/admin/api-management',

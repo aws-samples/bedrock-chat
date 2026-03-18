@@ -59,6 +59,14 @@ class PublicBotOutput(BaseSchema):
     allowed_cognito_users: list[str]
 
 
+class ConversationUsageOutput(BaseSchema):
+    id: str = Field(..., description="conversation_id")
+    title: str
+    create_time: float
+    total_price: float
+    bot_id: str | None
+
+
 class PushBotInputPinned(BaseSchema):
     to_pinned: Literal[True]
     order: int

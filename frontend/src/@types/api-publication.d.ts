@@ -113,3 +113,17 @@ export type GetUserUsagesResponse = {
   email: string;
   totalPrice: number;
 }[];
+
+export type GetUserConversationsRequest = {
+  limit?: number;
+  start?: string;
+  end?: string;
+};
+
+export type GetUserConversationsResponse = {
+  id: string;
+  title: string;
+  createTime: number;
+  totalPrice: number;
+  botId: string | null;
+}[];
