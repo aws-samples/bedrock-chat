@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import useUserConversationsForAdmin from '../hooks/useUserConversationsForAdmin';
 import { formatDatetime } from '../utils/DateUtils';
+import { formatCostAUD } from '../utils/CurrencyUtils';
 import ListPageLayout from '../layouts/ListPageLayout';
 import { PiArrowLeft, PiRobot } from 'react-icons/pi';
 import Button from '../components/Button';
@@ -77,7 +78,7 @@ const AdminUserConversationsPage: React.FC = () => {
             </div>
           </div>
           <div className="ml-4 shrink-0 text-lg font-bold">
-            {(Math.floor(conv.totalPrice * 100) / 100).toFixed(2)} USD
+            {formatCostAUD(conv.totalPrice)}
           </div>
         </div>
       ))}

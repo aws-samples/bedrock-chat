@@ -4,6 +4,7 @@ import Help from '../components/Help';
 import usePublicBotsForAdmin from '../hooks/usePublicBotsForAdmin';
 import ListItemBot from '../components/ListItemBot';
 import { addDate, formatDate } from '../utils/DateUtils';
+import { formatCostAUD } from '../utils/CurrencyUtils';
 
 import InputText from '../components/InputText';
 import Button from '../components/Button';
@@ -140,7 +141,7 @@ const AdminSharedBotAnalyticsPage: React.FC = () => {
           }}>
           <div className="relative flex h-full items-center">
             <div className="text-lg font-bold">
-              {(Math.floor(bot.totalPrice * 100) / 100).toFixed(2)} USD
+              {formatCostAUD(bot.totalPrice)}
             </div>
 
             <div className="absolute bottom-0 right-0 flex origin-bottom-right whitespace-nowrap text-xs font-light">

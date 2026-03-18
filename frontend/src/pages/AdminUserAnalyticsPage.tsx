@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Help from '../components/Help';
 import useUserUsagesForAdmin from '../hooks/useUserUsagesForAdmin';
 import { addDate, formatDate } from '../utils/DateUtils';
+import { formatCostAUD } from '../utils/CurrencyUtils';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
 import { PiArrowDown, PiArrowRight, PiUser } from 'react-icons/pi';
@@ -138,7 +139,7 @@ const AdminUserAnalyticsPage: React.FC = () => {
           </div>
           <div className="ml-4 flex shrink-0 items-center gap-3">
             <div className="text-lg font-bold">
-              {(Math.floor(user.totalPrice * 100) / 100).toFixed(2)} USD
+              {formatCostAUD(user.totalPrice)}
             </div>
             <PiArrowRight className="text-aws-font-color-light/40 dark:text-aws-font-color-dark/40" />
           </div>
