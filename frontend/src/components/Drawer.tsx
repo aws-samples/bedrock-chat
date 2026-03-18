@@ -24,6 +24,7 @@ import {
   PiPresentationChart,
   PiRobot,
   PiTrash,
+  PiUsers,
   PiX,
 } from 'react-icons/pi';
 import LazyOutputText from './LazyOutputText';
@@ -520,6 +521,14 @@ const Drawer: React.FC<Props> = (props) => {
                   icon={<PiChartLine />}
                   to="/admin/shared-bot-analytics"
                   labelComponent={getPageLabel('/admin/shared-bot-analytics')}
+                  onClick={closeSmallDrawer}
+                />
+                <DrawerItem
+                  className="w-60"
+                  isActive={location.pathname === '/admin/user-analytics'}
+                  icon={<PiUsers />}
+                  to="/admin/user-analytics"
+                  labelComponent={getPageLabel('/admin/user-analytics')}
                   onClick={closeSmallDrawer}
                 />
                 <DrawerItem
