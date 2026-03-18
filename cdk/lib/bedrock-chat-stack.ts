@@ -26,7 +26,7 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
 import { BedrockSharedKnowledgeBasesCodebuild } from "./constructs/bedrock-shared-knowledge-bases-codebuild";
-import { BotStore, Language } from "./constructs/bot-store";
+import { S3VectorsStore } from "./constructs/s3-vectors-store";
 import { Duration } from "aws-cdk-lib";
 
 export interface BedrockChatStackProps extends StackProps {
@@ -51,7 +51,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableLambdaSnapStart: boolean;
   readonly enableBotStore: boolean;
   readonly enableBotStoreReplicas: boolean;
-  readonly botStoreLanguage: Language;
+  readonly botStoreLanguage: string;
   readonly globalAvailableModels?: string[];
   readonly defaultModel?: string;
   readonly titleModel?: string;
@@ -212,17 +212,13 @@ export class BedrockChatStack extends cdk.Stack {
       pointInTimeRecovery: true,
     });
 
-    // Custom Bot Store
-    let botStore = undefined;
-    if (props.enableBotStore) {
-      botStore = new BotStore(this, "BotStore", {
-        envPrefix: props.envPrefix,
-        botTable: database.botTable,
-        conversationTable: database.conversationTable,
-        language: props.botStoreLanguage,
-        enableBotStoreReplicas: props.enableBotStoreReplicas,
-      });
-    }
+    // S3 Vectors Store (replaces OpenSearch bot store)
+    const s3VectorsStore = new S3VectorsStore(this, "S3VectorsStore", {
+      envPrefix: props.envPrefix,
+      botTable: database.botTable,
+      conversationTable: database.conversationTable,
+      bedrockRegion: props.bedrockRegion,
+    });
 
     const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
       envPrefix: props.envPrefix,
@@ -257,7 +253,8 @@ export class BedrockChatStack extends cdk.Stack {
       enableBedrockCrossRegionInference:
         props.enableBedrockCrossRegionInference,
       enableLambdaSnapStart: props.enableLambdaSnapStart,
-      openSearchEndpoint: botStore?.openSearchEndpoint,
+      s3VectorsBotBucketName: s3VectorsStore.botVectorBucketName,
+      s3VectorsConversationBucketName: s3VectorsStore.conversationVectorBucketName,
       globalAvailableModels: props.globalAvailableModels,
       defaultModel: props.defaultModel,
       titleModel: props.titleModel,
@@ -265,39 +262,8 @@ export class BedrockChatStack extends cdk.Stack {
       tavilyApiKeySecretArn: props.tavilyApiKeySecretArn,
     });
     props.documentBucket.grantReadWrite(backendApi.handler);
-    // Add permissions to API handler for BotStore
-    botStore?.addDataAccessPolicy(
-      props.envPrefix,
-      "DAPolicyApiHandler",
-      backendApi.handler.role!,
-      ["aoss:DescribeCollectionItems"],
-      ["aoss:DescribeIndex", "aoss:ReadDocument"]
-    );
-
-    // Add data access policy for developers
-    // Get IAM user/role ARN from environment variables
-    if (props.devAccessIamRoleArn) {
-      // Access to BotStore
-      botStore?.addDataAccessPolicy(
-        props.envPrefix,
-        "DAPolicyDevAccess",
-        iam.Role.fromRoleArn(this, "DevAccessIamRoleArn", props.devAccessIamRoleArn),
-        [
-          "aoss:DescribeCollectionItems",
-          "aoss:CreateCollectionItems",
-          "aoss:DeleteCollectionItems",
-          "aoss:UpdateCollectionItems"
-        ],
-        [
-          "aoss:DescribeIndex",
-          "aoss:ReadDocument",
-          "aoss:WriteDocument",
-          "aoss:CreateIndex",
-          "aoss:DeleteIndex",
-          "aoss:UpdateIndex"
-        ]
-      );
-    }
+    // Grant API handler access to S3 Vectors
+    s3VectorsStore.grantQueryAccess(backendApi.handler.role!);
 
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {

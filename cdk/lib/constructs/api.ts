@@ -45,7 +45,8 @@ export interface ApiProps {
   readonly enableBedrockGlobalInference: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
-  readonly openSearchEndpoint?: string;
+  readonly s3VectorsBotBucketName: string;
+  readonly s3VectorsConversationBucketName: string;
   readonly globalAvailableModels?: string[];
   readonly defaultModel?: string;
   readonly titleModel?: string;
@@ -193,29 +194,19 @@ export class Api extends Construct {
         resources: [props.auth.userPool.userPoolArn],
       })
     );
+    // S3 Vectors — query bots and conversations
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
-          "aoss:APIAccessAll",
-          "aoss:DescribeCollection",
-          "aoss:GetCollection",
-          "aoss:SearchCollections",
-          "aoss:BatchGetCollection",
-          "aoss:ListCollections",
+          "s3vectors:QueryVectors",
+          "s3vectors:ListVectors",
+          "s3vectors:GetVectorBucket",
+          "s3vectors:CreateVectorBucket",
+          "s3vectors:PutVectors",
+          "s3vectors:DeleteVectors",
         ],
         resources: ["*"],
-      })
-    );
-    handlerRole.addToPolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ["aoss:DescribeIndex", "aoss:ReadDocument"],
-        resources: [
-          `arn:aws:aoss:${Stack.of(this).region}:${
-            Stack.of(this).account
-          }:collection/*`,
-        ],
       })
     );
     // For Tavily API key (optional — enables higher-quality web search)
@@ -296,7 +287,8 @@ export class Api extends Construct {
           : "[]",
         DEFAULT_MODEL: props.defaultModel || "",
         TITLE_MODEL: props.titleModel || "",
-        OPENSEARCH_DOMAIN_ENDPOINT: props.openSearchEndpoint || "",
+        S3_VECTORS_BOT_BUCKET_NAME: props.s3VectorsBotBucketName,
+        S3_VECTORS_CONVERSATION_BUCKET_NAME: props.s3VectorsConversationBucketName,
         LOGO_PATH: props.logoPath || "",
         // Tavily web-search key — read at runtime from Secrets Manager if ARN is provided
         TAVILY_API_KEY_SECRET_ARN: props.tavilyApiKeySecretArn ?? "",
