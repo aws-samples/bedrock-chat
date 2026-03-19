@@ -703,19 +703,17 @@ export class Embedding extends Construct {
   }: {
     timeout?: Duration,
   }) {
-    // Perform direct ingestion or entire synchronization into the data source
+    // Start a full data source synchronization job
     const startIngestionJob = new tasks.LambdaInvoke(this, `StartIngestionJob${idSuffix}`, {
       lambdaFunction: this._synchronizeDataSourceHandler,
       payload: sfn.TaskInput.fromObject({
         Action: "Ingest",
         KnowledgeBaseId: sfn.JsonPath.stringAt("$.KnowledgeBaseId"),
         DataSourceId: sfn.JsonPath.stringAt("$.DataSourceId"),
-        FilesDiffs: sfn.JsonPath.objectAt("$.FilesDiffs"),
       }),
       resultSelector: {
         KnowledgeBaseId: sfn.JsonPath.stringAt("$.Payload.KnowledgeBaseId"),
         DataSourceId: sfn.JsonPath.stringAt("$.Payload.DataSourceId"),
-        DocumentsDiff: sfn.JsonPath.objectAt("$.Payload.DocumentsDiff"),
         IngestionJobId: sfn.JsonPath.stringAt("$.Payload.IngestionJobId"),
       },
       resultPath: "$.IngestionJob",
