@@ -63,10 +63,10 @@ def _search_with_duckduckgo_standalone(
         with DDGS() as ddgs:
             results = list(
                 ddgs.text(
-                    keywords=query,
+                    query=query,
                     region=REGION,
                     safesearch=SAFE_SEARCH,
-                    timelimit=time_limit,
+                    timelimit=time_limit or None,
                     max_results=MAX_RESULTS,
                     backend=BACKEND,
                 )
