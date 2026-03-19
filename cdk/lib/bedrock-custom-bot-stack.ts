@@ -90,6 +90,11 @@ export class BedrockCustomBotStack extends Stack {
           vectorBucket: vectorBucket,
           dimension: props.embeddingsModel.vectorDimensions!,
           distanceMetric: VectorIndexDistanceMetric.COSINE,
+          // Bedrock stores AMAZON_BEDROCK_TEXT (the text chunk) and AMAZON_BEDROCK_METADATA
+          // as vector metadata. Without this, both fields default to filterable, which
+          // causes PutVectors to fail because filterable metadata is limited to 2048 bytes.
+          // Marking them non-filterable raises the per-vector limit to 40 KB.
+          nonFilterableMetadataKeys: ["AMAZON_BEDROCK_TEXT", "AMAZON_BEDROCK_METADATA"],
         });
 
         const kb = new VectorKnowledgeBase(this, "KnowledgeBase", {
