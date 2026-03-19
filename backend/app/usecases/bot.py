@@ -232,7 +232,9 @@ def modify_owned_bot(
     if modify_input.bedrock_knowledge_base:
         updated_kb = (
             current_bot_kb.model_copy(
-                update=modify_input.bedrock_knowledge_base.model_dump()
+                update=modify_input.bedrock_knowledge_base.model_dump(
+                    exclude={"knowledge_base_id"}
+                )
             )
             if current_bot_kb
             else BedrockKnowledgeBaseModel(
