@@ -25,6 +25,11 @@ export interface WebSocketProps {
   readonly enableBedrockGlobalInference: boolean;
   readonly enableBedrockCrossRegionInference: boolean;
   readonly enableLambdaSnapStart: boolean;
+  /**
+   * Optional ARN of a Secrets Manager secret whose SecretString is the Tavily API key.
+   * When provided the Lambda will use Tavily for web search instead of DuckDuckGo.
+   */
+  readonly tavilyApiKeySecretArn?: string;
 }
 
 export class WebSocket extends Construct {
@@ -92,12 +97,18 @@ export class WebSocket extends Construct {
           `arn:aws:secretsmanager:${Stack.of(this).region}:${
             Stack.of(this).account
           }:secret:firecrawl/*/*`,
-          `arn:aws:secretsmanager:${Stack.of(this).region}:${
-            Stack.of(this).account
-          }:secret:firecrawl/*/*`,
         ],
       })
     );
+
+    if (props.tavilyApiKeySecretArn) {
+      handlerRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ["secretsmanager:GetSecretValue"],
+          resources: [props.tavilyApiKeySecretArn],
+        })
+      );
+    }
 
     largePayloadSupportBucket.grantRead(handlerRole);
     database.websocketSessionTable.grantReadWriteData(handlerRole);
@@ -131,6 +142,7 @@ export class WebSocket extends Construct {
         ENABLE_BEDROCK_CROSS_REGION_INFERENCE:
           props.enableBedrockCrossRegionInference.toString(),
         USE_STRANDS: "true",
+        TAVILY_API_KEY_SECRET_ARN: props.tavilyApiKeySecretArn ?? "",
       },
       role: handlerRole,
       snapStart: props.enableLambdaSnapStart
