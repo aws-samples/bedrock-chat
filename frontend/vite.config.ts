@@ -43,8 +43,8 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       manifest: {
-        name: 'Dylbot',
-        short_name: 'Dylbot',
+        name: 'AA Bedrock',
+        short_name: 'AA Bedrock',
         description: 'AWS-native chatbot using Bedrock',
         start_url: '/index.html',
         display: 'standalone',

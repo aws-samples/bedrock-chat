@@ -19,7 +19,7 @@ const AuthAmplify: React.FC<Props> = ({ socialProviders, children }) => {
       socialProviders={socialProviders}
       components={{
         Header: () => (
-          <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color-light">
+          <div className="mb-5 mt-10 flex justify-center text-3xl font-bold text-aws-squid-ink-light dark:text-white">
             {t('app.name')}
           </div>
         ),

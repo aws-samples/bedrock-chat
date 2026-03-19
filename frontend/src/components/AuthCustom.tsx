@@ -48,20 +48,24 @@ const AuthCustom: React.FC<Props> = ({ children }) => {
   return (
     <>
       {loading ? (
-        <div className="flex flex-col items-center p-4">
-          <div className="mb-3 text-4xl">Loading...</div>
-          <div className="animate-spin">
-            <PiCircleNotch size={100} />
+        <div className="flex min-h-screen flex-col items-center justify-center bg-aws-paper-light dark:bg-aws-paper-dark">
+          <div className="mb-3 text-xl text-aws-font-color-light dark:text-aws-font-color-dark">
+            Loading...
+          </div>
+          <div className="animate-spin text-aws-squid-ink-light dark:text-white">
+            <PiCircleNotch size={48} />
           </div>
         </div>
       ) : !authenticated ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="mb-5 mt-10 text-4xl text-aws-sea-blue-light">
-            {t('app.name')}
+        <div className="flex min-h-screen flex-col items-center justify-center bg-aws-paper-light dark:bg-aws-paper-dark">
+          <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-lg bg-white p-10 shadow-md dark:bg-aws-ui-color-dark">
+            <div className="text-3xl font-bold text-aws-squid-ink-light dark:text-white">
+              {t('app.name')}
+            </div>
+            <Button onClick={() => handleSignIn()} className="w-full text-lg">
+              {t('signIn.button.login')}
+            </Button>
           </div>
-          <Button onClick={() => handleSignIn()} className="px-20 text-xl">
-            {t('signIn.button.login')}
-          </Button>
         </div>
       ) : (
         // Pass the signOut function to the child component
