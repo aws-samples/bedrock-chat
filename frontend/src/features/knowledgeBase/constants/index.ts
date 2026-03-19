@@ -58,7 +58,7 @@ export const DEFAULT_BEDROCK_KNOWLEDGEBASE: BedrockKnowledgeBase = {
   },
   searchParams: {
     maxResults: 20,
-    searchType: 'hybrid',
+    searchType: 'semantic',
   },
 };
 
@@ -158,5 +158,5 @@ export const EDGE_SEARCH_PARAMS = {
 
 export const DEFAULT_SEARCH_CONFIG: SearchParams = {
   maxResults: 5,
-  searchType: 'hybrid',
+  searchType: 'semantic',
 };

@@ -175,7 +175,7 @@ export class BedrockCustomBotStack extends Stack {
         ]),
       });
 
-      const executionRoleArn = getKnowledgeBase.getResponseField("roleArn");
+      const executionRoleArn = getKnowledgeBase.getResponseField("knowledgeBase.roleArn");
 
       const kb = VectorKnowledgeBase.fromKnowledgeBaseAttributes(this, "MyKnowledgeBase", {
         vectorStoreType: VectorStoreType.S3_VECTORS,
