@@ -78,6 +78,7 @@
     "tokenValidMinutes": 30,
     "alternateDomainName": "",
     "hostedZoneId": "",
-    "devAccessIamRoleArn": ""
+    "devAccessIamRoleArn": "",
+    "tavilyApiKeySecretArn": "arn:aws:secretsmanager:ap-southeast-2:416911025063:secret:tavily/api-key-hB83PU"
   }
 }
