@@ -81,7 +81,7 @@ const knowledgeBases = sharedKnowledgeBasesJson.map((sharedKnowledgeBase: any) =
     maxChildTokenSize: knowledgeBaseJson.chunking_configuration?.max_child_token_size
       ? knowledgeBaseJson.chunking_configuration.max_child_token_size
       : undefined,
-    bufferSize: knowledgeBaseJson.chunking_configuration?.buffer_size
+    bufferSize: knowledgeBaseJson.chunking_configuration?.buffer_size != null
       ? knowledgeBaseJson.chunking_configuration.buffer_size
       : undefined,
     breakpointPercentileThreshold: knowledgeBaseJson.chunking_configuration?.breakpoint_percentile_threshold
