@@ -1,16 +1,43 @@
 import json
 import logging
+import os
 
 from app.agents.tools.agent_tool import AgentTool
 from app.repositories.models.custom_bot import BotModel, InternetToolModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
-from duckduckgo_search import DDGS
 from firecrawl import FirecrawlApp
 from pydantic import BaseModel, Field, root_validator
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+def _load_tavily_api_key() -> str:
+    """Load Tavily API key from env var or AWS Secrets Manager."""
+    direct_key = os.environ.get("TAVILY_API_KEY", "")
+    if direct_key:
+        return direct_key
+
+    secret_arn = os.environ.get("TAVILY_API_KEY_SECRET_ARN", "")
+    if not secret_arn:
+        return ""
+
+    try:
+        import boto3
+
+        region = os.environ.get("REGION", "us-east-1")
+        client = boto3.client("secretsmanager", region_name=region)
+        response = client.get_secret_value(SecretId=secret_arn)
+        key = response.get("SecretString", "").strip()
+        logger.info("Loaded Tavily API key from Secrets Manager.")
+        return key
+    except Exception as e:
+        logger.warning(f"Could not load Tavily API key from Secrets Manager: {e}")
+        return ""
+
+
+TAVILY_API_KEY = _load_tavily_api_key()
 
 
 class InternetSearchInput(BaseModel):
@@ -84,39 +111,38 @@ Summary:"""
         return fallback_content
 
 
-def _search_with_duckduckgo(query: str, time_limit: str, locale: str) -> list:
-    # Incoming locale expected as language-country (e.g. 'en-nz'). DDGS prefers country-language, so swap.
-    language, country = locale.split("-", 1)
-    REGION = f"{country}-{language}".lower()
-    SAFE_SEARCH = "moderate"
-    MAX_RESULTS = 20
-    BACKEND = "api"
-    logger.info(
-        f"Executing DuckDuckGo search with query: {query}, region: {REGION}, time_limit: {time_limit}"
-    )
-    with DDGS() as ddgs:
-        results = list(
-            ddgs.text(
-                query=query,
-                region=REGION,
-                safesearch=SAFE_SEARCH,
-                timelimit=time_limit or None,
-                max_results=MAX_RESULTS,
-                backend=BACKEND,
-            )
-        )
-        logger.info(f"DuckDuckGo search completed. Found {len(results)} results")
+def _search_with_tavily(query: str, time_limit: str, locale: str, api_key: str) -> list:
+    """Search using Tavily API."""
+    try:
+        from tavily import TavilyClient
 
-        # Summarize each result to prevent context bloat
+        logger.info(f"Executing Tavily search with query: {query}, time_limit: {time_limit}")
+
+        client = TavilyClient(api_key=api_key)
+
+        days_map = {"d": 1, "w": 7, "m": 30, "y": 365}
+        days = days_map.get(time_limit, None)
+
+        search_kwargs: dict = {
+            "query": query,
+            "max_results": 10,
+            "include_answer": False,
+            "include_raw_content": False,
+        }
+        if days:
+            search_kwargs["days"] = days
+
+        response = client.search(**search_kwargs)
+        results = response.get("results", [])
+
+        logger.info(f"Tavily search completed. Found {len(results)} results")
+
         summarized_results = []
-        for result in results:
-            title = result["title"]
-            url = result["href"]
-            content = result["body"]
-
-            # Summarize the content
+        for r in results:
+            title = r.get("title", "")
+            url = r.get("url", "")
+            content = r.get("content", "")
             summary = _summarize_content(content, title, url, query)
-
             summarized_results.append(
                 {
                     "content": summary,
@@ -126,6 +152,10 @@ def _search_with_duckduckgo(query: str, time_limit: str, locale: str) -> list:
             )
 
         return summarized_results
+
+    except Exception as e:
+        logger.error(f"Tavily search error: {e}")
+        return []
 
 
 def _search_with_firecrawl(
@@ -249,60 +279,45 @@ def _internet_search(
         f"Internet search request - Query: {query}, Time Limit: {time_limit}, Locale: {locale}"
     )
 
-    if bot is None:
-        logger.warning("Bot is None, defaulting to DuckDuckGo search")
-        return _search_with_duckduckgo(query, time_limit, locale)
+    # Priority: Tavily (global key) > Firecrawl (per-bot config)
+    if TAVILY_API_KEY:
+        logger.info("Using Tavily for internet search")
+        results = _search_with_tavily(query, time_limit, locale, TAVILY_API_KEY)
+        if results:
+            return results
+        logger.warning("Tavily returned no results")
+        return []
 
-    # Find internet search tool
-    internet_tool = next(
-        (tool for tool in bot.agent.tools if isinstance(tool, InternetToolModel)),
-        None,
-    )
+    # No Tavily key — check if bot has Firecrawl configured
+    if bot is not None:
+        internet_tool = next(
+            (tool for tool in bot.agent.tools if isinstance(tool, InternetToolModel)),
+            None,
+        )
 
-    # If no internet tool found or search engine is duckduckgo, use DuckDuckGo
-    if not internet_tool or internet_tool.search_engine == "duckduckgo":
-        logger.info("No internet tool found or search engine is DuckDuckGo")
-        return _search_with_duckduckgo(query, time_limit, locale)
-
-    # Handle Firecrawl search
-    if internet_tool.search_engine == "firecrawl":
-        if not internet_tool.firecrawl_config:
-            logger.error(
-                "Firecrawl configuration is not set in the bot, falling back to DuckDuckGo"
-            )
-            return _search_with_duckduckgo(query, time_limit, locale)
-
-        try:
-            api_key = internet_tool.firecrawl_config.api_key
-            if not api_key:
-                logger.error("Firecrawl API key is empty, falling back to DuckDuckGo")
-                return _search_with_duckduckgo(query, time_limit, locale)
-
+        if (
+            internet_tool
+            and internet_tool.search_engine == "firecrawl"
+            and internet_tool.firecrawl_config
+            and internet_tool.firecrawl_config.api_key
+        ):
+            logger.info("Using Firecrawl for internet search")
             results = _search_with_firecrawl(
                 query=query,
-                api_key=api_key,
+                api_key=internet_tool.firecrawl_config.api_key,
                 locale=locale,
                 max_results=internet_tool.firecrawl_config.max_results,
             )
+            if results:
+                return results
+            logger.warning("Firecrawl returned no results")
+            return []
 
-            # If Firecrawl returns empty results, fallback to DuckDuckGo
-            if not results:
-                logger.warning(
-                    "Firecrawl returned no results, falling back to DuckDuckGo"
-                )
-                return _search_with_duckduckgo(query, time_limit, locale)
-
-            return results
-
-        except Exception as e:
-            logger.error(
-                f"Error with Firecrawl search: {e}, falling back to DuckDuckGo"
-            )
-            return _search_with_duckduckgo(query, time_limit, locale)
-
-    # Fallback to DuckDuckGo for any unexpected cases
-    logger.warning("Unexpected search engine configuration, falling back to DuckDuckGo")
-    return _search_with_duckduckgo(query, time_limit, locale)
+    logger.warning(
+        "No search provider configured (no Tavily API key and no Firecrawl config). "
+        "Set TAVILY_API_KEY or TAVILY_API_KEY_SECRET_ARN to enable internet search."
+    )
+    return []
 
 
 internet_search_tool = AgentTool(
