@@ -130,7 +130,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
     // If config default is not available or not set yet, select the first model
     // Returns undefined if no models are available
-    return filteredModels[0]?.modelId ?? 'amazon-nova-lite';
+    return filteredModels[0]?.modelId ?? 'claude-v4.5-haiku';
   }, [filteredModels, globalConfig?.defaultModel]);
 
   // select the model via list of activeModels
@@ -139,7 +139,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       const modelExists = filteredModels.some(
         (m: ModelItem) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
       );
-      return modelExists ? targetModelId : (getDefaultModel() ?? filteredModels[0]?.modelId ?? 'amazon-nova-lite');
+      return modelExists ? targetModelId : (getDefaultModel() ?? filteredModels[0]?.modelId ?? 'claude-v4.5-haiku');
     },
     [filteredModels, getDefaultModel]
   );

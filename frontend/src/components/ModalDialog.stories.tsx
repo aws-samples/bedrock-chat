@@ -117,7 +117,7 @@ export const DeleteConversation = () => {
         title: 'Conversation 1',
         createTime: new Date().getTime(),
         lastMessageId: '1',
-        model: 'claude-v3.5-sonnet',
+        model: 'claude-v4.5-sonnet',
       }}
       onDelete={() => {
         setIsOpenDeleteModal(false);

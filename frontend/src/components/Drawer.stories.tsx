@@ -10,7 +10,7 @@ const conversations: ConversationMeta[] = [
     title: 'What is RAG?',
     createTime: new Date().getTime(),
     lastMessageId: '',
-    model: 'claude-v3.5-sonnet',
+    model: 'claude-v4.5-sonnet',
     botId: '1',
   },
 ];
