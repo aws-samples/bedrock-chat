@@ -29,7 +29,7 @@
     "cdk-aws-lambda-powertools-layer": "^3.7.0",
     "constructs": "^10.0.0",
     "@cdklabs/deploy-time-build": "^0.0.6",
-    "effect": "^2.4.3",
+    "effect": "^3.20.0",
     "source-map-support": "^0.5.21"
   }
 }
