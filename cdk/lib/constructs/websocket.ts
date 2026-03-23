@@ -113,7 +113,7 @@ export class WebSocket extends Construct {
     largePayloadSupportBucket.grantRead(handlerRole);
     database.websocketSessionTable.grantReadWriteData(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
-    props.documentBucket.grantRead(handlerRole);
+    props.documentBucket.grantReadWrite(handlerRole);
 
     const handler = new PythonFunction(this, "HandlerV2", {
       entry: path.join(__dirname, "../../../backend"),
@@ -143,6 +143,7 @@ export class WebSocket extends Construct {
           props.enableBedrockCrossRegionInference.toString(),
         USE_STRANDS: "true",
         TAVILY_API_KEY_SECRET_ARN: props.tavilyApiKeySecretArn ?? "",
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
       role: handlerRole,
       snapStart: props.enableLambdaSnapStart
