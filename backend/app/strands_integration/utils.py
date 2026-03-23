@@ -17,6 +17,9 @@ logger.setLevel(logging.INFO)
 def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAgentTool]:
     """Get list of available Strands tools."""
     from app.strands_integration.tools.bedrock_agent import create_bedrock_agent_tool
+    from app.strands_integration.tools.document_generation import (
+        create_document_generation_tools,
+    )
     from app.strands_integration.tools.fetch_website import create_fetch_website_tool
     from app.strands_integration.tools.image_generation import (
         create_image_generation_tool,
@@ -32,6 +35,7 @@ def get_strands_registered_tools(bot: BotModel | None = None) -> list[StrandsAge
     tools.append(create_fetch_website_tool(bot))
     tools.append(create_image_generation_tool(bot))
     tools.extend(create_s3_file_ops_tools(bot))
+    tools.extend(create_document_generation_tools(bot))
     return tools
 
 
