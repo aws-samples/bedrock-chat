@@ -123,6 +123,7 @@ def create_docx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
             from docx import Document
             from docx.shared import Pt, RGBColor
             from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
         except ImportError:
             return (
                 "Error: python-docx is not installed. "
@@ -132,11 +133,40 @@ def create_docx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
         if not filename.lower().endswith(".docx"):
             filename = filename + ".docx"
 
+        # --------------- ACIL Allen brand helpers ---------------
+        # Colour palette (Purple hierarchy is primary)
+        AA_PURPLE_2 = RGBColor(0x33, 0x10, 0x63)  # #331063 — sidebar / H1
+        AA_PURPLE_3 = RGBColor(0x6C, 0x3F, 0x99)  # #6C3F99 — brand purple / H2–H3
+        AA_GREY_2   = RGBColor(0x4D, 0x4D, 0x4D)  # #4D4D4D — body text
+        AA_WHITE    = RGBColor(0xFF, 0xFF, 0xFF)
+
+        def _style_heading(heading, level: int):
+            """Apply YuGothic Medium + ACIL Allen purple to a heading paragraph."""
+            color = AA_PURPLE_2 if level == 1 else AA_PURPLE_3
+            for run in heading.runs:
+                run.font.name = "Yu Gothic Medium"
+                run.font.color.rgb = color
+
+        def _set_cell_bg(cell, hex_color: str):
+            """Set table cell background to a solid hex colour via OOXML."""
+            tc = cell._tc
+            tcPr = tc.get_or_add_tcPr()
+            shd = OxmlElement("w:shd")
+            shd.set(qn("w:val"), "clear")
+            shd.set(qn("w:color"), "auto")
+            shd.set(qn("w:fill"), hex_color)
+            tcPr.append(shd)
+        # --------------------------------------------------------
+
         doc = Document()
+
+        # Body font: Arial Narrow (brand-approved print font)
+        doc.styles["Normal"].font.name = "Arial Narrow"
 
         # Optional title as H1
         if title:
-            doc.add_heading(title, level=1)
+            h = doc.add_heading(title, level=1)
+            _style_heading(h, 1)
 
         def _add_run_with_inline(paragraph, text: str):
             """Parse **bold** and *italic* and add runs."""
@@ -177,8 +207,12 @@ def create_docx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
                         cell = table.cell(ri, ci)
                         cell.text = cell_text
                         if ri == 0:
+                            # ACIL Allen branded header: Purple 2 bg, white bold text
+                            _set_cell_bg(cell, "331063")
                             for run in cell.paragraphs[0].runs:
                                 run.bold = True
+                                run.font.color.rgb = AA_WHITE
+                                run.font.name = "Yu Gothic Medium"
 
         lines = content.splitlines()
         i = 0
@@ -187,11 +221,14 @@ def create_docx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
 
             # Headings
             if line.startswith("### "):
-                doc.add_heading(line[4:].strip(), level=3)
+                h = doc.add_heading(line[4:].strip(), level=3)
+                _style_heading(h, 3)
             elif line.startswith("## "):
-                doc.add_heading(line[3:].strip(), level=2)
+                h = doc.add_heading(line[3:].strip(), level=2)
+                _style_heading(h, 2)
             elif line.startswith("# "):
-                doc.add_heading(line[2:].strip(), level=1)
+                h = doc.add_heading(line[2:].strip(), level=1)
+                _style_heading(h, 1)
 
             # Table block
             elif _is_table_line(line):
@@ -287,6 +324,25 @@ def create_pptx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
         if not slides_data:
             return "Error: 'slides' must be a non-empty JSON array of slide objects."
 
+        # --------------- ACIL Allen brand colours ---------------
+        PPTX_PURPLE_1 = RGBColor(0x14, 0x00, 0x34)  # #140034 — title slide bg
+        PPTX_PURPLE_2 = RGBColor(0x33, 0x10, 0x63)  # #331063 — content title
+        PPTX_PURPLE_3 = RGBColor(0x6C, 0x3F, 0x99)  # #6C3F99 — accents
+        PPTX_WHITE    = RGBColor(0xFF, 0xFF, 0xFF)
+        PPTX_GREY_2   = RGBColor(0x4D, 0x4D, 0x4D)  # #4D4D4D — body text
+
+        def _apply_font(text_frame, font_name: str, color: RGBColor | None = None):
+            """Set font name (and optionally colour) on all paragraphs/runs."""
+            for para in text_frame.paragraphs:
+                para.font.name = font_name
+                if color:
+                    para.font.color.rgb = color
+                for run in para.runs:
+                    run.font.name = font_name
+                    if color:
+                        run.font.color.rgb = color
+        # --------------------------------------------------------
+
         prs = Presentation()
         # Use widescreen 16:9
         prs.slide_width = int(10 * 914400)   # 10 inches
@@ -294,12 +350,19 @@ def create_pptx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
 
         slide_layouts = prs.slide_layouts
 
-        # Title slide
+        # Title slide — dark Purple 1 background, white text
         title_slide_layout = slide_layouts[0]
         slide = prs.slides.add_slide(title_slide_layout)
+        # Brand background
+        bg = slide.background.fill
+        bg.solid()
+        bg.fore_color.rgb = PPTX_PURPLE_1
+        # Title text
         slide.shapes.title.text = title
+        _apply_font(slide.shapes.title.text_frame, "Yu Gothic Medium", PPTX_WHITE)
         if slide.placeholders[1]:
             slide.placeholders[1].text = ""
+            _apply_font(slide.placeholders[1].text_frame, "Arial Narrow", PPTX_WHITE)
 
         # Content slides
         content_layout = slide_layouts[1]  # Title and Content
@@ -309,6 +372,8 @@ def create_pptx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
 
             s = prs.slides.add_slide(content_layout)
             s.shapes.title.text = s_title
+            # Slide title: YuGothic Medium, Purple 2
+            _apply_font(s.shapes.title.text_frame, "Yu Gothic Medium", PPTX_PURPLE_2)
 
             tf = s.placeholders[1].text_frame
             tf.clear()
@@ -319,6 +384,8 @@ def create_pptx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
                     p = tf.add_paragraph()
                     p.text = bullet
                     p.level = 0
+            # Body text: Arial Narrow, Grey 2
+            _apply_font(tf, "Arial Narrow", PPTX_GREY_2)
 
         buf = io.BytesIO()
         prs.save(buf)
@@ -398,12 +465,14 @@ def create_xlsx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
         wb = Workbook()
         wb.remove(wb.active)  # remove default empty sheet
 
-        HEADER_FILL = PatternFill("solid", fgColor="366092")
-        TITLE_FONT = Font(bold=True, size=13)
-        HEADER_FONT = Font(bold=True, color="FFFFFF")
+        # ACIL Allen brand colours — Purple 2 (#331063) headers, Arial Narrow body
+        HEADER_FILL  = PatternFill("solid", fgColor="331063")   # AA Purple 2
+        TITLE_FONT   = Font(bold=True, size=13, name="Yu Gothic Medium", color="331063")
+        HEADER_FONT  = Font(bold=True, color="FFFFFF", name="Yu Gothic Medium")
+        BODY_FONT    = Font(name="Arial Narrow")
         HEADER_ALIGN = Alignment(horizontal="center", vertical="center")
-        THIN = Side(style="thin", color="CCCCCC")
-        CELL_BORDER = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
+        THIN = Side(style="thin", color="C8C8C8")               # AA Grey 4
+        CELL_BORDER  = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 
         for sheet_def in sheets_data:
             sheet_name = sheet_def.get("name", "Sheet")[:31]  # Excel max 31 chars
@@ -434,6 +503,7 @@ def create_xlsx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
                 for col_idx, value in enumerate(row_data, start=1):
                     cell = ws.cell(row=current_row, column=col_idx, value=value)
                     cell.border = CELL_BORDER
+                    cell.font = BODY_FONT
                 current_row += 1
 
             # Auto-fit column widths (approximate)
@@ -470,9 +540,16 @@ def create_xlsx_tool(bot: BotModel | None = None) -> StrandsAgentTool:
 # Chart (SVG) tool — pure Python, no binary dependencies
 # ---------------------------------------------------------------------------
 
+# ACIL Allen brand colour palette — hierarchy: Purple → Grey → Blue → Green
 _DEFAULT_COLORS = [
-    "#2196F3", "#FF5722", "#4CAF50", "#9C27B0",
-    "#FF9800", "#00BCD4", "#E91E63", "#607D8B",
+    "#6C3F99",  # AA Purple 3 (primary brand)
+    "#006A9F",  # AA Blue 3
+    "#428D52",  # AA Green 3
+    "#7BBDD6",  # AA Blue 4
+    "#331063",  # AA Purple 2
+    "#9FD18B",  # AA Green 4
+    "#9D85BE",  # AA Purple 4
+    "#4D4D4D",  # AA Grey 2
 ]
 
 _W, _H = 800, 480
@@ -519,15 +596,17 @@ def _svg_chart(
         return f"<{tag} {parts}/>"
 
     def txt(x, y, s, **kw) -> str:
-        kw.setdefault("font_family", "Arial,sans-serif")
-        kw.setdefault("fill", "#333")
+        # ACIL Allen brand font: Arial Narrow; default text colour: AA Grey 2
+        kw.setdefault("font_family", "'Arial Narrow',Arial,sans-serif")
+        kw.setdefault("fill", "#4D4D4D")  # AA Grey 2
         parts = " ".join(f'{k.replace("_", "-")}="{v}"' for k, v in kw.items())
         return f'<text x="{x}" y="{y}" {parts}>{_xe(s)}</text>'
 
-    # Background
-    els.append(g("rect", width=W, height=H, fill="#FAFAFA"))
-    # Title
-    els.append(txt(W // 2, 38, title, text_anchor="middle", font_size=18, font_weight="bold"))
+    # White background
+    els.append(g("rect", width=W, height=H, fill="#FFFFFF"))
+    # Title — YuGothic Medium approximated via font-weight bold; AA Purple 2 colour
+    els.append(txt(W // 2, 38, title, text_anchor="middle", font_size=18,
+                   font_weight="bold", fill="#331063"))
 
     if chart_type in ("pie", "donut"):
         total = sum(float(v) for v in values_data)
@@ -572,21 +651,21 @@ def _svg_chart(
             els.append(txt(lx0 + 18, ly0 + 11, lbl, font_size=12))
 
     else:
-        # Axis lines
+        # Axis lines — AA Grey 3 (#7D7D7D)
         els.append(g("line", x1=PL, y1=PT, x2=PL, y2=H - PB,
-                     stroke="#999", stroke_width="1.5"))
+                     stroke="#7D7D7D", stroke_width="1.5"))
         els.append(g("line", x1=PL, y1=H - PB, x2=W - PR, y2=H - PB,
-                     stroke="#999", stroke_width="1.5"))
+                     stroke="#7D7D7D", stroke_width="1.5"))
 
-        # Axis labels
+        # Axis labels — AA Grey 2 (#4D4D4D)
         if x_label:
             els.append(txt(PL + CW // 2, H - 8, x_label,
-                           text_anchor="middle", font_size=12, fill="#666"))
+                           text_anchor="middle", font_size=12, fill="#4D4D4D"))
         if y_label:
             mid = PT + CH // 2
             els.append(
                 f'<text x="14" y="{mid}" text-anchor="middle" '
-                f'font-family="Arial,sans-serif" font-size="12" fill="#666" '
+                f'font-family="\'Arial Narrow\',Arial,sans-serif" font-size="12" fill="#4D4D4D" '
                 f'transform="rotate(-90,14,{mid})">{_xe(y_label)}</text>'
             )
 
@@ -604,9 +683,9 @@ def _svg_chart(
             for tick in ticks:
                 tx = PL + CW * tick / tick_max
                 els.append(g("line", x1=tx, y1=PT, x2=tx, y2=H - PB,
-                             stroke="#ddd", stroke_width="1"))
+                             stroke="#C8C8C8", stroke_width="1"))
                 els.append(txt(f"{tx:.1f}", H - PB + 16, f"{tick:g}",
-                               text_anchor="middle", font_size=10, fill="#666"))
+                               text_anchor="middle", font_size=10, fill="#7D7D7D"))
 
             for i, (lbl, val) in enumerate(zip(labels_data, all_vals)):
                 by = PT + i * gap + (gap - bar_h) / 2
@@ -615,7 +694,7 @@ def _svg_chart(
                 els.append(g("rect", x=PL, y=f"{by:.1f}", width=f"{bw:.1f}",
                              height=f"{bar_h:.1f}", fill=color, rx=2, opacity="0.85"))
                 els.append(txt(PL - 6, f"{by + bar_h/2 + 4:.1f}", lbl,
-                               text_anchor="end", font_size=11, fill="#555"))
+                               text_anchor="end", font_size=11, fill="#4D4D4D"))
 
         elif chart_type == "bar":
             if is_multi:
@@ -632,9 +711,9 @@ def _svg_chart(
             for tick in ticks:
                 ty = H - PB - CH * tick / tick_max
                 els.append(g("line", x1=PL, y1=f"{ty:.1f}", x2=W - PR, y2=f"{ty:.1f}",
-                             stroke="#ddd", stroke_width="1"))
+                             stroke="#C8C8C8", stroke_width="1"))
                 els.append(txt(PL - 6, f"{ty + 4:.1f}", f"{tick:g}",
-                               text_anchor="end", font_size=10, fill="#666"))
+                               text_anchor="end", font_size=10, fill="#7D7D7D"))
 
             n_groups = len(labels_data)
             n_series = len(series_list)
@@ -663,7 +742,7 @@ def _svg_chart(
                     els.append(g("rect", x=lx0, y=H - 18, width=12, height=12,
                                  fill=color, rx=2))
                     els.append(txt(lx0 + 16, H - 7, series.get("label", f"Series {si+1}"),
-                                   font_size=11, fill="#555"))
+                                   font_size=11, fill="#4D4D4D"))
 
         elif chart_type == "line":
             if is_multi:
@@ -681,9 +760,9 @@ def _svg_chart(
             for tick in ticks:
                 ty = H - PB - CH * tick / tick_max
                 els.append(g("line", x1=PL, y1=f"{ty:.1f}", x2=W - PR, y2=f"{ty:.1f}",
-                             stroke="#ddd", stroke_width="1"))
+                             stroke="#C8C8C8", stroke_width="1"))
                 els.append(txt(PL - 6, f"{ty + 4:.1f}", f"{tick:g}",
-                               text_anchor="end", font_size=10, fill="#666"))
+                               text_anchor="end", font_size=10, fill="#7D7D7D"))
 
             for gi, lbl in enumerate(labels_data):
                 px = PL + gi * CW / max(n - 1, 1)
@@ -712,7 +791,7 @@ def _svg_chart(
                     els.append(g("line", x1=lx0, y1=H - 12, x2=lx0 + 20, y2=H - 12,
                                  stroke=color, stroke_width="2.5"))
                     els.append(txt(lx0 + 24, H - 8, series.get("label", f"Series {si+1}"),
-                                   font_size=11, fill="#555"))
+                                   font_size=11, fill="#4D4D4D"))
 
         elif chart_type == "scatter":
             xs = [float(v) for v in labels_data]
@@ -725,16 +804,16 @@ def _svg_chart(
             for tick in y_ticks:
                 ty = H - PB - CH * (tick - y_min) / (y_max - y_min)
                 els.append(g("line", x1=PL, y1=f"{ty:.1f}", x2=W - PR, y2=f"{ty:.1f}",
-                             stroke="#ddd", stroke_width="1"))
+                             stroke="#C8C8C8", stroke_width="1"))
                 els.append(txt(PL - 6, f"{ty + 4:.1f}", f"{tick:g}",
-                               text_anchor="end", font_size=10, fill="#666"))
+                               text_anchor="end", font_size=10, fill="#7D7D7D"))
 
             for tick in x_ticks:
                 tx = PL + CW * (tick - x_min) / (x_max - x_min)
                 els.append(g("line", x1=f"{tx:.1f}", y1=PT, x2=f"{tx:.1f}", y2=H - PB,
-                             stroke="#ddd", stroke_width="1"))
+                             stroke="#C8C8C8", stroke_width="1"))
                 els.append(txt(f"{tx:.1f}", H - PB + 16, f"{tick:g}",
-                               text_anchor="middle", font_size=10, fill="#666"))
+                               text_anchor="middle", font_size=10, fill="#7D7D7D"))
 
             color = colors_data[0]
             for x, y in zip(xs, ys):
