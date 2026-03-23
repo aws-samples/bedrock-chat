@@ -4,7 +4,7 @@ export default {
   darkMode: 'class',
   theme: {
     fontFamily: {
-      body: ['Arial Narrow', 'Arial', 'sans-serif'],
+      body: ['Open Sans', 'sans-serif'],
       heading: ['Yu Gothic Medium', 'Yu Gothic', 'sans-serif'],
     },
     extend: {
@@ -40,26 +40,57 @@ export default {
         },
       },
       colors: {
+        // ACIL Allen brand colour palette
+        // Colour hierarchy: Purple → Grey → Blue → Green
+        'aa-purple': {
+          1: '#140034',
+          2: '#331063',
+          3: '#6C3F99',
+          4: '#9D85BE',
+          5: '#CCC3DC',
+        },
+        'aa-grey': {
+          1: '#000000',
+          2: '#4D4D4D',
+          3: '#7D7D7D',
+          4: '#C8C8C8',
+          5: '#E5E5E5',
+        },
+        'aa-blue': {
+          1: '#001E32',
+          2: '#00486E',
+          3: '#006A9F',
+          4: '#7BBDD6',
+          5: '#C4DDE9',
+        },
+        'aa-green': {
+          1: '#102515',
+          2: '#004016',
+          3: '#428D52',
+          4: '#9FD18B',
+          5: '#D4E7C8',
+        },
+        // Semantic UI tokens mapped to ACIL Allen brand colours
         'aws-squid-ink': {
-          light: '#6C3F99',
+          light: '#6C3F99', // AA Purple 3 — primary brand purple
           dark: '#171717',
         },
         'aws-sea-blue': {
-          light: '#005276',
+          light: '#006A9F', // AA Blue 3
           dark: '#757575',
         },
         'aws-sea-blue-hover': {
-          light: '#003550',
+          light: '#00486E', // AA Blue 2
           dark: '#5b5b5b',
         },
-        'aws-aqua': '#007faa',
-        'aws-lab': '#38ef7d',
-        'aws-mist': '#9ffcea',
+        'aws-aqua': '#7BBDD6', // AA Blue 4
+        'aws-lab': '#9FD18B',  // AA Green 4
+        'aws-mist': '#D4E7C8', // AA Green 5
         'aws-font-color': {
-          light: '#232F3E',
+          light: '#4D4D4D', // AA Grey 2
           dark: '#cacaca',
-          gray: '#909193',
-          blue: '#276cc6',
+          gray: '#7D7D7D',  // AA Grey 3
+          blue: '#006A9F',  // AA Blue 3
         },
         'aws-font-color-white': {
           light: '#ffffff',
@@ -73,7 +104,7 @@ export default {
           dark: '#212121',
         },
         'aws-sidebar': {
-          light: '#5a3380',
+          light: '#331063', // AA Purple 2
           dark: '#111111',
         },
         red: '#dc2626',
