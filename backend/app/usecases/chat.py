@@ -1,4 +1,5 @@
 import logging
+from datetime import timezone
 from typing import Callable
 
 from app.agents.tools.agent_tool import ToolRunResult
@@ -231,11 +232,13 @@ def chat(
         else []
     )
 
-    # Prepend current AEST datetime so the model always knows what time it is
-    aest_now = get_aest_now()
+    # Provide reference UTC time and instruct the model to ask for user location on time questions
+    utc_now = get_aest_now().astimezone(timezone.utc)
     instructions.insert(
         0,
-        f"The current date and time is {aest_now.strftime('%A, %d %B %Y %H:%M')} AEST (UTC+10).",
+        f"The current UTC date and time is {utc_now.strftime('%A, %d %B %Y %H:%M')} UTC. "
+        "If the user asks about the current time or date, ask them where they are located or "
+        "what timezone they are in, then calculate and provide their local time based on the UTC time above.",
     )
 
     related_documents: list[RelatedDocumentModel] = []
