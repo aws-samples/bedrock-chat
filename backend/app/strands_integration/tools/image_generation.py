@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime
 
 import boto3
+from app.utils import AEST
 from botocore.exceptions import ClientError
 from app.repositories.models.custom_bot import BotModel
 from strands import tool
@@ -115,7 +116,7 @@ def create_image_generation_tool(bot: BotModel | None = None) -> StrandsAgentToo
             image_bytes = base64.b64decode(images[0])
 
             # Upload to S3
-            datestamp = datetime.utcnow().strftime("%Y/%m/%d")
+            datestamp = datetime.now(tz=AEST).strftime("%Y/%m/%d")
             image_id = str(uuid.uuid4())
             s3_key = f"agent-images/{datestamp}/{image_id}.png"
 

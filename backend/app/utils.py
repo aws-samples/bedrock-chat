@@ -3,6 +3,9 @@ import logging
 import os
 from datetime import datetime
 from typing import Literal
+from zoneinfo import ZoneInfo
+
+AEST = ZoneInfo("Australia/Brisbane")
 
 import boto3
 from botocore.client import Config
@@ -55,6 +58,11 @@ def get_bedrock_agent_client(region=BEDROCK_REGION):
 def get_bedrock_agent_runtime_client(region=BEDROCK_REGION):
     client = boto3.client("bedrock-agent-runtime", region_name=region)
     return client
+
+
+def get_aest_now() -> datetime:
+    """Get the current datetime in Australian Eastern Standard Time (UTC+10)."""
+    return datetime.now(tz=AEST)
 
 
 def get_current_time():

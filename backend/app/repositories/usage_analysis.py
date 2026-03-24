@@ -3,9 +3,11 @@ import logging
 import os
 import re
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from functools import partial
 from typing import Any
+
+from app.utils import AEST
 
 import boto3
 from app.repositories.common import get_bot_table_client
@@ -167,7 +169,7 @@ async def find_bots_sorted_by_price(
         from_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", from_)  # type: ignore
         to_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", to_)  # type: ignore
     else:
-        today = date.today()
+        today = datetime.now(tz=AEST).date()
         from_str = today.strftime("%Y/%m/%d/00")
         to_str = today.strftime("%Y/%m/%d/23")
 
@@ -279,7 +281,7 @@ async def find_users_sorted_by_price(
         from_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", from_)  # type: ignore
         to_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", to_)  # type: ignore
     else:
-        today = date.today()
+        today = datetime.now(tz=AEST).date()
         from_str = today.strftime("%Y/%m/%d/00")
         to_str = today.strftime("%Y/%m/%d/23")
 
@@ -392,7 +394,7 @@ async def find_conversations_by_user(
         from_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", from_)
         to_str = re.sub(r"(\d{4})(\d{2})(\d{2})(\d{2})", r"\1/\2/\3/\4", to_)
     else:
-        today = date.today()
+        today = datetime.now(tz=AEST).date()
         from_str = today.strftime("%Y/%m/%d/00")
         to_str = today.strftime("%Y/%m/%d/23")
 

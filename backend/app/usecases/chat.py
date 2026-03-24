@@ -49,7 +49,7 @@ from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time, modify_bot_stats
 from app.usecases.global_config import get_title_model
 from app.user import User
-from app.utils import get_current_time
+from app.utils import get_aest_now, get_current_time
 from app.vector_search import (
     SearchResult,
     search_related_docs,
@@ -229,6 +229,13 @@ def chat(
         ]
         if "instruction" in message_map
         else []
+    )
+
+    # Prepend current AEST datetime so the model always knows what time it is
+    aest_now = get_aest_now()
+    instructions.insert(
+        0,
+        f"The current date and time is {aest_now.strftime('%A, %d %B %Y %H:%M')} AEST (UTC+10).",
     )
 
     related_documents: list[RelatedDocumentModel] = []
