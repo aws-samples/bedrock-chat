@@ -50,6 +50,7 @@ from app.stream import ConverseApiStreamHandler, OnStopInput, OnThinking
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time, modify_bot_stats
 from app.usecases.global_config import get_title_model
 from app.user import User
+from app.base_prompt import BASE_SYSTEM_PROMPT
 from app.utils import get_aest_now, get_current_time
 from app.vector_search import (
     SearchResult,
@@ -232,11 +233,12 @@ def chat(
         else []
     )
 
-    # Provide reference UTC time and instruct the model to ask for user location on time questions
+    # Base system prompt applied to all conversations
     utc_now = get_aest_now().astimezone(timezone.utc)
     instructions.insert(
         0,
-        f"The current UTC date and time is {utc_now.strftime('%A, %d %B %Y %H:%M')} UTC. "
+        BASE_SYSTEM_PROMPT
+        + f"\n\nThe current UTC date and time is {utc_now.strftime('%A, %d %B %Y %H:%M')} UTC. "
         "If the user asks about the current time or date, ask them where they are located or "
         "what timezone they are in, then calculate and provide their local time based on the UTC time above.",
     )
