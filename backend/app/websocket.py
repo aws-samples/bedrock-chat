@@ -304,15 +304,10 @@ def handler(event, context):
                 decoded = verify_token(token)
             except Exception as e:
                 logger.exception(f"Invalid token: {e}")
-                return {
-                    "statusCode": 403,
-                    "body": json.dumps(
-                        dict(
-                            status="ERROR",
-                            reason="Invalid token.",
-                        )
-                    ),
-                }
+                notificator.notify(
+                    json.dumps(dict(status="ERROR", reason="Invalid token.")).encode("utf-8")
+                )
+                return {"statusCode": 200, "body": "Error."}
 
             user_id = decoded["sub"]
 
@@ -388,15 +383,10 @@ def handler(event, context):
 
     except Exception as e:
         logger.exception(f"Operation failed: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps(
-                {
-                    "status": "ERROR",
-                    "reason": str(e),
-                }
-            ),
-        }
+        notificator.notify(
+            json.dumps(dict(status="ERROR", reason=str(e))).encode("utf-8")
+        )
+        return {"statusCode": 200, "body": "Error."}
 
     finally:
         notificator.finish()
