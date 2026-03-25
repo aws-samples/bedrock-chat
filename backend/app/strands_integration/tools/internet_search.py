@@ -170,7 +170,7 @@ def _summarize_content_standalone(
 
         client = get_bedrock_runtime_client()
 
-        prompt = f"""Please provide a concise summary of the following web content in 500-800 tokens maximum. Focus on information that directly answers or relates to the user's query: "{query}"
+        prompt = f"""Please provide a concise summary of the following web content in 800-1500 tokens maximum. Focus on information that directly answers or relates to the user's query: "{query}"
 
 Title: {title}
 URL: {url}
@@ -179,13 +179,13 @@ Content: {content}
 Summary:"""
 
         response = client.invoke_model(
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
+            modelId="anthropic.claude-haiku-4-5-20251001",
             contentType="application/json",
             accept="application/json",
             body=json.dumps(
                 {
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 800,
+                    "max_tokens": 1500,
                     "messages": [{"role": "user", "content": prompt}],
                 }
             ),
@@ -286,54 +286,20 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
         )
 
         try:
-            # # Bot is captured on closure
-            current_bot = bot
-
-            # Priority order: Tavily (global key) > Firecrawl (per-bot key) > DuckDuckGo
+            # Only Tavily is active. Firecrawl and DuckDuckGo are available but deactivated.
             if TAVILY_API_KEY:
                 logger.debug("[INTERNET_SEARCH_V3] Trying Tavily search")
                 results = _search_with_tavily_standalone(
                     query, time_limit, locale, TAVILY_API_KEY
                 )
                 if not results:
-                    logger.warning(
-                        "[INTERNET_SEARCH_V3] Tavily returned no results, falling back to DuckDuckGo"
-                    )
-                    results = _search_with_duckduckgo_standalone(query, time_limit, locale)
-            elif not current_bot:
-                logger.debug("[INTERNET_SEARCH_V3] No bot context, using DuckDuckGo")
-                results = _search_with_duckduckgo_standalone(query, time_limit, locale)
+                    logger.warning("[INTERNET_SEARCH_V3] Tavily returned no results")
             else:
-                internet_tool = _get_internet_tool_config(current_bot)
-
-                if (
-                    internet_tool
-                    and internet_tool.search_engine == "firecrawl"
-                    and internet_tool.firecrawl_config
-                    and internet_tool.firecrawl_config.api_key
-                ):
-
-                    logger.debug("[INTERNET_SEARCH_V3] Using Firecrawl search")
-                    results = _search_with_firecrawl_standalone(
-                        query=query,
-                        api_key=internet_tool.firecrawl_config.api_key,
-                        locale=locale,
-                        max_results=internet_tool.firecrawl_config.max_results,
-                    )
-
-                    # If no results from Firecrawl, fallback to DuckDuckGo
-                    if not results:
-                        logger.warning(
-                            "[INTERNET_SEARCH_V3] Firecrawl returned no results, falling back to DuckDuckGo"
-                        )
-                        results = _search_with_duckduckgo_standalone(
-                            query, time_limit, locale
-                        )
-                else:
-                    logger.debug("[INTERNET_SEARCH_V3] Using DuckDuckGo search")
-                    results = _search_with_duckduckgo_standalone(
-                        query, time_limit, locale
-                    )
+                logger.warning(
+                    "[INTERNET_SEARCH_V3] No search provider configured. "
+                    "Set TAVILY_API_KEY or TAVILY_API_KEY_SECRET_ARN to enable internet search."
+                )
+                results = []
 
             # Return in ToolResult format to prevent Strands from converting to string
             return {

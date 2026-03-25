@@ -63,8 +63,8 @@ class InternetSearchInput(BaseModel):
 
 def _summarize_content(content: str, title: str, url: str, query: str) -> str:
     """
-    Summarize content using Claude 3 Haiku to prevent context window bloat.
-    Returns a concise summary (500-800 tokens max) preserving key information.
+    Summarize content using Claude Haiku 4.5 to prevent context window bloat.
+    Returns a concise summary (800-1500 tokens max) preserving key information.
     """
     try:
         client = get_bedrock_runtime_client()
@@ -74,7 +74,7 @@ def _summarize_content(content: str, title: str, url: str, query: str) -> str:
         if len(content) > max_input_length:
             content = content[:max_input_length] + "..."
 
-        prompt = f"""Please provide a concise summary of the following web content in 500-800 tokens maximum. Focus on information that directly answers or relates to the user's query: "{query}"
+        prompt = f"""Please provide a concise summary of the following web content in 800-1500 tokens maximum. Focus on information that directly answers or relates to the user's query: "{query}"
 
 Title: {title}
 URL: {url}
@@ -83,13 +83,13 @@ Content: {content}
 Summary:"""
 
         response = client.invoke_model(
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
+            modelId="anthropic.claude-haiku-4-5-20251001",
             contentType="application/json",
             accept="application/json",
             body=json.dumps(
                 {
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 800,
+                    "max_tokens": 1500,
                     "messages": [{"role": "user", "content": prompt}],
                 }
             ),
@@ -279,7 +279,7 @@ def _internet_search(
         f"Internet search request - Query: {query}, Time Limit: {time_limit}, Locale: {locale}"
     )
 
-    # Priority: Tavily (global key) > Firecrawl (per-bot config)
+    # Only Tavily is active. Firecrawl is available but deactivated.
     if TAVILY_API_KEY:
         logger.info("Using Tavily for internet search")
         results = _search_with_tavily(query, time_limit, locale, TAVILY_API_KEY)
@@ -288,33 +288,8 @@ def _internet_search(
         logger.warning("Tavily returned no results")
         return []
 
-    # No Tavily key — check if bot has Firecrawl configured
-    if bot is not None:
-        internet_tool = next(
-            (tool for tool in bot.agent.tools if isinstance(tool, InternetToolModel)),
-            None,
-        )
-
-        if (
-            internet_tool
-            and internet_tool.search_engine == "firecrawl"
-            and internet_tool.firecrawl_config
-            and internet_tool.firecrawl_config.api_key
-        ):
-            logger.info("Using Firecrawl for internet search")
-            results = _search_with_firecrawl(
-                query=query,
-                api_key=internet_tool.firecrawl_config.api_key,
-                locale=locale,
-                max_results=internet_tool.firecrawl_config.max_results,
-            )
-            if results:
-                return results
-            logger.warning("Firecrawl returned no results")
-            return []
-
     logger.warning(
-        "No search provider configured (no Tavily API key and no Firecrawl config). "
+        "No search provider configured (no Tavily API key). "
         "Set TAVILY_API_KEY or TAVILY_API_KEY_SECRET_ARN to enable internet search."
     )
     return []
