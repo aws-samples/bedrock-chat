@@ -8,6 +8,7 @@ const translation = {
       recentlyUsedBots: 'Bot utilisé récemment',
       conversationHistory: 'Historique',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
     },
     bot: {
       label: {

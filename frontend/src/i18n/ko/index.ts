@@ -7,6 +7,8 @@ const translation = {
       name: 'Bedrock Chat',
       inputMessage: '입력해 주십시오',
       pinnedBots: '고정된 봇',
+      chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
     },
     deleteDialog: {
       title: '삭제 확인',

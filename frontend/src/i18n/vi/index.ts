@@ -13,6 +13,7 @@ const translation = {
       recentlyUsedBots: 'Bot Đã Dùng Gần Đây',
       conversationHistory: 'Lịch sử',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: 'Chỉ dành cho Quản trị',
     },
     model: {

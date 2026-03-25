@@ -13,6 +13,7 @@ const translation = {
       recentlyUsedBots: 'Bot utilizzati di recente',
       conversationHistory: 'Cronologia',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: 'Pannello Amministratore',
       backChat: 'Torna alla Chat',
     },

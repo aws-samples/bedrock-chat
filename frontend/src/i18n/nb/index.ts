@@ -14,6 +14,7 @@ const translation = {
       recentlyUsedBots: 'Nylig brukte boter',
       conversationHistory: 'Historikk',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: 'Kun administrator',
     },
     agent: {

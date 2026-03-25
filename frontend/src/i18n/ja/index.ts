@@ -18,6 +18,7 @@ const translation: typeof en = {
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '最近のチャット',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: '管理者用機能',
       userGroups: 'ユーザーグループ',
       backChat: 'チャットに戻る',

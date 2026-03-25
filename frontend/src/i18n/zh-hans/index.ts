@@ -11,6 +11,7 @@ const translation = {
       recentlyUsedBots: '最近使用过的 Bots',
       conversationHistory: '交谈纪录',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: '仅供管理员使用',
     },
     bot: {

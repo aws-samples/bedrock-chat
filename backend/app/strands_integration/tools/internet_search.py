@@ -301,10 +301,37 @@ def create_internet_search_tool(bot: BotModel | None) -> StrandsAgentTool:
                 )
                 results = []
 
+            # Download any PDFs found in search result URLs and include as documents
+            from app.pdf_url_handler import download_pdfs_from_urls
+
+            source_urls = [r["source_link"] for r in results if r.get("source_link")]
+            pdf_downloads = download_pdfs_from_urls(source_urls)
+
+            content_blocks: list[dict] = [{"json": result} for result in results]
+
+            for filename, pdf_bytes, source_url in pdf_downloads:
+                content_blocks.append({
+                    "json": {
+                        "content": f"[PDF document downloaded from {source_url}]",
+                        "source_name": filename,
+                        "source_link": source_url,
+                    }
+                })
+                content_blocks.append({
+                    "document": {
+                        "format": "pdf",
+                        "name": filename.replace(".pdf", "").replace(".", "")[:50],
+                        "source": {"bytes": pdf_bytes},
+                    }
+                })
+                logger.info(
+                    f"[INTERNET_SEARCH_V3] Included PDF document from search result: {source_url}"
+                )
+
             # Return in ToolResult format to prevent Strands from converting to string
             return {
                 "status": "success",
-                "content": [{"json": result} for result in results],
+                "content": content_blocks,
             }
 
         except Exception as e:
