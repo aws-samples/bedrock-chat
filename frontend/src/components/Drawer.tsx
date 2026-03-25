@@ -298,11 +298,11 @@ const Drawer: React.FC<Props> = (props) => {
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm text-white transition-width`}>
           {/* Logo / Header area */}
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-aws-squid-ink-light px-3 py-3 dark:bg-aws-ui-color-dark">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.06] bg-aws-squid-ink-light/95 px-3 py-3.5 backdrop-blur-md dark:bg-aws-ui-color-dark/95">
             <button
               type="button"
               onClick={onClickLogo}
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-white/10 focus:outline-none">
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 transition-all duration-200 hover:bg-white/8 focus:outline-none">
               {logoSrc ? (
                 <img
                   src={logoSrc}
@@ -311,7 +311,7 @@ const Drawer: React.FC<Props> = (props) => {
                   loading="lazy"
                 />
               ) : (
-                <span className="font-heading truncate text-sm font-semibold tracking-wide text-white/90">
+                <span className="font-heading truncate text-[13px] font-semibold tracking-tight text-white/90">
                   {t('app.name')}
                 </span>
               )}
@@ -355,7 +355,7 @@ const Drawer: React.FC<Props> = (props) => {
                 pinnedBots?.filter((bot) => bot.available).length ? (
                   <ExpandableDrawerGroup
                     label={t('app.pinnedBots')}
-                    className="mt-1 border-t border-white/10 pt-1">
+                    className="mt-1 border-t border-white/[0.06] pt-1">
                     {pinnedBots
                       .filter((bot) => bot.available)
                       .map((bot) => (
@@ -374,7 +374,7 @@ const Drawer: React.FC<Props> = (props) => {
               {drawerOptions.show.starredBots && (
                 <ExpandableDrawerGroup
                   label={t('app.starredBots')}
-                  className="mt-1 border-t border-white/10 pt-1">
+                  className="mt-1 border-t border-white/[0.06] pt-1">
                   {starredBots === undefined && (
                     <div className="flex flex-col gap-1.5 px-2 py-1">
                       <Skeleton className="h-8 w-full bg-white/10" />
@@ -419,7 +419,7 @@ const Drawer: React.FC<Props> = (props) => {
               {drawerOptions.show.recentlyUsedBots && (
                 <ExpandableDrawerGroup
                   label={t('app.recentlyUsedBots')}
-                  className="mt-1 border-t border-white/10 pt-1">
+                  className="mt-1 border-t border-white/[0.06] pt-1">
                   {recentlyUsedUnstarredBots === undefined && (
                     <div className="flex flex-col gap-1.5 px-2 py-1">
                       <Skeleton className="h-8 w-full bg-white/10" />
@@ -465,7 +465,7 @@ const Drawer: React.FC<Props> = (props) => {
                 <ExpandableDrawerGroup
                   label={t('app.conversationHistory')}
                   className={twMerge(
-                    'mt-1 border-t border-white/10 pt-1',
+                    'mt-1 border-t border-white/[0.06] pt-1',
                     props.isAdmin ? 'mb-20' : 'mb-10'
                   )}>
                   {conversations === undefined && (
@@ -511,7 +511,7 @@ const Drawer: React.FC<Props> = (props) => {
 
           {isAdminPanel && (
             <>
-              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50">
+              <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-white/40">
                 {t('app.adminConsoles')}
               </div>
               <div className="px-2">
@@ -548,7 +548,7 @@ const Drawer: React.FC<Props> = (props) => {
             className={twMerge(
               opened ? 'w-64' : 'w-0',
               props.isAdmin ? 'h-20' : 'h-12',
-              'fixed -bottom-2 z-50 mb-2 flex flex-col items-start border-t border-white/10 bg-aws-squid-ink-light transition-width dark:bg-aws-ui-color-dark lg:w-64'
+              'fixed -bottom-2 z-50 mb-2 flex flex-col items-start border-t border-white/[0.06] bg-aws-squid-ink-light/95 backdrop-blur-md transition-width dark:bg-aws-ui-color-dark/95 lg:w-64'
             )}>
             {props.isAdmin && !isAdminPanel && (
               <DrawerItem

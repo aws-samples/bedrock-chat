@@ -89,7 +89,7 @@ const AppContent: React.FC<Props> = (props) => {
   const { drawerOptions, setDrawerOptions } = useDrawer();
 
   return (
-    <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
+    <div className="relative flex h-dvh w-screen bg-aws-paper-light transition-colors duration-200 dark:bg-aws-paper-dark">
       <Drawer
         isAdmin={isAdmin}
         pinnedBots={pinnedBots}
@@ -148,14 +148,14 @@ const AppContent: React.FC<Props> = (props) => {
 
       <main className="relative flex min-h-dvh flex-1 flex-col overflow-y-hidden transition-width">
         {/* Mobile-only top bar */}
-        <header className="visible flex h-12 w-full shrink-0 items-center bg-aws-squid-ink-light px-2 text-aws-font-color-white-light dark:bg-aws-squid-ink-dark dark:text-aws-font-color-white-dark lg:hidden lg:h-0">
+        <header className="visible flex h-12 w-full shrink-0 items-center bg-aws-squid-ink-light/95 px-3 text-aws-font-color-white-light backdrop-blur-md dark:bg-aws-squid-ink-dark/95 dark:text-aws-font-color-white-dark lg:hidden lg:h-0">
           <button
-            className="mr-1 rounded-lg p-2 transition-colors hover:bg-white/10 focus:outline-none"
+            className="mr-2 rounded-lg p-1.5 transition-all duration-150 hover:bg-white/10 active:scale-95 focus:outline-none"
             onClick={() => switchDrawer()}>
             <PiList className="text-lg" />
           </button>
 
-          <div className="font-heading min-w-0 flex-1 truncate text-sm font-semibold">
+          <div className="font-heading min-w-0 flex-1 truncate text-[13px] font-semibold tracking-tight">
             {isGeneratedTitle ? (
               <LazyOutputText text={getTitle(conversationId ?? '')} />
             ) : (

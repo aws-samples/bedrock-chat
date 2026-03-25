@@ -19,13 +19,13 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
     <button
       ref={ref}
       className={twMerge(
-        'flex items-center justify-center whitespace-nowrap rounded-lg border p-1 px-3',
+        'flex items-center justify-center whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium tracking-tight transition-all duration-200',
         props.text && 'border-0 dark:text-aws-font-color-dark',
-        props.outlined && 'border-aws-squid-ink-light/50 dark:border-aws-font-color-gray/50 hover:bg-white dark:hover:bg-aws-ui-color-dark dark:text-aws-font-color-dark',
+        props.outlined && 'border-black/10 bg-white hover:bg-black/[0.03] dark:border-white/10 dark:bg-transparent dark:text-aws-font-color-dark dark:hover:bg-white/[0.05]',
         !props.text &&
           !props.outlined &&
-          'bg-aws-sea-blue-light dark:bg-aws-ui-color-dark dark:border-aws-ui-color-dark text-aws-font-color-white-light dark:text-aws-font-color-white-dark',
-        props.disabled || props.loading ? 'opacity-30' : 'hover:brightness-75',
+          'border-transparent bg-aws-sea-blue-light text-white shadow-sm hover:bg-aws-sea-blue-hover-light dark:bg-white/10 dark:text-aws-font-color-white-dark dark:hover:bg-white/15',
+        props.disabled || props.loading ? 'opacity-30 cursor-not-allowed' : '',
         props.className
       )}
       onClick={(e) => {
@@ -35,9 +35,9 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
       }}
       disabled={props.disabled || props.loading}>
       {props.icon && !props.loading && (
-        <div className="-ml-1 mr-2">{props.icon}</div>
+        <div className="-ml-0.5 mr-2">{props.icon}</div>
       )}
-      {props.loading && <PiSpinnerGap className="-ml-1 mr-2 animate-spin" />}
+      {props.loading && <PiSpinnerGap className="-ml-0.5 mr-2 animate-spin" />}
       {props.children}
       {props.rightIcon && <div className="ml-2">{props.rightIcon}</div>}
     </button>

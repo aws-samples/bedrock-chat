@@ -18,8 +18,9 @@ export default {
         'typing-dot-1': 'typingDot 1.4s ease-in-out 0s infinite',
         'typing-dot-2': 'typingDot 1.4s ease-in-out 0.2s infinite',
         'typing-dot-3': 'typingDot 1.4s ease-in-out 0.4s infinite',
-        'fade-in': 'fadeIn 0.25s ease-out',
-        'slide-up': 'slideUp 0.3s ease-out',
+        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         shimmer: {
@@ -31,13 +32,27 @@ export default {
           '30%': { opacity: '1', transform: 'translateY(-4px)' },
         },
         fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      boxShadow: {
+        'vercel': '0 0 0 1px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04)',
+        'vercel-lg': '0 0 0 1px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.08)',
+        'vercel-dark': '0 0 0 1px rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.3)',
+        'vercel-dark-lg': '0 0 0 1px rgba(255,255,255,0.06), 0 4px 8px rgba(0,0,0,0.2), 0 16px 32px rgba(0,0,0,0.4)',
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.25rem',
       },
       colors: {
         // ACIL Allen brand colour palette

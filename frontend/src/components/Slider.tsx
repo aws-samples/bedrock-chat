@@ -29,9 +29,9 @@ export const Slider: FC<Props> = (props) => {
 
     if (newValStr === '' || validateReg.test(newValStr)) {
       setValue(newValStr);
-      const parseNumber = props.enableDecimal ? parseFloat : parseInt;   
+      const parseNumber = props.enableDecimal ? parseFloat : parseInt;
       const newValue = parseNumber(newValStr !== '' ? newValStr : '0');
-      props.onChange(newValue); 
+      props.onChange(newValue);
     }
   }, [props, setValue]);
 
@@ -39,16 +39,16 @@ export const Slider: FC<Props> = (props) => {
     <div className="flex flex-col">
       <label
         className={twMerge(
-          'text-sm text-dark-gray dark:text-light-gray',
-          props.errorMessage && 'border-red dark:border-red text-red dark:text-red'
+          'text-[13px] font-medium tracking-tight text-aws-font-color-light dark:text-aws-font-color-dark',
+          props.errorMessage && 'text-red dark:text-red'
         )}>
         {props.label}
       </label>
-      <div className="flex gap-2">
+      <div className="mt-1 flex gap-2">
         <input
           className={twMerge(
-            'w-full cursor-pointer dark:accent-white',
-            props.disabled && 'cursor-default'
+            'w-full cursor-pointer accent-aa-purple-3 dark:accent-white',
+            props.disabled && 'cursor-default opacity-50'
           )}
           type="range"
           min={props.range.min}
@@ -60,10 +60,10 @@ export const Slider: FC<Props> = (props) => {
         />
         <input
           className={twMerge(
-            'peer h-9 w-16 rounded border p-1 text-center',
+            'peer h-9 w-16 rounded-lg border bg-white p-1 text-center text-sm transition-all duration-200 dark:bg-aws-ui-color-dark',
             props.errorMessage
-              ? 'dark:bg-aws-ui-color-dark border-2 border-red dark:text-aws-font-color-dark'
-              : 'dark:bg-aws-ui-color-dark border-aws-font-color-light/50 dark:border-aws-font-color-dark dark:text-aws-font-color-dark'
+              ? 'border-2 border-red dark:text-aws-font-color-dark'
+              : 'border-black/10 focus:ring-2 focus:ring-aa-purple-3/20 focus:border-aa-purple-3 dark:border-white/10 dark:text-aws-font-color-dark dark:focus:ring-white/10 dark:focus:border-white/30'
           )}
           value={value}
           max={props.range.max}
@@ -73,10 +73,10 @@ export const Slider: FC<Props> = (props) => {
         />
       </div>
       {props.hint && !props.errorMessage && (
-        <span className={'mt-0.5 text-xs text-gray dark:text-aws-font-color-gray'}>{props.hint}</span>
+        <span className="mt-1 text-xs text-gray dark:text-aws-font-color-gray">{props.hint}</span>
       )}
       {props.errorMessage && (
-        <div className="mt-0.5 text-xs text-red">{props.errorMessage}</div>
+        <div className="mt-1 text-xs text-red">{props.errorMessage}</div>
       )}
     </div>
   );
