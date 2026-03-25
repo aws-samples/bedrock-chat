@@ -1,4 +1,4 @@
-"""Utility to detect PDF URLs in user messages and download them as attachments."""
+"""Utility to detect PDF URLs in user messages/search results and download them as attachments."""
 
 import logging
 import os
@@ -6,6 +6,7 @@ import re
 from urllib.parse import unquote, urlparse
 
 import requests
+from requests.exceptions import RequestException
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -84,9 +85,37 @@ def download_pdf(url: str) -> tuple[str, bytes] | None:
         logger.info(f"Successfully downloaded PDF: {filename} ({len(content)} bytes)")
         return filename, content
 
-    except requests.RequestException as e:
+    except RequestException as e:
         logger.warning(f"Failed to download PDF from {url}: {e}")
         return None
     except Exception as e:
         logger.error(f"Unexpected error downloading PDF from {url}: {e}")
         return None
+
+
+def is_pdf_url(url: str) -> bool:
+    """Check if a URL points to a PDF file."""
+    if not url:
+        return False
+    parsed = urlparse(url)
+    path = unquote(parsed.path).lower()
+    return path.endswith(".pdf")
+
+
+def download_pdfs_from_urls(urls: list[str]) -> list[tuple[str, bytes, str]]:
+    """Download PDFs from a list of URLs. Only attempts URLs that look like PDFs.
+
+    Returns a list of (filename, content_bytes, source_url) tuples for successful downloads.
+    """
+    results: list[tuple[str, bytes, str]] = []
+
+    for url in urls:
+        if not is_pdf_url(url):
+            continue
+
+        pdf_result = download_pdf(url)
+        if pdf_result is not None:
+            filename, content = pdf_result
+            results.append((filename, content, url))
+
+    return results

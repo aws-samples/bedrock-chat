@@ -370,11 +370,16 @@ def chat(
                     tool_input=search_input, bot=bot, model=chat_input.message.model
                 )
                 if internet_results:
+                    # Separate dict results (text summaries) from DocumentToolResultModel (PDFs)
+                    from app.repositories.models.conversation import DocumentToolResultModel
+                    text_results = [r for r in internet_results if isinstance(r, dict)]
+                    pdf_results = [r for r in internet_results if isinstance(r, DocumentToolResultModel)]
+
                     context_lines = [
                         "The following are recent internet search results relevant to the user's query. "
                         "Use this information to provide an accurate and up-to-date response.\n"
                     ]
-                    for i, result in enumerate(internet_results, 1):
+                    for i, result in enumerate(text_results, 1):
                         context_lines.append(
                             f"[{i}] {result['source_name']}\n"
                             f"URL: {result['source_link']}\n"
@@ -382,8 +387,23 @@ def chat(
                         )
                     instructions.append("\n".join(context_lines))
                     logger.info(
-                        f"Injected {len(internet_results)} internet search results into instructions"
+                        f"Injected {len(text_results)} internet search results into instructions"
                     )
+
+                    # Attach any PDFs that were downloaded by the search tool
+                    if pdf_results:
+                        user_message = message_map.get(user_msg_id)
+                        if user_message:
+                            for pdf_result in pdf_results:
+                                attachment = AttachmentContentModel(
+                                    content_type="attachment",
+                                    body=pdf_result.document,
+                                    file_name=f"{pdf_result.name}.pdf",
+                                )
+                                user_message.content.insert(0, attachment)
+                                logger.info(
+                                    f"Attached PDF from search result: {pdf_result.name}"
+                                )
             except Exception as e:
                 logger.error(f"Internet search failed: {e}. Proceeding without search results.")
 

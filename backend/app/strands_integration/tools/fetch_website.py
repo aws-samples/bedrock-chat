@@ -61,6 +61,36 @@ def create_fetch_website_tool(bot: BotModel | None = None) -> StrandsAgentTool:
         if not url.startswith(("http://", "https://")):
             return "Error: URL must start with http:// or https://."
 
+        # If the URL points to a PDF, download it and return as a document
+        from app.pdf_url_handler import download_pdf, is_pdf_url
+
+        if is_pdf_url(url) and method == "GET":
+            logger.info(f"[FETCH_WEBSITE] Detected PDF URL, downloading as document: {url}")
+            pdf_result = download_pdf(url)
+            if pdf_result is not None:
+                filename, pdf_bytes = pdf_result
+                return {
+                    "status": "success",
+                    "content": [
+                        {
+                            "json": {
+                                "content": f"PDF document downloaded from {url}",
+                                "source_name": filename,
+                                "source_link": url,
+                            }
+                        },
+                        {
+                            "document": {
+                                "format": "pdf",
+                                "name": filename.replace(".pdf", "").replace(".", "")[:50],
+                                "source": {"bytes": pdf_bytes},
+                            }
+                        },
+                    ],
+                }
+            else:
+                return f"Error: Could not download PDF from {url}. The file may be too large, inaccessible, or not a valid PDF."
+
         logger.info(f"[FETCH_WEBSITE] {method} {url}")
 
         try:
