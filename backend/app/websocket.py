@@ -227,11 +227,10 @@ def process_chat_input(
             if chat_input.bot_id
             else "Invalid request."
         )
-        status_code = 404 if chat_input.bot_id else 400
         notificator.notify(
             json.dumps(dict(status="ERROR", reason=reason)).encode("utf-8")
         )
-        return {"statusCode": status_code, "body": "Error."}
+        return {"statusCode": 200, "body": "Error."}
 
     except Exception as e:
         logger.exception(f"Failed to run stream handler: {e}")
@@ -242,7 +241,7 @@ def process_chat_input(
         notificator.notify(
             json.dumps(dict(status="ERROR", reason=reason)).encode("utf-8")
         )
-        return {"statusCode": 500, "body": "Error."}
+        return {"statusCode": 200, "body": "Error."}
 
 
 def _cleanup_s3_chunks(connection_id: str) -> None:
@@ -282,16 +281,16 @@ def handler(event, context):
         connection_id=connection_id,
     )
 
-    body = json.loads(event["body"])
-    step = body.get("step")
-    token = body.get("token")
-
     notification_thread = Thread(
         target=lambda: notificator.run(),
         daemon=True,
     )
     notification_thread.start()
     try:
+        body = json.loads(event["body"])
+        step = body.get("step")
+        token = body.get("token")
+
         # API Gateway (websocket) has a hard limit of 32KB per message, so if the message
         # is larger than that we chunk it client-side and reassemble here.
         # Life cycle:
