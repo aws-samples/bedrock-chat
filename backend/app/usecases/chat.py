@@ -21,6 +21,7 @@ from app.repositories.conversation import (
 from app.repositories.conversation_search import find_conversations_by_query
 from app.repositories.custom_bot import alias_exists, store_alias
 from app.repositories.models.conversation import (
+    AttachmentContentModel,
     ConversationModel,
     MessageModel,
     ReasoningContentModel,
@@ -51,6 +52,7 @@ from app.usecases.bot import fetch_bot, modify_bot_last_used_time, modify_bot_st
 from app.usecases.global_config import get_title_model
 from app.user import User
 from app.base_prompt import BASE_SYSTEM_PROMPT
+from app.pdf_url_handler import download_pdf, extract_pdf_urls
 from app.utils import get_aest_now, get_current_time
 from app.vector_search import (
     SearchResult,
@@ -62,6 +64,46 @@ from ulid import ULID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+def process_pdf_urls_in_message(message: MessageModel) -> list[str]:
+    """Scan text content in a message for PDF URLs, download them, and add as attachments.
+
+    Returns a list of successfully processed PDF URLs for logging/display purposes.
+    """
+    processed_urls: list[str] = []
+
+    # Collect all PDF URLs from text content
+    pdf_urls: list[str] = []
+    for content in message.content:
+        if isinstance(content, TextContentModel):
+            urls = extract_pdf_urls(content.body)
+            pdf_urls.extend(urls)
+
+    if not pdf_urls:
+        return processed_urls
+
+    logger.info(f"Found {len(pdf_urls)} PDF URL(s) in message: {pdf_urls}")
+
+    for url in pdf_urls:
+        result = download_pdf(url)
+        if result is None:
+            logger.warning(f"Skipping PDF URL (download failed): {url}")
+            continue
+
+        filename, pdf_bytes = result
+        attachment = AttachmentContentModel(
+            content_type="attachment",
+            body=pdf_bytes,
+            file_name=filename,
+        )
+
+        # Insert attachment before the text content (same as normal file attachments)
+        message.content.insert(0, attachment)
+        processed_urls.append(url)
+        logger.info(f"Added PDF attachment from URL: {url} as {filename}")
+
+    return processed_urls
 
 
 def prepare_conversation(
@@ -223,6 +265,16 @@ def chat(
     display_citation = bot is not None and bot.display_retrieved_chunks
 
     message_map = conversation.message_map
+
+    # Process PDF URLs in the user message: detect, download, and attach as documents
+    if not chat_input.continue_generate:
+        user_message = message_map.get(user_msg_id)
+        if user_message:
+            processed_pdf_urls = process_pdf_urls_in_message(user_message)
+            if processed_pdf_urls:
+                logger.info(
+                    f"Processed {len(processed_pdf_urls)} PDF URL(s) from user message"
+                )
     instructions: list[str] = (
         [
             content.body

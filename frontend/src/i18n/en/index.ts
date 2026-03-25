@@ -15,6 +15,7 @@ const translation = {
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'Recent Chats',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: 'Admin Panel',
       backChat: 'Back to Chat',
       userGroups: 'User Groups',

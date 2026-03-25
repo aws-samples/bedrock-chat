@@ -14,6 +14,7 @@ import {
   PiArrowsCounterClockwise,
   PiX,
   PiArrowFatLineRight,
+  PiFilePdf,
 } from 'react-icons/pi';
 import { LuFilePlus2 } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
@@ -199,6 +200,12 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
     const disabledSend = useMemo(() => {
       return content === '' || props.disabledSend;
     }, [content, props.disabledSend]);
+
+    // Detect PDF URLs in the text content
+    const detectedPdfUrls = useMemo(() => {
+      const pdfUrlPattern = /https?:\/\/[^\s<>"']+\.pdf(?:\?[^\s<>"']*)?/gi;
+      return content.match(pdfUrlPattern) ?? [];
+    }, [content]);
 
     const inputRef = useRef<HTMLDivElement>(null);
 
@@ -558,6 +565,29 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* PDF URL detection indicator */}
+          {detectedPdfUrls.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 px-3 pt-2.5">
+              {detectedPdfUrls.map((url, idx) => {
+                const filename = url.split('/').pop()?.split('?')[0] || 'document.pdf';
+                const displayName = decodeURIComponent(filename).length > 30
+                  ? decodeURIComponent(filename).substring(0, 27) + '...'
+                  : decodeURIComponent(filename);
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs text-red-700 dark:border-red-800/40 dark:bg-red-900/20 dark:text-red-400">
+                    <PiFilePdf className="shrink-0 text-sm" />
+                    <span className="truncate">{displayName}</span>
+                    <span className="shrink-0 text-[10px] opacity-60">
+                      {t('app.pdfUrlDetected')}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
 

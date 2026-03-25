@@ -13,6 +13,7 @@ const translation = {
       recentlyUsedBots: 'บ็อตที่ใช้งานล่าสุด',
       conversationHistory: 'ประวัติ',
       chatWaitingSymbol: '▍',
+      pdfUrlDetected: 'PDF will be analysed',
       adminConsoles: 'สำหรับผู้ดูแลเท่านั้น',
     },
     model: {
