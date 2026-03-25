@@ -222,38 +222,27 @@ def process_chat_input(
         return {"statusCode": 200, "body": "Message sent."}
 
     except RecordNotFoundError:
-        if chat_input.bot_id:
-            return {
-                "statusCode": 404,
-                "body": json.dumps(
-                    dict(
-                        status="ERROR",
-                        reason=f"bot {chat_input.bot_id} not found.",
-                    )
-                ),
-            }
-        else:
-            return {
-                "statusCode": 400,
-                "body": json.dumps(
-                    dict(
-                        status="ERROR",
-                        reason="Invalid request.",
-                    )
-                ),
-            }
+        reason = (
+            f"bot {chat_input.bot_id} not found."
+            if chat_input.bot_id
+            else "Invalid request."
+        )
+        status_code = 404 if chat_input.bot_id else 400
+        notificator.notify(
+            json.dumps(dict(status="ERROR", reason=reason)).encode("utf-8")
+        )
+        return {"statusCode": status_code, "body": "Error."}
 
     except Exception as e:
         logger.exception(f"Failed to run stream handler: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps(
-                dict(
-                    status="ERROR",
-                    reason=f"Failed to run stream handler: {e}",
-                )
-            ),
-        }
+        reason = f"Failed to run stream handler: {e}"
+        # Send the error via post_to_connection so it reaches the client even
+        # when the Lambda response is ignored after the API Gateway 29-second
+        # integration timeout.
+        notificator.notify(
+            json.dumps(dict(status="ERROR", reason=reason)).encode("utf-8")
+        )
+        return {"statusCode": 500, "body": "Error."}
 
 
 def _cleanup_s3_chunks(connection_id: str) -> None:
