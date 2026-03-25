@@ -45,6 +45,9 @@ export class WebSocket extends Construct {
 
     // Bucket for SNS large payload support
     // See: https://docs.aws.amazon.com/sns/latest/dg/extended-client-library-python.html
+    // Bucket used to relay oversized WebSocket payloads (chunked by the client,
+    // reassembled by the Lambda on END).  Objects are automatically expired after
+    // 1 day as a safety net; the Lambda also deletes them immediately after use.
     const largePayloadSupportBucket = new s3.Bucket(
       this,
       "LargePayloadSupportBucket",
@@ -57,6 +60,13 @@ export class WebSocket extends Construct {
         autoDeleteObjects: true,
         serverAccessLogsBucket: props.accessLogBucket,
         serverAccessLogsPrefix: "LargePayloadSupportBucket",
+        lifecycleRules: [
+          {
+            prefix: "ws-chunks/",
+            expiration: Duration.days(1),
+            id: "ExpireWebSocketChunks",
+          },
+        ],
       }
     );
 
@@ -110,7 +120,7 @@ export class WebSocket extends Construct {
       );
     }
 
-    largePayloadSupportBucket.grantRead(handlerRole);
+    largePayloadSupportBucket.grantReadWrite(handlerRole);
     database.websocketSessionTable.grantReadWriteData(handlerRole);
     props.largeMessageBucket.grantReadWrite(handlerRole);
     props.documentBucket.grantReadWrite(handlerRole);

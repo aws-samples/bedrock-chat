@@ -1,9 +1,7 @@
 import json
 import logging
 import os
-import traceback
-from datetime import datetime
-from decimal import Decimal as decimal
+from concurrent.futures import ThreadPoolExecutor
 from queue import SimpleQueue
 from threading import Thread
 from typing import BinaryIO, Literal, TypedDict
@@ -16,15 +14,26 @@ from app.routes.schemas.conversation import ChatInput
 from app.stream import OnStopInput, OnThinking
 from app.usecases.chat import chat
 from app.user import User
-from boto3.dynamodb.conditions import Attr, Key
 
-WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
+LARGE_PAYLOAD_SUPPORT_BUCKET = os.environ["LARGE_PAYLOAD_SUPPORT_BUCKET"]
 
-dynamodb_client = boto3.resource("dynamodb")
-table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
+s3_client = boto3.client("s3")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+def _chunk_prefix(connection_id: str) -> str:
+    return f"ws-chunks/{connection_id}/"
+
+
+def _session_key(connection_id: str) -> str:
+    return f"{_chunk_prefix(connection_id)}session.json"
+
+
+def _chunk_key(connection_id: str, index: int) -> str:
+    # Zero-pad so lexicographic sort matches numeric order
+    return f"{_chunk_prefix(connection_id)}{index:010d}"
 
 
 class _NotifyCommand(TypedDict):
@@ -91,19 +100,14 @@ class NotificationSender:
         )
 
     def notify(self, payload: bytes | BinaryIO):
-        logger.debug(
-            f"[WEBSOCKET_NOTIFY] Adding payload to queue: {len(str(payload))} chars"
-        )
         self.commands.put(
             {
                 "type": "notify",
                 "payload": payload,
             }
         )
-        logger.debug(f"[WEBSOCKET_NOTIFY] Payload added to queue successfully")
 
     def on_stream(self, token: str):
-        # Send completion
         payload = json.dumps(
             dict(
                 status="STREAMING",
@@ -130,11 +134,7 @@ class NotificationSender:
             )
         ).encode("utf-8")
 
-        logger.debug(
-            f"[WEBSOCKET_ON_STOP] Sending STREAMING_END payload: {payload.decode('utf-8')}"
-        )
         self.notify(payload=payload)
-        logger.debug(f"[WEBSOCKET_ON_STOP] STREAMING_END payload sent successfully")
 
     def on_agent_thinking(self, tool_use: OnThinking):
         payload = json.dumps(
@@ -195,7 +195,10 @@ def process_chat_input(
     notificator: NotificationSender,
 ) -> dict:
     """Process chat input and send the message to the client."""
-    logger.info(f"Received chat input: {chat_input}")
+    logger.info(
+        f"Processing chat input for conversation: {chat_input.conversation_id}, "
+        f"model: {chat_input.message.model}"
+    )
 
     try:
         chat(
@@ -253,6 +256,25 @@ def process_chat_input(
         }
 
 
+def _cleanup_s3_chunks(connection_id: str) -> None:
+    """Delete all S3 objects for this connection. Best-effort; errors are logged only."""
+    try:
+        prefix = _chunk_prefix(connection_id)
+        paginator = s3_client.get_paginator("list_objects_v2")
+        objects_to_delete = []
+        for page in paginator.paginate(Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                objects_to_delete.append({"Key": obj["Key"]})
+        if objects_to_delete:
+            s3_client.delete_objects(
+                Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET,
+                Delete={"Objects": objects_to_delete},
+            )
+            logger.info(f"Cleaned up {len(objects_to_delete)} S3 chunks for {connection_id}")
+    except Exception as e:
+        logger.warning(f"Failed to clean up S3 chunks for {connection_id}: {e}")
+
+
 def handler(event, context):
     logger.info(f"Received event: {event}")
     route_key = event["requestContext"]["routeKey"]
@@ -271,8 +293,6 @@ def handler(event, context):
         connection_id=connection_id,
     )
 
-    now = datetime.now()
-    expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = json.loads(event["body"])
     step = body.get("step")
     token = body.get("token")
@@ -283,19 +303,15 @@ def handler(event, context):
     )
     notification_thread.start()
     try:
-        # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
-        # need to concatenate chunks and send as a single full message.
-        # To do that, we store the chunks in DynamoDB and when the message is complete, send it to SNS.
-        # The life cycle of the message is as follows:
-        # 1. Client sends `START` message to the WebSocket API.
-        # 2. This handler receives the `Session started` message.
-        # 3. Client sends message parts to the WebSocket API.
-        # 4. This handler receives the message parts and appends them to the item in DynamoDB with index.
-        # 5. Client sends `END` message to the WebSocket API.
-        # 6. This handler receives the `END` message, concatenates the parts and sends the message to Bedrock.
+        # API Gateway (websocket) has a hard limit of 32KB per message, so if the message
+        # is larger than that we chunk it client-side and reassemble here.
+        # Life cycle:
+        # 1. Client sends START  → Lambda stores session metadata in S3.
+        # 2. Client sends BODY chunks  → Lambda stores each chunk as an S3 object.
+        # 3. Client sends END  → Lambda reads + concatenates all chunks from S3,
+        #                        calls Bedrock, streams response back.
         if step == "START":
             try:
-                # Verify JWT token
                 decoded = verify_token(token)
             except Exception as e:
                 logger.exception(f"Invalid token: {e}")
@@ -311,58 +327,57 @@ def handler(event, context):
 
             user_id = decoded["sub"]
 
-            # Store user id
-            response = table.put_item(
-                Item={
-                    "ConnectionId": connection_id,
-                    # Store as zero
-                    "MessagePartId": decimal(0),
-                    "UserId": user_id,
-                    "expire": expire,
-                }
+            s3_client.put_object(
+                Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET,
+                Key=_session_key(connection_id),
+                Body=json.dumps({"user_id": user_id}),
             )
             return {"statusCode": 200, "body": "Session started."}
+
         elif step == "END":
             decoded = verify_token(token)
             user = User.from_decoded_token(decoded)
 
-            # Retrieve user id
-            response = table.query(
-                KeyConditionExpression=Key("ConnectionId").eq(connection_id),
-                FilterExpression=Attr("UserId").exists(),
+            # Read session metadata
+            session_obj = s3_client.get_object(
+                Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET,
+                Key=_session_key(connection_id),
             )
-            user_id = response["Items"][0]["UserId"]
+            session_data = json.loads(session_obj["Body"].read())
+            user_id = session_data["user_id"]  # noqa: F841 – kept for audit / future use
 
-            # Concatenate the message parts
-            message_parts = []
-            last_evaluated_key = None
+            # List all chunk objects (excludes session.json via prefix filtering)
+            chunk_prefix = _chunk_prefix(connection_id)
+            response = s3_client.list_objects_v2(
+                Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET,
+                Prefix=chunk_prefix,
+            )
+            chunk_objects = sorted(
+                [
+                    obj
+                    for obj in response.get("Contents", [])
+                    if not obj["Key"].endswith("session.json")
+                ],
+                key=lambda obj: obj["Key"],
+            )
 
-            while True:
-                if last_evaluated_key:
-                    response = table.query(
-                        KeyConditionExpression=Key("ConnectionId").eq(connection_id)
-                        # Zero is reserved for user id, so start from 1
-                        & Key("MessagePartId").gte(1),
-                        ExclusiveStartKey=last_evaluated_key,
-                    )
-                else:
-                    response = table.query(
-                        KeyConditionExpression=Key("ConnectionId").eq(connection_id)
-                        & Key("MessagePartId").gte(1),
-                    )
+            logger.info(f"Number of message chunks: {len(chunk_objects)}")
 
-                message_parts.extend(response["Items"])
+            # Read all chunks in parallel
+            def _read_chunk(obj: dict) -> str:
+                resp = s3_client.get_object(
+                    Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET, Key=obj["Key"]
+                )
+                return resp["Body"].read().decode("utf-8")
 
-                if "LastEvaluatedKey" in response:
-                    last_evaluated_key = response["LastEvaluatedKey"]
-                else:
-                    break
+            with ThreadPoolExecutor(max_workers=min(len(chunk_objects), 20)) as executor:
+                chunks = list(executor.map(_read_chunk, chunk_objects))
 
-            logger.info(f"Number of message chunks: {len(message_parts)}")
-            message_parts.sort(key=lambda x: x["MessagePartId"])
-            full_message = "".join(item["MessagePart"] for item in message_parts)
+            full_message = "".join(chunks)
 
-            # Process the concatenated full message
+            # Clean up S3 objects before processing so they don't linger
+            _cleanup_s3_chunks(connection_id)
+
             chat_input = ChatInput(**json.loads(full_message))
             return process_chat_input(
                 user=user,
@@ -371,19 +386,14 @@ def handler(event, context):
             )
 
         else:
-            # Store the message part of full message
-            # Zero is reserved for user id, so start from 1
-            part_index = body["index"] + 1
+            # BODY step — store this chunk as an S3 object
+            part_index = body["index"]
             message_part = body["part"]
 
-            # Store the message part with its index
-            table.put_item(
-                Item={
-                    "ConnectionId": connection_id,
-                    "MessagePartId": decimal(part_index),
-                    "MessagePart": message_part,
-                    "expire": expire,
-                }
+            s3_client.put_object(
+                Bucket=LARGE_PAYLOAD_SUPPORT_BUCKET,
+                Key=_chunk_key(connection_id, part_index),
+                Body=message_part,
             )
             return {"statusCode": 200, "body": "Message part received."}
 
