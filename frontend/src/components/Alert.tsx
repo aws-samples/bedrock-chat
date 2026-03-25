@@ -13,34 +13,31 @@ const Alert: React.FC<Props> = (props) => {
   const icon = useMemo(() => {
     switch (props.severity) {
       case 'info':
-        return <PiInfo className="text-2xl" />;
+        return <PiInfo className="text-xl" />;
       case 'warning':
-        return <PiWarningFill className="text-2xl" />;
+        return <PiWarningFill className="text-xl" />;
       case 'error':
-        return <PiWarningCircleFill className="text-2xl" />;
+        return <PiWarningCircleFill className="text-xl" />;
     }
   }, [props.severity]);
 
   return (
     <div
       className={twMerge(
-        'flex flex-col rounded border border-aws-squid-ink-light shadow-lg dark:border-aws-squid-ink-dark',
-        props.severity === 'info' && 'bg-aws-aqua',
-        props.severity === 'warning' && 'bg-yellow',
-        props.severity === 'error' && 'bg-red',
+        'flex flex-col rounded-xl border text-sm',
+        props.severity === 'info' && 'border-aa-blue-4/30 bg-aa-blue-5/30 text-aa-blue-2 dark:border-aa-blue-3/20 dark:bg-aa-blue-1/20 dark:text-aa-blue-4',
+        props.severity === 'warning' && 'border-yellow/30 bg-light-yellow/50 text-yellow dark:border-yellow/20 dark:bg-yellow/10',
+        props.severity === 'error' && 'border-red/30 bg-light-red/50 text-red dark:border-red/20 dark:bg-red/10',
         props.className
       )}>
       {props.title && (
-        <div
-          className={twMerge(
-            'flex gap-2 px-2 pt-2 font-bold text-aws-font-color-white-light dark:text-aws-font-color-white-dark'
-          )}>
+        <div className="flex items-center gap-2 px-3 pt-3 font-semibold tracking-tight">
           {icon}
           <div>{props.title}</div>
         </div>
       )}
 
-      <div className="p-2 text-aws-font-color-white-light dark:text-aws-font-color-white-dark">
+      <div className="px-3 py-2.5">
         {props.children}
       </div>
     </div>

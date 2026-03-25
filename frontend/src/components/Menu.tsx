@@ -89,12 +89,12 @@ const MenuSettings: React.FC<Props> = (props) => {
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute bottom-10 left-2 w-60 rounded border border-aws-font-color-white-light bg-aws-sea-blue-light text-aws-font-color-white-light dark:border-aws-font-color-white-dark dark:bg-aws-ui-color-dark dark:text-aws-font-color-white-dark">
-          <div className="flex flex-col gap-1 border-b p-2">
-            <div className="font-bold">{userName}</div>
-            <div className="">
-              <div className="italic">{t('app.userGroups')}</div>
-              <ul className="list-disc pl-5">
+          className="absolute bottom-12 left-2 w-60 animate-scale-in rounded-xl border border-white/[0.08] bg-aws-squid-ink-light/95 text-white/90 shadow-vercel-dark-lg backdrop-blur-md dark:bg-aws-ui-color-dark/95">
+          <div className="flex flex-col gap-0.5 border-b border-white/[0.06] p-3">
+            <div className="text-[13px] font-semibold tracking-tight">{userName}</div>
+            <div className="mt-1">
+              <div className="text-[11px] font-medium uppercase tracking-wider text-white/40">{t('app.userGroups')}</div>
+              <ul className="mt-0.5 list-disc pl-4 text-[13px] text-white/60">
                 {userGroups.map((group) => (
                   <li key={group}>{group}</li>
                 ))}
@@ -102,56 +102,61 @@ const MenuSettings: React.FC<Props> = (props) => {
             </div>
           </div>
 
-          <div
-            className="flex w-full cursor-pointer items-center p-2 hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark"
-            onClick={() => {
-              setIsOpen(false);
-              props.onClickDrawerOptions();
-            }}>
-            <PiSidebar className="mr-2" />
-            {t('button.drawerOption')}
-          </div>
+          <div className="py-1">
+            <div
+              className="flex w-full cursor-pointer items-center px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-white/[0.06]"
+              onClick={() => {
+                setIsOpen(false);
+                props.onClickDrawerOptions();
+              }}>
+              <PiSidebar className="mr-2.5 text-white/50" />
+              {t('button.drawerOption')}
+            </div>
 
-          <div
-            className="flex w-full cursor-pointer items-center p-2 hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark"
-            onClick={() => {
-              setIsOpen(false);
-              props.onSelectLanguage();
-            }}>
-            <PiTranslate className="mr-2" />
-            {t('button.language')}
-          </div>
+            <div
+              className="flex w-full cursor-pointer items-center px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-white/[0.06]"
+              onClick={() => {
+                setIsOpen(false);
+                props.onSelectLanguage();
+              }}>
+              <PiTranslate className="mr-2.5 text-white/50" />
+              {t('button.language')}
+            </div>
 
-          <div className="flex w-full items-center px-2 hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark">
-            {isDarkTheme ? (
-              <IoMoonSharp className="mr-2" />
-            ) : (
-              <IoSunnyOutline className="mr-2" />
-            )}
-            <div className="flex w-full items-center justify-between">
-              <span>{t('button.mode')}</span>
-              <Toggle
-                value={isDarkTheme}
-                onChange={(isDarkTheme) => {
-                  changeTheme(isDarkTheme);
-                }}
-              />
+            <div className="flex w-full items-center px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-white/[0.06]">
+              {isDarkTheme ? (
+                <IoMoonSharp className="mr-2.5 text-white/50" />
+              ) : (
+                <IoSunnyOutline className="mr-2.5 text-white/50" />
+              )}
+              <div className="flex w-full items-center justify-between">
+                <span>{t('button.mode')}</span>
+                <Toggle
+                  value={isDarkTheme}
+                  onChange={(isDarkTheme) => {
+                    changeTheme(isDarkTheme);
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <div
-            className="flex w-full cursor-pointer items-center border-t p-2 hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark"
-            onClick={() => {
-              setIsOpen(false);
-              props.onClearConversations();
-            }}>
-            <PiTrash className="mr-2" />
-            {t('button.clearConversation')}
-          </div>
-          <div
-            className="flex w-full cursor-pointer items-center border-t p-2 hover:bg-aws-sea-blue-hover-light dark:hover:bg-aws-paper-dark"
-            onClick={props.onSignOut}>
-            <PiSignOut className="mr-2" />
-            {t('button.signOut')}
+
+          <div className="border-t border-white/[0.06] py-1">
+            <div
+              className="flex w-full cursor-pointer items-center px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-white/[0.06]"
+              onClick={() => {
+                setIsOpen(false);
+                props.onClearConversations();
+              }}>
+              <PiTrash className="mr-2.5 text-white/50" />
+              {t('button.clearConversation')}
+            </div>
+            <div
+              className="flex w-full cursor-pointer items-center px-3 py-2 text-[13px] transition-colors duration-150 hover:bg-white/[0.06]"
+              onClick={props.onSignOut}>
+              <PiSignOut className="mr-2.5 text-white/50" />
+              {t('button.signOut')}
+            </div>
           </div>
         </div>
       )}

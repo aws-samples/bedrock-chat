@@ -469,21 +469,21 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       <>
         {props.dndMode && (
           <div
-            className="fixed left-0 top-0 z-50 flex size-full items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed left-0 top-0 z-50 flex size-full items-center justify-center bg-black/50 backdrop-blur-md"
             onDrop={onDrop}>
-            <div className="rounded-2xl border-2 border-dashed border-white/60 bg-white/10 px-12 py-8 text-white">
-              <LuFilePlus2 className="mx-auto mb-2 text-4xl" />
-              <p className="text-sm font-medium">{t('app.inputMessage')}</p>
+            <div className="rounded-2xl border-2 border-dashed border-white/40 bg-white/10 px-12 py-10 text-white shadow-vercel-dark-lg backdrop-blur-sm">
+              <LuFilePlus2 className="mx-auto mb-3 text-4xl opacity-80" />
+              <p className="text-sm font-medium tracking-tight">{t('app.inputMessage')}</p>
             </div>
           </div>
         )}
 
         {/* Regenerate / Continue buttons above the input */}
         {props.canRegenerate && (
-          <div className="mb-2 flex justify-center gap-2">
+          <div className="mb-2.5 flex justify-center gap-2">
             {props.canContinue && !props.disabledContinue && !props.disabled && (
               <Button
-                className="rounded-full bg-aws-paper-light px-4 py-1.5 text-sm shadow-sm dark:bg-aws-paper-dark"
+                className="rounded-full border-black/[0.08] bg-white px-4 py-1.5 text-[13px] shadow-vercel dark:border-white/[0.08] dark:bg-aws-ui-color-dark dark:shadow-vercel-dark"
                 outlined
                 onClick={props.continueGenerate}>
                 <PiArrowFatLineRight className="mr-2" />
@@ -491,7 +491,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
               </Button>
             )}
             <Button
-              className="rounded-full bg-aws-paper-light px-4 py-1.5 text-sm shadow-sm dark:bg-aws-paper-dark"
+              className="rounded-full border-black/[0.08] bg-white px-4 py-1.5 text-[13px] shadow-vercel dark:border-white/[0.08] dark:bg-aws-ui-color-dark dark:shadow-vercel-dark"
               outlined
               disabled={props.disabledRegenerate || props.disabled}
               onClick={() => props.onRegenerate(reasoningEnabled)}>
@@ -507,7 +507,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
           onDrop={onDrop}
           className={twMerge(
             props.className,
-            'relative flex w-11/12 flex-col rounded-2xl border border-black/10 bg-white shadow-lg shadow-gray/20 transition-shadow focus-within:border-aws-squid-ink-light/30 focus-within:shadow-aws-squid-ink-light/10 dark:border-white/10 dark:bg-aws-ui-color-dark dark:shadow-black/40 dark:focus-within:border-white/20 md:w-10/12 lg:w-4/6 xl:w-3/6'
+            'relative flex flex-col rounded-2xl border border-black/[0.08] bg-white shadow-vercel transition-all duration-200 focus-within:border-black/[0.15] focus-within:shadow-vercel-lg dark:border-white/[0.08] dark:bg-aws-ui-color-dark dark:shadow-vercel-dark dark:focus-within:border-white/[0.15] dark:focus-within:shadow-vercel-dark-lg'
           )}>
 
           {/* Attached images */}
@@ -577,7 +577,7 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
           </div>
 
           {/* Toolbar row */}
-          <div className="flex w-full items-center justify-between px-3 pb-2">
+          <div className="flex w-full items-center justify-between px-3 pb-2.5">
             <div className="flex items-center gap-1">
               <ButtonFileChoose
                 disabled={props.isLoading}

@@ -13,10 +13,10 @@ const ButtonSend: React.FC<Props> = (props) => {
   return (
     <button
       className={twMerge(
-        'flex items-center justify-center rounded-xl p-2 text-xl',
-        'bg-aws-sea-blue-light text-white hover:bg-aws-sea-blue-hover-light',
-        'dark:bg-aws-sea-blue-dark dark:hover:bg-aws-sea-blue-hover-dark',
-        props.disabled ? 'opacity-30' : '',
+        'flex items-center justify-center rounded-xl p-2 text-xl transition-all duration-200',
+        'bg-aws-squid-ink-light text-white shadow-sm hover:shadow-md active:scale-95',
+        'dark:bg-white/90 dark:text-black dark:hover:bg-white',
+        props.disabled ? 'opacity-30 cursor-not-allowed' : '',
         props.className
       )}
       onClick={props.onClick}

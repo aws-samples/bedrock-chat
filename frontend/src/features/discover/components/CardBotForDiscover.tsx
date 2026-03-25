@@ -48,14 +48,14 @@ const CardBotForDiscover: React.FC<Props> = (props) => {
           />
         </div>
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-1 text-2xl font-bold text-aws-font-color-light dark:text-aws-font-color-dark">
+          <div className="flex items-center gap-1.5 text-xl font-bold tracking-tight text-aws-font-color-light dark:text-aws-font-color-dark">
             <IconPinnedBot
               botSharedStatus={props.bot.sharedStatus}
               className="text-aws-aqua"
             />
             {props.bot.title}
           </div>
-          <div>
+          <div className="text-sm text-dark-gray dark:text-light-gray">
             {props.bot.description === ''
               ? t('bot.label.noDescription')
               : props.bot.description}
@@ -71,18 +71,18 @@ const CardBotForDiscover: React.FC<Props> = (props) => {
       </ModalDialog>
 
       <div
-        className="flex h-28 w-full cursor-pointer flex-col rounded-xl border border-gray bg-white px-4 py-2 transition-colors hover:bg-light-gray dark:border-dark-gray dark:bg-aws-squid-ink-dark"
+        className="hover-card flex h-28 w-full cursor-pointer flex-col rounded-xl border border-black/[0.06] bg-white px-4 py-3 dark:border-white/[0.06] dark:bg-aws-paper-dark"
         onClick={handleClick}>
         <div className="flex items-center">
           {!props.hidePinnedIcon && (
             <IconPinnedBot
-              className="mr-1 shrink-0 text-aws-aqua"
+              className="mr-1.5 shrink-0 text-aws-aqua"
               botSharedStatus={props.bot.sharedStatus}
             />
           )}
-          <div className="truncate text-base font-bold">{props.bot.title}</div>
+          <div className="truncate text-sm font-semibold tracking-tight">{props.bot.title}</div>
         </div>
-        <div className="line-clamp-3 overflow-hidden text-sm italic text-dark-gray">
+        <div className="mt-1 line-clamp-3 overflow-hidden text-xs text-dark-gray dark:text-light-gray">
           {props.bot.description === ''
             ? t('bot.label.noDescription')
             : props.bot.description}

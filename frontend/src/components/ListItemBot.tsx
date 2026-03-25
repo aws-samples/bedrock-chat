@@ -29,11 +29,11 @@ const ListItemBot: React.FC<Props> = (props) => {
       key={props.bot.id}
       className={`${
         props.className ?? ''
-      } relative flex w-full justify-between border-b border-light-gray dark:border-dark-gray`}>
+      } hover-card relative flex w-full justify-between rounded-xl border border-black/[0.06] dark:border-white/[0.06]`}>
       <div
-        className={`h-full grow overflow-hidden bg-aws-paper-light p-2 dark:bg-aws-paper-dark ${
+        className={`h-full grow overflow-hidden rounded-xl bg-white p-3 dark:bg-aws-paper-dark ${
           props.bot.available
-            ? 'cursor-pointer hover:brightness-90'
+            ? 'cursor-pointer'
             : 'text-aws-font-color-light/30 dark:text-aws-font-color-dark/30'
         }`}
         onClick={() => {
@@ -41,10 +41,10 @@ const ListItemBot: React.FC<Props> = (props) => {
             props.onClick(props.bot.id);
           }
         }}>
-        <div className="flex w-full flex-nowrap items-center gap-1 whitespace-nowrap text-sm font-semibold">
+        <div className="flex w-full flex-nowrap items-center gap-1.5 whitespace-nowrap text-sm font-semibold tracking-tight">
           <IconPinnedBot
             botSharedStatus={props.bot.sharedStatus}
-            className=" shrink-0 text-aws-aqua"
+            className="shrink-0 text-aws-aqua"
           />
 
           {!props.bot.owned && !isPinnedBot(props.bot.sharedStatus) && (
@@ -75,8 +75,8 @@ const ListItemBot: React.FC<Props> = (props) => {
       </div>
 
       <div className="absolute right-0 flex h-full justify-between">
-        <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper-light dark:to-aws-paper-dark"></div>
-        <div className="flex items-center gap-2 bg-aws-paper-light pl-2 dark:bg-aws-paper-dark dark:text-aws-font-color-dark">
+        <div className="w-10 bg-gradient-to-r from-transparent to-white dark:to-aws-paper-dark"></div>
+        <div className="flex items-center gap-2 rounded-r-xl bg-white pl-2 dark:bg-aws-paper-dark dark:text-aws-font-color-dark">
           {props.children}
         </div>
       </div>

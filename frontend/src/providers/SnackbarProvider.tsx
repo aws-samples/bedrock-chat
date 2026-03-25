@@ -25,23 +25,21 @@ const SnackbarProvider: React.FC<Props> = ({ children }) => {
       <div className="fixed left-0 top-0 z-50 w-full lg:left-1/3 lg:w-1/2">
         <Transition
           show={isOpen}
-          enter="transform transition duration-75"
-          enterFrom="opacity-0 scale-50"
-          enterTo="opacity-100 scale-100"
-          leave="transform duration-200 transition ease-in-out"
-          leaveFrom="opacity-100 scale-100 "
-          leaveTo="opacity-0 scale-95 ">
-          <div className="">
-            <div className="mx-4 mt-4 flex justify-between rounded bg-red p-3  text-sm text-aws-font-color-white-light shadow-lg">
-              <div className="mr-3 text-3xl">
-                <PiWarningFill />
-              </div>
-              <div className="grow">{message}</div>
-              <div className="-mr-2 -mt-2">
-                <ButtonIcon onClick={close}>
-                  <PiX />
-                </ButtonIcon>
-              </div>
+          enter="transform transition duration-200 ease-out"
+          enterFrom="opacity-0 -translate-y-2 scale-95"
+          enterTo="opacity-100 translate-y-0 scale-100"
+          leave="transform duration-150 transition ease-in"
+          leaveFrom="opacity-100 translate-y-0 scale-100"
+          leaveTo="opacity-0 -translate-y-2 scale-95">
+          <div className="mx-4 mt-4 flex items-center justify-between rounded-xl border border-red/20 bg-white p-3 text-sm text-red shadow-vercel-lg dark:border-red/20 dark:bg-aws-paper-dark dark:shadow-vercel-dark-lg">
+            <div className="mr-3 text-2xl">
+              <PiWarningFill />
+            </div>
+            <div className="grow font-medium tracking-tight">{message}</div>
+            <div className="-mr-1">
+              <ButtonIcon onClick={close}>
+                <PiX className="text-base" />
+              </ButtonIcon>
             </div>
           </div>
         </Transition>

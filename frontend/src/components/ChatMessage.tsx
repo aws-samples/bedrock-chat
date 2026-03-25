@@ -153,7 +153,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   const isAssistant = chatContent?.role === 'assistant';
 
   return (
-    <div className={twMerge(props.className, 'animate-fade-in px-4 py-3')}>
+    <div className={twMerge(props.className, 'animate-fade-in px-4 py-4')}>
       {/* ── SIBLING NAVIGATOR ── */}
       {(chatContent?.sibling.length ?? 0) > 1 && (
         <div className={twMerge(
@@ -235,7 +235,7 @@ const ChatMessage: React.FC<Props> = (props) => {
 
                 {/* Text bubble */}
                 {chatContent!.content.some((c) => c.contentType === 'text') && (
-                  <div className="rounded-2xl rounded-tr-sm bg-aws-squid-ink-light px-4 py-2.5 text-sm text-white dark:bg-aws-sea-blue-dark">
+                  <div className="rounded-2xl rounded-tr-sm bg-aa-purple-3 px-4 py-3 text-sm leading-relaxed text-white shadow-sm dark:bg-white/15 dark:text-white/90">
                     {chatContent!.content.map((content, idx) => {
                       if (content.contentType !== 'text') return null;
                       return (
@@ -287,7 +287,7 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="flex items-start gap-3">
           {/* Avatar */}
           <div className="mt-0.5 shrink-0">
-            <div className="flex size-8 items-center justify-center overflow-hidden rounded-full border border-aws-squid-ink-light/20 bg-white shadow-sm dark:border-white/10 dark:bg-aws-paper-dark">
+            <div className="flex size-8 items-center justify-center overflow-hidden rounded-full border border-black/[0.06] bg-white shadow-sm dark:border-white/[0.08] dark:bg-aws-paper-dark">
               <img
                 src="/images/bedrock_icon_64.png"
                 className="size-6 object-contain"
@@ -316,7 +316,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             {reasoning && (
               <ReasoningCard
                 content={reasoning}
-                className="mb-3 flex w-full flex-col rounded-xl border border-gray/30 bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
+                className="mb-3 flex w-full flex-col rounded-xl border border-black/[0.06] bg-black/[0.02] text-aws-font-color-light/70 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-aws-font-color-dark/70"
               />
             )}
 
