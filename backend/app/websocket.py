@@ -370,7 +370,7 @@ def handler(event, context):
                 )
                 return resp["Body"].read().decode("utf-8")
 
-            with ThreadPoolExecutor(max_workers=min(len(chunk_objects), 20)) as executor:
+            with ThreadPoolExecutor(max_workers=max(1, min(len(chunk_objects), 20))) as executor:
                 chunks = list(executor.map(_read_chunk, chunk_objects))
 
             full_message = "".join(chunks)
