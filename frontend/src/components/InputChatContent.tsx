@@ -97,8 +97,6 @@ const useInputChatContentState = create<{
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
   setIsOpenPreviewImage: (isOpen: boolean) => void;
-  totalFileSizeToSend: number;
-  setTotalFileSizeToSend: (size: number) => void;
 }>((set, get) => ({
   base64EncodedImages: [],
   pushBase64EncodedImage: (encodedImage) => {
@@ -148,11 +146,6 @@ const useInputChatContentState = create<{
       attachedFiles: [],
     });
   },
-  totalFileSizeToSend: 0,
-  setTotalFileSizeToSend: (size) =>
-    set({
-      totalFileSizeToSend: size,
-    }),
 }));
 
 const InputChatContent = forwardRef<HTMLElement, Props>(
@@ -185,9 +178,16 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       pushTextFile,
       removeTextFile,
       clearAttachedFiles,
-      totalFileSizeToSend,
-      setTotalFileSizeToSend,
     } = useInputChatContentState();
+
+    // Compute total size from actual current files to avoid stale state bugs.
+    // base64 encoding adds ~33%, so this reflects real payload size.
+    const totalFileSizeToSend = useMemo(() => {
+      return (
+        base64EncodedImages.reduce((sum, img) => sum + img.length, 0) +
+        attachedFiles.reduce((sum, f) => sum + f.content.length, 0)
+      );
+    }, [base64EncodedImages, attachedFiles]);
 
     useEffect(() => {
       clearBase64EncodedImages();
@@ -294,19 +294,10 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
             }
 
             pushBase64EncodedImage(resizedImageData);
-            setTotalFileSizeToSend(
-              totalFileSizeToSend + resizedImageData.length
-            );
           };
         };
       },
-      [
-        pushBase64EncodedImage,
-        totalFileSizeToSend,
-        setTotalFileSizeToSend,
-        open,
-        t,
-      ]
+      [pushBase64EncodedImage, totalFileSizeToSend, open, t]
     );
 
     const handleAttachedFileRead = useCallback(
@@ -353,12 +344,11 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
               size: file.size,
               content: base64String,
             });
-            setTotalFileSizeToSend(totalFileSizeToSend + base64String.length);
           }
         };
         reader.readAsArrayBuffer(file);
       },
-      [pushTextFile, totalFileSizeToSend, setTotalFileSizeToSend, open, t]
+      [pushTextFile, totalFileSizeToSend, open, t]
     );
 
     useEffect(() => {
