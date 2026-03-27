@@ -1,10 +1,37 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve: { alias: { './runtimeConfig': './runtimeConfig.browser' } },
+  resolve: {
+    alias: {
+      './runtimeConfig': './runtimeConfig.browser',
+    },
+  },
+  build: {
+    rollupOptions: {
+      plugins: [
+        {
+          name: 'resolve-xstate-v4-for-amplify',
+          resolveId(source, importer) {
+            // Redirect xstate imports from @aws-amplify packages to xstate v4
+            if (
+              source === 'xstate' &&
+              importer &&
+              importer.includes('@aws-amplify')
+            ) {
+              return this.resolve('xstate-v4', importer, {
+                skipSelf: true,
+              });
+            }
+            return null;
+          },
+        },
+      ],
+    },
+  },
   plugins: [
     react(),
     VitePWA({
