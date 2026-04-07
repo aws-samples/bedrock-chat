@@ -38,6 +38,11 @@ const translation: typeof en = {
         description:
           '最大の能力と実用的なパフォーマンスを組み合わせた最も知的なモデル。',
       },
+      'claude-v4.6-opus': {
+        label: 'Claude 4.6 (Opus)',
+        description:
+          'より慎重に計画し、エージェントタスクをより長く持続し、大規模コードベースで確実に動作するフラッグシップモデル（1Mトークンコンテキストウィンドウ）。',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
@@ -47,6 +52,11 @@ const translation: typeof en = {
         label: 'Claude 4.5 (Sonnet)',
         description:
           'Sonnetの最新版。Claudeモデル最高レベルのコーディング性能と長時間タスク処理が可能',
+      },
+      'claude-v4.6-sonnet': {
+        label: 'Claude 4.6 (Sonnet)',
+        description:
+          'コーディング、コンピュータ使用、長文コンテキスト推論、エージェント計画が改善されたミッドティアモデルの完全アップグレード（1Mトークンコンテキストウィンドウ）。',
       },
       'claude-v4.5-haiku': {
         label: 'Claude 4.5 (Haiku)',

@@ -46,6 +46,11 @@ const translation = {
         description:
           'Model paling cerdas kami yang menggabungkan kemampuan maksimal dengan kinerja praktis.',
       },
+      'claude-v4.6-opus': {
+        label: 'Claude 4.6 (Opus)',
+        description:
+          'Model unggulan yang merencanakan lebih hati-hati, mempertahankan tugas agen lebih lama, dan beroperasi dengan andal di codebase besar dengan jendela konteks 1M token.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Model yang kuat untuk tugas-tugas yang sangat kompleks.',

@@ -35,6 +35,11 @@ const translation = {
         description:
           'The most intelligent model combining maximum capability with practical performance. Features a more accessible price point than previous Opus models.',
       },
+      'claude-v4.6-opus': {
+        label: 'Claude 4.6 (Opus)',
+        description:
+          'Flagship model that plans more carefully, sustains agentic tasks longer, and operates reliably in massive codebases with 1M token context window.',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
@@ -44,6 +49,11 @@ const translation = {
         label: 'Claude 4.5 (Sonnet)',
         description:
           'The latest version of the Sonnet model that achieves the highest level of coding performance and extended task processing',
+      },
+      'claude-v4.6-sonnet': {
+        label: 'Claude 4.6 (Sonnet)',
+        description:
+          'Full upgrade of the mid-tier model with improved coding, computer use, long-context reasoning, and agent planning with 1M token context window.',
       },
       'claude-v4.5-haiku': {
         label: 'Claude 4.5 (Haiku)',
