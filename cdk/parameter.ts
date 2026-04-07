@@ -17,6 +17,7 @@ bedrockChatParams.set("nma", {
   enableFrontendIpv6: false, // Disabling this property will still create waf rules to allow ipv6 traffic. Workaround set empty array to disable ipv6 traffic.
   allowedIpV6AddressRanges: [],
   enableRagReplicas: false,
+  enableBotStore: false,
   enableBotStoreReplicas: false,
   titleModel: "claude-v4.6-sonnet",   // Model used for generating conversation titles
   defaultModel: "claude-v4.6-sonnet", // Default model for conversations
