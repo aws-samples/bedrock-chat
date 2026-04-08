@@ -36,7 +36,7 @@ const translation: typeof en = {
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
         description:
-          '最大の能力と実用的なパフォーマンスを組み合わせた最も知的なモデル。',
+          '高い推論能力と実用的なパフォーマンスを兼ね備えたOpusモデル。',
       },
       'claude-v4.6-opus': {
         label: 'Claude 4.6 (Opus)',
@@ -51,7 +51,7 @@ const translation: typeof en = {
       'claude-v4.5-sonnet': {
         label: 'Claude 4.5 (Sonnet)',
         description:
-          'Sonnetの最新版。Claudeモデル最高レベルのコーディング性能と長時間タスク処理が可能',
+          '前世代のSonnetモデル。高いコーディング性能と長時間タスク処理が可能。',
       },
       'claude-v4.6-sonnet': {
         label: 'Claude 4.6 (Sonnet)',

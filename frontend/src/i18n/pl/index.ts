@@ -44,7 +44,7 @@ const translation = {
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
         description:
-          'Nasz najinteligentniejszy model łączący maksymalną funkcjonalność z praktyczną wydajnością.',
+          'Wysoko wydajny model Opus łączący silne zdolności rozumowania z praktyczną wydajnością.',
       },
       'claude-v4.6-opus': {
         label: 'Claude 4.6 (Opus)',
