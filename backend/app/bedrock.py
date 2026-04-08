@@ -513,6 +513,14 @@ def is_tooluse_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_adaptive_thinking_model(model: type_model_name) -> bool:
+    """Claude 4.6 models use adaptive thinking instead of extended thinking with budget_tokens."""
+    return model in [
+        "claude-v4.6-opus",
+        "claude-v4.6-sonnet",
+    ]
+
+
 def is_prefill_supported(model: type_model_name) -> bool:
     """Claude 4.6 models do not support assistant message prefilling."""
     return model not in [
@@ -942,51 +950,80 @@ def generation_params_to_converse_configuration(
     else:
         # Standard handling for non-Nova models
         if enable_reasoning:
-            budget_tokens = (
-                generation_params.reasoning_params.budget_tokens
-                if generation_params and generation_params.reasoning_params
-                else DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # type: ignore
-            )
             max_tokens = (
                 generation_params.max_tokens
                 if generation_params
                 else DEFAULT_GENERATION_CONFIG["max_tokens"]
             )
 
-            if max_tokens <= budget_tokens:
-                logger.warning(
-                    f"max_tokens ({max_tokens}) must be greater than budget_tokens ({budget_tokens}). "
-                    f"Setting max_tokens to {budget_tokens + 1024}"
-                )
-                max_tokens = budget_tokens + 1024
-
-            converse_configuration = {
-                "inferenceConfig": {
-                    "maxTokens": max_tokens,
-                    "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
-                    "topP": (
-                        generation_params.top_p
-                        if generation_params
-                        else DEFAULT_GENERATION_CONFIG["top_p"]
-                    ),
-                    "stopSequences": (
-                        generation_params.stop_sequences
-                        if (
-                            generation_params
-                            and generation_params.stop_sequences
-                            and any(generation_params.stop_sequences)
-                        )
-                        else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
-                    ),
-                },
-                "additionalModelRequestFields": {
-                    # top_k cannot be used with reasoning
-                    "thinking": {
-                        "type": "enabled",
-                        "budget_tokens": budget_tokens,
+            if is_adaptive_thinking_model(model):
+                # Claude 4.6 uses adaptive thinking instead of budget_tokens
+                converse_configuration = {
+                    "inferenceConfig": {
+                        "maxTokens": max_tokens,
+                        "temperature": 1.0,
+                        "topP": (
+                            generation_params.top_p
+                            if generation_params
+                            else DEFAULT_GENERATION_CONFIG["top_p"]
+                        ),
+                        "stopSequences": (
+                            generation_params.stop_sequences
+                            if (
+                                generation_params
+                                and generation_params.stop_sequences
+                                and any(generation_params.stop_sequences)
+                            )
+                            else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                        ),
                     },
-                },
-            }
+                    "additionalModelRequestFields": {
+                        "thinking": {
+                            "type": "adaptive",
+                        },
+                    },
+                }
+            else:
+                budget_tokens = (
+                    generation_params.reasoning_params.budget_tokens
+                    if generation_params and generation_params.reasoning_params
+                    else DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # type: ignore
+                )
+
+                if max_tokens <= budget_tokens:
+                    logger.warning(
+                        f"max_tokens ({max_tokens}) must be greater than budget_tokens ({budget_tokens}). "
+                        f"Setting max_tokens to {budget_tokens + 1024}"
+                    )
+                    max_tokens = budget_tokens + 1024
+
+                converse_configuration = {
+                    "inferenceConfig": {
+                        "maxTokens": max_tokens,
+                        "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
+                        "topP": (
+                            generation_params.top_p
+                            if generation_params
+                            else DEFAULT_GENERATION_CONFIG["top_p"]
+                        ),
+                        "stopSequences": (
+                            generation_params.stop_sequences
+                            if (
+                                generation_params
+                                and generation_params.stop_sequences
+                                and any(generation_params.stop_sequences)
+                            )
+                            else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                        ),
+                    },
+                    "additionalModelRequestFields": {
+                        # top_k cannot be used with reasoning
+                        "thinking": {
+                            "type": "enabled",
+                            "budget_tokens": budget_tokens,
+                        },
+                    },
+                }
 
         else:
             converse_configuration = {
