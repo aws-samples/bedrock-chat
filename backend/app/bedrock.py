@@ -513,6 +513,14 @@ def is_tooluse_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_prefill_supported(model: type_model_name) -> bool:
+    """Claude 4.6 models do not support assistant message prefilling."""
+    return model not in [
+        "claude-v4.6-opus",
+        "claude-v4.6-sonnet",
+    ]
+
+
 def is_specify_both_temperature_and_top_p_supported(model: type_model_name) -> bool:
     return model not in [
         "claude-v4.1-opus",
