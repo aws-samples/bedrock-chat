@@ -51,7 +51,12 @@ const translation = {
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
         description:
-          'Nosso modelo mais inteligente, combinando capacidade máxima com desempenho prático.',
+          'Modelo Opus de alta capacidade que combina raciocínio robusto com desempenho prático.',
+      },
+      'claude-v4.6-opus': {
+        label: 'Claude 4.6 (Opus)',
+        description:
+          'Modelo principal que planeja com mais cuidado, sustenta tarefas de agente por mais tempo e opera de forma confiável em grandes bases de código com janela de contexto de 1M de tokens.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',

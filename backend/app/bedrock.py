@@ -60,8 +60,10 @@ BASE_MODEL_IDS = {
     "claude-v4-opus": "anthropic.claude-opus-4-20250514-v1:0",
     "claude-v4.1-opus": "anthropic.claude-opus-4-1-20250805-v1:0",
     "claude-v4.5-opus": "anthropic.claude-opus-4-5-20251101-v1:0",
+    "claude-v4.6-opus": "anthropic.claude-opus-4-6-v1",
     "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
     "claude-v4.5-sonnet": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "claude-v4.6-sonnet": "anthropic.claude-sonnet-4-6",
     "claude-v4.5-haiku": "anthropic.claude-haiku-4-5-20251001-v1:0",
     "claude-v3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
     "claude-v3-opus": "anthropic.claude-3-opus-20240229-v1:0",
@@ -90,6 +92,60 @@ BASE_MODEL_IDS = {
 # Global inference profiles
 GLOBAL_INFERENCE_PROFILES = {
     "claude-v4.5-opus": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-south-2",
+            "eu-south-1",
+            "eu-north-1",
+            "eu-central-2",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-4",
+            "ap-southeast-3",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-2",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "claude-v4.6-opus": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-south-2",
+            "eu-south-1",
+            "eu-north-1",
+            "eu-central-2",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-4",
+            "ap-southeast-3",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-2",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "claude-v4.6-sonnet": {
         "supported_regions": [
             "us-west-2",
             "us-west-1",
@@ -190,6 +246,44 @@ REGIONAL_INFERENCE_PROFILES = {
         "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
     },
     # "claude-v4.5-opus" only available on global endpoint
+    "claude-v4.6-opus": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "ca-central-1": "us",
+            "eu-central-1": "eu",
+            "eu-central-2": "eu",
+            "eu-north-1": "eu",
+            "eu-south-1": "eu",
+            "eu-south-2": "eu",
+            "eu-west-1": "eu",
+            "eu-west-2": "eu",
+            "eu-west-3": "eu",
+            "ap-southeast-2": "au",
+            "ap-southeast-4": "au",
+        }
+    },
+    "claude-v4.6-sonnet": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "ca-central-1": "us",
+            "eu-central-1": "eu",
+            "eu-central-2": "eu",
+            "eu-north-1": "eu",
+            "eu-south-1": "eu",
+            "eu-south-2": "eu",
+            "eu-west-1": "eu",
+            "eu-west-2": "eu",
+            "eu-west-3": "eu",
+            "ap-southeast-2": "au",
+            "ap-southeast-4": "au",
+        }
+    },
     "claude-v4-sonnet": {
         "supported_regions": {
             "us-east-1": "us",
@@ -419,11 +513,29 @@ def is_tooluse_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_adaptive_thinking_model(model: type_model_name) -> bool:
+    """Claude 4.6 models use adaptive thinking instead of extended thinking with budget_tokens."""
+    return model in [
+        "claude-v4.6-opus",
+        "claude-v4.6-sonnet",
+    ]
+
+
+def is_prefill_supported(model: type_model_name) -> bool:
+    """Claude 4.6 models do not support assistant message prefilling."""
+    return model not in [
+        "claude-v4.6-opus",
+        "claude-v4.6-sonnet",
+    ]
+
+
 def is_specify_both_temperature_and_top_p_supported(model: type_model_name) -> bool:
     return model not in [
         "claude-v4.1-opus",
         "claude-v4.5-opus",
+        "claude-v4.6-opus",
         "claude-v4.5-sonnet",
+        "claude-v4.6-sonnet",
         "claude-v4.5-haiku",
     ]
 
@@ -436,8 +548,10 @@ def is_prompt_caching_supported(
             "claude-v4-opus",
             "claude-v4.1-opus",
             "claude-v4.5-opus",
+            "claude-v4.6-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
+            "claude-v4.6-sonnet",
             "claude-v4.5-haiku",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
@@ -449,8 +563,10 @@ def is_prompt_caching_supported(
             "claude-v4-opus",
             "claude-v4.1-opus",
             "claude-v4.5-opus",
+            "claude-v4.6-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
+            "claude-v4.6-sonnet",
             "claude-v4.5-haiku",
             "claude-v3.7-sonnet",
             "claude-v3.5-sonnet-v2",
@@ -834,51 +950,80 @@ def generation_params_to_converse_configuration(
     else:
         # Standard handling for non-Nova models
         if enable_reasoning:
-            budget_tokens = (
-                generation_params.reasoning_params.budget_tokens
-                if generation_params and generation_params.reasoning_params
-                else DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # type: ignore
-            )
             max_tokens = (
                 generation_params.max_tokens
                 if generation_params
                 else DEFAULT_GENERATION_CONFIG["max_tokens"]
             )
 
-            if max_tokens <= budget_tokens:
-                logger.warning(
-                    f"max_tokens ({max_tokens}) must be greater than budget_tokens ({budget_tokens}). "
-                    f"Setting max_tokens to {budget_tokens + 1024}"
-                )
-                max_tokens = budget_tokens + 1024
-
-            converse_configuration = {
-                "inferenceConfig": {
-                    "maxTokens": max_tokens,
-                    "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
-                    "topP": (
-                        generation_params.top_p
-                        if generation_params
-                        else DEFAULT_GENERATION_CONFIG["top_p"]
-                    ),
-                    "stopSequences": (
-                        generation_params.stop_sequences
-                        if (
-                            generation_params
-                            and generation_params.stop_sequences
-                            and any(generation_params.stop_sequences)
-                        )
-                        else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
-                    ),
-                },
-                "additionalModelRequestFields": {
-                    # top_k cannot be used with reasoning
-                    "thinking": {
-                        "type": "enabled",
-                        "budget_tokens": budget_tokens,
+            if is_adaptive_thinking_model(model):
+                # Claude 4.6 uses adaptive thinking instead of budget_tokens
+                converse_configuration = {
+                    "inferenceConfig": {
+                        "maxTokens": max_tokens,
+                        "temperature": 1.0,
+                        "topP": (
+                            generation_params.top_p
+                            if generation_params
+                            else DEFAULT_GENERATION_CONFIG["top_p"]
+                        ),
+                        "stopSequences": (
+                            generation_params.stop_sequences
+                            if (
+                                generation_params
+                                and generation_params.stop_sequences
+                                and any(generation_params.stop_sequences)
+                            )
+                            else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                        ),
                     },
-                },
-            }
+                    "additionalModelRequestFields": {
+                        "thinking": {
+                            "type": "adaptive",
+                        },
+                    },
+                }
+            else:
+                budget_tokens = (
+                    generation_params.reasoning_params.budget_tokens
+                    if generation_params and generation_params.reasoning_params
+                    else DEFAULT_GENERATION_CONFIG["reasoning_params"]["budget_tokens"]  # type: ignore
+                )
+
+                if max_tokens <= budget_tokens:
+                    logger.warning(
+                        f"max_tokens ({max_tokens}) must be greater than budget_tokens ({budget_tokens}). "
+                        f"Setting max_tokens to {budget_tokens + 1024}"
+                    )
+                    max_tokens = budget_tokens + 1024
+
+                converse_configuration = {
+                    "inferenceConfig": {
+                        "maxTokens": max_tokens,
+                        "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
+                        "topP": (
+                            generation_params.top_p
+                            if generation_params
+                            else DEFAULT_GENERATION_CONFIG["top_p"]
+                        ),
+                        "stopSequences": (
+                            generation_params.stop_sequences
+                            if (
+                                generation_params
+                                and generation_params.stop_sequences
+                                and any(generation_params.stop_sequences)
+                            )
+                            else DEFAULT_GENERATION_CONFIG.get("stop_sequences", [])
+                        ),
+                    },
+                    "additionalModelRequestFields": {
+                        # top_k cannot be used with reasoning
+                        "thinking": {
+                            "type": "enabled",
+                            "budget_tokens": budget_tokens,
+                        },
+                    },
+                }
 
         else:
             converse_configuration = {

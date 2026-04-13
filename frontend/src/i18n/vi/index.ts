@@ -44,7 +44,12 @@ const translation = {
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
         description:
-          'The most intelligent model combining maximum capability with practical performance. Features a more accessible price point than previous Opus models.',
+          'Mô hình Opus hiệu suất cao kết hợp khả năng lý luận mạnh mẽ với hiệu suất thực tế.',
+      },
+      'claude-v4.6-opus': {
+        label: 'Claude 4.6 (Opus)',
+        description:
+          'Mô hình hàng đầu lập kế hoạch cẩn thận hơn, duy trì tác vụ agent lâu hơn và hoạt động đáng tin cậy trong các codebase lớn với cửa sổ ngữ cảnh 1M token.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
