@@ -103,7 +103,7 @@ const useBotApi = () => {
           'Content-Type': file.type,
         },
         onUploadProgress: (e) => {
-          onProgress ? onProgress(Math.floor((e.progress ?? 0) * 100)) : null;
+          onProgress?.(Math.floor((e.progress ?? 0) * 100));
         },
       });
     },

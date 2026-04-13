@@ -59,7 +59,7 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
         disabled={props.disabled}
         value={props.value}
         onChange={(e) => {
-          props.onChange ? props.onChange(e.target.value) : null;
+          props.onChange?.(e.target.value);
         }}
       />
       {props.label && (

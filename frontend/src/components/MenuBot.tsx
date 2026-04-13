@@ -41,7 +41,7 @@ const MenuBot: React.FC<Props> = (props) => {
 
   const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
   const handleClickCopyUrl = useCallback(() => {
-    props.onClickCopyUrl && props.onClickCopyUrl();
+    props.onClickCopyUrl?.();
     setCopyLabel(t('bot.titleSubmenu.copiedLink'));
     setTimeout(() => {
       setCopyLabel(t('bot.titleSubmenu.copyLink'));

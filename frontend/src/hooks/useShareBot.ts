@@ -79,7 +79,7 @@ const useShareBot = (
       ).finally(() => {
         // Only execute mutate for the latest request
         if (currentRequestId === requestIdRef.current) {
-          mutateMyBots ? mutateMyBots() : null;
+          mutateMyBots?.();
           mutate();
         }
       });

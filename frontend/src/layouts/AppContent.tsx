@@ -100,7 +100,7 @@ const AppContent: React.FC<Props> = (props) => {
           await updateTitle(conversationId, title);
         }}
         onSignOut={() => {
-          props.signOut ? props.signOut() : null;
+          props.signOut?.();
         }}
         onDeleteConversation={(conversation) => {
           setIsOpenDeleteChat(true);
