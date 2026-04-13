@@ -450,14 +450,12 @@ class ConverseApiStreamHandler:
                 cache_read_input_tokens=cache_read_input_count,
                 cache_write_input_tokens=cache_write_input_count,
             )
-            logger.info(
-                f"token count: {json.dumps({
+            logger.info(f"token count: {json.dumps({
                     'input': input_token_count,
                     'output': output_token_count,
                     'cache_read_input': cache_read_input_count,
                     'cache_write_input': cache_write_input_count
-                })}"
-            )
+                })}")
             logger.info(f"price: {price}")
 
             result = OnStopInput(
