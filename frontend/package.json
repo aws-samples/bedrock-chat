@@ -12,7 +12,7 @@
     "ladle": "npx ladle serve"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.1.14",
+    "@aws-amplify/ui-react": "^6.15.3",
     "@headlessui/react": "^1.7.15",
     "@ladle/react": "^5.0.1",
     "@react-icons/all-files": "^4.1.0",
