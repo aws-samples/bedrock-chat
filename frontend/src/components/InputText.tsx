@@ -38,7 +38,7 @@ const InputText = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
         value={props.value}
         placeholder={props.placeholder}
         onChange={(e) => {
-          props.onChange ? props.onChange(e.target.value) : null;
+          props.onChange?.(e.target.value);
         }}
         onKeyDown={props.onKeyDown}
       />

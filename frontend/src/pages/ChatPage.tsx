@@ -451,13 +451,15 @@ const ChatPage: React.FC = () => {
         }
       );
 
-      isPinnedBot(bot.sharedStatus)
-        ? unpinBot(bot.id).finally(() => {
-            mutateBot();
-          })
-        : pinBot(bot.id, 0).finally(() => {
-            mutateBot();
-          });
+      if (isPinnedBot(bot.sharedStatus)) {
+        unpinBot(bot.id).finally(() => {
+          mutateBot();
+        });
+      } else {
+        pinBot(bot.id, 0).finally(() => {
+          mutateBot();
+        });
+      }
     },
     [mutateBot, pinBot, unpinBot]
   );
@@ -530,7 +532,9 @@ const ChatPage: React.FC = () => {
                     {...(canSwitchPinned
                       ? {
                           onClickSwitchPinned: () => {
-                            bot && togglePinBot(bot);
+                            if (bot) {
+                              togglePinBot(bot);
+                            }
                           },
                           isPinned: isPinnedBot(bot?.sharedStatus ?? ''),
                         }

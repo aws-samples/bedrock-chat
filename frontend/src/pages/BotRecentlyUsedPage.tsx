@@ -115,13 +115,15 @@ const BotRecentlyUsedPage: React.FC = () => {
         }
       );
 
-      isPinnedBot(bot.sharedStatus)
-        ? unpinBot(bot.id).finally(() => {
-            mutateRecentlyUsedBots();
-          })
-        : pinBot(bot.id, 0).finally(() => {
-            mutateRecentlyUsedBots();
-          });
+      if (isPinnedBot(bot.sharedStatus)) {
+        unpinBot(bot.id).finally(() => {
+          mutateRecentlyUsedBots();
+        });
+      } else {
+        pinBot(bot.id, 0).finally(() => {
+          mutateRecentlyUsedBots();
+        });
+      }
     },
     [mutateRecentlyUsedBots, pinBot, recentlyUsedBots, unpinBot]
   );
