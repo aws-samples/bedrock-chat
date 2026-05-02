@@ -6,6 +6,27 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   resolve: { alias: { './runtimeConfig': './runtimeConfig.browser' } },
   plugins: [
+    {
+      // npm overrides cannot reach @aws-amplify/ui-react's nested copies of
+      // @aws-amplify/ui and @xstate/react, so Rollup deduplicates their
+      // xstate imports up to the top-level v5 and the build fails with
+      // `"actions" is not exported by xstate`. Redirect those imports to the
+      // xstate-v4 alias at build time. Must be a top-level vite plugin (not
+      // build.rollupOptions.plugins) with enforce: 'pre' to run before
+      // Rollup's default resolver.
+      name: 'resolve-xstate-v4-for-amplify',
+      enforce: 'pre',
+      async resolveId(source, importer) {
+        if (
+          source === 'xstate' &&
+          importer &&
+          importer.includes('@aws-amplify')
+        ) {
+          return this.resolve('xstate-v4', importer, { skipSelf: true });
+        }
+        return null;
+      },
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',
