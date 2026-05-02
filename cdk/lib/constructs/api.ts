@@ -243,7 +243,7 @@ export class Api extends Construct {
       index: "app/main.py",
       bundling: {
         assetExcludes: [...excludeDockerImage],
-        buildArgs: { POETRY_VERSION: "1.8.3" },
+        buildArgs: { POETRY_VERSION: "1.8.5" },
       },
       runtime: Runtime.PYTHON_3_13,
       architecture: Architecture.X86_64,

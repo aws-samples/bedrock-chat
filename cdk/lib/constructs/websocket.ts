@@ -109,7 +109,7 @@ export class WebSocket extends Construct {
       index: "app/websocket.py",
       bundling: {
         assetExcludes: [...excludeDockerImage],
-        buildArgs: { POETRY_VERSION: "1.8.3" },
+        buildArgs: { POETRY_VERSION: "1.8.5" },
       },
       runtime: Runtime.PYTHON_3_13,
       memorySize: 512,
