@@ -79,6 +79,7 @@
     },
     "@aws-amplify/ui-react": {
       "xstate": "4.38.3"
-    }
+    },
+    "serialize-javascript": "^7.0.5"
   }
 }
