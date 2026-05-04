@@ -13,6 +13,7 @@ import {
   UserPoolIdentityProviderGoogle,
   CfnUserPoolGroup,
   UserPoolIdentityProviderOidc,
+  Mfa,
 } from "aws-cdk-lib/aws-cognito";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -43,6 +44,7 @@ export class Auth extends Construct {
   constructor(scope: Construct, id: string, props: AuthProps) {
     super(scope, id);
     const userPool = new UserPool(this, "UserPool", {
+      mfa: Mfa.REQUIRED,
       passwordPolicy: {
         requireUppercase: true,
         requireSymbols: true,
