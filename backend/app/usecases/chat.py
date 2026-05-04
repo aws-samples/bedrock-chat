@@ -7,6 +7,7 @@ from app.bedrock import (
     BedrockGuardrailsModel,
     call_converse_api,
     compose_args_for_converse_api,
+    is_prefill_supported,
     is_tooluse_supported,
 )
 from app.prompt import build_rag_prompt, get_prompt_to_cite_tool_results
@@ -529,7 +530,9 @@ def post_process_result(
     stop_reason = result["stop_reason"]
 
     conversation.total_price += result["price"]
-    conversation.should_continue = stop_reason == "max_tokens"
+    conversation.should_continue = stop_reason == "max_tokens" and is_prefill_supported(
+        chat_input.message.model
+    )
 
     # Set message parent and generate assistant message ID
     message.parent = user_msg_id

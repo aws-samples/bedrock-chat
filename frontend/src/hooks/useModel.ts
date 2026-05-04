@@ -77,20 +77,6 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const availableModels = useMemo<ModelItem[]>(() => {
     return [
       {
-        modelId: 'claude-v4.6-opus',
-        label: t('model.claude-v4.6-opus.label'),
-        description: t('model.claude-v4.6-opus.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: true,
-      },
-      {
-        modelId: 'claude-v4.6-sonnet',
-        label: t('model.claude-v4.6-sonnet.label'),
-        description: t('model.claude-v4.6-sonnet.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: true,
-      },
-      {
         modelId: 'claude-v4-opus',
         label: t('model.claude-v4-opus.label'),
         description: t('model.claude-v4-opus.description'),
@@ -112,6 +98,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportReasoning: true,
       },
       {
+        modelId: 'claude-v4.6-opus',
+        label: t('model.claude-v4.6-opus.label'),
+        description: t('model.claude-v4.6-opus.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true,
+      },
+      {
         modelId: 'claude-v4-sonnet',
         label: t('model.claude-v4-sonnet.label'),
         description: t('model.claude-v4-sonnet.description'),
@@ -122,6 +115,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         modelId: 'claude-v4.5-sonnet',
         label: t('model.claude-v4.5-sonnet.label'),
         description: t('model.claude-v4.5-sonnet.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true,
+      },
+      {
+        modelId: 'claude-v4.6-sonnet',
+        label: t('model.claude-v4.6-sonnet.label'),
+        description: t('model.claude-v4.6-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true,
       },
