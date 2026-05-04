@@ -45,6 +45,10 @@ export class Auth extends Construct {
     super(scope, id);
     const userPool = new UserPool(this, "UserPool", {
       mfa: Mfa.REQUIRED,
+      mfaSecondFactor: {
+        sms: false,
+        otp: true,
+      },
       passwordPolicy: {
         requireUppercase: true,
         requireSymbols: true,
