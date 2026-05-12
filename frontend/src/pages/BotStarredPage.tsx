@@ -109,13 +109,15 @@ const BotStarredPage: React.FC = () => {
         }
       );
 
-      isPinnedBot(bot.sharedStatus)
-        ? unpinBot(bot.id).finally(() => {
-            mutateStarredBots();
-          })
-        : pinBot(bot.id, 0).finally(() => {
-            mutateStarredBots();
-          });
+      if (isPinnedBot(bot.sharedStatus)) {
+        unpinBot(bot.id).finally(() => {
+          mutateStarredBots();
+        });
+      } else {
+        pinBot(bot.id, 0).finally(() => {
+          mutateStarredBots();
+        });
+      }
     },
     [mutateStarredBots, pinBot, starredBots, unpinBot]
   );

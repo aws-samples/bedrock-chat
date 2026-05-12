@@ -125,17 +125,13 @@ const ChatMessage: React.FC<Props> = (props) => {
 
   const onClickChange = useCallback(
     (idx: number) => {
-      props.onChangeMessageId
-        ? props.onChangeMessageId(chatContent?.sibling[idx] ?? '')
-        : null;
+      props.onChangeMessageId?.(chatContent?.sibling[idx] ?? '');
     },
     [chatContent?.sibling, props]
   );
 
   const onSubmit = useCallback(() => {
-    props.onSubmit
-      ? props.onSubmit(chatContent?.sibling[0] ?? '', changedContent)
-      : null;
+    props.onSubmit?.(chatContent?.sibling[0] ?? '', changedContent);
     setIsEdit(false);
   }, [changedContent, chatContent?.sibling, props]);
 

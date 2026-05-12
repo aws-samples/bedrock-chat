@@ -12,13 +12,13 @@
     "ladle": "npx ladle serve"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.1.14",
+    "@aws-amplify/ui-react": "^6.15.3",
     "@headlessui/react": "^1.7.15",
     "@ladle/react": "^5.0.1",
     "@react-icons/all-files": "^4.1.0",
     "@xstate/react": "^4.1.1",
     "aws-amplify": "^6.16.2",
-    "axios": "^1.12.0",
+    "axios": "^1.15.0",
     "copy-to-clipboard": "^3.3.3",
     "dayjs": "^1.11.10",
     "i18next": "^23.6.0",
@@ -55,15 +55,15 @@
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-syntax-highlighter": "^15.5.7",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-tailwindcss": "^3.13.0",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.12",
     "prettier": "^3.0.0",
     "prettier-plugin-tailwindcss": "^0.4.1",
     "tailwind-scrollbar": "^3.0.5",
@@ -78,6 +78,9 @@
       "xstate": "4.38.3"
     },
     "@aws-amplify/ui-react": {
+      "xstate": "4.38.3"
+    },
+    "@aws-amplify/ui-react-core": {
       "xstate": "4.38.3"
     },
     "serialize-javascript": "^7.0.5"

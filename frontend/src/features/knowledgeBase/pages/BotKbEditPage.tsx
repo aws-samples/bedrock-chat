@@ -1626,6 +1626,22 @@ const BotKbEditPage: React.FC = () => {
                   />
                 </div>
 
+                {
+                  errorMessages['syncError'] && (
+                    <Alert
+                      className="mt-2"
+                      severity="error"
+                      title={t('bot.alert.sync.error.title')}>
+                      <>
+                        <div className="mb-1 text-sm">
+                          <div>{t('bot.alert.sync.error.body')}</div>
+                          <div> {errorMessages['syncError']}</div>
+                        </div>
+                      </>
+                    </Alert>
+                  )
+                }
+
                 {(() => {
                   if (knowledgeBaseType === 'existing') {
                     return (
@@ -1645,22 +1661,6 @@ const BotKbEditPage: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    );
-                  }
-
-                  {
-                    errorMessages['syncError'] && (
-                      <Alert
-                        className="mt-2"
-                        severity="error"
-                        title={t('bot.alert.sync.error.title')}>
-                        <>
-                          <div className="mb-1 text-sm">
-                            <div>{t('bot.alert.sync.error.body')}</div>
-                            <div> {errorMessages['syncError']}</div>
-                          </div>
-                        </>
-                      </Alert>
                     );
                   }
 
