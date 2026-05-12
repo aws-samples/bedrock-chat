@@ -115,13 +115,15 @@ const BotExplorePage: React.FC = () => {
         }
       );
 
-      isPinnedBot(bot.sharedStatus)
-        ? unpinBot(bot.id).finally(() => {
-            mutateMyBots();
-          })
-        : pinBot(bot.id, 0).finally(() => {
-            mutateMyBots();
-          });
+      if (isPinnedBot(bot.sharedStatus)) {
+        unpinBot(bot.id).finally(() => {
+          mutateMyBots();
+        });
+      } else {
+        pinBot(bot.id, 0).finally(() => {
+          mutateMyBots();
+        });
+      }
     },
     [mutateMyBots, myBots, pinBot, unpinBot]
   );

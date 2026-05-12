@@ -6,6 +6,7 @@ export interface GlobalConfig {
   logoPath?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface GetGlobalConfigResponse extends GlobalConfig {}
 
 export interface ModelItem {

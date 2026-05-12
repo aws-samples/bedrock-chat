@@ -226,7 +226,6 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
       onProgress?: (progress: number) => void
     ) => {
       return api.getPresignedUrl(botId, file).then(({ data }) => {
-        data.url;
         return api.uploadFile(data.url, file, onProgress);
       });
     },

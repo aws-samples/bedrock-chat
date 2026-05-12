@@ -162,14 +162,12 @@ def converse_with_strands(
         cache_write_input_tokens=cache_write_input_tokens,
     )
 
-    logger.info(
-        f"token count: {json.dumps({
+    logger.info(f"token count: {json.dumps({
             'input': input_tokens,
             'output': output_tokens,
             'cache_read_input': cache_read_input_tokens,
             'cache_write_input': cache_write_input_tokens
-        })}"
-    )
+        })}")
     logger.info(f"price: {price}")
 
     return OnStopInput(

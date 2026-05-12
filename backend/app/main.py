@@ -28,7 +28,6 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp, Message
 
-
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 PUBLISHED_API_ID = os.environ.get("PUBLISHED_API_ID", None)
 
