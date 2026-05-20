@@ -47,6 +47,7 @@
     "use-debounce": "^10.0.4",
     "use-immer": "^0.9.0",
     "xstate": "^5.13.0",
+    "xstate-v4": "npm:xstate@4.38.3",
     "zustand": "^4.3.9"
   },
   "devDependencies": {
@@ -78,7 +79,13 @@
       "xstate": "4.38.3"
     },
     "@aws-amplify/ui-react": {
-      "xstate": "4.38.3"
+      "xstate": "4.38.3",
+      "@aws-amplify/ui": {
+        "xstate": "4.38.3"
+      },
+      "@xstate/react": {
+        "xstate": "4.38.3"
+      }
     },
     "@aws-amplify/ui-react-core": {
       "xstate": "4.38.3"
