@@ -31,7 +31,7 @@ const translation: typeof en = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          '最も強力なOpusの最新版。推論能力が向上',
+          '推論能力が向上した高性能なOpusモデル。',
       },
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
@@ -46,7 +46,7 @@ const translation: typeof en = {
       'claude-v4.7-opus': {
         label: 'Claude 4.7 (Opus)',
         description:
-          'より慎重に計画し、エージェントタスクをより長く持続し、大規模コードベースで確実に動作するフラッグシップモデル（1Mトークンコンテキストウィンドウ）。',
+          'コーディング、エンタープライズワークフロー、長時間のエージェントタスク向けに構築された高性能Opusモデル。',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
