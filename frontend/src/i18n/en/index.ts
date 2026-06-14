@@ -40,6 +40,11 @@ const translation = {
         description:
           'Flagship model that plans more carefully, sustains agentic tasks longer, and operates reliably in massive codebases with 1M token context window.',
       },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Flagship model that plans more carefully, sustains agentic tasks longer, and operates reliably in massive codebases with 1M token context window.',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:

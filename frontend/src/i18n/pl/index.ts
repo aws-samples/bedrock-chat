@@ -51,6 +51,11 @@ const translation = {
         description:
           'Flagowy model, który planuje staranniej, dłużej utrzymuje zadania agentowe i niezawodnie działa w dużych bazach kodu z oknem kontekstu 1M tokenów.',
       },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Flagowy model, który planuje staranniej, dłużej utrzymuje zadania agentowe i niezawodnie działa w dużych bazach kodu z oknem kontekstu 1M tokenów.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Potężny model do wysoce złożonych zadań.',

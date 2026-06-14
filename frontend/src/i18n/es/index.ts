@@ -51,6 +51,11 @@ const translation = {
         description:
           'Modelo insignia que planifica con más cuidado, mantiene tareas de agente por más tiempo y opera de forma fiable en grandes bases de código con ventana de contexto de 1M de tokens.',
       },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Modelo insignia que planifica con más cuidado, mantiene tareas de agente por más tiempo y opera de forma fiable en grandes bases de código con ventana de contexto de 1M de tokens.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Modelo potente para tareas altamente complejas.',

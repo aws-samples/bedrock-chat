@@ -43,6 +43,11 @@ const translation: typeof en = {
         description:
           'より慎重に計画し、エージェントタスクをより長く持続し、大規模コードベースで確実に動作するフラッグシップモデル（1Mトークンコンテキストウィンドウ）。',
       },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'より慎重に計画し、エージェントタスクをより長く持続し、大規模コードベースで確実に動作するフラッグシップモデル（1Mトークンコンテキストウィンドウ）。',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:

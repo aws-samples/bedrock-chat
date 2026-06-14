@@ -51,6 +51,11 @@ const translation = {
         description:
           'Mô hình hàng đầu lập kế hoạch cẩn thận hơn, duy trì tác vụ agent lâu hơn và hoạt động đáng tin cậy trong các codebase lớn với cửa sổ ngữ cảnh 1M token.',
       },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Mô hình hàng đầu lập kế hoạch cẩn thận hơn, duy trì tác vụ agent lâu hơn và hoạt động đáng tin cậy trong các codebase lớn với cửa sổ ngữ cảnh 1M token.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Mô hình mạnh mẽ cho các tác vụ cực kỳ phức tạp.',
