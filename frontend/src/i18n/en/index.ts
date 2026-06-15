@@ -28,7 +28,7 @@ const translation = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          'Latest version of the most powerful Opus model with enhanced reasoning capabilities.',
+          'Powerful Opus model with enhanced reasoning capabilities.',
       },
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
@@ -39,6 +39,11 @@ const translation = {
         label: 'Claude 4.6 (Opus)',
         description:
           'Flagship model that plans more carefully, sustains agentic tasks longer, and operates reliably in massive codebases with 1M token context window.',
+      },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'High-capability Opus model built for coding, enterprise workflows, and long-running agentic tasks.',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',

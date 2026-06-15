@@ -39,7 +39,7 @@ const translation = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          'Najnowsza wersja najsilniejszego modelu Claude z ulepszonymi możliwościami rozumowania.',
+          'Model Opus z ulepszonymi możliwościami rozumowania.',
       },
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
@@ -50,6 +50,11 @@ const translation = {
         label: 'Claude 4.6 (Opus)',
         description:
           'Flagowy model, który planuje staranniej, dłużej utrzymuje zadania agentowe i niezawodnie działa w dużych bazach kodu z oknem kontekstu 1M tokenów.',
+      },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Wysoko wydajny model Opus stworzony do kodowania, przepływów pracy w przedsiębiorstwach i długotrwałych zadań agentowych.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',

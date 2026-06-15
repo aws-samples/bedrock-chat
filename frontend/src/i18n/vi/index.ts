@@ -39,7 +39,7 @@ const translation = {
       'claude-v4.1-opus': {
         label: 'Claude 4.1 (Opus)',
         description:
-          'Phiên bản mới nhất của mô hình Claude mạnh nhất với khả năng lý luận được cải thiện.',
+          'Mô hình Opus với khả năng lý luận được cải thiện.',
       },
       'claude-v4.5-opus': {
         label: 'Claude 4.5 (Opus)',
@@ -50,6 +50,11 @@ const translation = {
         label: 'Claude 4.6 (Opus)',
         description:
           'Mô hình hàng đầu lập kế hoạch cẩn thận hơn, duy trì tác vụ agent lâu hơn và hoạt động đáng tin cậy trong các codebase lớn với cửa sổ ngữ cảnh 1M token.',
+      },
+      'claude-v4.7-opus': {
+        label: 'Claude 4.7 (Opus)',
+        description:
+          'Mô hình Opus hiệu suất cao được xây dựng cho việc lập trình, quy trình doanh nghiệp và các tác vụ agent dài hạn.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
