@@ -12,7 +12,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.155",
     "@types/node": "^24.6.2",
-    "esbuild": "^0.25.10",
+    "esbuild": "^0.28.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
