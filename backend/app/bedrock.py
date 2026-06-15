@@ -601,6 +601,20 @@ def is_top_k_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_top_p_supported(model: type_model_name) -> bool:
+    """Claude Opus 4.7+ deprecates top_p parameter."""
+    return model not in [
+        "claude-v4.7-opus",
+    ]
+
+
+def is_temperature_supported(model: type_model_name) -> bool:
+    """Claude Opus 4.7+ deprecates temperature parameter."""
+    return model not in [
+        "claude-v4.7-opus",
+    ]
+
+
 def is_prompt_caching_supported(
     model: type_model_name, target: Literal["system", "message", "tool"]
 ) -> bool:
@@ -1024,12 +1038,6 @@ def generation_params_to_converse_configuration(
                 converse_configuration = {
                     "inferenceConfig": {
                         "maxTokens": max_tokens,
-                        "temperature": 1.0,
-                        "topP": (
-                            generation_params.top_p
-                            if generation_params
-                            else DEFAULT_GENERATION_CONFIG["top_p"]
-                        ),
                         "stopSequences": (
                             generation_params.stop_sequences
                             if (
@@ -1046,6 +1054,16 @@ def generation_params_to_converse_configuration(
                         },
                     },
                 }
+                if is_temperature_supported(model):
+                    converse_configuration["inferenceConfig"]["temperature"] = 1.0
+
+                if is_top_p_supported(model):
+                    converse_configuration["inferenceConfig"]["topP"] = (
+                        generation_params.top_p
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["top_p"]
+                    )
+
             else:
                 budget_tokens = (
                     generation_params.reasoning_params.budget_tokens
@@ -1063,12 +1081,6 @@ def generation_params_to_converse_configuration(
                 converse_configuration = {
                     "inferenceConfig": {
                         "maxTokens": max_tokens,
-                        "temperature": 1.0,  # Force temperature to 1.0 when reasoning is enabled
-                        "topP": (
-                            generation_params.top_p
-                            if generation_params
-                            else DEFAULT_GENERATION_CONFIG["top_p"]
-                        ),
                         "stopSequences": (
                             generation_params.stop_sequences
                             if (
@@ -1087,6 +1099,15 @@ def generation_params_to_converse_configuration(
                         },
                     },
                 }
+                if is_temperature_supported(model):
+                    converse_configuration["inferenceConfig"]["temperature"] = 1.0
+
+                if is_top_p_supported(model):
+                    converse_configuration["inferenceConfig"]["topP"] = (
+                        generation_params.top_p
+                        if generation_params
+                        else DEFAULT_GENERATION_CONFIG["top_p"]
+                    )
 
         else:
             converse_configuration = {
@@ -1095,16 +1116,6 @@ def generation_params_to_converse_configuration(
                         generation_params.max_tokens
                         if generation_params
                         else DEFAULT_GENERATION_CONFIG["max_tokens"]
-                    ),
-                    "temperature": (
-                        generation_params.temperature
-                        if generation_params
-                        else DEFAULT_GENERATION_CONFIG["temperature"]
-                    ),
-                    "topP": (
-                        generation_params.top_p
-                        if generation_params
-                        else DEFAULT_GENERATION_CONFIG["top_p"]
                     ),
                     "stopSequences": (
                         generation_params.stop_sequences
@@ -1124,6 +1135,20 @@ def generation_params_to_converse_configuration(
                     generation_params.top_k
                     if generation_params
                     else DEFAULT_GENERATION_CONFIG["top_k"]
+                )
+
+            if is_temperature_supported(model):
+                converse_configuration["inferenceConfig"]["temperature"] = (
+                    generation_params.temperature
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["temperature"]
+                )
+
+            if is_top_p_supported(model):
+                converse_configuration["inferenceConfig"]["topP"] = (
+                    generation_params.top_p
+                    if generation_params
+                    else DEFAULT_GENERATION_CONFIG["top_p"]
                 )
 
     # "claude-v4.5-sonnet" cannot specify temperature and top_p together due to specifications.
