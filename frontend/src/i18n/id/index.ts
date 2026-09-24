@@ -56,6 +56,10 @@ const translation = {
         description:
           'Model Opus berkemampuan tinggi yang dibuat untuk coding, alur kerja perusahaan, dan tugas agen jangka panjang.',
       },
+      'claude-v5.5-opus': {
+        label: 'Claude 5.5 (Opus)',
+        description: 'Model Opus dengan pemikiran adaptif.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Model yang kuat untuk tugas-tugas yang sangat kompleks.',
