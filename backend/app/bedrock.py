@@ -25,6 +25,7 @@ from app.routes.schemas.conversation import type_model_name
 from app.utils import get_bedrock_runtime_client
 from app.vector_search import SearchResult
 
+import llm_prices
 from botocore.exceptions import ClientError
 from reretry import retry
 from typing_extensions import deprecated
@@ -1518,6 +1519,25 @@ def call_converse_api(
         raise
 
 
+def _list_price(model: type_model_name) -> dict[str, float] | None:
+    """us-east-1 on-demand price per 1,000 tokens from llm-prices, or None."""
+    base_model_id = BASE_MODEL_IDS.get(model)
+    row = (
+        llm_prices.lookup_provider("bedrock", base_model_id) if base_model_id else None
+    )
+    if row is None or row.input is None or row.output is None:
+        return None
+
+    # llm-prices quotes USD per 1M tokens; BEDROCK_PRICING uses USD per 1K.
+    price = {"input": row.input / 1000.0, "output": row.output / 1000.0}
+    if row.cache_read is not None:
+        price["cache_read_input"] = row.cache_read / 1000.0
+    if "5m" in row.cache_write:
+        # Bedrock prompt caching uses the 5-minute TTL by default.
+        price["cache_write_input"] = row.cache_write["5m"] / 1000.0
+    return price
+
+
 def calculate_price(
     model: type_model_name,
     input_tokens: int,
@@ -1526,36 +1546,20 @@ def calculate_price(
     cache_write_input_tokens: int,
     region: str = BEDROCK_REGION,
 ) -> float:
-    if model not in BEDROCK_PRICING["default"]:
+    default_price = BEDROCK_PRICING["default"].get(model) or _list_price(model)
+    if default_price is None:
         # e.g. models added before AWS publishes their on-demand price
         logger.warning(f"No pricing defined for model '{model}'. Recording price 0.")
         return 0.0
 
-    input_price = (
-        BEDROCK_PRICING.get(region, {})
-        .get(model, {})
-        .get("input", BEDROCK_PRICING["default"][model]["input"])
+    region_price = BEDROCK_PRICING.get(region, {}).get(model, {})
+    input_price = region_price.get("input", default_price["input"])
+    output_price = region_price.get("output", default_price["output"])
+    cache_read_input_price = region_price.get(
+        "cache_read_input", default_price.get("cache_read_input", input_price)
     )
-    output_price = (
-        BEDROCK_PRICING.get(region, {})
-        .get(model, {})
-        .get("output", BEDROCK_PRICING["default"][model]["output"])
-    )
-    cache_read_input_price = (
-        BEDROCK_PRICING.get(region, {})
-        .get(model, {})
-        .get(
-            "cache_read_input",
-            BEDROCK_PRICING["default"][model].get("cache_read_input", input_price),
-        )
-    )
-    cache_write_input_price = (
-        BEDROCK_PRICING.get(region, {})
-        .get(model, {})
-        .get(
-            "cache_write_input",
-            BEDROCK_PRICING["default"][model].get("cache_write_input", input_price),
-        )
+    cache_write_input_price = region_price.get(
+        "cache_write_input", default_price.get("cache_write_input", input_price)
     )
 
     return (

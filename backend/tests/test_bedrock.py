@@ -13,6 +13,7 @@ sys.path.append(".")
 
 import unittest
 from pprint import pprint
+from typing import get_args
 from unittest.mock import patch
 
 from app.bedrock import (
@@ -233,6 +234,53 @@ class TestOpenAIGpt6Params(unittest.TestCase):
 
     def test_calculate_price_without_pricing_entry(self):
         self.assertEqual(calculate_price("gpt-6-sol", 1000, 1000, 0, 0), 0.0)
+
+
+class TestCalculatePrice(unittest.TestCase):
+    def assertPrice(self, model, region, tokens, expected):
+        self.assertAlmostEqual(
+            calculate_price(model, *tokens, region=region), expected, places=9
+        )
+
+    def test_gpt_oss_on_demand_price(self):
+        # AWS Price List, us-west-2: $0.00015 / $0.0006 (120b), $0.00007 / $0.0003 (20b)
+        self.assertPrice("gpt-oss-120b", "us-west-2", (1000, 1000, 0, 0), 0.00075)
+        self.assertPrice("gpt-oss-20b", "us-west-2", (1000, 1000, 0, 0), 0.00037)
+
+    def test_mistral_large_2_output_price(self):
+        # AWS Price List, us-west-2: $0.002 input, $0.006 output per 1K tokens
+        self.assertPrice("mistral-large-2", "us-west-2", (1000, 1000, 0, 0), 0.008)
+
+    def test_claude_3_5_haiku_price(self):
+        self.assertPrice("claude-v3.5-haiku", "us-east-1", (1000, 1000, 0, 0), 0.0048)
+        self.assertPrice("claude-v3.5-haiku", "us-east-1", (0, 0, 1000, 1000), 0.00108)
+
+    def test_claude_cache_prices(self):
+        self.assertPrice(
+            "claude-v4.6-sonnet", "us-east-1", (1000, 1000, 1000, 1000), 0.02205
+        )
+        self.assertPrice(
+            "claude-v5.5-opus", "ap-northeast-1", (1000, 1000, 1000, 1000), 0.0292
+        )
+
+    def test_cache_write_defaults_to_input_price(self):
+        self.assertPrice("amazon-nova-pro", "us-east-1", (0, 0, 1000, 1000), 0.001)
+
+    def test_region_override(self):
+        self.assertPrice(
+            "llama3-2-1b-instruct", "eu-west-1", (1000, 1000, 0, 0), 0.00026
+        )
+        self.assertPrice(
+            "llama3-2-1b-instruct", "us-east-1", (1000, 1000, 0, 0), 0.0002
+        )
+
+    def test_every_model_with_on_demand_price_is_priced(self):
+        no_on_demand_price = {"gpt-6-sol", "gpt-6-luna", "gpt-6-astra"}
+        for model in get_args(type_model_name):
+            if model in no_on_demand_price:
+                continue
+            with self.subTest(model=model):
+                self.assertGreater(calculate_price(model, 1000, 1000, 0, 0), 0.0)
 
 
 class TestCallConverseApi(unittest.TestCase):
