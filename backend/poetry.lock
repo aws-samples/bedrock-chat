@@ -1567,6 +1567,21 @@ files = [
 six = "*"
 
 [[package]]
+name = "llm-prices"
+version = "1.7.2"
+description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek, Mistral, xAI, Groq, Together, Fireworks, Cohere, Amazon Bedrock, OpenRouter, Perplexity) per 1M tokens, with provider-aware model-id lookup and exact decimal costs. Zero dependencies."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "llm_prices-1.7.2-py3-none-any.whl", hash = "sha256:98167d926155d3fac9aec5e65c042688d4b1c8539c545eefa4ea4b6b60b772a1"},
+    {file = "llm_prices-1.7.2.tar.gz", hash = "sha256:62fb52bd4dcac91009213bf17eb01a4c73925cd4c58727c82089ba61b49114f2"},
+]
+
+[package.extras]
+tokencost = ["tiktoken (>=0.7)"]
+
+[[package]]
 name = "lxml"
 version = "6.1.0"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -3692,4 +3707,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13.0"
-content-hash = "ca1ec63ef795cb4165403a4042d3bc7478d724aefb1b2b995f4380cf31463d98"
+content-hash = "e091b101d1ab3f6e37b6e52d3adca5d99a84311fdb89ba502e36c5b26d3e0bad"
