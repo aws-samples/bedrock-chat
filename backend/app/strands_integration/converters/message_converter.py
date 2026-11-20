@@ -6,6 +6,7 @@ import logging
 from typing import TypeGuard
 
 from app.bedrock import (
+    collapse_conversation_messages,
     is_prompt_caching_supported,
     is_unsigned_reasoning_content_supported,
 )
@@ -77,6 +78,8 @@ def simple_message_models_to_strands_messages(
             return []
 
         if c.content_type == "text":
+            if not c.body.strip():
+                return []
             if (
                 role == "user"
                 and guardrail
@@ -106,6 +109,7 @@ def simple_message_models_to_strands_messages(
         for message in simple_messages
         if _is_conversation_role(message.role)
     ]
+    messages = collapse_conversation_messages(messages)
 
     # Add message cache points (same logic as legacy bedrock.py)
     if prompt_caching_enabled and is_prompt_caching_supported(model, target="message"):

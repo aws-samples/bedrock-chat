@@ -1107,6 +1107,18 @@ def _to_guardrails_grounding_source(
     )
 
 
+def collapse_conversation_messages(messages: list) -> list:
+    collapsed = []
+    for message in messages:
+        if not message["content"]:
+            continue
+        if collapsed and collapsed[-1]["role"] == message["role"]:
+            collapsed[-1]["content"] = [*collapsed[-1]["content"], *message["content"]]
+        else:
+            collapsed.append(message)
+    return collapsed
+
+
 def simple_message_models_to_bedrock_messages(
     simple_messages: list[SimpleMessageModel],
     model: type_model_name,
@@ -1136,6 +1148,8 @@ def simple_message_models_to_bedrock_messages(
             return []
 
         if c.content_type == "text":
+            if not c.body.strip():
+                return []
             if (
                 role == "user"
                 and guardrail
@@ -1165,6 +1179,7 @@ def simple_message_models_to_bedrock_messages(
         for message in simple_messages
         if _is_conversation_role(message.role)
     ]
+    messages = collapse_conversation_messages(messages)
 
     if prompt_caching_enabled and is_prompt_caching_supported(model, target="message"):
         for order, message in enumerate(
