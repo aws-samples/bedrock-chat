@@ -34,6 +34,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   MAX_ATTACHED_FILES,
 } from '../constants/supportedAttachedFiles';
+import { calcTotalFileSizeToSend } from '../utils/AttachmentUtils';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -93,8 +94,6 @@ const useInputChatContentState = create<{
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
   setIsOpenPreviewImage: (isOpen: boolean) => void;
-  totalFileSizeToSend: number;
-  setTotalFileSizeToSend: (size: number) => void;
 }>((set, get) => ({
   base64EncodedImages: [],
   pushBase64EncodedImage: (encodedImage) => {
@@ -144,11 +143,6 @@ const useInputChatContentState = create<{
       attachedFiles: [],
     });
   },
-  totalFileSizeToSend: 0,
-  setTotalFileSizeToSend: (size) =>
-    set({
-      totalFileSizeToSend: size,
-    }),
 }));
 
 const InputChatContent = forwardRef<HTMLElement, Props>(
@@ -181,8 +175,6 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
       pushTextFile,
       removeTextFile,
       clearAttachedFiles,
-      totalFileSizeToSend,
-      setTotalFileSizeToSend,
     } = useInputChatContentState();
 
     useEffect(() => {
@@ -270,8 +262,13 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
             const resizedImageData = canvas.toDataURL('image/png');
 
             // Total file size check
+            const state = useInputChatContentState.getState();
             if (
-              totalFileSizeToSend + resizedImageData.length >
+              calcTotalFileSizeToSend(
+                state.base64EncodedImages,
+                state.attachedFiles
+              ) +
+                resizedImageData.length >
               MAX_FILE_SIZE_TO_SEND_BYTES
             ) {
               open(
@@ -283,19 +280,10 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
             }
 
             pushBase64EncodedImage(resizedImageData);
-            setTotalFileSizeToSend(
-              totalFileSizeToSend + resizedImageData.length
-            );
           };
         };
       },
-      [
-        pushBase64EncodedImage,
-        totalFileSizeToSend,
-        setTotalFileSizeToSend,
-        open,
-        t,
-      ]
+      [pushBase64EncodedImage, open, t]
     );
 
     const handleAttachedFileRead = useCallback(
@@ -325,8 +313,13 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
             const base64String = btoa(binaryString);
 
             // Total file size check
+            const state = useInputChatContentState.getState();
             if (
-              totalFileSizeToSend + base64String.length >
+              calcTotalFileSizeToSend(
+                state.base64EncodedImages,
+                state.attachedFiles
+              ) +
+                base64String.length >
               MAX_FILE_SIZE_TO_SEND_BYTES
             ) {
               open(
@@ -342,12 +335,11 @@ const InputChatContent = forwardRef<HTMLElement, Props>(
               size: file.size,
               content: base64String,
             });
-            setTotalFileSizeToSend(totalFileSizeToSend + base64String.length);
           }
         };
         reader.readAsArrayBuffer(file);
       },
-      [pushTextFile, totalFileSizeToSend, setTotalFileSizeToSend, open, t]
+      [pushTextFile, open, t]
     );
 
     useEffect(() => {
