@@ -500,10 +500,12 @@ const BotKbEditPage: React.FC = () => {
   );
 
   useEffect(() => {
+    let cancelled = false;
     if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
+          if (cancelled) return;
           setTools(bot.agent.tools);
           setTitle(bot.title);
           setDescription(bot.description);
@@ -654,9 +656,14 @@ const BotKbEditPage: React.FC = () => {
           setActiveModels(bot.activeModels);
         })
         .finally(() => {
-          setIsLoading(false);
+          if (!cancelled) {
+            setIsLoading(false);
+          }
         });
     }
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNewBot, botId]);
 

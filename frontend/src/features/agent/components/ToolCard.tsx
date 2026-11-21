@@ -39,6 +39,62 @@ const THEME = {
   base0F: '#000000',
 };
 
+type ToolResultDocumentProps = {
+  relatedDocument: RelatedDocument;
+  toolName: string;
+};
+
+const ToolResultDocument: React.FC<ToolResultDocumentProps> = ({
+  relatedDocument: document,
+  toolName,
+}) => {
+  return (
+    <div className="flex flex-col">
+      {document.sourceName && document.sourceName !== toolName && (
+        <div className="font-semibold break-all line-clamp-1">
+          {document.sourceName}
+        </div>
+      )}
+      {document.sourceLink && (
+        <span
+          className="italic break-all line-clamp-1 cursor-pointer underline"
+          onClick={() => window.open(document.sourceLink, '_blank')}
+        >
+          {document.sourceLink}
+        </span>
+      )}
+      {'text' in document.content && (
+        <div className="break-all line-clamp-2 dark:text-aws-font-color-dark">
+          {document.content.text}
+        </div>
+      )}
+      {'json' in document.content && (
+        <JSONTree
+          data={document.content.json}
+          theme={{
+            extend: THEME,
+            tree: ({ style }) => ({
+              style: {
+                ...style,
+                margin: 0,
+              },
+            }),
+            value: ({ style }) => ({
+              style: {
+                ...style,
+                paddingTop: 0,
+                marginLeft: 0,
+              },
+            }),
+          }}
+          invertTheme={false} // disable dark theme
+          shouldExpandNodeInitially={() => false}
+        />
+      )}
+    </div>
+  );
+};
+
 type ToolCardProps = {
   className?: string;
   toolUseId: string;
@@ -154,58 +210,6 @@ const ToolCard: React.FC<ToolCardProps> = ({
 
   const [viewingRelatedDocument, setViewingRelatedDocument] = useState<RelatedDocument>();
 
-  const ToolResultDocument: React.FC<{
-    relatedDocument: RelatedDocument;
-  }> = ({
-    relatedDocument: document,
-  }) => {
-    return (
-      <div className="flex flex-col">
-        {document.sourceName && document.sourceName !== name && (
-          <div className="font-semibold break-all line-clamp-1">
-            {document.sourceName}
-          </div>
-        )}
-        {document.sourceLink && (
-          <span
-            className="italic break-all line-clamp-1 cursor-pointer underline"
-            onClick={() => window.open(document.sourceLink, '_blank')}
-          >
-            {document.sourceLink}
-          </span>
-        )}
-        {'text' in document.content && (
-          <div className="break-all line-clamp-2 dark:text-aws-font-color-dark">
-            {document.content.text}
-          </div>
-        )}
-        {'json' in document.content && (
-          <JSONTree
-            data={document.content.json}
-            theme={{
-              extend: THEME,
-              tree: ({ style }) => ({
-                style: {
-                  ...style,
-                  margin: 0,
-                },
-              }),
-              value: ({ style }) => ({
-                style: {
-                  ...style,
-                  paddingTop: 0,
-                  marginLeft: 0,
-                },
-              }),
-            }}
-            invertTheme={false} // disable dark theme
-            shouldExpandNodeInitially={() => false}
-          />
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className={twMerge('relative', className)}>
       <div
@@ -295,7 +299,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
                       <PiLinkBold />
                     </a>
                     <div className="flex-1">
-                      <ToolResultDocument relatedDocument={displayDocuments[0]} />
+                      <ToolResultDocument relatedDocument={displayDocuments[0]} toolName={name} />
                     </div>
                   </div>
                 )}
@@ -309,7 +313,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
                       <PiLinkBold />
                     </a>
                     <div className="flex-1">
-                      <ToolResultDocument relatedDocument={document} />
+                      <ToolResultDocument relatedDocument={document} toolName={name} />
                     </div>
                   </div>
                 ))}
